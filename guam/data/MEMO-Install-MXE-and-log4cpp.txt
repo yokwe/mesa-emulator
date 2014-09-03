@@ -1,0 +1,133 @@
+1)Retrieve mxe
+----
+sudo mkdir -p /opt/mxe
+cd /opt
+sudo git clone git://github.com/mxe/mxe.git
+cd /opt/mxe
+----
+
+2)Build required packges for guam
+----
+sudo make qt cppunit pthreads
+----
+
+3)Download log4cpp
+Ubuntu use log4cpp 1.0.x, so download 1.0.x version of log4cpp
+----
+sudo mkdir -p /opt/log4cpp
+cd /opt/log4cpp
+sudo wget 'http://ftp.jaist.ac.jp/pub/sourceforge/l/lo/log4cpp/log4cpp-1.0.x%20(old)/log4cpp-1.0/log4cpp-1.0.tar.gz'
+sudo tar xfz log4cpp-1.0.tar.gz
+sudo chown -R root:root log4cpp-1.0
+cd log4cpp-1.0
+----
+
+4)Configure
+following command must be executed from root user
+----
+sudo bash
+PATH=/opt/mxe/usr/bin:$PATH
+export PATH
+./configure --host=i686-pc-mingw32.static --enable-static --disable-shared --prefix=/opt/mxe/usr/i686-pc-mingw32.static
+----
+
+5)Edit files
+Add line "#include <memory>" before any "#include" line in src/BasicLayout.cpp
+----
+vi src/BasicLayout.cpp
+----
+
+6)Add missing file
+----
+cat <<'EOF' >include/log4cpp/config-MinGW32.h
+#ifndef _INCLUDE_LOG4CPP_CONFIG_MINGW32_H
+#define _INCLUDE_LOG4CPP_CONFIG_MINGW32_H 1
+/* manually edited from include/log4cpp/config.h */
+/* Define if you have the syslog function. */
+/* #undef LOG4CPP_HAVE_SYSLOG */
+/* Define if you have the `ftime' function. */
+#ifndef LOG4CPP_HAVE_FTIME
+#define LOG4CPP_HAVE_FTIME 1
+#endif
+/* Define if you have the `gettimeofday' function. */
+/* #undef LOG4CPP_HAVE_GETTIMEOFDAY */
+/* define if the compiler has int64_t */
+#ifndef LOG4CPP_HAVE_INT64_T
+#define LOG4CPP_HAVE_INT64_T
+// #define int64_t __int64
+/* define if the compiler has in_addr_t */
+#ifndef LOG4CPP_HAVE_IN_ADDR_T
+#define LOG4CPP_HAVE_IN_ADDR_T
+#ifndef u_long
+typedef unsigned long u_long;
+#endif
+/* u_long is the type of in_addr.s_addr */
+typedef u_long in_addr_t;
+/* u_short is the type of sockaddr_in.sin_port */
+// typedef u_short in_port_t;
+#endif
+#endif
+/* Define if you have the <io.h> header file. */
+#ifndef LOG4CPP_HAVE_IO_H
+#define LOG4CPP_HAVE_IO_H 1
+#endif
+/* Define if you have the <unistd.h> header file. */
+/* #undef LOG4CPP_HAVE_UNISTD_H */
+/* Define if you have the idsa library (-lidsa). */
+/* #undef LOG4CPP_HAVE_LIBIDSA */
+/* Define if you have the `strcasecmp' function. */
+/* #undef LOG4CPP_HAVE_STRCASECMP */
+/* Name of package */
+#ifndef LOG4CPP_PACKAGE
+#define LOG4CPP_PACKAGE "log4cpp"
+#endif
+/* Version number of package */
+#ifndef LOG4CPP_VERSION
+#define LOG4CPP_VERSION "1.0"
+#endif
+/* define if the compiler implements namespaces */
+#ifndef LOG4CPP_HAVE_NAMESPACES
+#define LOG4CPP_HAVE_NAMESPACES 1
+#endif
+/* define if the compiler has stringstream */
+#ifndef LOG4CPP_HAVE_SSTREAM
+#define LOG4CPP_HAVE_SSTREAM 1
+#endif
+#define LOG4CPP_HAS_WCHAR_T 0
+/* define if the C library has snprintf */
+#ifndef LOG4CPP_HAVE_SNPRINTF
+#define LOG4CPP_HAVE_SNPRINTF 1
+#endif
+//#define LOG4CPP_HAVE_LOCALTIME_R 0
+/* define to get around problems with ERROR in windows.h */
+#ifndef LOG4CPP_FIX_ERROR_COLLISION
+#define LOG4CPP_FIX_ERROR_COLLISION 1
+#endif
+/* use threads */
+#ifndef LOG4CPP_HAVE_THREADING
+#define LOG4CPP_HAVE_THREADING
+# if defined(LOG4CPP_STLPORT_AND_BOOST_BUILD)
+# define LOG4CPP_USE_BOOSTTHREADS
+# else
+# define LOG4CPP_USE_MSTHREADS
+# endif
+#endif
+#endif
+EOF
+----
+
+7)Build
+----
+make
+----
+
+8)Install
+----
+make install
+cp include/log4cpp/config-MinGW32.h /opt/mxe/usr/i686-pc-mingw32.static/include/log4cpp
+----
+
+6)Exit from root
+----
+exit
+----
