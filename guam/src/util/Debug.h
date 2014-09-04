@@ -70,7 +70,7 @@ static const int DEBUG_SHOW_AGENT_FLOPPY    = 0;
 static const int DEBUG_SHOW_AGENT_MOUSE     = 0;
 static const int DEBUG_SHOW_AGENT_NETWORK   = 0;
 static const int DEBUG_SHOW_AGENT_PROCESSOR = 0;
-static const int DEBUG_SHOW_AGENT_STREAM    = 1;
+static const int DEBUG_SHOW_AGENT_STREAM    = 0;
 
 static const int DEBUG_SHOW_NETWORK_PACKET  = 0;
 static const int DEBUG_TRACE_NETWORK_PACKET = 0;
