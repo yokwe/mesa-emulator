@@ -38,13 +38,13 @@ static log4cpp::Category& logger = Logger::getLogger("socket");
 #include "Datagram.h"
 #include "Socket.h"
 
-QMap<quint16, Socket::Listener* > Socket::map;
-int                               Socket::running = 0;
-QThread*                          Socket::thread  = 0;
-QMutex                            Socket::mutex;
+QMap<quint16, Socket::Listener*> Socket::map;
+Network*                         Socket::network = 0;
+Socket::ListenerThread*          Socket::thread  = 0;
+QMutex                           Socket::mutex;
 
 void Socket::regist(quint16 socket, Socket::Listener* listener) {
-	QMutexLocker(&mutex);
+	QMutexLocker mutexLocker(&mutex);
 	Listener* p = map.value(socket, 0);
 	if (p) {
 		logger.fatal("%s already registered  socket = %s  listener = %s", __FUNCTION__, socket, p->name);
@@ -54,7 +54,7 @@ void Socket::regist(quint16 socket, Socket::Listener* listener) {
 	logger.info("%s Regist %4d(%s) %s", __FUNCTION__, socket, Datagram::getSocketName(socket), listener->name);
 }
 void Socket::unregist(quint16 socket) {
-	QMutexLocker(&mutex);
+	QMutexLocker mutexLocker(&mutex);
 	Listener* p = map.value(socket, 0);
 	if (!p) {
 		logger.fatal("%s not registered  socket = %s", __FUNCTION__, socket, Datagram::getSocketName(socket));
@@ -63,26 +63,31 @@ void Socket::unregist(quint16 socket) {
 	map.remove(socket);
 }
 
-void Socket::start() {
+void Socket::start(Network* network_) {
 	if (thread) ERROR();
 	//
-	thread = new ListenerThread(socket);
+	network = network_;
+	thread = new ListenerThread;
 	thread->start();
 }
 void Socket::stop() {
 	if (!thread) ERROR();
 	//
+	logger.info("Socket::stop START");
 	thread->stopThread();
 	for(;;) {
 		if (thread->isFinished()) break;
 		QThread::msleep(200);
 	}
+	network = 0;
 	thread = 0;
+	logger.info("Socket::stop STOP");
 }
 
 void Socket::ListenerThread::run() {
+	logger.info("ListenerThread::run START");
 	for(;;) {
-		if (stop) break;
+		if (stop.loadAcquire()) break;
 		int opErrno = 0;
 		int ret = network->select(1, opErrno);
 		if (ret == 0) continue;
@@ -95,14 +100,16 @@ void Socket::ListenerThread::run() {
 		quint16 socket = datagram.getDSocket();
 		Listener* listener = map.value(socket, 0);
 		if (listener) {
+			// Call listener if exists.
 			listener->process(&datagram);
 		} else {
-			logger.info("ETHER     %012llX  %012llX  %04X", datagram.getDest(), datagram.getSource(), ((EthernetBuffer)datagram).getType());
-
-			logger.info("DATAGRAM  %04X  %04X %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
+			logger.debug("ETHER     %012llX  %012llX  %04X", datagram.getDest(), datagram.getSource(), ((EthernetBuffer)datagram).getType());
+			logger.debug("DATAGRAM  %04X  %04X %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
 				datagram.getChecksum(), datagram.getLength(), datagram.getHop(), Datagram::getTypeName(datagram.getType()),
 				datagram.getDNetwork(), datagram.getDHost(), Datagram::getSocketName(datagram.getDSocket()),
 				datagram.getSNetwork(), datagram.getSHost(), Datagram::getSocketName(datagram.getSSocket()));
+			logger.debug("----");
 		}
 	}
+	logger.info("ListenerThread::run STOP");
 }

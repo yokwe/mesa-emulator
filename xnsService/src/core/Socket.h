@@ -47,30 +47,28 @@ public:
 	static void regist  (quint16 socket, Listener* listenr);
 	static void unregist(quint16 socket);
 
-	static void initialize(Network* network_) {
-		network = network_;
-	}
-	static void start();
-	static int isRunning() {
-		return running;
-	}
+	static void start(Network* network_);
 	static void stop();
+	static int isRunning() {
+		return thread != 0;
+	}
 private:
 	class ListenerThread : public QThread {
 	public:
-		ListenerThread() : stop(0) {}
+		ListenerThread() {
+			stop.storeRelease(0);
+		}
 		void run();
 		void stopThread() {
-			stop = 1;
+			stop.storeRelease(1);
 		}
 	private:
-		int      stop;
+		QAtomicInt stop;
 	};
 
-	static Network*                  network;
-	static QMap<quint16, Listener* > map;
-	static int                       running;
-	static ListenerThread*           thread;
-	static QMutex                    mutex;
+	static QMap<quint16, Listener*> map;
+	static Network*                 network;
+	static ListenerThread*          thread;
+	static QMutex                   mutex;
 };
 #endif

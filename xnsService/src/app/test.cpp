@@ -46,20 +46,19 @@ int main(int /*argc*/, char** /*argv*/) {
 	quint16 b;
 	quint16 c;
 	network.getAddress(a, b, c);
-
 	logger.info("%04X-%04X-%04X", a, b, c);
 
-	Socket::initialize(&networdk);
-	Socket::start();
-
-	for(;;) {
+	Socket::start(&network);
+	for(int i = 0; i < 10; i++) {
 		if (!Socket::isRunning()) break;
 		QThread::sleep(1);
 	}
+	logger.info("stop");
+	Socket::stop();
 
+	logger.info("detach");
 	network.detach();
 
-	//
 	logger.info("STOP");
 	return 0;
 }
