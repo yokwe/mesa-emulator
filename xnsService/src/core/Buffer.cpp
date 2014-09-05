@@ -36,75 +36,216 @@ static log4cpp::Category& logger = Logger::getLogger("buffer");
 
 #include "Buffer.h"
 
-quint64 Buffer::get48(quint32 offset) {
-	const quint32 SIZE = 6;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	quint8* p = data + offset;
-	quint64 ret = 0;
-	for(quint32 i = 0; i < SIZE; i++) {
-		ret <<= 8;
-		ret |= *p++;
-	}
+Buffer::Buffer(quint8* data_, quint32 size_) : capacity(MAX_SIZE) {
+	if (capacity < size_) ERROR();
+	limit    = size_;
+	pos      = 0;
+	// copy data
+	data     = rawData;
+	for(quint32 i = 0; i < limit; i++) rawData[i] = data_[i];
+}
+
+void Buffer::setPos(quint32 newPos) {
+	if (limit < newPos) ERROR();
+	pos = newPos;
+}
+
+
+static inline quint64 get48_(quint8* p) {
+	quint64 ret = p[0];
+	ret <<= 8;
+	ret |= p[1];
+	ret <<= 8;
+	ret |= p[2];
+	ret <<= 8;
+	ret |= p[3];
+	ret <<= 8;
+	ret |= p[4];
+	ret <<= 8;
+	ret |= p[5];
 	return ret;
+}
+static inline quint32 get32_(quint8* p) {
+	quint32 ret = p[0];
+	ret <<= 8;
+	ret |= p[1];
+	ret <<= 8;
+	ret |= p[2];
+	ret <<= 8;
+	ret |= p[3];
+	return ret;
+}
+static inline quint16 get16_(quint8* p) {
+	quint16 ret = p[0];
+	ret <<= 8;
+	ret |= p[1];
+	return ret;
+}
+static inline quint8 get8_(quint8* p) {
+	return p[0];
+}
+
+static inline void put48_(quint8* p, quint64 value) {
+	p[5] = (quint8)value;
+	value >>= 8;
+	p[4] = (quint8)value;
+	value >>= 8;
+	p[3] = (quint8)value;
+	value >>= 8;
+	p[2] = (quint8)value;
+	value >>= 8;
+	p[1] = (quint8)value;
+	value >>= 8;
+	p[0] = (quint8)value;
+}
+static inline void put32_(quint8* p, quint32 value) {
+	p[3] = (quint8)value;
+	value >>= 8;
+	p[2] = (quint8)value;
+	value >>= 8;
+	p[1] = (quint8)value;
+	value >>= 8;
+	p[0] = (quint8)value;
+}
+static inline void put16_(quint8* p, quint16 value) {
+	p[1] = (quint8)value;
+	value >>= 8;
+	p[0] = (quint8)value;
+}
+static inline void put8_(quint8* p, quint8 value) {
+	p[0] = value;
+}
+
+quint64 Buffer::get48(quint32 offset) {
+	if (limit < (offset + SIZE_48)) {
+		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_48);
+		ERROR();
+	}
+	return get48_(data + offset);
 }
 quint32 Buffer::get32(quint32 offset) {
-	const quint32 SIZE = 4;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	quint8* p = data + offset;
-	quint32 ret = 0;
-	for(quint32 i = 0; i < SIZE; i++) {
-		ret <<= 8;
-		ret |= *p++;
+	if (limit < (offset + SIZE_32)) {
+		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_32);
+		ERROR();
 	}
-	return ret;
+	return get32_(data + offset);
 }
 quint16 Buffer::get16(quint32 offset) {
-	const quint32 SIZE = 2;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	quint8* p = data + offset;
-	quint16 ret = 0;
-	for(quint32 i = 0; i < SIZE; i++) {
-		ret <<= 8;
-		ret |= *p++;
+	if (limit < (offset + SIZE_16)) {
+		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_16);
+		ERROR();
 	}
-	return ret;
+	return get16_(data + offset);
 }
 quint8 Buffer::get8(quint32 offset) {
-	const quint32 SIZE = 1;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	return data[offset];
+	if (limit < (offset + SIZE_8)) {
+		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_8);
+		ERROR();
+	}
+	return get8_(data + offset);
 }
 
-void Buffer::set48(quint32 offset, quint64 value) {
-	const quint32 SIZE = 6;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	quint8* p = data + offset + SIZE;
-	for(quint32 i = 0; i < SIZE; i++) {
-		*--p = (quint8)value;
-		value >>= 8;
+quint64 Buffer::get48() {
+	if (limit < (pos + SIZE_48)) {
+		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_48);
+		ERROR();
 	}
+	quint64 ret = get48_(data + pos);
+	pos += SIZE_48;
+	return ret;
 }
-void Buffer::set32(quint32 offset, quint32 value) {
-	const quint32 SIZE = 4;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	quint8* p = data + offset + SIZE;
-	for(quint32 i = 0; i < SIZE; i++) {
-		*--p = (quint8)value;
-		value >>= 8;
+quint32 Buffer::get32() {
+	if (limit < (pos + SIZE_32)) {
+		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_32);
+		ERROR();
 	}
+	quint64 ret = get32_(data + pos);
+	pos += SIZE_32;
+	return ret;
 }
-void Buffer::set16(quint32 offset, quint16 value) {
-	const quint32 SIZE = 2;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	quint8* p = data + offset + SIZE;
-	for(quint32 i = 0; i < SIZE; i++) {
-		*--p = (quint8)value;
-		value >>= 8;
+quint16 Buffer::get16() {
+	if (limit < (pos + SIZE_16)) {
+		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_16);
+		ERROR();
 	}
+	quint64 ret = get16_(data + pos);
+	pos += SIZE_16;
+	return ret;
 }
-void Buffer::set8(quint32 offset, quint8 value) {
-	const quint32 SIZE = 1;
-	if (MAX_SIZE <= (offset + SIZE)) ERROR();
-	data[offset] = value;
+quint8 Buffer::get8() {
+	if (limit < (pos + SIZE_8)) {
+		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_8);
+		ERROR();
+	}
+	quint64 ret = get8_(data + pos);
+	pos += SIZE_8;
+	return ret;
 }
 
+
+
+void Buffer::put48(quint32 offset, quint64 value) {
+	if (capacity < (offset + SIZE_48)) {
+		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_48);
+		ERROR();
+	}
+	put48_(data + offset, value);
+}
+void Buffer::put32(quint32 offset, quint32 value) {
+	if (capacity < (offset + SIZE_32)) {
+		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_32);
+		ERROR();
+	}
+	put32_(data + offset, value);
+}
+void Buffer::put16(quint32 offset, quint16 value) {
+	if (capacity < (offset + SIZE_16)) {
+		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_16);
+		ERROR();
+	}
+	put32_(data + offset, value);
+}
+void Buffer::put8(quint32 offset, quint8 value) {
+	if (capacity < (offset + SIZE_8)) {
+		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_8);
+		ERROR();
+	}
+	put8_(data + offset, value);
+}
+
+void Buffer::put48(quint64 value) {
+	if (capacity < (pos + SIZE_48)) {
+		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_48);
+		ERROR();
+	}
+	put48_(data + pos, value);
+	pos += SIZE_48;
+	if (limit < pos) limit = pos;
+}
+void Buffer::put32(quint32 value) {
+	if (capacity < (pos + SIZE_32)) {
+		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_32);
+		ERROR();
+	}
+	put32_(data + pos, value);
+	pos += SIZE_32;
+	if (limit < pos) limit = pos;
+}
+void Buffer::put16(quint16 value) {
+	if (capacity < (pos + SIZE_16)) {
+		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_16);
+		ERROR();
+	}
+	put16_(data + pos, value);
+	pos += SIZE_16;
+	if (limit < pos) limit = pos;
+}
+void Buffer::put8(quint8 value) {
+	if (capacity < (pos + SIZE_8)) {
+		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_8);
+		ERROR();
+	}
+	put8_(data + pos, value);
+	pos += SIZE_8;
+	if (limit < pos) limit = pos;
+}

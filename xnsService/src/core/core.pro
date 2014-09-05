@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Buffer.h   Network.h
-SOURCES += Buffer.cpp Network.cpp
+HEADERS += Buffer.h   Datagram.h   Network.h
+SOURCES += Buffer.cpp Datagram.cpp Network.cpp
 
 ###############################################
 
