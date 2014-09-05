@@ -36,12 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("buffer");
 
 #include "Buffer.h"
 
-Buffer::Buffer(quint8* data_, quint32 size_) : capacity(MAX_SIZE) {
-	if (capacity < size_) ERROR();
-	limit    = size_;
-	pos      = 0;
-	// copy data
-	data     = rawData;
+Buffer::Buffer(quint8* data_, quint32 limit_) : data(rawData), limit(limit_), capacity(sizeof(rawData)), pos(0) {
+	if (capacity < limit) ERROR();
 	for(quint32 i = 0; i < limit; i++) rawData[i] = data_[i];
 }
 

@@ -73,7 +73,6 @@ void Socket::start(Network* network_) {
 void Socket::stop() {
 	if (!thread) ERROR();
 	//
-	logger.info("Socket::stop START");
 	thread->stopThread();
 	for(;;) {
 		if (thread->isFinished()) break;
@@ -81,11 +80,9 @@ void Socket::stop() {
 	}
 	network = 0;
 	thread = 0;
-	logger.info("Socket::stop STOP");
 }
 
 void Socket::ListenerThread::run() {
-	logger.info("ListenerThread::run START");
 	for(;;) {
 		if (stop.loadAcquire()) break;
 		int opErrno = 0;
@@ -101,6 +98,7 @@ void Socket::ListenerThread::run() {
 		Listener* listener = map.value(socket, 0);
 		if (listener) {
 			// Call listener if exists.
+			QMutexLocker mutexLocker(&mutex);
 			listener->process(&datagram);
 		} else {
 			logger.debug("ETHER     %012llX  %012llX  %04X", datagram.getDest(), datagram.getSource(), ((EthernetBuffer)datagram).getType());
@@ -111,5 +109,13 @@ void Socket::ListenerThread::run() {
 			logger.debug("----");
 		}
 	}
-	logger.info("ListenerThread::run STOP");
+}
+
+void Socket::transmit(DatagramBuffer* datagram) {
+	int opErrno = 0;
+	int ret = network->transmit(datagram->getData(), datagram->getLimit(), opErrno);
+	if (opErrno) {
+		logger.fatal("send fail opErrno = %d  ret = %d  limit = %d", opErrno, ret, datagram->getLimit());
+		ERROR();
+	}
 }

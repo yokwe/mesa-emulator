@@ -25,40 +25,23 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// Echo.cpp
+//
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("test");
+static log4cpp::Category& logger = Logger::getLogger("echo");
 
 #include "../util/Debug.h"
 
-#include "../core/Network.h"
-#include "../core/Socket.h"
+#include "Echo.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
-
-	Network network;
-
-	network.attach("eth1");
-
-	quint16 a;
-	quint16 b;
-	quint16 c;
-	network.getAddress(a, b, c);
-	logger.info("%04X-%04X-%04X", a, b, c);
-
-	logger.info("START Socket");
-	Socket::start(&network);
-	for(int i = 0; i < 10; i++) {
-		if (!Socket::isRunning()) break;
-		QThread::sleep(1);
-	}
-	logger.info("STOP Socket");
-	Socket::stop();
-
-	network.detach();
-
-	logger.info("STOP");
-	return 0;
+void EchoListener::process(DatagramBuffer* datagarm) {
+	EchoBuffer echoBuffer(datagarm);
+	//
+	DatagramBuffer response;
+	//
+	// Todo Build response
+	//
+	socket->transmit(&response);
 }

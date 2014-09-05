@@ -41,6 +41,11 @@ public:
 	class Listener {
 	public:
 		const char* name;
+		Socket*     socket;
+		//
+		Listener(const char* name_, Socket* socket_) : name(name_), socket(socket_) {}
+		virtual ~Listener() {}
+
 		virtual void process(DatagramBuffer* datagarm) = 0;
 	};
 
@@ -49,9 +54,11 @@ public:
 
 	static void start(Network* network_);
 	static void stop();
-	static int isRunning() {
+	static int  isRunning() {
 		return thread != 0;
 	}
+
+	void transmit(DatagramBuffer* datagram);
 private:
 	class ListenerThread : public QThread {
 	public:

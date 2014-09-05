@@ -45,15 +45,16 @@ protected:
 	static const quint32 SIZE_16 = 2;
 	static const quint32 SIZE_8  = 1;
 
-	const quint32 capacity; // data capacity [0..limit)
+	quint8*       data;
 	quint32       limit;    // valid data range [0..limit)
+	const quint32 capacity; // data capacity [0..limit)
 	quint32       pos;      // cursor position
 
-	quint8* data;
-	quint8  rawData[MAX_SIZE];
+	quint8        rawData[MAX_SIZE];
+
 public:
-	Buffer(quint8* data_, quint32 size_);
-	Buffer(Buffer* that) : capacity(that->capacity), limit(that->limit), pos(that->pos), data(that->data) {}
+	Buffer(quint8* data_, quint32 limit_);
+	Buffer(Buffer* that) : data(that->data), limit(that->limit), capacity(that->capacity), pos(that->pos) {}
 
 	// Absolute get and put
 	quint64 get48(quint32 offset);
@@ -89,8 +90,13 @@ public:
 		limit = pos;
 		pos   = 0;
 	}
-	quint32 remainint() {
+	// remaining
+	quint32 remaining() {
 		return limit - pos;
+	}
+	// data
+	quint8* getData() {
+		return data;
 	}
 
 	// get and put from cursor position and position is advanced after get/put
@@ -111,7 +117,9 @@ public:
 	static const quint32 OFFSET_TYPE   = 12;
 	static const quint32 SIZE          = 14;
 
-	EthernetBuffer(quint8* data_, quint32 size_) : Buffer(data_, size_) {}
+	EthernetBuffer(quint8* data_, quint32 limit_) : Buffer(data_, limit_) {}
+	EthernetBuffer(EthernetBuffer* that) : Buffer((Buffer*)that) {}
+
 	quint64 getDest() {
 		return get48(OFFSET_DEST);
 	}
@@ -144,85 +152,87 @@ public:
 
 class DatagramBuffer : public EthernetBuffer {
 public:
-	static const quint32 OFFSET_CHECKSUM   =  0;
-	static const quint32 OFFSET_LENGTH     =  2;
-	static const quint32 OFFSET_HOP        =  4;
-	static const quint32 OFFSET_TYPE       =  5;
-	static const quint32 OFFSET_NET_DEST   =  6;
-	static const quint32 OFFSET_NET_SOURCE = 18;
-	static const quint32 SIZE              = 30;
+	static const quint32 OFFSET_CHECKSUM   = EthernetBuffer::SIZE +  0;
+	static const quint32 OFFSET_LENGTH     = EthernetBuffer::SIZE +  2;
+	static const quint32 OFFSET_HOP        = EthernetBuffer::SIZE +  4;
+	static const quint32 OFFSET_TYPE       = EthernetBuffer::SIZE +  5;
+	static const quint32 OFFSET_NET_DEST   = EthernetBuffer::SIZE +  6;
+	static const quint32 OFFSET_NET_SOURCE = EthernetBuffer::SIZE + 18;
 
-	DatagramBuffer(quint8* data_, quint32 size_) : EthernetBuffer(data_, size_) {}
+	static const quint32 SIZE              = EthernetBuffer::SIZE + 30;
 
+	DatagramBuffer() : EthernetBuffer(0, 0) {}
+	DatagramBuffer(quint8* data_, quint32 limit_) : EthernetBuffer(data_, limit_) {}
+	DatagramBuffer(DatagramBuffer* that) : EthernetBuffer((EthernetBuffer*)that) {}
 
 	quint16 getChecksum() {
-		return get16(EthernetBuffer::SIZE + OFFSET_CHECKSUM);
+		return get16(OFFSET_CHECKSUM);
 	}
 	void setChecksum(quint16 value) {
-		put16(EthernetBuffer::SIZE + OFFSET_CHECKSUM, value);
+		put16(OFFSET_CHECKSUM, value);
 	}
 
 	quint16 getLength() {
-		return get16(EthernetBuffer::SIZE + OFFSET_LENGTH);
+		return get16(OFFSET_LENGTH);
 	}
 	void setLength(quint16 value) {
-		put16(EthernetBuffer::SIZE + OFFSET_LENGTH, value);
+		put16(OFFSET_LENGTH, value);
 	}
 
 	quint8  getHop() {
-		return get8(EthernetBuffer::SIZE + OFFSET_HOP);
+		return get8(OFFSET_HOP);
 	}
 	void setHop(quint8 value) {
-		put8(EthernetBuffer::SIZE + OFFSET_HOP, value);
+		put8(OFFSET_HOP, value);
 	}
 
 	quint8  getType() {
-		return get8(EthernetBuffer::SIZE + OFFSET_TYPE);
+		return get8(OFFSET_TYPE);
 	}
 	void setType(quint8 value) {
-		put8(EthernetBuffer::SIZE + OFFSET_TYPE, value);
+		put8(OFFSET_TYPE, value);
 	}
 
 	quint32 getDNetwork() {
-		return get32(EthernetBuffer::SIZE + OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK);
+		return get32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK);
 	}
 	void setDNetwork(quint32 value) {
-		put32(EthernetBuffer::SIZE + OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK, value);
+		put32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK, value);
 	}
 
 	quint64 getDHost() {
-		return get48(EthernetBuffer::SIZE + OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST);
+		return get48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST);
 	}
 	void setDHost(quint64 value) {
-		put48(EthernetBuffer::SIZE + OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST, value);
+		put48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST, value);
 	}
 
 	quint16 getDSocket() {
-		return get16(EthernetBuffer::SIZE + OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET);
+		return get16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET);
 	}
 	void setDSocket(quint16 value) {
-		put16(EthernetBuffer::SIZE + OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET, value);
+		put16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET, value);
 	}
 
 	quint32 getSNetwork() {
-		return get32(EthernetBuffer::SIZE + OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK);
+		return get32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK);
 	}
 	void setSNetwork(quint32 value) {
-		put32(EthernetBuffer::SIZE + OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK, value);
+		put32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK, value);
 	}
 
 	quint64 getSHost() {
-		return get48(EthernetBuffer::SIZE + OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST);
+		return get48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST);
 	}
 	void setSHost(quint64 value) {
-		put48(EthernetBuffer::SIZE + OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST, value);
+		put48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST, value);
 	}
 
 	quint16 getSSocket() {
-		return get16(EthernetBuffer::SIZE + OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET);
+		return get16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET);
 	}
 	void setSSocket(quint16 value) {
-		put16(EthernetBuffer::SIZE + OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET, value);
+		put16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET, value);
 	}
 };
 #endif

@@ -25,40 +25,38 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// Echo.h
+//
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("test");
+#ifndef ECHO_H__
+#define ECHO_H__
 
-#include "../util/Debug.h"
+#include "Socket.h"
+#include "Buffer.h"
+#include "Datagram.h"
 
-#include "../core/Network.h"
-#include "../core/Socket.h"
+class EchoBuffer : public DatagramBuffer {
+public:
+	static const quint32 OFFSET_OPERATION   = DatagramBuffer::SIZE + 0;
+	static const quint32 OFFSET_DATA        = DatagramBuffer::SIZE + 2;
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+	static const quint16 OPERATION_REQUEST  = 1;
+	static const quint16 OPERATION_RESPONSE = 2;
 
-	Network network;
+	EchoBuffer(DatagramBuffer* that) : DatagramBuffer((DatagramBuffer*)that) {}
 
-	network.attach("eth1");
-
-	quint16 a;
-	quint16 b;
-	quint16 c;
-	network.getAddress(a, b, c);
-	logger.info("%04X-%04X-%04X", a, b, c);
-
-	logger.info("START Socket");
-	Socket::start(&network);
-	for(int i = 0; i < 10; i++) {
-		if (!Socket::isRunning()) break;
-		QThread::sleep(1);
+	quint16 getOperation() {
+		return get16(OFFSET_OPERATION);
 	}
-	logger.info("STOP Socket");
-	Socket::stop();
+};
 
-	network.detach();
+class EchoListener : public Socket::Listener {
+public:
+	EchoListener(Socket* socket_) : Socket::Listener("ECHO", socket_) {}
+	virtual ~EchoListener() {}
+	//
+	void process(DatagramBuffer* datagarm);
+};
 
-	logger.info("STOP");
-	return 0;
-}
+#endif
