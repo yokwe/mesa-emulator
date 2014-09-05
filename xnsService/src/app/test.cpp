@@ -34,6 +34,7 @@ static log4cpp::Category& logger = Logger::getLogger("test");
 
 #include "../core/Network.h"
 #include "../core/Buffer.h"
+#include "../core/Datagram.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -59,12 +60,14 @@ int main(int /*argc*/, char** /*argv*/) {
 		quint8 data[1600];
 		ret = network.receive(data, sizeof(data), opErrno);
 
-		IDPBuffer idp(data, ret);
+		DatagramBuffer datagram(data, ret);
 
-		logger.info("ETHER  %012llX  %012llX  %04X", idp.getDest(), idp.getSource(), ((EthernetBuffer)idp).getType());
+		logger.info("ETHER  %012llX  %012llX  %04X", datagram.getDest(), datagram.getSource(), ((EthernetBuffer)datagram).getType());
 
-		logger.info("%04X  %04X %02X %02X %08X-%012llX-%04X  %08X-%012llX-%04X",  idp.getChecksum(), idp.getLength(), idp.getHop(), idp.getType(),
-				idp.getDNetwork(), idp.getDHost(), idp.getDSocket(), idp.getSNetwork(), idp.getSHost(), idp.getSSocket());
+		logger.info("%04X  %04X %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
+			datagram.getChecksum(), datagram.getLength(), datagram.getHop(), Datagram::getTypeName(datagram.getType()),
+			datagram.getDNetwork(), datagram.getDHost(), Datagram::getSocketName(datagram.getDSocket()),
+			datagram.getSNetwork(), datagram.getSHost(), Datagram::getSocketName(datagram.getSSocket()));
 	}
 
 	network.detach();
