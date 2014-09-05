@@ -45,11 +45,15 @@ Buffer::Buffer(quint8* data_, quint32 size_) : capacity(MAX_SIZE) {
 	for(quint32 i = 0; i < limit; i++) rawData[i] = data_[i];
 }
 
-void Buffer::setPos(quint32 newPos) {
-	if (limit < newPos) ERROR();
-	pos = newPos;
+void Buffer::setPos(quint32 newValue) {
+	if (limit < newValue) ERROR();
+	pos = newValue;
 }
 
+void Buffer::setLimit(quint32 newValue) {
+	if (capacity < newValue) ERROR();
+	limit = newValue;
+}
 
 static inline quint64 get48_(quint8* p) {
 	quint64 ret = p[0];

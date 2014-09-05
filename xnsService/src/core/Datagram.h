@@ -63,6 +63,9 @@ public:
 	static const char* getSocketName(quint16 value);
 
     static const quint16 MAX_WELLKNOWN_SOCKET = 3000;
+
+	static const quint32 NETWORK_UNKNONW = 0;
+	static const quint32 NETWORK_ALL     = ~0;
 };
 
 #endif

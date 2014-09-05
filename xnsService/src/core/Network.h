@@ -53,6 +53,9 @@ public:
 		pid3 = (address[4] << 8) | address[5];
 	}
 
+	const char* getName() {
+		return name;
+	}
 	int getFileDescriptor() {
 		return fd;
 	}

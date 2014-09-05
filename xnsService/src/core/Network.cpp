@@ -124,6 +124,8 @@ void Network::detach() {
 		logger.fatal("socket returns not 0.  errno = %d", myErrno);
 		ERROR();
 	}
+	fd = 0;
+	name = 0;
 }
 
 int Network::select(quint32 timeout, int& opErrno) {

@@ -25,41 +25,52 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// Socket.h
+//
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("test");
+#ifndef SOCKET_H__
+#define SOCKET_H__
 
-#include "../util/Debug.h"
+#include "Network.h"
+#include "Buffer.h"
+#include "Datagram.h"
 
-#include "../core/Network.h"
-#include "../core/Socket.h"
+class Socket {
+public:
+	class Listener {
+	public:
+		const char* name;
+		virtual void process(DatagramBuffer* datagarm) = 0;
+	};
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+	static void regist  (quint16 socket, Listener* listenr);
+	static void unregist(quint16 socket);
 
-	Network network;
-
-	network.attach("eth1");
-
-	quint16 a;
-	quint16 b;
-	quint16 c;
-	network.getAddress(a, b, c);
-
-	logger.info("%04X-%04X-%04X", a, b, c);
-
-	Socket::initialize(&networdk);
-	Socket::start();
-
-	for(;;) {
-		if (!Socket::isRunning()) break;
-		QThread::sleep(1);
+	static void initialize(Network* network_) {
+		network = network_;
 	}
+	static void start();
+	static int isRunning() {
+		return running;
+	}
+	static void stop();
+private:
+	class ListenerThread : public QThread {
+	public:
+		ListenerThread() : stop(0) {}
+		void run();
+		void stopThread() {
+			stop = 1;
+		}
+	private:
+		int      stop;
+	};
 
-	network.detach();
-
-	//
-	logger.info("STOP");
-	return 0;
-}
+	static Network*                  network;
+	static QMap<quint16, Listener* > map;
+	static int                       running;
+	static ListenerThread*           thread;
+	static QMutex                    mutex;
+};
+#endif
