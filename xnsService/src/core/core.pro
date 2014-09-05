@@ -11,8 +11,6 @@ CONFIG  += staticlib
 HEADERS += Buffer.h   Network.h
 SOURCES += Buffer.cpp Network.cpp
 
-HEADERS += Debug.h
-
 ###############################################
 
 INCLUDEPATH += .
