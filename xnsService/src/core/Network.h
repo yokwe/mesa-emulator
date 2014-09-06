@@ -41,17 +41,22 @@ public:
 	// packet type of Xerox IDP
 	static const int ETH_P_IDP = 0x0600;
 
-	Network() : name(0), fd(0), address(0) {}
-
-	quint64 getAddress() {
-		return address;
-	}
+	Network() : name(0), fd(0), address(0), network(0) {}
 
 	const char* getName() {
 		return name;
 	}
 	int getFileDescriptor() {
 		return fd;
+	}
+	quint64 getAddress() {
+		return address;
+	}
+	quint32 getNetwork() {
+		return network;
+	}
+	void setNetwork(quint32 value) {
+		network = value;
 	}
 
 	void attach(const char* name_);
@@ -70,6 +75,7 @@ private:
 	const char* name;
 	int         fd;
 	quint64     address;
+	quint32     network;
 };
 
 #endif

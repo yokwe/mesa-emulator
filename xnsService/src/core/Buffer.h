@@ -112,10 +112,12 @@ public:
 
 class EthernetBuffer : public Buffer {
 public:
+	static const quint32 SIZE          = 14;
+
 	static const quint32 OFFSET_DEST   =  0;
 	static const quint32 OFFSET_SOURCE =  6;
 	static const quint32 OFFSET_TYPE   = 12;
-	static const quint32 SIZE          = 14;
+	static const quint32 OFFSET_DATA   = SIZE;
 
 	EthernetBuffer(quint8* data_, quint32 limit_) : Buffer(data_, limit_) {}
 	EthernetBuffer(EthernetBuffer* that) : Buffer((Buffer*)that) {}
@@ -142,28 +144,69 @@ public:
 	}
 };
 
-class NetworkAddressBuffer {
+class NetworkAddressBuffer : public Buffer {
 public:
+	static const quint32 SIZE           = 12;
+
 	static const quint32 OFFSET_NETWORK =  0;
 	static const quint32 OFFSET_HOST    =  4;
 	static const quint32 OFFSET_SOCKET  = 10;
-	static const quint32 SIZE           = 12;
+
+	const quint32 offset;
+	NetworkAddressBuffer(Buffer* buffer_, quint32 offset_) : Buffer(buffer_), offset(offset_) {}
+
+	quint32 getNetwork() {
+		return get32(offset + OFFSET_NETWORK);
+	}
+	void setNetwork(quint32 value) {
+		set32(offset + OFFSET_NETWORK, value);
+	}
+
+	quint64 getHost() {
+		return get48(offset + OFFSET_HOST);
+	}
+	void setHost(quint64 value) {
+		set48(offset + OFFSET_HOST, value);
+	}
+
+	quint16 getSocket() {
+		return get16(offset + OFFSET_SOCKET);
+	}
+	void setSocket(quint16 value) {
+		set16(offset + OFFSET_SOCKET, value);
+	}
+
+	void set(quint32 network, quint64 host, quint16 socket) {
+		set32(offset + OFFSET_NETWORK, network);
+		set48(offset + OFFSET_HOST,    host);
+		set16(offset + OFFSET_SOCKET,  socket);
+	}
 };
 
 class DatagramBuffer : public EthernetBuffer {
 public:
-	static const quint32 OFFSET_CHECKSUM   = EthernetBuffer::SIZE +  0;
-	static const quint32 OFFSET_LENGTH     = EthernetBuffer::SIZE +  2;
-	static const quint32 OFFSET_HOP        = EthernetBuffer::SIZE +  4;
-	static const quint32 OFFSET_TYPE       = EthernetBuffer::SIZE +  5;
-	static const quint32 OFFSET_NET_DEST   = EthernetBuffer::SIZE +  6;
-	static const quint32 OFFSET_NET_SOURCE = EthernetBuffer::SIZE + 18;
+	static const quint32 SIZE            = 30;
 
-	static const quint32 SIZE              = EthernetBuffer::SIZE + 30;
+	static const quint32 OFFSET_CHECKSUM = EthernetBuffer::SIZE +  0;
+	static const quint32 OFFSET_LENGTH   = EthernetBuffer::SIZE +  2;
+	static const quint32 OFFSET_HOP      = EthernetBuffer::SIZE +  4;
+	static const quint32 OFFSET_TYPE     = EthernetBuffer::SIZE +  5;
+	static const quint32 OFFSET_DEST     = EthernetBuffer::SIZE +  6;
+	static const quint32 OFFSET_SOURCE   = EthernetBuffer::SIZE + 18;
+	static const quint32 OFFSET_DATA     = EthernetBuffer::SIZE + SIZE;
 
-	DatagramBuffer() : EthernetBuffer(0, 0) {}
-	DatagramBuffer(quint8* data_, quint32 limit_) : EthernetBuffer(data_, limit_) {}
-	DatagramBuffer(DatagramBuffer* that) : EthernetBuffer((EthernetBuffer*)that) {}
+	NetworkAddressBuffer dest;
+	NetworkAddressBuffer source;
+
+	DatagramBuffer() :
+		EthernetBuffer(0, 0),
+		dest(this, OFFSET_DEST), source(this, OFFSET_SOURCE) {}
+	DatagramBuffer(quint8* data_, quint32 limit_) :
+		EthernetBuffer(data_, limit_),
+		dest(this, OFFSET_DEST), source(this, OFFSET_SOURCE) {}
+	DatagramBuffer(DatagramBuffer* that) :
+		EthernetBuffer(that),
+		dest(this, OFFSET_DEST), source(this, OFFSET_SOURCE) {}
 
 	quint16 getChecksum() {
 		return get16(OFFSET_CHECKSUM);
@@ -193,46 +236,11 @@ public:
 		set8(OFFSET_TYPE, value);
 	}
 
-	quint32 getDNetwork() {
-		return get32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK);
+	quint32 getDataLength() {
+		return get16(OFFSET_LENGTH) - SIZE;
 	}
-	void setDNetwork(quint32 value) {
-		set32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK, value);
-	}
-
-	quint64 getDHost() {
-		return get48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST);
-	}
-	void setDHost(quint64 value) {
-		set48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST, value);
-	}
-
-	quint16 getDSocket() {
-		return get16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET);
-	}
-	void setDSocket(quint16 value) {
-		set16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET, value);
-	}
-
-	quint32 getSNetwork() {
-		return get32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK);
-	}
-	void setSNetwork(quint32 value) {
-		set32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK, value);
-	}
-
-	quint64 getSHost() {
-		return get48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST);
-	}
-	void setSHost(quint64 value) {
-		set48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST, value);
-	}
-
-	quint16 getSSocket() {
-		return get16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET);
-	}
-	void setSSocket(quint16 value) {
-		set16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET, value);
+	void setPosData() {
+		setPos(OFFSET_DATA);
 	}
 };
 #endif

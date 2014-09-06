@@ -47,7 +47,7 @@ public:
 	void stopThread() {
 		stop.storeRelease(1);
 	}
-private:
+protected:
 	QAtomicInt stop;
 };
 
@@ -113,9 +113,35 @@ void ListenerThread::run() {
 		DatagramBuffer request(data, ret);
 		DatagramBuffer response;
 
-		quint16 socket = request.getDSocket();
+		// Build response - Ethernet
+		response.setDest  (request.getSource());
+		response.setSource(network->getAddress());
+		response.setType  (request.getType());
+
+		// Build response - Datagram
+		response.setChecksum(0);
+		response.setLength(0);
+		response.setHop(0);
+		response.setType(request.getType());
+		response.dest.set(
+			request.source.getNetwork(),
+			request.source.getHost(),
+			request.source.getSocket());
+		response.source.set(
+			network->getNetwork(),
+			network->getAddress(),
+			request.dest.getSocket());
+
+		quint16 socket = request.dest.getSocket();
 		Socket::Listener* listener = map.value(socket, 0);
 		if (listener) {
+			logger.debug("ETHER     %012llX  %012llX  %04X", request.getDest(), request.getSource(), ((EthernetBuffer)request).getType());
+			logger.debug("DATAGRAM  %04X  %04X %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
+				request.getChecksum(), request.getLength(), request.getHop(), Datagram::getTypeName(request.getType()),
+				request.dest.getNetwork(), request.dest.getHost(), Datagram::getSocketName(request.dest.getSocket()),
+				request.source.getNetwork(), request.source.getHost(), Datagram::getSocketName(request.source.getSocket()));
+			logger.debug("====");
+
 			// Call listener if exists.
 			QMutexLocker mutexLocker(&mutex);
 			listener->process(&request, &response);
@@ -133,8 +159,8 @@ void ListenerThread::run() {
 			logger.debug("ETHER     %012llX  %012llX  %04X", request.getDest(), request.getSource(), ((EthernetBuffer)request).getType());
 			logger.debug("DATAGRAM  %04X  %04X %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
 				request.getChecksum(), request.getLength(), request.getHop(), Datagram::getTypeName(request.getType()),
-				request.getDNetwork(), request.getDHost(), Datagram::getSocketName(request.getDSocket()),
-				request.getSNetwork(), request.getSHost(), Datagram::getSocketName(request.getSSocket()));
+				request.dest.getNetwork(), request.dest.getHost(), Datagram::getSocketName(request.dest.getSocket()),
+				request.source.getNetwork(), request.source.getHost(), Datagram::getSocketName(request.source.getSocket()));
 			logger.debug("----");
 		}
 	}

@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Buffer.h   Datagram.h   Echo.h   Network.h   Socket.h
-SOURCES += Buffer.cpp Datagram.cpp Echo.cpp Network.cpp Socket.cpp
+HEADERS += Buffer.h   Datagram.h   Echo.h   Network.h   Routing.h   Socket.h
+SOURCES += Buffer.cpp Datagram.cpp Echo.cpp Network.cpp Routing.cpp Socket.cpp
 
 ###############################################
 

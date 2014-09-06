@@ -35,6 +35,8 @@ static log4cpp::Category& logger = Logger::getLogger("test");
 #include "../core/Network.h"
 #include "../core/Socket.h"
 
+#include "../core/Routing.h"
+
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
 
@@ -44,6 +46,9 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	quint64 address = network.getAddress();
 	logger.info("%012llX", address);
+
+	RoutingListener routing;
+	Socket::registerListener(Datagram::SOCKET_ROUTING, &routing);
 
 	logger.info("START Socket");
 	Socket::startListen(&network);
