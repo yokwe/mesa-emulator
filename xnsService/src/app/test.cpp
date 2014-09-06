@@ -42,11 +42,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	network.attach("eth1");
 
-	quint16 a;
-	quint16 b;
-	quint16 c;
-	network.getAddress(a, b, c);
-	logger.info("%04X-%04X-%04X", a, b, c);
+	quint64 address = network.getAddress();
+	logger.info("%012llX", address);
 
 	logger.info("START Socket");
 	Socket::start(&network);

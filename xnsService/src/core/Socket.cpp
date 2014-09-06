@@ -92,30 +92,41 @@ void Socket::ListenerThread::run() {
 		quint8 data[Buffer::MAX_SIZE];
 		ret = network->receive(data, sizeof(data), opErrno);
 
-		DatagramBuffer datagram(data, ret);
+		DatagramBuffer request(data, ret);
+		DatagramBuffer response;
 
-		quint16 socket = datagram.getDSocket();
+		quint16 socket = request.getDSocket();
 		Listener* listener = map.value(socket, 0);
 		if (listener) {
 			// Call listener if exists.
 			QMutexLocker mutexLocker(&mutex);
-			listener->process(&datagram);
+			listener->process(&request, &response);
+			if (response.getLimit()) {
+				int opErrno = 0;
+				int ret = network->transmit(response.getData(), response.getLimit(), opErrno);
+				if (opErrno) {
+					logger.fatal("send fail opErrno = %d  ret = %d  limit = %d", opErrno, ret, response.getLimit());
+					ERROR();
+				}
+			}
 		} else {
-			logger.debug("ETHER     %012llX  %012llX  %04X", datagram.getDest(), datagram.getSource(), ((EthernetBuffer)datagram).getType());
+			logger.debug("ETHER     %012llX  %012llX  %04X", request.getDest(), request.getSource(), ((EthernetBuffer)request).getType());
 			logger.debug("DATAGRAM  %04X  %04X %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
-				datagram.getChecksum(), datagram.getLength(), datagram.getHop(), Datagram::getTypeName(datagram.getType()),
-				datagram.getDNetwork(), datagram.getDHost(), Datagram::getSocketName(datagram.getDSocket()),
-				datagram.getSNetwork(), datagram.getSHost(), Datagram::getSocketName(datagram.getSSocket()));
+				request.getChecksum(), request.getLength(), request.getHop(), Datagram::getTypeName(request.getType()),
+				request.getDNetwork(), request.getDHost(), Datagram::getSocketName(request.getDSocket()),
+				request.getSNetwork(), request.getSHost(), Datagram::getSocketName(request.getSSocket()));
 			logger.debug("----");
 		}
 	}
 }
 
 void Socket::transmit(DatagramBuffer* datagram) {
+	quint8* data = datagram->getData();
+	quint32 dataLen = datagram->getLimit();
 	int opErrno = 0;
-	int ret = network->transmit(datagram->getData(), datagram->getLimit(), opErrno);
+	int ret = network->transmit(data, dataLen, opErrno);
 	if (opErrno) {
-		logger.fatal("send fail opErrno = %d  ret = %d  limit = %d", opErrno, ret, datagram->getLimit());
+		logger.fatal("send fail opErrno = %d  ret = %d  dataLen = %d", opErrno, ret, dataLen);
 		ERROR();
 	}
 }

@@ -184,28 +184,28 @@ quint8 Buffer::get8() {
 
 
 
-void Buffer::put48(quint32 offset, quint64 value) {
+void Buffer::set48(quint32 offset, quint64 value) {
 	if (capacity < (offset + SIZE_48)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_48);
 		ERROR();
 	}
 	put48_(data + offset, value);
 }
-void Buffer::put32(quint32 offset, quint32 value) {
+void Buffer::set32(quint32 offset, quint32 value) {
 	if (capacity < (offset + SIZE_32)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_32);
 		ERROR();
 	}
 	put32_(data + offset, value);
 }
-void Buffer::put16(quint32 offset, quint16 value) {
+void Buffer::set16(quint32 offset, quint16 value) {
 	if (capacity < (offset + SIZE_16)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_16);
 		ERROR();
 	}
 	put32_(data + offset, value);
 }
-void Buffer::put8(quint32 offset, quint8 value) {
+void Buffer::set8(quint32 offset, quint8 value) {
 	if (capacity < (offset + SIZE_8)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_8);
 		ERROR();

@@ -53,10 +53,10 @@ public:
 
 class EchoListener : public Socket::Listener {
 public:
-	EchoListener(Socket* socket_) : Socket::Listener("ECHO", socket_) {}
+	EchoListener() : Socket::Listener("ECHO") {}
 	virtual ~EchoListener() {}
 	//
-	void process(DatagramBuffer* datagarm);
+	void process(DatagramBuffer* request, DatagramBuffer* response);
 };
 
 #endif

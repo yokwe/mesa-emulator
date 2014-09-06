@@ -36,12 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("echo");
 
 #include "Echo.h"
 
-void EchoListener::process(DatagramBuffer* datagarm) {
-	EchoBuffer echoBuffer(datagarm);
-	//
-	DatagramBuffer response;
-	//
-	// Todo Build response
-	//
-	socket->transmit(&response);
+void EchoListener::process(DatagramBuffer* request_, DatagramBuffer* response_) {
+	logger.info("process");
+	EchoBuffer request(request_);
+	EchoBuffer response(response_);
 }

@@ -41,16 +41,10 @@ public:
 	// packet type of Xerox IDP
 	static const int ETH_P_IDP = 0x0600;
 
-	Network() {
-		name = 0;
-		fd = 0;
-		for(int i = 0; i < ETH_ALEN; i++) address[i] = 0;
-	}
+	Network() : name(0), fd(0), address(0) {}
 
-	void getAddress(quint16& pid1, quint16& pid2, quint16& pid3) {
-		pid1 = (address[0] << 8) | address[1];
-		pid2 = (address[2] << 8) | address[3];
-		pid3 = (address[4] << 8) | address[5];
+	quint64 getAddress() {
+		return address;
 	}
 
 	const char* getName() {
@@ -75,7 +69,7 @@ public:
 private:
 	const char* name;
 	int         fd;
-	quint8      address[ETH_ALEN];
+	quint64     address;
 };
 
 #endif

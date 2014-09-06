@@ -62,10 +62,12 @@ public:
     static const quint16 SOCKET_TELE_DEBUG = 48;
 	static const char* getSocketName(quint16 value);
 
-    static const quint16 MAX_WELLKNOWN_SOCKET = 3000;
+    static const quint16 WELLKNOWN_SOCKET_MAX = 3000;
 
 	static const quint32 NETWORK_UNKNONW = 0;
-	static const quint32 NETWORK_ALL     = ~0;
+	static const quint32 NETWORK_ALL     = 0xffffffff;
+	static const quint64 HOST_UNKNONW    = 0LL;
+	static const quint64 HOST_ALL        = 0xffffffffffffLL;
 };
 
 #endif

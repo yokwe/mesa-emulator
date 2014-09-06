@@ -47,6 +47,21 @@ static log4cpp::Category& logger = Logger::getLogger("network");
 
 #include <errno.h>
 
+static inline quint64 get48_(quint8* p) {
+	quint64 ret = p[0];
+	ret <<= 8;
+	ret |= p[1];
+	ret <<= 8;
+	ret |= p[2];
+	ret <<= 8;
+	ret |= p[3];
+	ret <<= 8;
+	ret |= p[4];
+	ret <<= 8;
+	ret |= p[5];
+	return ret;
+}
+
 void Network::attach(const char* name_) {
 	name = name_;
     logger.info("name     = %s", name);
@@ -78,8 +93,9 @@ void Network::attach(const char* name_) {
 				logger.fatal("%s  %d  this is not ethernet.  sa_family = %d", __FUNCTION__, __LINE__, ifr.ifr_hwaddr.sa_family);
 				ERROR();
 		    }
-		    for(int i = 0; i < ETH_ALEN; i++) address[i] = ifr.ifr_hwaddr.sa_data[i];
-		    logger.info("address  = %02X-%02X-%02X-%02X-%02X-%02X", address[0], address[1], address[2], address[3], address[4], address[5]);
+
+		    address = get48_((quint8*)(ifr.ifr_hwaddr.sa_data));
+		    logger.info("address  = %012llX", address);
 		}
 
 		// find interface index

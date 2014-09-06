@@ -76,7 +76,7 @@ static QMap<quint8, const char*>socketNameMap {
 
 static char getSocketNameBuffer[8];
 const char* Datagram::getSocketName(quint16 value) {
-	if (value <= MAX_WELLKNOWN_SOCKET) {
+	if (value <= WELLKNOWN_SOCKET_MAX) {
 		const char* ret = socketNameMap.value(value, 0);
 		if (ret == 0) {
 			logger.fatal("%s  value = %d", __FUNCTION__, value);

@@ -41,12 +41,11 @@ public:
 	class Listener {
 	public:
 		const char* name;
-		Socket*     socket;
 		//
-		Listener(const char* name_, Socket* socket_) : name(name_), socket(socket_) {}
+		Listener(const char* name_) : name(name_) {}
 		virtual ~Listener() {}
 
-		virtual void process(DatagramBuffer* datagarm) = 0;
+		virtual void process(DatagramBuffer* request, DatagramBuffer* response) = 0;
 	};
 
 	static void regist  (quint16 socket, Listener* listenr);

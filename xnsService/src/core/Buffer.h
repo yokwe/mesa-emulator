@@ -62,10 +62,10 @@ public:
 	quint16 get16(quint32 offset);
 	quint8  get8 (quint32 offset);
 
-	void put48(quint32 offset, quint64 value);
-	void put32(quint32 offset, quint32 value);
-	void put16(quint32 offset, quint16 value);
-	void put8 (quint32 offset, quint8  value);
+	void    set48(quint32 offset, quint64 value);
+	void    set32(quint32 offset, quint32 value);
+	void    set16(quint32 offset, quint16 value);
+	void    set8 (quint32 offset, quint8  value);
 
 	// cursor position
 	quint32 getPos() {
@@ -104,10 +104,10 @@ public:
 	quint32 get32();
 	quint16 get16();
 	quint8  get8 ();
-	void put48(quint64 value);
-	void put32(quint32 value);
-	void put16(quint16 value);
-	void put8 (quint8  value);
+	void    put48(quint64 value);
+	void    put32(quint32 value);
+	void    put16(quint16 value);
+	void    put8 (quint8  value);
 };
 
 class EthernetBuffer : public Buffer {
@@ -124,21 +124,21 @@ public:
 		return get48(OFFSET_DEST);
 	}
 	void setDest(quint64 value) {
-		put48(OFFSET_DEST, value);
+		set48(OFFSET_DEST, value);
 	}
 
 	quint64 getSource() {
 		return get48(OFFSET_SOURCE);
 	}
 	void setSource(quint64 value) {
-		put48(OFFSET_SOURCE, value);
+		set48(OFFSET_SOURCE, value);
 	}
 
 	quint16 getType() {
 		return get16(OFFSET_TYPE);
 	}
 	void setType(quint16 value) {
-		put16(OFFSET_TYPE, value);
+		set16(OFFSET_TYPE, value);
 	}
 };
 
@@ -169,70 +169,70 @@ public:
 		return get16(OFFSET_CHECKSUM);
 	}
 	void setChecksum(quint16 value) {
-		put16(OFFSET_CHECKSUM, value);
+		set16(OFFSET_CHECKSUM, value);
 	}
 
 	quint16 getLength() {
 		return get16(OFFSET_LENGTH);
 	}
 	void setLength(quint16 value) {
-		put16(OFFSET_LENGTH, value);
+		set16(OFFSET_LENGTH, value);
 	}
 
-	quint8  getHop() {
+	quint8 getHop() {
 		return get8(OFFSET_HOP);
 	}
 	void setHop(quint8 value) {
-		put8(OFFSET_HOP, value);
+		set8(OFFSET_HOP, value);
 	}
 
-	quint8  getType() {
+	quint8 getType() {
 		return get8(OFFSET_TYPE);
 	}
 	void setType(quint8 value) {
-		put8(OFFSET_TYPE, value);
+		set8(OFFSET_TYPE, value);
 	}
 
 	quint32 getDNetwork() {
 		return get32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK);
 	}
 	void setDNetwork(quint32 value) {
-		put32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK, value);
+		set32(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_NETWORK, value);
 	}
 
 	quint64 getDHost() {
 		return get48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST);
 	}
 	void setDHost(quint64 value) {
-		put48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST, value);
+		set48(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_HOST, value);
 	}
 
 	quint16 getDSocket() {
 		return get16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET);
 	}
 	void setDSocket(quint16 value) {
-		put16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET, value);
+		set16(OFFSET_NET_DEST + NetworkAddressBuffer::OFFSET_SOCKET, value);
 	}
 
 	quint32 getSNetwork() {
 		return get32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK);
 	}
 	void setSNetwork(quint32 value) {
-		put32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK, value);
+		set32(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_NETWORK, value);
 	}
 
 	quint64 getSHost() {
 		return get48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST);
 	}
 	void setSHost(quint64 value) {
-		put48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST, value);
+		set48(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_HOST, value);
 	}
 
 	quint16 getSSocket() {
 		return get16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET);
 	}
 	void setSSocket(quint16 value) {
-		put16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET, value);
+		set16(OFFSET_NET_SOURCE + NetworkAddressBuffer::OFFSET_SOCKET, value);
 	}
 };
 #endif
