@@ -38,12 +38,26 @@ static log4cpp::Category& logger = Logger::getLogger("socket");
 #include "Datagram.h"
 #include "Socket.h"
 
-QMap<quint16, Socket::Listener*> Socket::map;
-Network*                         Socket::network = 0;
-Socket::ListenerThread*          Socket::thread  = 0;
-QMutex                           Socket::mutex;
+class ListenerThread : public QThread {
+public:
+	ListenerThread() {
+		stop.storeRelease(0);
+	}
+	void run();
+	void stopThread() {
+		stop.storeRelease(1);
+	}
+private:
+	QAtomicInt stop;
+};
 
-void Socket::regist(quint16 socket, Socket::Listener* listener) {
+
+static QMap<quint16, Socket::Listener*> map;
+static Network*                         network = 0;
+static ListenerThread*                  thread  = 0;
+static QMutex                           mutex;
+
+void Socket::registerListener(quint16 socket, Socket::Listener* listener) {
 	QMutexLocker mutexLocker(&mutex);
 	Listener* p = map.value(socket, 0);
 	if (p) {
@@ -51,9 +65,9 @@ void Socket::regist(quint16 socket, Socket::Listener* listener) {
 		ERROR();
 	}
 	map.insert(socket, listener);
-	logger.info("%s Regist %4d(%s) %s", __FUNCTION__, socket, Datagram::getSocketName(socket), listener->name);
+	logger.info("%s Register %4d(%s) %s", __FUNCTION__, socket, Datagram::getSocketName(socket), listener->name);
 }
-void Socket::unregist(quint16 socket) {
+void Socket::unregisterListener(quint16 socket) {
 	QMutexLocker mutexLocker(&mutex);
 	Listener* p = map.value(socket, 0);
 	if (!p) {
@@ -63,14 +77,14 @@ void Socket::unregist(quint16 socket) {
 	map.remove(socket);
 }
 
-void Socket::start(Network* network_) {
+void Socket::startListen(Network* network_) {
 	if (thread) ERROR();
 	//
 	network = network_;
 	thread = new ListenerThread;
 	thread->start();
 }
-void Socket::stop() {
+void Socket::stopListen() {
 	if (!thread) ERROR();
 	//
 	thread->stopThread();
@@ -81,8 +95,12 @@ void Socket::stop() {
 	network = 0;
 	thread = 0;
 }
+int  Socket::isListening() {
+	return thread != 0;
+}
 
-void Socket::ListenerThread::run() {
+
+void ListenerThread::run() {
 	for(;;) {
 		if (stop.loadAcquire()) break;
 		int opErrno = 0;
@@ -96,16 +114,18 @@ void Socket::ListenerThread::run() {
 		DatagramBuffer response;
 
 		quint16 socket = request.getDSocket();
-		Listener* listener = map.value(socket, 0);
+		Socket::Listener* listener = map.value(socket, 0);
 		if (listener) {
 			// Call listener if exists.
 			QMutexLocker mutexLocker(&mutex);
 			listener->process(&request, &response);
 			if (response.getLimit()) {
-				int opErrno = 0;
-				int ret = network->transmit(response.getData(), response.getLimit(), opErrno);
+				quint8* data    = response.getData();
+				quint32 dataLen = response.getLimit();
+				int opErrno     = 0;
+				int ret = network->transmit(data, dataLen, opErrno);
 				if (opErrno) {
-					logger.fatal("send fail opErrno = %d  ret = %d  limit = %d", opErrno, ret, response.getLimit());
+					logger.fatal("send fail opErrno = %d  ret = %d  dataLen = %d", opErrno, ret, dataLen);
 					ERROR();
 				}
 			}
@@ -117,16 +137,5 @@ void Socket::ListenerThread::run() {
 				request.getSNetwork(), request.getSHost(), Datagram::getSocketName(request.getSSocket()));
 			logger.debug("----");
 		}
-	}
-}
-
-void Socket::transmit(DatagramBuffer* datagram) {
-	quint8* data = datagram->getData();
-	quint32 dataLen = datagram->getLimit();
-	int opErrno = 0;
-	int ret = network->transmit(data, dataLen, opErrno);
-	if (opErrno) {
-		logger.fatal("send fail opErrno = %d  ret = %d  dataLen = %d", opErrno, ret, dataLen);
-		ERROR();
 	}
 }

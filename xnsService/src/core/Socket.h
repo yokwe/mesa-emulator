@@ -48,33 +48,11 @@ public:
 		virtual void process(DatagramBuffer* request, DatagramBuffer* response) = 0;
 	};
 
-	static void regist  (quint16 socket, Listener* listenr);
-	static void unregist(quint16 socket);
+	static void registerListener  (quint16 socket, Listener* listenr);
+	static void unregisterListener(quint16 socket);
 
-	static void start(Network* network_);
-	static void stop();
-	static int  isRunning() {
-		return thread != 0;
-	}
-
-	void transmit(DatagramBuffer* datagram);
-private:
-	class ListenerThread : public QThread {
-	public:
-		ListenerThread() {
-			stop.storeRelease(0);
-		}
-		void run();
-		void stopThread() {
-			stop.storeRelease(1);
-		}
-	private:
-		QAtomicInt stop;
-	};
-
-	static QMap<quint16, Listener*> map;
-	static Network*                 network;
-	static ListenerThread*          thread;
-	static QMutex                   mutex;
+	static void startListen(Network* network_);
+	static void stopListen();
+	static int  isListening();
 };
 #endif

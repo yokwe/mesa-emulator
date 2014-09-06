@@ -46,13 +46,13 @@ int main(int /*argc*/, char** /*argv*/) {
 	logger.info("%012llX", address);
 
 	logger.info("START Socket");
-	Socket::start(&network);
-	for(int i = 0; i < 10; i++) {
-		if (!Socket::isRunning()) break;
+	Socket::startListen(&network);
+	for(int i = 0; i < 20; i++) {
+		if (!Socket::isListening()) break;
 		QThread::sleep(1);
 	}
 	logger.info("STOP Socket");
-	Socket::stop();
+	Socket::stopListen();
 
 	network.detach();
 
