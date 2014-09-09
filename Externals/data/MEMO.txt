@@ -1,0 +1,32 @@
+This project has link to external files.
+To setup symbolic link, execute setup.sh script.
+Because widows version of Eclipse cannot handle unix symbolic link
+
+
+Download logback and slf4j binary from URL below.
+  http://logback.qos.ch/dist/logback-1.0.13.zip
+  http://www.slf4j.org/dist/slf4j-1.7.5.zip
+Extract jar and copy relevant jar files to jar directory.
+----
+(cd tmp; wget http://logback.qos.ch/dist/logback-1.0.13.zip)
+(cd tmp; unzip logback-1.0.13.zip)
+(cd tmp/logback-1.0.13; cp -p logback-classic-1.0.13*.jar logback-core-1.0.13*.jar ../../jar)
+
+(cd tmp; wget http://www.slf4j.org/dist/slf4j-1.7.5.zip)
+(cd tmp; unzip slf4j-1.7.5.zip)
+(cd tmp/slf4j-1.7.5; cp -p slf4j-api-1.7.5*.jar ../../jar/)
+----
+
+
+Download junit from URL below.
+  http://search.maven.org/remotecontent?filepath=junit/junit/4.11/junit-4.11.jar
+  http://search.maven.org/remotecontent?filepath=junit/junit/4.11/junit-4.11-sources.jar
+  http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+  http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar
+----
+(cd tmp; wget http://search.maven.org/remotecontent?filepath=junit/junit/4.11/junit-4.11.jar -O junit-4.11.jar)
+(cd tmp; wget http://search.maven.org/remotecontent?filepath=junit/junit/4.11/junit-4.11-sources.jar -O junit-4.11-sources.jar)
+(cd tmp; wget http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar -O hamcrest-core-1.3.jar)
+(cd tmp; wget http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar -O hamcrest-core-1.3-sources.jar)
+(cd tmp; cp -p junit-4.11.jar junit-4.11-sources.jar hamcrest-core-1.3.jar hamcrest-core-1.3-sources.jar ../jar)
+----
