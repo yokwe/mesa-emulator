@@ -25,8 +25,8 @@ namespace Courier {
             ErrorNumber number;
             quint16 parameter;
         };
-        static const quint16 HEADER_LENGTH = 4U;
-        static const quint16 MIN_DATA_LENGTH = 42U;
+        const quint16 HEADER_LENGTH = 4U;
+        const quint16 MIN_DATA_LENGTH = 42U;
     }
     
     const char* getName(Error::ErrorNumber value);

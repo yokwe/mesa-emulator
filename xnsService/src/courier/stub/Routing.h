@@ -19,8 +19,8 @@ namespace Courier {
             Operation operation;
         };
         // EXPAND Routing::Hop as CARDINAL
-        static const quint16 MAX_HOP = 16U;
-        static const quint16 TUPLE_LENGTH = 6U;
+        const quint16 MAX_HOP = 16U;
+        const quint16 TUPLE_LENGTH = 6U;
     }
     
     const char* getName(Routing::Operation value);

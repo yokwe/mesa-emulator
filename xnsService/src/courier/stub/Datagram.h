@@ -49,29 +49,29 @@ namespace Courier {
             TELE_DEBUG = 48,
         };
         // EXPAND Datagram::Network as UNSPECIFIED2
-        static const quint32 NETWORK_UNKNOWN = 0x0;
+        const quint32 NETWORK_UNKNOWN = 0x0;
         // EXPAND Datagram::Network as UNSPECIFIED2
-        static const quint32 NETWORK_ALL = 0xFFFFFFFF;
+        const quint32 NETWORK_ALL = 0xFFFFFFFF;
         // EXPAND Datagram::Host as UNSPECIFIED3
-        static const quint64 HOST_ALL = 0xFFFFFFFFFFFFLL;
-        static const quint16 HEADER_LENGTH = 30U;
-        static const quint16 PACKET_TYPE_ERROR = 3U;
-        static const quint16 CHECKSUM_NONE = 0xFFFF;
-        static const quint16 MASK_HOP_COUNT = 0xFF00;
-        static const quint16 MASK_PACKET_TYPE = 0xFF;
-        static const quint16 MAX_HOP_COUNT = 16U;
-        static const quint16 MAX_PACKET_LIFETIME = 60U;
-        static const quint16 MAX_WELL_KNOWN_SOCKET = 3000U;
-        static const quint16 SOCKET_ROUTIG = 1U;
-        static const quint16 SOCKET_ECHO = 2U;
-        static const quint16 SOCKET_ERROR = 3U;
-        static const quint16 SOCKET_COURIER = 5U;
-        static const quint16 SOCKET_TIME = 8U;
-        static const quint16 SOCKET_BOOT = 10U;
-        static const quint16 SOCKET_CLEARINGHOUSE = 20U;
-        static const quint16 SOCKET_AUTH = 21U;
-        static const quint16 SOCKET_BINDING = 28U;
-        static const quint16 SOCKET_GERM = 35U;
+        const quint48 HOST_ALL = 0xFFFFFFFFFFFFLL;
+        const quint16 HEADER_LENGTH = 30U;
+        const quint16 PACKET_TYPE_ERROR = 3U;
+        const quint16 CHECKSUM_NONE = 0xFFFF;
+        const quint16 MASK_HOP_COUNT = 0xFF00;
+        const quint16 MASK_PACKET_TYPE = 0xFF;
+        const quint16 MAX_HOP_COUNT = 16U;
+        const quint16 MAX_PACKET_LIFETIME = 60U;
+        const quint16 MAX_WELL_KNOWN_SOCKET = 3000U;
+        const quint16 SOCKET_ROUTIG = 1U;
+        const quint16 SOCKET_ECHO = 2U;
+        const quint16 SOCKET_ERROR = 3U;
+        const quint16 SOCKET_COURIER = 5U;
+        const quint16 SOCKET_TIME = 8U;
+        const quint16 SOCKET_BOOT = 10U;
+        const quint16 SOCKET_CLEARINGHOUSE = 20U;
+        const quint16 SOCKET_AUTH = 21U;
+        const quint16 SOCKET_BINDING = 28U;
+        const quint16 SOCKET_GERM = 35U;
     }
     
     const char* getName(Datagram::PacketType value);

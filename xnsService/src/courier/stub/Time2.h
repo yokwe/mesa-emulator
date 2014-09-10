@@ -5,8 +5,8 @@
 
 namespace Courier {
     namespace Time2 {
-        static const quint32 PROGRAM_NUMBER = 15;
-        static const quint32 VERSION_NUMBER = 2;
+        const quint32 PROGRAM_NUMBER = 15;
+        const quint32 VERSION_NUMBER = 2;
         
         // IGNORE predefined type.  Time: TYPE = LONG_CARDINAL
         enum class PacketType : quint16 {
@@ -44,9 +44,9 @@ namespace Courier {
             PacketData data;
         };
         // EXPAND Time2::Time as LONG_CARDINAL
-        static const quint32 EARLIEST_TIME = 2114294400U;
+        const quint32 EARLIEST_TIME = 2114294400U;
         // EXPAND Time2::Version as CARDINAL
-        static const quint16 VERSION = 2U;
+        const quint16 VERSION = 2U;
     }
     
     const char* getName(Time2::PacketType value);

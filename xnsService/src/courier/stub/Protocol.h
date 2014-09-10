@@ -104,8 +104,8 @@ namespace Courier {
                 } PROTOCOL3;
             };
         };
-        static const ProtocolType PV_LOW = ProtocolType::PROTOCOL2;
-        static const ProtocolType PV_HIGH = ProtocolType::PROTOCOL3;
+        const ProtocolType PV_LOW = ProtocolType::PROTOCOL2;
+        const ProtocolType PV_HIGH = ProtocolType::PROTOCOL3;
     }
     
     const char* getName(Protocol::ProtocolType value);
