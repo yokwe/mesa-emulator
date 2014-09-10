@@ -390,13 +390,13 @@ public class Compiler {
 				ConstantNumber constNum = (ConstantNumber)constant;
 				long value = constNum.value;
 				if ((value & 0xff) == 0xff || (value & 0xff) == 0) {
-					out.indent().format("static const quint64 %s = 0x%XLL;", constName, value).println();
+					out.indent().format("static const quint48 %s = 0x%XLL;", constName, value).println();
 				} else {
-					out.indent().format("static const quint64 %s = %dULL;", constName, value).println();
+					out.indent().format("static const quint48 %s = %dULL;", constName, value).println();
 				}
 			} else if (constant.kind == Constant.Kind.REFERENCE) {
 				ConstantReference constRef = (ConstantReference)constant;
-				out.indent().format("static const quint64 %s = %s;", constName, program.getLocalRefName(constRef)).println();
+				out.indent().format("static const quint48 %s = %s;", constName, program.getLocalRefName(constRef)).println();
 			} else {
 				throw new CompilerException(String.format("Unexpected type of constant.  constant = %s", constant));
 			}
