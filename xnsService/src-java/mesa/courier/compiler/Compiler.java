@@ -72,8 +72,8 @@ public class Compiler {
 			outh.indent().format("namespace %s {", program.info.getProgramVersion()).println();
 			outh.nest();
 			if (program.info.version != 0) {
-				outh.indent().format("static const quint32 PROGRAM_NUMBER = %d;", program.info.program).println();
-				outh.indent().format("static const quint32 VERSION_NUMBER = %d;", program.info.version).println();
+				outh.indent().format("const quint32 PROGRAM_NUMBER = %d;", program.info.program).println();
+				outh.indent().format("const quint32 VERSION_NUMBER = %d;", program.info.version).println();
 				outh.indent().println();
 			}
 			
@@ -336,7 +336,7 @@ public class Compiler {
 		if (constant.kind == Constant.Kind.REFERENCE) {
 			ConstantReference constRef = (ConstantReference)constant;
 			String enumName = program.getLocalRefName(refType);
-			out.indent().format("static const %s %s = %s::%s;", enumName, constName, enumName, program.getLocalRefName(constRef)).println();
+			out.indent().format("const %s %s = %s::%s;", enumName, constName, enumName, program.getLocalRefName(constRef)).println();
 		} else {
 			throw new CompilerException(String.format("Unexpected type of constant.  constant = %s", constant));
 		}
@@ -349,7 +349,7 @@ public class Compiler {
 		case BOOLEAN:
 			if (constant.kind == Constant.Kind.BOOLEAN) {
 				ConstantBoolean constBool = (ConstantBoolean)constant;
-				out.indent().format("static const quint16 %s = %s;", constName, constBool.value).println();
+				out.indent().format("const quint16 %s = %s;", constName, constBool.value).println();
 			} else {
 				throw new CompilerException(String.format("Unexpected type of constant.  constant = %s", constant));
 			}
@@ -360,9 +360,9 @@ public class Compiler {
 				ConstantNumber constNum = (ConstantNumber)constant;
 				long value = constNum.value;
 				if ((value & 0xff) == 0xff || (value & 0xff) == 0) {
-					out.indent().format("static const quint16 %s = 0x%X;", constName, value).println();
+					out.indent().format("const quint16 %s = 0x%X;", constName, value).println();
 				} else {
-					out.indent().format("static const quint16 %s = %dU;", constName, value).println();
+					out.indent().format("const quint16 %s = %dU;", constName, value).println();
 				}
 			} else {
 				throw new CompilerException(String.format("Unexpected type of constant.  constant = %s", constant));
@@ -374,13 +374,13 @@ public class Compiler {
 				ConstantNumber constNum = (ConstantNumber)constant;
 				long value = constNum.value;
 				if ((value & 0xff) == 0xff || (value & 0xff) == 0) {
-					out.indent().format("static const quint32 %s = 0x%X;", constName, value).println();
+					out.indent().format("const quint32 %s = 0x%X;", constName, value).println();
 				} else {
-					out.indent().format("static const quint32 %s = %dU;", constName, value).println();
+					out.indent().format("const quint32 %s = %dU;", constName, value).println();
 				}
 			} else if (constant.kind == Constant.Kind.REFERENCE) {
 				ConstantReference constRef = (ConstantReference)constant;
-				out.indent().format("static const quint32 %s = %s;", constName, program.getLocalRefName(constRef)).println();
+				out.indent().format("const quint32 %s = %s;", constName, program.getLocalRefName(constRef)).println();
 			} else {
 				throw new CompilerException(String.format("Unexpected type of constant.  constant = %s", constant));
 			}
@@ -390,13 +390,13 @@ public class Compiler {
 				ConstantNumber constNum = (ConstantNumber)constant;
 				long value = constNum.value;
 				if ((value & 0xff) == 0xff || (value & 0xff) == 0) {
-					out.indent().format("static const quint48 %s = 0x%XLL;", constName, value).println();
+					out.indent().format("const quint48 %s = 0x%XLL;", constName, value).println();
 				} else {
-					out.indent().format("static const quint48 %s = %dULL;", constName, value).println();
+					out.indent().format("const quint48 %s = %dULL;", constName, value).println();
 				}
 			} else if (constant.kind == Constant.Kind.REFERENCE) {
 				ConstantReference constRef = (ConstantReference)constant;
-				out.indent().format("static const quint48 %s = %s;", constName, program.getLocalRefName(constRef)).println();
+				out.indent().format("const quint48 %s = %s;", constName, program.getLocalRefName(constRef)).println();
 			} else {
 				throw new CompilerException(String.format("Unexpected type of constant.  constant = %s", constant));
 			}
