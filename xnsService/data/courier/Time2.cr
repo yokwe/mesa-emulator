@@ -26,10 +26,6 @@ ToleranceType:   TYPE = {unknown(0), inMilliSeconds(1)};
 Version: TYPE = CARDINAL;
 version: Version = 2;
 
-Packet: TYPE = RECORD [
-	version: Version, -- must be 2
-	data:    PacketData];
-
 PacketData: TYPE = CHOICE PacketType OF {
 		request  => RECORD [],
 		response => RECORD [
@@ -41,6 +37,10 @@ PacketData: TYPE = CHOICE PacketType OF {
 			endOfDST:        CARDINAL,
 			toleranceType:   ToleranceType,
 			tolerance:       LONG CARDINAL]};
+
+Packet: TYPE = RECORD [
+	version: Version, -- must be 2
+	data:    PacketData];
 
 END.
 
