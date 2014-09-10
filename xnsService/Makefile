@@ -16,9 +16,10 @@ export LOG4CPP_CONFIG
 
 
 all:
-	(cd src/core; make all)
-	(cd src/util; make all)
-	(cd src/app;  make all)
+	(cd src/courier; make all)
+	(cd src/core;    make all)
+	(cd src/util;    make all)
+	(cd src/app;     make all)
 
 qt5-default:
 	sudo apt-get install qt5-default
@@ -29,6 +30,7 @@ clean:
 	mkdir  tmp/build
 	mkdir  tmp/build/app
 	mkdir  tmp/build/core
+	mkdir  tmp/build/courier
 	mkdir  tmp/build/util
 
 distclean: clean
@@ -47,9 +49,10 @@ run-app: all
 # BUILD FOR NATIVE
 #
 qmake:
-	(cd src/app;  qmake)
-	(cd src/core; qmake)
-	(cd src/util; qmake)
+	(cd src/app;     qmake)
+	(cd src/core;    qmake)
+	(cd src/courier; qmake)
+	(cd src/util;    qmake)
 	qmake --version
 
 
