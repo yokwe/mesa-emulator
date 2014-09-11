@@ -24,12 +24,12 @@ contains(QT_MAJOR_VERSION, 4) {
         QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
 }
 
-LIBS += ../../tmp/build/core/libcore.a
+LIBS += ../../tmp/build/courier/libcourier.a
 LIBS += ../../tmp/build/util/libutil.a
 
 LIBS += -llog4cpp
 
-POST_TARGETDEPS += ../../tmp/build/core/libcore.a
+POST_TARGETDEPS += ../../tmp/build/courier/libcourier.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input
