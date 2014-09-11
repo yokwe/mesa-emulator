@@ -4,7 +4,7 @@ static log4cpp::Category& logger = Logger::getLogger("courier");
 #include "../util/Debug.h"
 
 #include "Courier.h"
-#include "stub/Datagram.h"
+#include "stub/StubDatagram.h"
 
 #include <stdio.h>
 
