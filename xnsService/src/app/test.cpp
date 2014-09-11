@@ -33,7 +33,9 @@ static log4cpp::Category& logger = Logger::getLogger("test");
 #include "../util/Debug.h"
 
 #include "../courier/Network.h"
-#include "../courier/Socket.h"
+#include "../courier/SocketManager.h"
+#include "../courier/stub/StubDatagram.h"
+#include "../courier/socket/SocketRouting.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -45,14 +47,19 @@ int main(int /*argc*/, char** /*argv*/) {
 	quint64 address = network.getAddress();
 	logger.info("%012llX", address);
 
+	SocketManager socketManager(network);
+
+	SocketRouting socketRouting;
+	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::ROUTING, &socketRouting);
+
 	logger.info("START Socket");
-	Socket::startListen(&network);
+	socketManager.start();
 	for(int i = 0; i < 20; i++) {
-		if (!Socket::isListening()) break;
+		if (!socketManager.isRunning()) break;
 		QThread::sleep(1);
 	}
 	logger.info("STOP Socket");
-	Socket::stopListen();
+	socketManager.stop();
 
 	network.detach();
 
