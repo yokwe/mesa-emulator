@@ -8,14 +8,17 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Courier.h   ByteBuffer.h   Network.h   Socket.h
-SOURCES += Courier.cpp ByteBuffer.cpp Network.cpp Socket.cpp
+HEADERS += ByteBuffer.h   Courier.h   Network.h   SocketManager.h
+SOURCES += ByteBuffer.cpp Courier.cpp Network.cpp SocketManager.cpp
 
-HEADERS += stub/Datagram.h   stub/Echo.h   stub/Error.h   stub/Ethernet.h   stub/Routing.h
-SOURCES += stub/Datagram.cpp stub/Echo.cpp stub/Error.cpp stub/Ethernet.cpp stub/Routing.cpp
+HEADERS += socket/SocketRouting.h
+SOURCES += socket/SocketRouting.cpp
 
-HEADERS += stub/ExpeditedCourier.h   stub/PacketExchange.h   stub/Protocol.h   stub/Time2.h
-SOURCES += stub/ExpeditedCourier.cpp stub/PacketExchange.cpp stub/Protocol.cpp stub/Time2.cpp
+HEADERS += stub/StubDatagram.h   stub/StubEcho.h   stub/StubError.h   stub/StubEthernet.h   stub/StubRouting.h
+SOURCES += stub/StubDatagram.cpp stub/StubEcho.cpp stub/StubError.cpp stub/StubEthernet.cpp stub/StubRouting.cpp
+
+HEADERS += stub/StubExpeditedCourier.h   stub/StubPacketExchange.h   stub/StubProtocol.h   stub/StubTime2.h
+SOURCES += stub/StubExpeditedCourier.cpp stub/StubPacketExchange.cpp stub/StubProtocol.cpp stub/StubTime2.cpp
 
 ###############################################
 
