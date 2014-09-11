@@ -17,7 +17,6 @@ export LOG4CPP_CONFIG
 
 all:
 	(cd src/courier; make all)
-	(cd src/core;    make all)
 	(cd src/util;    make all)
 	(cd src/app;     make all)
 
@@ -29,7 +28,6 @@ clean:
 	rm -rf tmp/build
 	mkdir  tmp/build
 	mkdir  tmp/build/app
-	mkdir  tmp/build/core
 	mkdir  tmp/build/courier
 	mkdir  tmp/build/util
 
@@ -50,7 +48,6 @@ run-app: all
 #
 qmake:
 	(cd src/app;     qmake)
-	(cd src/core;    qmake)
 	(cd src/courier; qmake)
 	(cd src/util;    qmake)
 	qmake --version
