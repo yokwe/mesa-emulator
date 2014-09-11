@@ -163,6 +163,9 @@ public class Compiler {
 			}
 
 			// output include of header
+			outc.indent().format("#include \"../../util/Util.h\"").println();
+			outc.indent().format("static log4cpp::Category& logger = Logger::getLogger(\"courier%s\");", program.info.getProgramVersion()).println();
+			outc.indent().println();
 			outc.indent().format("#include \"%s.h\"", program.info.getProgramVersion()).println();
 			
 			// close main namespace
@@ -178,8 +181,8 @@ public class Compiler {
 				case ENUM:
 					outh.indent().println();
 					outh.indent().format("const char* getName(%s::%s value);", program.info.getProgramVersion(), name).println();
-					outh.indent().format("void serialize  (ByteBuffer* buffer, const %s::%s& value);", program.info.getProgramVersion(), name).println();
-					outh.indent().format("void deserialize(ByteBuffer* buffer, %s::%s& value);", program.info.getProgramVersion(), name).println();
+					outh.indent().format("void serialize  (ByteBuffer& buffer, const %s::%s& value);", program.info.getProgramVersion(), name).println();
+					outh.indent().format("void deserialize(ByteBuffer& buffer, %s::%s& value);", program.info.getProgramVersion(), name).println();
 					
 					outc.indent().println();
 					outc.indent().format("static QMap<Courier::%s::%s, const char*>map%s = {", program.info.getProgramVersion(), name, name).println();
@@ -195,14 +198,14 @@ public class Compiler {
 					outc.indent().format("return map%s.value(value, 0);", name).println();
 					outc.unnest();
 					outc.indent().println("}");
-					outc.indent().format("void serialize  (ByteBuffer* buffer, const Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void serialize  (ByteBuffer& buffer, const Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
-					outc.indent().format("buffer->put16((quint16)value);").println();
+					outc.indent().format("buffer.put16((quint16)value);").println();
 					outc.unnest();
 					outc.indent().println("}");
-					outc.indent().format("void deserialize(ByteBuffer* buffer, Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void deserialize(ByteBuffer& buffer, Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
-					outc.indent().format("value = (Courier::%s::%s)buffer->get16();", program.info.getProgramVersion(), name).println();
+					outc.indent().format("value = (Courier::%s::%s)buffer.get16();", program.info.getProgramVersion(), name).println();
 					outc.unnest();
 					outc.indent().println("}");
 					
@@ -219,12 +222,17 @@ public class Compiler {
 				switch (type.kind) {
 				case CHOICE:
 					outh.indent().println();
-					outh.indent().format("void serialize  (ByteBuffer* buffer, const %s::%s& value);", program.info.getProgramVersion(), name).println();
-					outh.indent().format("void deserialize(ByteBuffer* buffer, %s::%s& value);", program.info.getProgramVersion(), name).println();
+					outh.indent().format("void serialize  (ByteBuffer& buffer, const %s::%s& value);", program.info.getProgramVersion(), name).println();
+					outh.indent().format("void deserialize(ByteBuffer& buffer, %s::%s& value);", program.info.getProgramVersion(), name).println();
 
 					outc.indent().println();
-					outc.indent().format("void Courier::serialize  (ByteBuffer* buffer, const %s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void Courier::serialize  (ByteBuffer& buffer, const %s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
+					
+					outc.indent().println("if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()");
+					outc.indent().println("buffer.setPos(value.base);");
+					outc.indent().println();
+					
 					outc.indent().format("Courier::serialize(buffer, value.tag);").println();
 					outc.indent().format("switch(value.tag) {").println();
 					
@@ -259,7 +267,7 @@ public class Compiler {
 					outc.indent().println("}");
 					
 					outc.indent().println();
-					outc.indent().format("void Courier::deserialize(ByteBuffer* buffer, %s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void Courier::deserialize(ByteBuffer& buffer, %s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
 					outc.indent().format("Courier::deserialize(buffer, value.tag);").println();
 					outc.indent().format("switch(value.tag) {").println();
@@ -295,12 +303,17 @@ public class Compiler {
 					break;
 				case RECORD:
 					outh.indent().println();
-					outh.indent().format("void serialize  (ByteBuffer* buffer, const %s::%s& value);", program.info.getProgramVersion(), name).println();
-					outh.indent().format("void deserialize(ByteBuffer* buffer, %s::%s& value);", program.info.getProgramVersion(), name).println();
+					outh.indent().format("void serialize  (ByteBuffer& buffer, const %s::%s& value);", program.info.getProgramVersion(), name).println();
+					outh.indent().format("void deserialize(ByteBuffer& buffer, %s::%s& value);", program.info.getProgramVersion(), name).println();
 					
 					outc.indent().println();
-					outc.indent().format("void Courier::serialize  (ByteBuffer* buffer, const %s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void Courier::serialize  (ByteBuffer& buffer, const %s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
+					
+					outc.indent().println("if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()");
+					outc.indent().println("buffer.setPos(value.base);");
+					outc.indent().println();
+
 					for(Type.Field field: ((TypeRecord)type).fields) {
 						String fieldName = field.name;
 						outc.indent().format("Courier::serialize(buffer, value.%s);", fieldName).println();
@@ -309,8 +322,19 @@ public class Compiler {
 					outc.indent().println("}");
 					
 					outc.indent().println();
-					outc.indent().format("void Courier::deserialize(ByteBuffer* buffer, %s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void Courier::deserialize(ByteBuffer& buffer, %s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
+					
+					outc.indent().println("if (value.base != CourierData::UNITILIAZED_BASE) {");
+					outc.nest();
+					outc.indent().println("logger.fatal(\"value.base = %d\", value.base);");
+					outc.indent().println("COURIER_ERROR()");
+					outc.unnest();
+					outc.indent().println("}");
+					
+					outc.indent().println("value.base = buffer.getPos();");
+					outc.indent().println();
+
 					for(Type.Field field: ((TypeRecord)type).fields) {
 						String fieldName = field.name;
 						outc.indent().format("Courier::deserialize(buffer, value.%s);", fieldName).println();
@@ -421,7 +445,7 @@ public class Compiler {
 	}
 	
 	private void genRecordDef(IndentPrintWriter out, String name, TypeRecord type) {
-		out.indent().format("struct %s {", name).println();
+		out.indent().format("struct %s : public CourierData {", name).println();
 		out.nest();
 		for(Type.Field field: type.fields) {
 			String fieldName = field.name;
@@ -433,7 +457,7 @@ public class Compiler {
 		out.indent().println("};");
 	}
 	private void genChoiceDef(IndentPrintWriter out, String name, TypeChoice type) {
-		out.indent().format("struct %s {", name).println();
+		out.indent().format("struct %s : public CourierData {", name).println();
 		out.nest();
 		
 		if (type instanceof TypeChoice.Anon) {
