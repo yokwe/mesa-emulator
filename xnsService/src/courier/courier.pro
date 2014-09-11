@@ -8,10 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Courier.h
-
-HEADERS += ByteBuffer.h
-SOURCES += ByteBuffer.cpp
+HEADERS += Courier.h   ByteBuffer.h   Network.h   Socket.h
+SOURCES += Courier.cpp ByteBuffer.cpp Network.cpp Socket.cpp
 
 HEADERS += stub/Datagram.h   stub/Echo.h   stub/Error.h   stub/Ethernet.h   stub/Routing.h
 SOURCES += stub/Datagram.cpp stub/Echo.cpp stub/Error.cpp stub/Ethernet.cpp stub/Routing.cpp

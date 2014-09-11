@@ -55,6 +55,7 @@ protected:
 public:
 	ByteBuffer(quint8* data_, quint32 limit_);
 	ByteBuffer(ByteBuffer* that) : data(that->data), limit(that->limit), capacity(that->capacity), pos(that->pos) {}
+	ByteBuffer() : data(rawData), limit(0), capacity(MAX_SIZE), pos(0) {}
 
 	// Absolute get and put
 	quint64 get48(quint32 offset);
@@ -80,6 +81,10 @@ public:
 	}
 	// set buffer limit. newValue must be [0..capacity)
 	void setLimit(quint32 newValue);
+
+	quint32 getCapacity() {
+		return capacity;
+	}
 
 	// clear buffer. pos = limit = 0
 	void clear() {
