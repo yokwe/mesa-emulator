@@ -8,8 +8,6 @@ static log4cpp::Category& logger = Logger::getLogger("courier");
 
 #include <stdio.h>
 
-static char getSocketNameBuffer[6];
-
 void Courier::serialize  (ByteBuffer& buffer, const quint48& value) {
 	buffer.put48(value);
 }
@@ -38,6 +36,7 @@ void Courier::deserialize(ByteBuffer& buffer, quint8& value) {
 	value = buffer.get8();
 }
 
+static char getSocketNameBuffer[6];
 const char* Courier::getSocketName(quint16 value) {
 	const char* ret = Courier::getName((Courier::Datagram::WellKnownSocket)value);
 	if (ret) return ret;
