@@ -1,8 +1,8 @@
-#ifndef COURIER_Datagram
-#define COURIER_Datagram
+#ifndef STUB_Datagram
+#define STUB_Datagram
 
 #include "../Courier.h"
-#include "Ethernet.h"
+#include "StubEthernet.h"
 
 namespace Courier {
     namespace Datagram {

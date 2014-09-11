@@ -1,8 +1,8 @@
-#ifndef COURIER_Routing
-#define COURIER_Routing
+#ifndef STUB_Routing
+#define STUB_Routing
 
 #include "../Courier.h"
-#include "Datagram.h"
+#include "StubDatagram.h"
 
 namespace Courier {
     namespace Routing {

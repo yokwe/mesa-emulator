@@ -1,5 +1,5 @@
-#ifndef COURIER_Ethernet
-#define COURIER_Ethernet
+#ifndef STUB_Ethernet
+#define STUB_Ethernet
 
 #include "../Courier.h"
 

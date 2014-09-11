@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierError");
+static log4cpp::Category& logger = Logger::getLogger("StubError");
 
-#include "Error.h"
+#include "StubError.h"
 
 static QMap<Courier::Error::ErrorNumber, const char*>mapErrorNumber = {
     {Courier::Error::ErrorNumber::UNSPECIFIED, "UNSPECIFIED"},
@@ -22,10 +22,10 @@ static QMap<Courier::Error::ErrorNumber, const char*>mapErrorNumber = {
 const char* Courier::getName(Error::ErrorNumber value) {
     return mapErrorNumber.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Error::ErrorNumber& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Error::ErrorNumber& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Error::ErrorNumber& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Error::ErrorNumber& value) {
     value = (Courier::Error::ErrorNumber)buffer.get16();
 }
 

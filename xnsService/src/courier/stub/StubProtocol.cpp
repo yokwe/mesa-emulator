@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierProtocol");
+static log4cpp::Category& logger = Logger::getLogger("StubProtocol");
 
-#include "Protocol.h"
+#include "StubProtocol.h"
 
 static QMap<Courier::Protocol::ProtocolType, const char*>mapProtocolType = {
     {Courier::Protocol::ProtocolType::PROTOCOL0, "PROTOCOL0"},
@@ -12,10 +12,10 @@ static QMap<Courier::Protocol::ProtocolType, const char*>mapProtocolType = {
 const char* Courier::getName(Protocol::ProtocolType value) {
     return mapProtocolType.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Protocol::ProtocolType& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Protocol::ProtocolType& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Protocol::ProtocolType& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Protocol::ProtocolType& value) {
     value = (Courier::Protocol::ProtocolType)buffer.get16();
 }
 
@@ -28,10 +28,10 @@ static QMap<Courier::Protocol::MessageType, const char*>mapMessageType = {
 const char* Courier::getName(Protocol::MessageType value) {
     return mapMessageType.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Protocol::MessageType& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Protocol::MessageType& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Protocol::MessageType& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Protocol::MessageType& value) {
     value = (Courier::Protocol::MessageType)buffer.get16();
 }
 
@@ -44,10 +44,10 @@ static QMap<Courier::Protocol::RejectCode, const char*>mapRejectCode = {
 const char* Courier::getName(Protocol::RejectCode value) {
     return mapRejectCode.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Protocol::RejectCode& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Protocol::RejectCode& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Protocol::RejectCode& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Protocol::RejectCode& value) {
     value = (Courier::Protocol::RejectCode)buffer.get16();
 }
 

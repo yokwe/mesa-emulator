@@ -1,8 +1,8 @@
-#ifndef COURIER_ExpeditedCourier
-#define COURIER_ExpeditedCourier
+#ifndef STUB_ExpeditedCourier
+#define STUB_ExpeditedCourier
 
 #include "../Courier.h"
-#include "Protocol.h"
+#include "StubProtocol.h"
 
 namespace Courier {
     namespace ExpeditedCourier {

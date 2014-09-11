@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierRouting");
+static log4cpp::Category& logger = Logger::getLogger("StubRouting");
 
-#include "Routing.h"
+#include "StubRouting.h"
 
 static QMap<Courier::Routing::Operation, const char*>mapOperation = {
     {Courier::Routing::Operation::REQUEST, "REQUEST"},
@@ -10,10 +10,10 @@ static QMap<Courier::Routing::Operation, const char*>mapOperation = {
 const char* Courier::getName(Routing::Operation value) {
     return mapOperation.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Routing::Operation& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Routing::Operation& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Routing::Operation& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Routing::Operation& value) {
     value = (Courier::Routing::Operation)buffer.get16();
 }
 

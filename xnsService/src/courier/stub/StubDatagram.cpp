@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierDatagram");
+static log4cpp::Category& logger = Logger::getLogger("StubDatagram");
 
-#include "Datagram.h"
+#include "StubDatagram.h"
 
 static QMap<Courier::Datagram::PacketType, const char*>mapPacketType = {
     {Courier::Datagram::PacketType::ROUTING, "ROUTING"},
@@ -14,10 +14,10 @@ static QMap<Courier::Datagram::PacketType, const char*>mapPacketType = {
 const char* Courier::getName(Datagram::PacketType value) {
     return mapPacketType.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Datagram::PacketType& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Datagram::PacketType& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Datagram::PacketType& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Datagram::PacketType& value) {
     value = (Courier::Datagram::PacketType)buffer.get16();
 }
 
@@ -43,10 +43,10 @@ static QMap<Courier::Datagram::WellKnownSocket, const char*>mapWellKnownSocket =
 const char* Courier::getName(Datagram::WellKnownSocket value) {
     return mapWellKnownSocket.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Datagram::WellKnownSocket& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Datagram::WellKnownSocket& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Datagram::WellKnownSocket& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Datagram::WellKnownSocket& value) {
     value = (Courier::Datagram::WellKnownSocket)buffer.get16();
 }
 

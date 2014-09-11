@@ -1,5 +1,5 @@
-#ifndef COURIER_Error
-#define COURIER_Error
+#ifndef STUB_Error
+#define STUB_Error
 
 #include "../Courier.h"
 

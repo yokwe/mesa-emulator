@@ -1,5 +1,5 @@
-#ifndef COURIER_PacketExchange
-#define COURIER_PacketExchange
+#ifndef STUB_PacketExchange
+#define STUB_PacketExchange
 
 #include "../Courier.h"
 

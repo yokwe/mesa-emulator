@@ -1,5 +1,5 @@
-#ifndef COURIER_Echo
-#define COURIER_Echo
+#ifndef STUB_Echo
+#define STUB_Echo
 
 #include "../Courier.h"
 

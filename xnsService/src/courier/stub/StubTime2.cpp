@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierTime2");
+static log4cpp::Category& logger = Logger::getLogger("StubTime2");
 
-#include "Time2.h"
+#include "StubTime2.h"
 
 static QMap<Courier::Time2::PacketType, const char*>mapPacketType = {
     {Courier::Time2::PacketType::REQUEST, "REQUEST"},
@@ -10,10 +10,10 @@ static QMap<Courier::Time2::PacketType, const char*>mapPacketType = {
 const char* Courier::getName(Time2::PacketType value) {
     return mapPacketType.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Time2::PacketType& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Time2::PacketType& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Time2::PacketType& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Time2::PacketType& value) {
     value = (Courier::Time2::PacketType)buffer.get16();
 }
 
@@ -24,10 +24,10 @@ static QMap<Courier::Time2::OffsetDirection, const char*>mapOffsetDirection = {
 const char* Courier::getName(Time2::OffsetDirection value) {
     return mapOffsetDirection.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Time2::OffsetDirection& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Time2::OffsetDirection& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Time2::OffsetDirection& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Time2::OffsetDirection& value) {
     value = (Courier::Time2::OffsetDirection)buffer.get16();
 }
 
@@ -38,10 +38,10 @@ static QMap<Courier::Time2::ToleranceType, const char*>mapToleranceType = {
 const char* Courier::getName(Time2::ToleranceType value) {
     return mapToleranceType.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Time2::ToleranceType& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Time2::ToleranceType& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Time2::ToleranceType& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Time2::ToleranceType& value) {
     value = (Courier::Time2::ToleranceType)buffer.get16();
 }
 

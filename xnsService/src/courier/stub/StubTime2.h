@@ -1,5 +1,5 @@
-#ifndef COURIER_Time2
-#define COURIER_Time2
+#ifndef STUB_Time2
+#define STUB_Time2
 
 #include "../Courier.h"
 

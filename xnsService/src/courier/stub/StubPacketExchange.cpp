@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierPacketExchange");
+static log4cpp::Category& logger = Logger::getLogger("StubPacketExchange");
 
-#include "PacketExchange.h"
+#include "StubPacketExchange.h"
 
 static QMap<Courier::PacketExchange::ClientType, const char*>mapClientType = {
     {Courier::PacketExchange::ClientType::UNSPECIFIED, "UNSPECIFIED"},
@@ -12,10 +12,10 @@ static QMap<Courier::PacketExchange::ClientType, const char*>mapClientType = {
 const char* Courier::getName(PacketExchange::ClientType value) {
     return mapClientType.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::PacketExchange::ClientType& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::PacketExchange::ClientType& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::PacketExchange::ClientType& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::PacketExchange::ClientType& value) {
     value = (Courier::PacketExchange::ClientType)buffer.get16();
 }
 

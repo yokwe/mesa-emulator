@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierEcho");
+static log4cpp::Category& logger = Logger::getLogger("StubEcho");
 
-#include "Echo.h"
+#include "StubEcho.h"
 
 static QMap<Courier::Echo::Operation, const char*>mapOperation = {
     {Courier::Echo::Operation::REQUEST, "REQUEST"},
@@ -10,10 +10,10 @@ static QMap<Courier::Echo::Operation, const char*>mapOperation = {
 const char* Courier::getName(Echo::Operation value) {
     return mapOperation.value(value, 0);
 }
-void serialize  (ByteBuffer& buffer, const Courier::Echo::Operation& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Courier::Echo::Operation& value) {
     buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer& buffer, Courier::Echo::Operation& value) {
+void Courier::deserialize(ByteBuffer& buffer, Courier::Echo::Operation& value) {
     value = (Courier::Echo::Operation)buffer.get16();
 }
 

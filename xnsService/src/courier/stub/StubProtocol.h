@@ -1,5 +1,5 @@
-#ifndef COURIER_Protocol
-#define COURIER_Protocol
+#ifndef STUB_Protocol
+#define STUB_Protocol
 
 #include "../Courier.h"
 

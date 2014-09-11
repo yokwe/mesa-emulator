@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierEthernet");
+static log4cpp::Category& logger = Logger::getLogger("StubEthernet");
 
-#include "Ethernet.h"
+#include "StubEthernet.h"
 
 void Courier::serialize  (ByteBuffer& buffer, const Ethernet::Header& value) {
     if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()

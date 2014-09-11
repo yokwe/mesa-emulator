@@ -1,7 +1,7 @@
 #include "../../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierExpeditedCourier");
+static log4cpp::Category& logger = Logger::getLogger("StubExpeditedCourier");
 
-#include "ExpeditedCourier.h"
+#include "StubExpeditedCourier.h"
 
 void Courier::serialize  (ByteBuffer& buffer, const ExpeditedCourier::Header& value) {
     if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()
