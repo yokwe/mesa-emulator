@@ -11,17 +11,17 @@ namespace Courier {
             CLEARINGHOUSE = 2,
             TELEDEBUG = 8,
         };
-        struct Header {
+        struct Header : public CourierData {
             quint32 id;
             ClientType clientType;
         };
     }
     
     const char* getName(PacketExchange::ClientType value);
-    void serialize  (ByteBuffer* buffer, const PacketExchange::ClientType& value);
-    void deserialize(ByteBuffer* buffer, PacketExchange::ClientType& value);
+    void serialize  (ByteBuffer& buffer, const PacketExchange::ClientType& value);
+    void deserialize(ByteBuffer& buffer, PacketExchange::ClientType& value);
     
-    void serialize  (ByteBuffer* buffer, const PacketExchange::Header& value);
-    void deserialize(ByteBuffer* buffer, PacketExchange::Header& value);
+    void serialize  (ByteBuffer& buffer, const PacketExchange::Header& value);
+    void deserialize(ByteBuffer& buffer, PacketExchange::Header& value);
 }
 #endif

@@ -1,3 +1,6 @@
+#include "../../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("courierError");
+
 #include "Error.h"
 
 static QMap<Courier::Error::ErrorNumber, const char*>mapErrorNumber = {
@@ -19,19 +22,28 @@ static QMap<Courier::Error::ErrorNumber, const char*>mapErrorNumber = {
 const char* Courier::getName(Error::ErrorNumber value) {
     return mapErrorNumber.value(value, 0);
 }
-void serialize  (ByteBuffer* buffer, const Courier::Error::ErrorNumber& value) {
-    buffer->put16((quint16)value);
+void serialize  (ByteBuffer& buffer, const Courier::Error::ErrorNumber& value) {
+    buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer* buffer, Courier::Error::ErrorNumber& value) {
-    value = (Courier::Error::ErrorNumber)buffer->get16();
+void deserialize(ByteBuffer& buffer, Courier::Error::ErrorNumber& value) {
+    value = (Courier::Error::ErrorNumber)buffer.get16();
 }
 
-void Courier::serialize  (ByteBuffer* buffer, const Error::Header& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Error::Header& value) {
+    if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()
+    buffer.setPos(value.base);
+    
     Courier::serialize(buffer, value.number);
     Courier::serialize(buffer, value.parameter);
 }
 
-void Courier::deserialize(ByteBuffer* buffer, Error::Header& value) {
+void Courier::deserialize(ByteBuffer& buffer, Error::Header& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.number);
     Courier::deserialize(buffer, value.parameter);
 }

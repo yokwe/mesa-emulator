@@ -11,11 +11,11 @@ namespace Courier {
             RESPONSE = 2,
         };
         // IGNORE predefined type.  Hop: TYPE = CARDINAL
-        struct Tuple {
+        struct Tuple : public CourierData {
             quint32 network;
             quint16 hop;
         };
-        struct Header {
+        struct Header : public CourierData {
             Operation operation;
         };
         // EXPAND Routing::Hop as CARDINAL
@@ -24,13 +24,13 @@ namespace Courier {
     }
     
     const char* getName(Routing::Operation value);
-    void serialize  (ByteBuffer* buffer, const Routing::Operation& value);
-    void deserialize(ByteBuffer* buffer, Routing::Operation& value);
+    void serialize  (ByteBuffer& buffer, const Routing::Operation& value);
+    void deserialize(ByteBuffer& buffer, Routing::Operation& value);
     
-    void serialize  (ByteBuffer* buffer, const Routing::Tuple& value);
-    void deserialize(ByteBuffer* buffer, Routing::Tuple& value);
+    void serialize  (ByteBuffer& buffer, const Routing::Tuple& value);
+    void deserialize(ByteBuffer& buffer, Routing::Tuple& value);
     
-    void serialize  (ByteBuffer* buffer, const Routing::Header& value);
-    void deserialize(ByteBuffer* buffer, Routing::Header& value);
+    void serialize  (ByteBuffer& buffer, const Routing::Header& value);
+    void deserialize(ByteBuffer& buffer, Routing::Header& value);
 }
 #endif

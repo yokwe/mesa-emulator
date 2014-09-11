@@ -21,7 +21,7 @@ namespace Courier {
             CONGESTION_WARNING = 517,
             CONGESTION_DISCARD = 518,
         };
-        struct Header {
+        struct Header : public CourierData {
             ErrorNumber number;
             quint16 parameter;
         };
@@ -30,10 +30,10 @@ namespace Courier {
     }
     
     const char* getName(Error::ErrorNumber value);
-    void serialize  (ByteBuffer* buffer, const Error::ErrorNumber& value);
-    void deserialize(ByteBuffer* buffer, Error::ErrorNumber& value);
+    void serialize  (ByteBuffer& buffer, const Error::ErrorNumber& value);
+    void deserialize(ByteBuffer& buffer, Error::ErrorNumber& value);
     
-    void serialize  (ByteBuffer* buffer, const Error::Header& value);
-    void deserialize(ByteBuffer* buffer, Error::Header& value);
+    void serialize  (ByteBuffer& buffer, const Error::Header& value);
+    void deserialize(ByteBuffer& buffer, Error::Header& value);
 }
 #endif

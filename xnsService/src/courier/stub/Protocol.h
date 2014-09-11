@@ -23,7 +23,7 @@ namespace Courier {
             NO_SUCH_PROCEDURE_VALUE = 2,
             INVALID_ARGUMENTS = 3,
         };
-        struct Protocol2Body {
+        struct Protocol2Body : public CourierData {
             MessageType tag;
             union {
                 struct {
@@ -45,15 +45,15 @@ namespace Courier {
                 } ABORT;
             };
         };
-        struct ProtocolRange {
+        struct ProtocolRange : public CourierData {
             ProtocolType low;
             ProtocolType high;
         };
-        struct VersionRange {
+        struct VersionRange : public CourierData {
             quint16 low;
             quint16 high;
         };
-        struct RejectBody {
+        struct RejectBody : public CourierData {
             RejectCode tag;
             union {
                 struct {
@@ -67,7 +67,7 @@ namespace Courier {
                 } NO_SUCH_VERSION_NUMBER;
             };
         };
-        struct Protocol3Body {
+        struct Protocol3Body : public CourierData {
             MessageType tag;
             union {
                 struct {
@@ -89,7 +89,7 @@ namespace Courier {
                 } ABORT;
             };
         };
-        struct MessageObject {
+        struct MessageObject : public CourierData {
             ProtocolType tag;
             union {
                 struct {
@@ -109,33 +109,33 @@ namespace Courier {
     }
     
     const char* getName(Protocol::ProtocolType value);
-    void serialize  (ByteBuffer* buffer, const Protocol::ProtocolType& value);
-    void deserialize(ByteBuffer* buffer, Protocol::ProtocolType& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::ProtocolType& value);
+    void deserialize(ByteBuffer& buffer, Protocol::ProtocolType& value);
     
     const char* getName(Protocol::MessageType value);
-    void serialize  (ByteBuffer* buffer, const Protocol::MessageType& value);
-    void deserialize(ByteBuffer* buffer, Protocol::MessageType& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::MessageType& value);
+    void deserialize(ByteBuffer& buffer, Protocol::MessageType& value);
     
     const char* getName(Protocol::RejectCode value);
-    void serialize  (ByteBuffer* buffer, const Protocol::RejectCode& value);
-    void deserialize(ByteBuffer* buffer, Protocol::RejectCode& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::RejectCode& value);
+    void deserialize(ByteBuffer& buffer, Protocol::RejectCode& value);
     
-    void serialize  (ByteBuffer* buffer, const Protocol::Protocol2Body& value);
-    void deserialize(ByteBuffer* buffer, Protocol::Protocol2Body& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::Protocol2Body& value);
+    void deserialize(ByteBuffer& buffer, Protocol::Protocol2Body& value);
     
-    void serialize  (ByteBuffer* buffer, const Protocol::ProtocolRange& value);
-    void deserialize(ByteBuffer* buffer, Protocol::ProtocolRange& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::ProtocolRange& value);
+    void deserialize(ByteBuffer& buffer, Protocol::ProtocolRange& value);
     
-    void serialize  (ByteBuffer* buffer, const Protocol::VersionRange& value);
-    void deserialize(ByteBuffer* buffer, Protocol::VersionRange& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::VersionRange& value);
+    void deserialize(ByteBuffer& buffer, Protocol::VersionRange& value);
     
-    void serialize  (ByteBuffer* buffer, const Protocol::RejectBody& value);
-    void deserialize(ByteBuffer* buffer, Protocol::RejectBody& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::RejectBody& value);
+    void deserialize(ByteBuffer& buffer, Protocol::RejectBody& value);
     
-    void serialize  (ByteBuffer* buffer, const Protocol::Protocol3Body& value);
-    void deserialize(ByteBuffer* buffer, Protocol::Protocol3Body& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::Protocol3Body& value);
+    void deserialize(ByteBuffer& buffer, Protocol::Protocol3Body& value);
     
-    void serialize  (ByteBuffer* buffer, const Protocol::MessageObject& value);
-    void deserialize(ByteBuffer* buffer, Protocol::MessageObject& value);
+    void serialize  (ByteBuffer& buffer, const Protocol::MessageObject& value);
+    void deserialize(ByteBuffer& buffer, Protocol::MessageObject& value);
 }
 #endif

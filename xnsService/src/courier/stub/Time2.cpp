@@ -1,3 +1,6 @@
+#include "../../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("courierTime2");
+
 #include "Time2.h"
 
 static QMap<Courier::Time2::PacketType, const char*>mapPacketType = {
@@ -7,11 +10,11 @@ static QMap<Courier::Time2::PacketType, const char*>mapPacketType = {
 const char* Courier::getName(Time2::PacketType value) {
     return mapPacketType.value(value, 0);
 }
-void serialize  (ByteBuffer* buffer, const Courier::Time2::PacketType& value) {
-    buffer->put16((quint16)value);
+void serialize  (ByteBuffer& buffer, const Courier::Time2::PacketType& value) {
+    buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer* buffer, Courier::Time2::PacketType& value) {
-    value = (Courier::Time2::PacketType)buffer->get16();
+void deserialize(ByteBuffer& buffer, Courier::Time2::PacketType& value) {
+    value = (Courier::Time2::PacketType)buffer.get16();
 }
 
 static QMap<Courier::Time2::OffsetDirection, const char*>mapOffsetDirection = {
@@ -21,11 +24,11 @@ static QMap<Courier::Time2::OffsetDirection, const char*>mapOffsetDirection = {
 const char* Courier::getName(Time2::OffsetDirection value) {
     return mapOffsetDirection.value(value, 0);
 }
-void serialize  (ByteBuffer* buffer, const Courier::Time2::OffsetDirection& value) {
-    buffer->put16((quint16)value);
+void serialize  (ByteBuffer& buffer, const Courier::Time2::OffsetDirection& value) {
+    buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer* buffer, Courier::Time2::OffsetDirection& value) {
-    value = (Courier::Time2::OffsetDirection)buffer->get16();
+void deserialize(ByteBuffer& buffer, Courier::Time2::OffsetDirection& value) {
+    value = (Courier::Time2::OffsetDirection)buffer.get16();
 }
 
 static QMap<Courier::Time2::ToleranceType, const char*>mapToleranceType = {
@@ -35,14 +38,17 @@ static QMap<Courier::Time2::ToleranceType, const char*>mapToleranceType = {
 const char* Courier::getName(Time2::ToleranceType value) {
     return mapToleranceType.value(value, 0);
 }
-void serialize  (ByteBuffer* buffer, const Courier::Time2::ToleranceType& value) {
-    buffer->put16((quint16)value);
+void serialize  (ByteBuffer& buffer, const Courier::Time2::ToleranceType& value) {
+    buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer* buffer, Courier::Time2::ToleranceType& value) {
-    value = (Courier::Time2::ToleranceType)buffer->get16();
+void deserialize(ByteBuffer& buffer, Courier::Time2::ToleranceType& value) {
+    value = (Courier::Time2::ToleranceType)buffer.get16();
 }
 
-void Courier::serialize  (ByteBuffer* buffer, const Time2::PacketData& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Time2::PacketData& value) {
+    if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()
+    buffer.setPos(value.base);
+    
     Courier::serialize(buffer, value.tag);
     switch(value.tag) {
     case Time2::PacketType::REQUEST:
@@ -60,7 +66,7 @@ void Courier::serialize  (ByteBuffer* buffer, const Time2::PacketData& value) {
     }
 }
 
-void Courier::deserialize(ByteBuffer* buffer, Time2::PacketData& value) {
+void Courier::deserialize(ByteBuffer& buffer, Time2::PacketData& value) {
     Courier::deserialize(buffer, value.tag);
     switch(value.tag) {
     case Time2::PacketType::REQUEST:
@@ -78,12 +84,21 @@ void Courier::deserialize(ByteBuffer* buffer, Time2::PacketData& value) {
     }
 }
 
-void Courier::serialize  (ByteBuffer* buffer, const Time2::Packet& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Time2::Packet& value) {
+    if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()
+    buffer.setPos(value.base);
+    
     Courier::serialize(buffer, value.version);
     Courier::serialize(buffer, value.data);
 }
 
-void Courier::deserialize(ByteBuffer* buffer, Time2::Packet& value) {
+void Courier::deserialize(ByteBuffer& buffer, Time2::Packet& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.version);
     Courier::deserialize(buffer, value.data);
 }

@@ -1,3 +1,6 @@
+#include "../../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("courierDatagram");
+
 #include "Datagram.h"
 
 static QMap<Courier::Datagram::PacketType, const char*>mapPacketType = {
@@ -11,11 +14,11 @@ static QMap<Courier::Datagram::PacketType, const char*>mapPacketType = {
 const char* Courier::getName(Datagram::PacketType value) {
     return mapPacketType.value(value, 0);
 }
-void serialize  (ByteBuffer* buffer, const Courier::Datagram::PacketType& value) {
-    buffer->put16((quint16)value);
+void serialize  (ByteBuffer& buffer, const Courier::Datagram::PacketType& value) {
+    buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer* buffer, Courier::Datagram::PacketType& value) {
-    value = (Courier::Datagram::PacketType)buffer->get16();
+void deserialize(ByteBuffer& buffer, Courier::Datagram::PacketType& value) {
+    value = (Courier::Datagram::PacketType)buffer.get16();
 }
 
 static QMap<Courier::Datagram::WellKnownSocket, const char*>mapWellKnownSocket = {
@@ -40,26 +43,38 @@ static QMap<Courier::Datagram::WellKnownSocket, const char*>mapWellKnownSocket =
 const char* Courier::getName(Datagram::WellKnownSocket value) {
     return mapWellKnownSocket.value(value, 0);
 }
-void serialize  (ByteBuffer* buffer, const Courier::Datagram::WellKnownSocket& value) {
-    buffer->put16((quint16)value);
+void serialize  (ByteBuffer& buffer, const Courier::Datagram::WellKnownSocket& value) {
+    buffer.put16((quint16)value);
 }
-void deserialize(ByteBuffer* buffer, Courier::Datagram::WellKnownSocket& value) {
-    value = (Courier::Datagram::WellKnownSocket)buffer->get16();
+void deserialize(ByteBuffer& buffer, Courier::Datagram::WellKnownSocket& value) {
+    value = (Courier::Datagram::WellKnownSocket)buffer.get16();
 }
 
-void Courier::serialize  (ByteBuffer* buffer, const Datagram::NetworkAddress& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Datagram::NetworkAddress& value) {
+    if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()
+    buffer.setPos(value.base);
+    
     Courier::serialize(buffer, value.network);
     Courier::serialize(buffer, value.host);
     Courier::serialize(buffer, value.socket);
 }
 
-void Courier::deserialize(ByteBuffer* buffer, Datagram::NetworkAddress& value) {
+void Courier::deserialize(ByteBuffer& buffer, Datagram::NetworkAddress& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.network);
     Courier::deserialize(buffer, value.host);
     Courier::deserialize(buffer, value.socket);
 }
 
-void Courier::serialize  (ByteBuffer* buffer, const Datagram::Header& value) {
+void Courier::serialize  (ByteBuffer& buffer, const Datagram::Header& value) {
+    if (value.base == CourierData::UNITILIAZED_BASE) COURIER_ERROR()
+    buffer.setPos(value.base);
+    
     Courier::serialize(buffer, value.checksum);
     Courier::serialize(buffer, value.length);
     Courier::serialize(buffer, value.flags);
@@ -67,7 +82,13 @@ void Courier::serialize  (ByteBuffer* buffer, const Datagram::Header& value) {
     Courier::serialize(buffer, value.source);
 }
 
-void Courier::deserialize(ByteBuffer* buffer, Datagram::Header& value) {
+void Courier::deserialize(ByteBuffer& buffer, Datagram::Header& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.checksum);
     Courier::deserialize(buffer, value.length);
     Courier::deserialize(buffer, value.flags);

@@ -7,7 +7,7 @@ namespace Courier {
     namespace Ethernet {
         // IGNORE predefined type.  HostAddress: TYPE = UNSPECIFIED3
         // IGNORE predefined type.  FrameType: TYPE = UNSPECIFIED
-        struct Header {
+        struct Header : public CourierData {
             quint48 destination;
             quint48 source;
             quint16 type;
@@ -21,7 +21,7 @@ namespace Courier {
         const quint16 MAX_DATA_LENGTH = 1500U;
     }
     
-    void serialize  (ByteBuffer* buffer, const Ethernet::Header& value);
-    void deserialize(ByteBuffer* buffer, Ethernet::Header& value);
+    void serialize  (ByteBuffer& buffer, const Ethernet::Header& value);
+    void deserialize(ByteBuffer& buffer, Ethernet::Header& value);
 }
 #endif

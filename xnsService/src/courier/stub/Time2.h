@@ -22,7 +22,7 @@ namespace Courier {
             IN_MILLI_SECONDS = 1,
         };
         // IGNORE predefined type.  Version: TYPE = CARDINAL
-        struct PacketData {
+        struct PacketData : public CourierData {
             PacketType tag;
             union {
                 struct {
@@ -39,7 +39,7 @@ namespace Courier {
                 } RESPONSE;
             };
         };
-        struct Packet {
+        struct Packet : public CourierData {
             quint16 version;
             PacketData data;
         };
@@ -50,21 +50,21 @@ namespace Courier {
     }
     
     const char* getName(Time2::PacketType value);
-    void serialize  (ByteBuffer* buffer, const Time2::PacketType& value);
-    void deserialize(ByteBuffer* buffer, Time2::PacketType& value);
+    void serialize  (ByteBuffer& buffer, const Time2::PacketType& value);
+    void deserialize(ByteBuffer& buffer, Time2::PacketType& value);
     
     const char* getName(Time2::OffsetDirection value);
-    void serialize  (ByteBuffer* buffer, const Time2::OffsetDirection& value);
-    void deserialize(ByteBuffer* buffer, Time2::OffsetDirection& value);
+    void serialize  (ByteBuffer& buffer, const Time2::OffsetDirection& value);
+    void deserialize(ByteBuffer& buffer, Time2::OffsetDirection& value);
     
     const char* getName(Time2::ToleranceType value);
-    void serialize  (ByteBuffer* buffer, const Time2::ToleranceType& value);
-    void deserialize(ByteBuffer* buffer, Time2::ToleranceType& value);
+    void serialize  (ByteBuffer& buffer, const Time2::ToleranceType& value);
+    void deserialize(ByteBuffer& buffer, Time2::ToleranceType& value);
     
-    void serialize  (ByteBuffer* buffer, const Time2::PacketData& value);
-    void deserialize(ByteBuffer* buffer, Time2::PacketData& value);
+    void serialize  (ByteBuffer& buffer, const Time2::PacketData& value);
+    void deserialize(ByteBuffer& buffer, Time2::PacketData& value);
     
-    void serialize  (ByteBuffer* buffer, const Time2::Packet& value);
-    void deserialize(ByteBuffer* buffer, Time2::Packet& value);
+    void serialize  (ByteBuffer& buffer, const Time2::Packet& value);
+    void deserialize(ByteBuffer& buffer, Time2::Packet& value);
 }
 #endif

@@ -9,12 +9,12 @@ namespace Courier {
         // IGNORE predefined type.  Network: TYPE = UNSPECIFIED2
         // IGNORE reference.  Host: TYPE = Ethernet::HostAddress
         // IGNORE predefined type.  Socket: TYPE = UNSPECIFIED
-        struct NetworkAddress {
+        struct NetworkAddress : public CourierData {
             quint32 network;
             quint48 host;
             quint16 socket;
         };
-        struct Header {
+        struct Header : public CourierData {
             quint16 checksum;
             quint16 length;
             quint16 flags;
@@ -75,17 +75,17 @@ namespace Courier {
     }
     
     const char* getName(Datagram::PacketType value);
-    void serialize  (ByteBuffer* buffer, const Datagram::PacketType& value);
-    void deserialize(ByteBuffer* buffer, Datagram::PacketType& value);
+    void serialize  (ByteBuffer& buffer, const Datagram::PacketType& value);
+    void deserialize(ByteBuffer& buffer, Datagram::PacketType& value);
     
     const char* getName(Datagram::WellKnownSocket value);
-    void serialize  (ByteBuffer* buffer, const Datagram::WellKnownSocket& value);
-    void deserialize(ByteBuffer* buffer, Datagram::WellKnownSocket& value);
+    void serialize  (ByteBuffer& buffer, const Datagram::WellKnownSocket& value);
+    void deserialize(ByteBuffer& buffer, Datagram::WellKnownSocket& value);
     
-    void serialize  (ByteBuffer* buffer, const Datagram::NetworkAddress& value);
-    void deserialize(ByteBuffer* buffer, Datagram::NetworkAddress& value);
+    void serialize  (ByteBuffer& buffer, const Datagram::NetworkAddress& value);
+    void deserialize(ByteBuffer& buffer, Datagram::NetworkAddress& value);
     
-    void serialize  (ByteBuffer* buffer, const Datagram::Header& value);
-    void deserialize(ByteBuffer* buffer, Datagram::Header& value);
+    void serialize  (ByteBuffer& buffer, const Datagram::Header& value);
+    void deserialize(ByteBuffer& buffer, Datagram::Header& value);
 }
 #endif
