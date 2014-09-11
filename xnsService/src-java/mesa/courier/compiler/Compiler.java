@@ -43,8 +43,8 @@ public class Compiler {
 	}
 
 	public void genStub() {
-		String pathc = String.format("%s%c%s.cpp", STUB_DIR_PATH, File.separatorChar, program.info.getProgramVersion());
-		String pathh = String.format("%s%c%s.h",   STUB_DIR_PATH, File.separatorChar, program.info.getProgramVersion());
+		String pathc = String.format("%s%cStub%s.cpp", STUB_DIR_PATH, File.separatorChar, program.info.getProgramVersion());
+		String pathh = String.format("%s%cStub%s.h",   STUB_DIR_PATH, File.separatorChar, program.info.getProgramVersion());
 		logger.info(String.format("pathc = %s", pathc));
 		logger.info(String.format("pathh = %s", pathh));
 		
@@ -52,15 +52,15 @@ public class Compiler {
 				IndentPrintWriter outc = new IndentPrintWriter(new PrintWriter(pathc));
 				IndentPrintWriter outh = new IndentPrintWriter(new PrintWriter(pathh));) {
 			// output pacage
-			outh.indent().format("#ifndef COURIER_%s", program.info.getProgramVersion()).println();
-			outh.indent().format("#define COURIER_%s", program.info.getProgramVersion()).println();
+			outh.indent().format("#ifndef STUB_%s", program.info.getProgramVersion()).println();
+			outh.indent().format("#define STUB_%s", program.info.getProgramVersion()).println();
 			outh.indent().println();
 
 			// include courier header
 			outh.indent().println("#include \"../Courier.h\"");			
 			// include depend module
 			for(Program.Info info: program.depends) {
-				outh.indent().format("#include \"%s.h\"", info.getProgramVersion()).println();
+				outh.indent().format("#include \"Stub%s.h\"", info.getProgramVersion()).println();
 			}
 
 			// output namespace
@@ -164,9 +164,9 @@ public class Compiler {
 
 			// output include of header
 			outc.indent().format("#include \"../../util/Util.h\"").println();
-			outc.indent().format("static log4cpp::Category& logger = Logger::getLogger(\"courier%s\");", program.info.getProgramVersion()).println();
+			outc.indent().format("static log4cpp::Category& logger = Logger::getLogger(\"Stub%s\");", program.info.getProgramVersion()).println();
 			outc.indent().println();
-			outc.indent().format("#include \"%s.h\"", program.info.getProgramVersion()).println();
+			outc.indent().format("#include \"Stub%s.h\"", program.info.getProgramVersion()).println();
 			
 			// close main namespace
 			outh.unnest();
@@ -198,12 +198,12 @@ public class Compiler {
 					outc.indent().format("return map%s.value(value, 0);", name).println();
 					outc.unnest();
 					outc.indent().println("}");
-					outc.indent().format("void serialize  (ByteBuffer& buffer, const Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void Courier::serialize  (ByteBuffer& buffer, const Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
 					outc.indent().format("buffer.put16((quint16)value);").println();
 					outc.unnest();
 					outc.indent().println("}");
-					outc.indent().format("void deserialize(ByteBuffer& buffer, Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
+					outc.indent().format("void Courier::deserialize(ByteBuffer& buffer, Courier::%s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
 					outc.indent().format("value = (Courier::%s::%s)buffer.get16();", program.info.getProgramVersion(), name).println();
 					outc.unnest();
