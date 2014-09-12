@@ -37,6 +37,15 @@ OF SUCH DAMAGE.
 
 class SocketManager {
 public:
+	class Context {
+	public:
+		const quint64 networkAddress;
+		// address of network interface
+		const quint32 localNetworkNumber;
+		// network number of local network
+		Context(quint64 networkAddress_, quint32 localNetworkNumber_) : networkAddress(networkAddress_), localNetworkNumber(localNetworkNumber_) {}
+	};
+
 	class Socket {
 	public:
 		const char* name;
@@ -44,10 +53,10 @@ public:
 		Socket(const char* name_) : name(name_) {}
 		virtual ~Socket() {}
 
-		virtual void process(ByteBuffer& request, ByteBuffer& response) = 0;
+		virtual void process(const Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
 	};
 
-	SocketManager(Network& network_) : network(network_), thread(0) {}
+	SocketManager(Network& network_, quint48 localNetworkNumber_) : network(network_), thread(0), localNetworkNumber(localNetworkNumber_) {}
 
 	void add   (quint16 no, Socket* socket);
 	void remove(quint16 no);
@@ -74,5 +83,6 @@ private:
 	QMutex                 mutex;
 	Network&               network;
 	SocketThread*          thread;
+	quint48                localNetworkNumber;
 };
 #endif
