@@ -36,6 +36,8 @@ namespace Courier {
     };
 
     const char* getSocketName(quint16 value);
+
+    quint16 checksum(quint8* base, quint32 offset, quint32 length);
 }
 
 #define COURIER_ERROR() {throw Courier::CourierError(__FUNCTION__, __FILE__, __LINE__);}

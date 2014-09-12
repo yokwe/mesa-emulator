@@ -43,3 +43,21 @@ const char* Courier::getSocketName(quint16 value) {
 	sprintf(getSocketNameBuffer, "%u", value);
 	return getSocketNameBuffer;
 }
+
+quint16 Courier::checksum(quint8* data, quint32 offset, quint32 length) {
+	quint32 s = 0;
+
+	for(quint32 i = 0; i < length; i += 2) {
+		quint16 w = data[offset++] & 0x00ffU;
+		w = (w << 8) | (data[offset++] & 0x00ffU);
+		// add w to s
+		s += w;
+		// if there is overflow, increment t
+		if (0x10000U <= s) s = (s + 1) & 0xffffU;
+		// shift left
+		s <<= 1;
+		// if there is overflow, increment t
+		if (0x10000U <= s) s = (s + 1) & 0xffffU;
+	}
+	return (quint16)s;
+}
