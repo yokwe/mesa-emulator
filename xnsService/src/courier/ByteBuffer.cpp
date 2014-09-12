@@ -36,9 +36,10 @@ static log4cpp::Category& logger = Logger::getLogger("bytebuffer");
 
 #include "ByteBuffer.h"
 
-ByteBuffer::ByteBuffer(quint8* data_, quint32 limit_) : data(rawData), limit(limit_), capacity(sizeof(rawData)), pos(0) {
+ByteBuffer::ByteBuffer(quint8* data_, quint32 limit_) : data(rawData), capacity(sizeof(rawData)), limit(limit_), pos(0) {
 	if (capacity < limit) ERROR();
-	for(quint32 i = 0; i < limit; i++) rawData[i] = data_[i];
+	for(quint32 i = 0; i < limit; i++) data[i] = data_[i];
+	for(quint32 i = limit; i < capacity; i++) data[i] = 0;
 }
 
 void ByteBuffer::setPos(quint32 newValue) {
