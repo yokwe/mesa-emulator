@@ -52,7 +52,7 @@ WellKnownSocket: TYPE = {
 
 maxWellKnownSocket: CARDINAL = 3000; -- NSConstantsExtras.maxWellKnownSocket
 
-socketRoutig:        CARDINAL = 1;
+socketRouting:       CARDINAL = 1;
 socketEcho:          CARDINAL = 2;
 socketError:         CARDINAL = 3;
 socketCourier:       CARDINAL = 5;
