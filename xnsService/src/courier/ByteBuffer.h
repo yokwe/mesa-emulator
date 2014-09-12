@@ -46,16 +46,18 @@ protected:
 	static const quint32 SIZE_8  = 1;
 
 	quint8*       data;
-	quint32       limit;    // valid data range [0..limit)
 	const quint32 capacity; // data capacity [0..limit)
+	quint32       limit;    // valid data range [0..limit)
 	quint32       pos;      // cursor position
 
 	quint8        rawData[MAX_SIZE];
 
 public:
 	ByteBuffer(quint8* data_, quint32 limit_);
-	ByteBuffer(ByteBuffer* that) : data(that->data), limit(that->limit), capacity(that->capacity), pos(that->pos) {}
-	ByteBuffer() : data(rawData), limit(0), capacity(MAX_SIZE), pos(0) {}
+	ByteBuffer(ByteBuffer* that) : data(that->data), capacity(that->capacity), limit(that->limit), pos(that->pos) {}
+	ByteBuffer() : data(rawData), capacity(MAX_SIZE), limit(capacity), pos(0) {
+		for(quint32 i = 0; i < capacity; i++) data[i] = 0;
+	}
 
 	// Absolute get and put
 	quint64 get48(quint32 offset);
