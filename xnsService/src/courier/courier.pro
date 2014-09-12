@@ -11,8 +11,8 @@ CONFIG  += staticlib
 HEADERS += ByteBuffer.h   Courier.h   Network.h   SocketManager.h
 SOURCES += ByteBuffer.cpp Courier.cpp Network.cpp SocketManager.cpp
 
-HEADERS += socket/SocketRouting.h
-SOURCES += socket/SocketRouting.cpp
+HEADERS += socket/SocketEcho.h   socket/SocketRouting.h
+SOURCES += socket/SocketEcho.cpp socket/SocketRouting.cpp
 
 HEADERS += stub/StubDatagram.h   stub/StubEcho.h   stub/StubError.h   stub/StubEthernet.h   stub/StubRouting.h
 SOURCES += stub/StubDatagram.cpp stub/StubEcho.cpp stub/StubError.cpp stub/StubEthernet.cpp stub/StubRouting.cpp
