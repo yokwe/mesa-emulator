@@ -41,26 +41,126 @@ static log4cpp::Category& logger = Logger::getLogger("sockRouting");
 #include "../stub/StubDatagram.h"
 #include "../stub/StubRouting.h"
 
-void SocketRouting::process(ByteBuffer& request, ByteBuffer& /*response*/) {
-	Courier::Ethernet::Header ethernet;
-	Courier::Datagram::Header datagram;
-	Courier::Routing::Header  routing;
+void SocketRouting::addNetwork(quint32 networkNumber, quint16 hop) {
+	// sanity check
+	if (networkMap.contains(networkNumber)) {
+		logger.fatal("networkNumber = %04X", networkNumber);
+		ERROR();
+	}
+	if (networkNumber == Courier::Datagram::NETWORK_ALL) {
+		logger.fatal("networkNumber = %04X", networkNumber);
+		ERROR();
+	}
+	if (networkNumber == Courier::Datagram::NETWORK_UNKNOWN) {
+		logger.fatal("networkNumber = %04X", networkNumber);
+		ERROR();
+	}
+	if (Courier::Routing::MAX_HOP <= hop) {
+		logger.fatal("hop = %04X", hop);
+		ERROR();
+	}
 
-	Courier::deserialize(request, ethernet);
-	Courier::deserialize(request, datagram);
-	Courier::deserialize(request, routing);
+	networkMap.insert(networkNumber, hop);
+}
 
-	logger.info("operation = %s", Courier::getName(routing.operation));
+void SocketRouting::process(const SocketManager::Context& context, ByteBuffer& request, ByteBuffer& response) {
+	using namespace Courier;
 
-	QVector<Courier::Routing::Tuple>tuples;
+	Ethernet::Header ethernet;
+	Datagram::Header datagram;
+	Routing::Header  routing;
 
-	for(;;) {
-		quint32 remaining = request.remaining();
-		if (remaining == 0) break;
-		Courier::Routing::Tuple tuple;
-		Courier::deserialize(request, tuple);
-		tuples.append(tuple);
+	deserialize(request, ethernet);
+	deserialize(request, datagram);
+	deserialize(request, routing);
 
-		logger.debug("Tuple [%8X %2d]", tuple.network, tuple.hop);
+	logger.info("operation = %s", getName(routing.operation));
+
+	switch(routing.operation) {
+	case Routing::Operation::REQUEST:
+	{
+		QVector<Routing::Tuple>tuples;
+		for(;;) {
+			quint32 remaining = request.remaining();
+			if (remaining == 0) break;
+			Routing::Tuple tuple;
+			deserialize(request, tuple);
+			tuples.append(tuple);
+
+			logger.debug("Tuple [%8X %2d]", tuple.network, tuple.hop);
+		}
+		// begin of building response
+		//   build response of ethernet
+		ethernet.destination = ethernet.source;
+		ethernet.source = context.networkAddress;
+		serialize(response, ethernet);
+
+		//   build response of datagram
+		datagram.checksum            = 0;
+		datagram.length              = 0;
+		datagram.flags               = (quint16)Datagram::PacketType::ROUTING;
+		datagram.destination.network = datagram.source.network;
+		datagram.destination.host    = datagram.source.host;
+		datagram.destination.socket  = datagram.source.socket;
+		datagram.source.network      = context.localNetworkNumber;
+		datagram.source.host         = context.networkAddress;
+		datagram.source.socket       = Datagram::SOCKET_ROUTING;
+
+		//   build response of routing
+		routing.operation = Routing::Operation::RESPONSE;
+		serialize(response, routing);
+
+		// build response from tuples
+		for(Routing::Tuple tuple: tuples) {
+			// special case for NETWORK_ALL
+			if (tuple.network == Datagram::NETWORK_ALL) {
+				// return all known network
+				QMapIterator<quint32, quint16> i(networkMap);
+				while (i.hasNext()) {
+				    i.next();
+				    if (i.value() < tuple.hop) {
+				    	Courier::Routing::Tuple responseTuple;
+				    	responseTuple.base    = response.getPos();
+				    	responseTuple.network = i.key();
+				    	responseTuple.hop     = i.value();
+				    	serialize(response, responseTuple);
+				    }
+				}
+			} else if (tuple.network == Datagram::NETWORK_UNKNOWN) {
+				// return local network
+				Courier::Routing::Tuple responseTuple;
+				responseTuple.base    = response.getPos();
+				responseTuple.network = localNetworkNumber;
+				responseTuple.hop     = 0;
+				serialize(response, responseTuple);
+			} else if (networkMap.contains(tuple.network)) {
+				// return specified network
+				quint16 hop = networkMap.value(tuple.network, Routing::MAX_HOP);
+				if (hop != Routing::MAX_HOP) {
+					Courier::Routing::Tuple responseTuple;
+					responseTuple.base    = response.getPos();
+					responseTuple.network = tuple.network;
+					responseTuple.hop     = hop;
+					serialize(response, responseTuple);
+				}
+			}
+		}
+		// end of building response
+		response.rewind();
+		datagram.length   = response.getLimit() - datagram.base;
+		// Write datagram header to calculate checksum
+		serialize(response, datagram);
+		// Calculate checksum
+		datagram.checksum = checksum(response.getData(), datagram.base + 2, datagram.length - 2);
+		// Write datagram header again
+		serialize(response, datagram);
+	}
+		break;
+	case Routing::Operation::RESPONSE: {
+		// DO NOTHING
+		}
+		break;
+	default:
+		ERROR();
 	}
 }
