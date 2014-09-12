@@ -62,7 +62,7 @@ namespace Courier {
         const quint16 MAX_HOP_COUNT = 16U;
         const quint16 MAX_PACKET_LIFETIME = 60U;
         const quint16 MAX_WELL_KNOWN_SOCKET = 3000U;
-        const quint16 SOCKET_ROUTIG = 1U;
+        const quint16 SOCKET_ROUTING = 1U;
         const quint16 SOCKET_ECHO = 2U;
         const quint16 SOCKET_ERROR = 3U;
         const quint16 SOCKET_COURIER = 5U;
