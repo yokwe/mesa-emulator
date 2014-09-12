@@ -103,25 +103,26 @@ void SocketManager::SocketThread::run() {
 		Courier::deserialize(request, datagram);
 		request.setPos(datagram.base + datagram.length);
 		request.rewind();
-		logger.debug("dataLength = %d  newLimit = %u", dataLength, request.getLimit());
+		//logger.debug("dataLength = %d  newLimit = %u", dataLength, request.getLimit());
 
 		quint16 socketNo = datagram.destination.socket;
 		Courier::Datagram::PacketType packetType = (Courier::Datagram::PacketType)(datagram.flags & 0xff);
 
-		logger.debug("ETHER     %012llX  %012llX  %04X", ethernet.destination, ethernet.source, ethernet.type);
-		logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
-			datagram.checksum, datagram.length, (datagram.flags >> 8), Courier::getName(packetType),
-			datagram.destination.network, datagram.destination.host, Courier::getSocketName(datagram.destination.socket),
-			datagram.source.network, datagram.source.host, Courier::getSocketName(datagram.source.socket));
-
+		Context context(socketManager.network.getAddress(), socketManager.localNetworkNumber);
 
 		SocketManager::Socket* listener = socketManager.map.value(socketNo, 0);
 		if (listener) {
+			logger.debug("ETHER     %012llX  %012llX  %04X", ethernet.destination, ethernet.source, ethernet.type);
+			logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
+				datagram.checksum, datagram.length, (datagram.flags >> 8), Courier::getName(packetType),
+				datagram.destination.network, datagram.destination.host, Courier::getSocketName(datagram.destination.socket),
+				datagram.source.network, datagram.source.host, Courier::getSocketName(datagram.source.socket));
+
 			logger.debug("====");
 
 			// Call listener if exists.
 			QMutexLocker mutexLocker(&socketManager.mutex);
-			listener->process(request, response);
+			listener->process(context, request, response);
 			if (response.getLimit()) {
 				quint8* data    = response.getData();
 				quint32 dataLen = response.getLimit();
@@ -133,7 +134,7 @@ void SocketManager::SocketThread::run() {
 				}
 			}
 		} else {
-			logger.debug("----");
+//			logger.debug("----");
 		}
 	}
 }
