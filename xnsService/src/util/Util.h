@@ -46,7 +46,7 @@ public:
 	RuntimeError(const char *func_, const char *file_, const int line_) : func(func_), file(file_), line(line_) {}
 };
 
-#define RUNTIME_ERROR() { logger.fatal("ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); logBackTrace(); throw RuntimeEError(__FUNCTION__, __FILE__, __LINE__); }
+#define RUNTIME_ERROR() { logger.fatal("ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); logBackTrace(); throw RuntimeError(__FUNCTION__, __FILE__, __LINE__); }
 
 #define DEBUG_TRACE() logger.debug("****  TRACE  %-20s %5d %s", __FUNCTION__, __LINE__, __FILE__)
 
