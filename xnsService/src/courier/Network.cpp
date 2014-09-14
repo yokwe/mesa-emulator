@@ -72,7 +72,7 @@ void Network::attach(const char* name_) {
 	if (fd == -1) {
 		int myErrno = errno;
 		logger.fatal("socket returns -1.  errno = %d", myErrno);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 
 	// bind socket with named interface
@@ -87,11 +87,11 @@ void Network::attach(const char* name_) {
 		    if (ret) {
 				int myErrno = errno;
 				logger.fatal("%s  %d  ioctl returns not 0.  errno = %d", __FUNCTION__, __LINE__, myErrno);
-				ERROR();
+				RUNTIME_ERROR();
 		    }
 		    if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
 				logger.fatal("%s  %d  this is not ethernet.  sa_family = %d", __FUNCTION__, __LINE__, ifr.ifr_hwaddr.sa_family);
-				ERROR();
+				RUNTIME_ERROR();
 		    }
 
 		    address = get48_((quint8*)(ifr.ifr_hwaddr.sa_data));
@@ -109,7 +109,7 @@ void Network::attach(const char* name_) {
 		    if (ret) {
 				int myErrno = errno;
 				logger.fatal("%s  %d  ioctl returns not 0.  errno = %d", __FUNCTION__, __LINE__, myErrno);
-				ERROR();
+				RUNTIME_ERROR();
 		    }
 		    ifindex = ifr.ifr_ifindex;
 		    logger.info("ifindex  = %d", ifindex);
@@ -127,7 +127,7 @@ void Network::attach(const char* name_) {
 		    if (ret) {
 				int myErrno = errno;
 				logger.fatal("%s  %d  bind returns not 0.  errno = %d", __FUNCTION__, __LINE__, myErrno);
-				ERROR();
+				RUNTIME_ERROR();
 		    }
 		}
 	}
@@ -138,7 +138,7 @@ void Network::detach() {
 	if (ret) {
 		int myErrno = errno;
 		logger.fatal("socket returns not 0.  errno = %d", myErrno);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	fd = 0;
 	name = 0;
@@ -166,7 +166,7 @@ void Network::discardRecievedPacket() {
 		int ret = select(0, opErrno);
 		if (ret == -1) {
 			logger.fatal("%s  %d  select returns -1.  errno = %d", __FUNCTION__, __LINE__, opErrno);
-			ERROR();
+			RUNTIME_ERROR();
 		}
 		if (ret == 0) break;
 		if (0 < ret) {

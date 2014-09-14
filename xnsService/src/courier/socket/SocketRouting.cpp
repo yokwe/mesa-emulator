@@ -45,19 +45,19 @@ void SocketRouting::addNetwork(quint32 networkNumber, quint16 hop) {
 	// sanity check
 	if (networkMap.contains(networkNumber)) {
 		logger.fatal("networkNumber = %04X", networkNumber);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	if (networkNumber == Courier::Datagram::NETWORK_ALL) {
 		logger.fatal("networkNumber = %04X", networkNumber);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	if (networkNumber == Courier::Datagram::NETWORK_UNKNOWN) {
 		logger.fatal("networkNumber = %04X", networkNumber);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	if (Courier::Routing::MAX_HOP <= hop) {
 		logger.fatal("hop = %04X", hop);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 
 	networkMap.insert(networkNumber, hop);
@@ -161,6 +161,6 @@ void SocketRouting::process(const SocketManager::Context& context, ByteBuffer& r
 		}
 		break;
 	default:
-		ERROR();
+		RUNTIME_ERROR();
 	}
 }

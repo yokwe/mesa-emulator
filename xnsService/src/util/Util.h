@@ -37,38 +37,18 @@ OF SUCH DAMAGE.
 #include <log4cpp/Category.hh>
 #include <QtCore>
 
-class Error {
+class RuntimeEError {
 public:
 	const char *func;
 	const char *file;
 	const int line;
 
-	Error(const char *func_, const char *file_, const int line_) : func(func_), file(file_), line(line_) {}
+	RuntimeEError(const char *func_, const char *file_, const int line_) : func(func_), file(file_), line(line_) {}
 };
 
-#define ERROR() { logger.fatal("ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); logBackTrace(); throw Error(__FUNCTION__, __FILE__, __LINE__); }
+#define RUNTIME_ERROR() { logger.fatal("ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); logBackTrace(); throw RuntimeEError(__FUNCTION__, __FILE__, __LINE__); }
 
 #define DEBUG_TRACE() logger.debug("****  TRACE  %-20s %5d %s", __FUNCTION__, __LINE__, __FILE__)
-
-class Abort {
-public:
-	const char *func;
-	const char *file;
-	const int line;
-
-	Abort(const char *func_, const char *file_, const int line_) : func(func_), file(file_), line(line_) {}
-};
-#define ERROR_Abort() throw Abort(__FUNCTION__, __FILE__, __LINE__)
-
-class RequestReschedule {
-public:
-	const char *func;
-	const char *file;
-	const int line;
-
-	RequestReschedule(const char *func_, const char *file_, const int line_) : func(func_), file(file_), line(line_) {}
-};
-#define ERROR_RequestReschedule() throw RequestReschedule(__FUNCTION__, __FILE__, __LINE__)
 
 
 void logBackTrace();

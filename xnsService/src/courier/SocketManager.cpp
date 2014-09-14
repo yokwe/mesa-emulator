@@ -45,7 +45,7 @@ void SocketManager::add(quint16 no, SocketManager::Socket* socket) {
 	Socket* that = map.value(no, 0);
 	if (that) {
 		logger.fatal("already registered  no = %d  listener = %s", no, that->name);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	logger.info("Add    %4d(%s) %s", no, Courier::getSocketName(no), socket->name);
 	map.insert(no, socket);
@@ -55,20 +55,20 @@ void SocketManager::remove(quint16 no) {
 	Socket* that = map.value(no, 0);
 	if (!that) {
 		logger.fatal("not registered  socket = %s", no, Courier::getSocketName(no));
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	logger.info("Remove %4d(%s) %s", no, Courier::getSocketName(no), that->name);
 	map.remove(no);
 }
 
 void SocketManager::start() {
-	if (thread) ERROR();
+	if (thread) RUNTIME_ERROR();
 	//
 	thread = new SocketThread(*this);
 	thread->start();
 }
 void SocketManager::stop() {
-	if (!thread) ERROR();
+	if (!thread) RUNTIME_ERROR();
 	//
 	thread->stopThread();
 	for(;;) {
@@ -93,7 +93,7 @@ void SocketManager::SocketThread::run() {
 		ByteBuffer response;
 
 		int dataLength = socketManager.network.receive(request.getData(), request.getCapacity(), opErrno);
-		if (dataLength <= 0) ERROR();
+		if (dataLength <= 0) RUNTIME_ERROR();
 		request.setLimit((quint32)dataLength);
 
 		Courier::Ethernet::Header ethernet;
@@ -130,7 +130,7 @@ void SocketManager::SocketThread::run() {
 				int ret = socketManager.network.transmit(data, dataLen, opErrno);
 				if (opErrno) {
 					logger.fatal("send fail opErrno = %d  ret = %d  dataLen = %d", opErrno, ret, dataLen);
-					ERROR();
+					RUNTIME_ERROR();
 				}
 			}
 		} else {

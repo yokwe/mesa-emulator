@@ -98,6 +98,6 @@ void SocketEcho::process(const SocketManager::Context& context, ByteBuffer& requ
 		}
 		break;
 	default:
-		ERROR();
+		RUNTIME_ERROR();
 	}
 }

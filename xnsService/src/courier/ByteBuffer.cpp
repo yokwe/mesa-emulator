@@ -37,18 +37,18 @@ static log4cpp::Category& logger = Logger::getLogger("bytebuffer");
 #include "ByteBuffer.h"
 
 ByteBuffer::ByteBuffer(quint8* data_, quint32 limit_) : data(rawData), capacity(sizeof(rawData)), limit(limit_), pos(0) {
-	if (capacity < limit) ERROR();
+	if (capacity < limit) RUNTIME_ERROR();
 	for(quint32 i = 0; i < limit; i++) data[i] = data_[i];
 	for(quint32 i = limit; i < capacity; i++) data[i] = 0;
 }
 
 void ByteBuffer::setPos(quint32 newValue) {
-	if (limit < newValue) ERROR();
+	if (limit < newValue) RUNTIME_ERROR();
 	pos = newValue;
 }
 
 void ByteBuffer::setLimit(quint32 newValue) {
-	if (capacity < newValue) ERROR();
+	if (capacity < newValue) RUNTIME_ERROR();
 	limit = newValue;
 }
 
@@ -120,28 +120,28 @@ static inline void put8_(quint8* p, quint8 value) {
 quint64 ByteBuffer::get48(quint32 offset) {
 	if (limit < (offset + SIZE_48)) {
 		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_48);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	return get48_(data + offset);
 }
 quint32 ByteBuffer::get32(quint32 offset) {
 	if (limit < (offset + SIZE_32)) {
 		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_32);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	return get32_(data + offset);
 }
 quint16 ByteBuffer::get16(quint32 offset) {
 	if (limit < (offset + SIZE_16)) {
 		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_16);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	return get16_(data + offset);
 }
 quint8 ByteBuffer::get8(quint32 offset) {
 	if (limit < (offset + SIZE_8)) {
 		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_8);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	return get8_(data + offset);
 }
@@ -149,7 +149,7 @@ quint8 ByteBuffer::get8(quint32 offset) {
 quint64 ByteBuffer::get48() {
 	if (limit < (pos + SIZE_48)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_48);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	quint64 ret = get48_(data + pos);
 	pos += SIZE_48;
@@ -158,7 +158,7 @@ quint64 ByteBuffer::get48() {
 quint32 ByteBuffer::get32() {
 	if (limit < (pos + SIZE_32)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_32);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	quint64 ret = get32_(data + pos);
 	pos += SIZE_32;
@@ -167,7 +167,7 @@ quint32 ByteBuffer::get32() {
 quint16 ByteBuffer::get16() {
 	if (limit < (pos + SIZE_16)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_16);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	quint64 ret = get16_(data + pos);
 	pos += SIZE_16;
@@ -176,7 +176,7 @@ quint16 ByteBuffer::get16() {
 quint8 ByteBuffer::get8() {
 	if (limit < (pos + SIZE_8)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_8);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	quint64 ret = get8_(data + pos);
 	pos += SIZE_8;
@@ -188,28 +188,28 @@ quint8 ByteBuffer::get8() {
 void ByteBuffer::set48(quint32 offset, quint64 value) {
 	if (capacity < (offset + SIZE_48)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_48);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put48_(data + offset, value);
 }
 void ByteBuffer::set32(quint32 offset, quint32 value) {
 	if (capacity < (offset + SIZE_32)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_32);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put32_(data + offset, value);
 }
 void ByteBuffer::set16(quint32 offset, quint16 value) {
 	if (capacity < (offset + SIZE_16)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_16);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put32_(data + offset, value);
 }
 void ByteBuffer::set8(quint32 offset, quint8 value) {
 	if (capacity < (offset + SIZE_8)) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_8);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put8_(data + offset, value);
 }
@@ -217,7 +217,7 @@ void ByteBuffer::set8(quint32 offset, quint8 value) {
 void ByteBuffer::put48(quint64 value) {
 	if (capacity < (pos + SIZE_48)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_48);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put48_(data + pos, value);
 	pos += SIZE_48;
@@ -226,7 +226,7 @@ void ByteBuffer::put48(quint64 value) {
 void ByteBuffer::put32(quint32 value) {
 	if (capacity < (pos + SIZE_32)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_32);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put32_(data + pos, value);
 	pos += SIZE_32;
@@ -235,7 +235,7 @@ void ByteBuffer::put32(quint32 value) {
 void ByteBuffer::put16(quint16 value) {
 	if (capacity < (pos + SIZE_16)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_16);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put16_(data + pos, value);
 	pos += SIZE_16;
@@ -244,7 +244,7 @@ void ByteBuffer::put16(quint16 value) {
 void ByteBuffer::put8(quint8 value) {
 	if (capacity < (pos + SIZE_8)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_8);
-		ERROR();
+		RUNTIME_ERROR();
 	}
 	put8_(data + pos, value);
 	pos += SIZE_8;
