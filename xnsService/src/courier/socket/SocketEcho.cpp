@@ -59,7 +59,7 @@ void SocketEcho::process(const SocketManager::Context& context, ByteBuffer& requ
 		// begin of building response
 		//   build response of ethernet
 		ethernet.destination = ethernet.source;
-		ethernet.source = context.networkAddress;
+		ethernet.source = context.host;
 		serialize(response, ethernet);
 
 		//   build response of datagram
@@ -69,8 +69,8 @@ void SocketEcho::process(const SocketManager::Context& context, ByteBuffer& requ
 		datagram.destination.network = datagram.source.network;
 		datagram.destination.host    = datagram.source.host;
 		datagram.destination.socket  = datagram.source.socket;
-		datagram.source.network      = context.localNetworkNumber;
-		datagram.source.host         = context.networkAddress;
+		datagram.source.network      = context.network;
+		datagram.source.host         = context.host;
 		datagram.source.socket       = Datagram::SOCKET_ECHO;
 
 		//   build response of echo

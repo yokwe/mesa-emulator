@@ -108,7 +108,7 @@ void SocketManager::SocketThread::run() {
 		quint16 socketNo = datagram.destination.socket;
 		Courier::Datagram::PacketType packetType = (Courier::Datagram::PacketType)(datagram.flags & 0xff);
 
-		Context context(socketManager.network.getAddress(), socketManager.localNetworkNumber);
+		Context context(socketManager.localNetworkNumber, socketManager.network.getAddress());
 
 		SocketManager::Socket* listener = socketManager.map.value(socketNo, 0);
 		if (listener) {

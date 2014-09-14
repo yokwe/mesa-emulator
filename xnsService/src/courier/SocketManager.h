@@ -39,11 +39,11 @@ class SocketManager {
 public:
 	class Context {
 	public:
-		const quint64 networkAddress;
-		// address of network interface
-		const quint32 localNetworkNumber;
+		const quint32 network;
 		// network number of local network
-		Context(quint64 networkAddress_, quint32 localNetworkNumber_) : networkAddress(networkAddress_), localNetworkNumber(localNetworkNumber_) {}
+		const quint64 host;
+		// address of network interface
+		Context(quint32 network_, quint64 host_) : network(network_), host(host_) {}
 	};
 
 	class Socket {
