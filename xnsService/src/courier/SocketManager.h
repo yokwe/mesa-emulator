@@ -37,6 +37,15 @@ OF SUCH DAMAGE.
 
 class SocketManager {
 public:
+	class PacketError {
+	public:
+		const quint16 errorNumber;
+		const quint16 errorParameter;
+
+		PacketError(quint16 errorNumber_, quint16 errorParameter_) : errorNumber(errorNumber_), errorParameter(errorParameter_) {}
+		PacketError(quint16 errorNumber_) : errorNumber(errorNumber_), errorParameter(0) {}
+	};
+
 	class Context {
 	public:
 		const quint32 network;
