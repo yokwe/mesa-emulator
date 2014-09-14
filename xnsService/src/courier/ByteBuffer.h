@@ -88,11 +88,12 @@ public:
 		return capacity;
 	}
 
-	// clear buffer. pos = limit = 0
+	// reset buffer for fresh write
 	void clear() {
-		pos = limit = 0;
+		limit = capacity
+		pos   = 0;
 	}
-	// rewind buffer. limit = pos; pos = 0;
+	// reset buffer for read written content
 	void rewind() {
 		limit = pos;
 		pos   = 0;
