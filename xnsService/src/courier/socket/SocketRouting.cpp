@@ -63,18 +63,13 @@ void SocketRouting::addNetwork(quint32 networkNumber, quint16 hop) {
 	networkMap.insert(networkNumber, hop);
 }
 
-void SocketRouting::process(const SocketManager::Context& context, ByteBuffer& request, ByteBuffer& response) {
+void SocketRouting::process(const SocketManager::Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
-	Ethernet::Header ethernet;
-	Datagram::Header datagram;
 	Routing::Header  routing;
-
-	deserialize(request, ethernet);
-	deserialize(request, datagram);
 	deserialize(request, routing);
 
-	logger.info("operation = %s", getName(routing.operation));
+	logger.info("operation = %s (%d)", getName(routing.operation), routing.operation);
 
 	switch(routing.operation) {
 	case Routing::Operation::REQUEST:
@@ -89,22 +84,6 @@ void SocketRouting::process(const SocketManager::Context& context, ByteBuffer& r
 
 			logger.debug("Tuple [%8X %2d]", tuple.network, tuple.hop);
 		}
-		// begin of building response
-		//   build response of ethernet
-		ethernet.destination = ethernet.source;
-		ethernet.source = context.host;
-		serialize(response, ethernet);
-
-		//   build response of datagram
-		datagram.checksum            = 0;
-		datagram.length              = 0;
-		datagram.flags               = (quint16)Datagram::PacketType::ROUTING;
-		datagram.destination.network = datagram.source.network;
-		datagram.destination.host    = datagram.source.host;
-		datagram.destination.socket  = datagram.source.socket;
-		datagram.source.network      = context.network;
-		datagram.source.host         = context.host;
-		datagram.source.socket       = Datagram::SOCKET_ROUTING;
 
 		//   build response of routing
 		routing.operation = Routing::Operation::RESPONSE;
@@ -147,13 +126,6 @@ void SocketRouting::process(const SocketManager::Context& context, ByteBuffer& r
 		}
 		// end of building response
 		response.rewind();
-		datagram.length   = response.getLimit() - datagram.base;
-		// Write datagram header to calculate checksum
-		serialize(response, datagram);
-		// Calculate checksum
-		datagram.checksum = checksum(response.getData(), datagram.base + 2, datagram.length - 2);
-		// Write datagram header again
-		serialize(response, datagram);
 	}
 		break;
 	case Routing::Operation::RESPONSE: {

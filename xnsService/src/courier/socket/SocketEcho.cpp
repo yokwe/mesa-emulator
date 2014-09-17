@@ -44,35 +44,13 @@ static log4cpp::Category& logger = Logger::getLogger("sockEcho");
 void SocketEcho::process(const SocketManager::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
-	Ethernet::Header ethernet;
-	Datagram::Header datagram;
-	Echo::Header     echo;
-
-	deserialize(request, ethernet);
-	deserialize(request, datagram);
+	Echo::Header echo;
 	deserialize(request, echo);
 
 	logger.info("operation = %s", getName(echo.operation));
 
 	switch(echo.operation) {
 	case Echo::Operation::REQUEST: {
-		// begin of building response
-		//   build response of ethernet
-		ethernet.destination = ethernet.source;
-		ethernet.source = context.host;
-		serialize(response, ethernet);
-
-		//   build response of datagram
-		datagram.checksum            = 0;
-		datagram.length              = 0;
-		datagram.flags               = (quint16)Datagram::PacketType::ECHO;
-		datagram.destination.network = datagram.source.network;
-		datagram.destination.host    = datagram.source.host;
-		datagram.destination.socket  = datagram.source.socket;
-		datagram.source.network      = context.network;
-		datagram.source.host         = context.host;
-		datagram.source.socket       = Datagram::SOCKET_ECHO;
-
 		//   build response of echo
 		echo.operation = Echo::Operation::RESPONSE;
 		serialize(response, echo);
@@ -84,18 +62,11 @@ void SocketEcho::process(const SocketManager::Context& context, ByteBuffer& requ
 		}
 		// end of building response
 		response.rewind();
-		datagram.length   = response.getLimit() - datagram.base;
-		// Write datagram header to calculate checksum
-		serialize(response, datagram);
-		// Calculate checksum
-		datagram.checksum = checksum(response.getData(), datagram.base + 2, datagram.length - 2);
-		// Write datagram header again
-		serialize(response, datagram);
 	}
 		break;
 	case Echo::Operation::RESPONSE: {
-			// DO NOTHING
-		}
+		logger.warn("RESPONSE %08X-%012X-%04X", context.reqDatagram.source.network, context.reqDatagram.source.host, context.reqDatagram.source.socket);
+	}
 		break;
 	default:
 		RUNTIME_ERROR();
