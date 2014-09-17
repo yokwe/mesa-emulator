@@ -1,7 +1,7 @@
 #ifndef COURIER_H__
 #define COURIER_H__
 
-#include <stdio.h>
+#include "../util/Util.h"
 
 #include <QtCore>
 typedef quint64 quint48;
@@ -27,19 +27,11 @@ namespace Courier {
     	CourierData() : base(UNITILIAZED_BASE) {}
     };
 
-    class CourierError {
-    public:
-    	const char* func;
-    	const char* file;
-    	const int   line;
-    	CourierError(const char* func_, const char* file_, const int line_) : func(func_), file(file_), line(line_) {}
-    };
-
     const char* getSocketName(quint16 value);
 
     quint16 checksum(quint8* base, quint32 offset, quint32 length);
 }
 
-#define COURIER_ERROR() {throw Courier::CourierError(__FUNCTION__, __FILE__, __LINE__);}
+#define COURIER_ERROR() RUNTIME_ERROR()
 
 #endif
