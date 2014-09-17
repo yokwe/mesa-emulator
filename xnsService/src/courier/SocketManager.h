@@ -34,24 +34,32 @@ OF SUCH DAMAGE.
 
 #include "Network.h"
 #include "Courier.h"
+#include "stub/StubError.h"
+#include "stub/StubEthernet.h"
+#include "stub/StubDatagram.h"
 
 class SocketManager {
 public:
 	class PacketError {
 	public:
-		const quint16 errorNumber;
-		const quint16 errorParameter;
-
-		PacketError(quint16 errorNumber_, quint16 errorParameter_) : errorNumber(errorNumber_), errorParameter(errorParameter_) {}
-		PacketError(quint16 errorNumber_) : errorNumber(errorNumber_), errorParameter(0) {}
+		const Courier::Error::ErrorNumber errorNumber;
+		const quint16                     errorParameter;
+		PacketError(Courier::Error::ErrorNumber errorNumber_, quint16 errorParameter_) : errorNumber(errorNumber_), errorParameter(errorParameter_) {}
+		PacketError(Courier::Error::ErrorNumber errorNumber_) : errorNumber(errorNumber_), errorParameter(0) {}
 	};
 
 	class Context {
 	public:
-		const quint32 network;
 		// network number of local network
-		const quint64 host;
+		const quint32 network;
 		// address of network interface
+		const quint64 host;
+		// request
+		Courier::Ethernet::Header reqEthernet;
+		Courier::Datagram::Header reqDatagram;
+		// response
+		Courier::Ethernet::Header resEthernet;
+		Courier::Datagram::Header resDatagram;
 		Context(quint32 network_, quint64 host_) : network(network_), host(host_) {}
 	};
 
