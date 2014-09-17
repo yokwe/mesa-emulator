@@ -90,7 +90,7 @@ public:
 
 	// reset buffer for fresh write
 	void clear() {
-		limit = capacity
+		limit = capacity;
 		pos   = 0;
 	}
 	// reset buffer for read written content
