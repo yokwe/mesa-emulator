@@ -15,7 +15,7 @@ public:
 		Courier::PacketExchange::Header reqPEX;
 		Courier::PacketExchange::Header resPEX;
 
-		Context(const SocketManager::Socket::Context* socketContext_) : SocketManager::Socket::Context(socketContext_) {}
+		Context(const SocketManager::Socket::Context& socketContext_) : SocketManager::Socket::Context(socketContext_) {}
 	};
 
 	const char* name;
@@ -23,16 +23,18 @@ public:
 	PEX(const char* name_) : name(name_) {}
 	virtual ~PEX() {}
 
-	void process(const Context& context, ByteBuffer& request, ByteBuffer& response);
+	virtual void process(const Context& context, ByteBuffer& request, ByteBuffer& response);
 };
 
 class SocketPEX : public SocketManager::Socket {
 public:
-	SocketPEX(Courier::PacketExchange::ClientType clientType_, PEX* pex) : SocketManager::Socket("PEX"), clientType(clientType_) {}
+	SocketPEX(Courier::PacketExchange::ClientType clientType_, PEX* pex_) :
+		SocketManager::Socket("PEX"), clientType(clientType_), pex(pex_) {}
 	void process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
 
 protected:
 	const Courier::PacketExchange::ClientType clientType;
+	PEX*                                      pex;
 };
 
 #endif
