@@ -64,9 +64,9 @@ public:
 			Courier::Datagram::Header resDatagram;
 
 			Context(quint32 network_, quint64 host_) : network(network_), host(host_) {}
-			Context(const Context* that) : network(that->network), host(that->host),
-					reqEthernet(that->reqEthernet), reqDatagram(that->reqDatagram),
-					resEthernet(that->resEthernet), resDatagram(that->resDatagram) {}
+			Context(const Context& that) : network(that.network), host(that.host),
+				reqEthernet(that.reqEthernet), reqDatagram(that.reqDatagram),
+				resEthernet(that.resEthernet), resDatagram(that.resDatagram) {}
 		};
 
 		const char* name;
