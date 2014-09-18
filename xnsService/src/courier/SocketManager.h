@@ -48,23 +48,27 @@ public:
 		PacketError(Courier::Error::ErrorNumber errorNumber_) : errorNumber(errorNumber_), errorParameter(0) {}
 	};
 
-	class Context {
-	public:
-		// network number of local network
-		const quint32 network;
-		// address of network interface
-		const quint64 host;
-		// request
-		Courier::Ethernet::Header reqEthernet;
-		Courier::Datagram::Header reqDatagram;
-		// response
-		Courier::Ethernet::Header resEthernet;
-		Courier::Datagram::Header resDatagram;
-		Context(quint32 network_, quint64 host_) : network(network_), host(host_) {}
-	};
-
 	class Socket {
 	public:
+		class Context {
+		public:
+			// network number of local network
+			const quint32 network;
+			// address of network interface
+			const quint64 host;
+			// request
+			Courier::Ethernet::Header reqEthernet;
+			Courier::Datagram::Header reqDatagram;
+			// response
+			Courier::Ethernet::Header resEthernet;
+			Courier::Datagram::Header resDatagram;
+
+			Context(quint32 network_, quint64 host_) : network(network_), host(host_) {}
+			Context(const Context* that) : network(that->network), host(that->host),
+					reqEthernet(that->reqEthernet), reqDatagram(that->reqDatagram),
+					resEthernet(that->resEthernet), resDatagram(that->resDatagram) {}
+		};
+
 		const char* name;
 		//
 		Socket(const char* name_) : name(name_) {}

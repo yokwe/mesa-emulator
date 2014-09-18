@@ -10,13 +10,12 @@
 
 class PEX {
 public:
-	class Context {
+	class Context : public SocketManager::Socket::Context {
 	public:
-		const SocketManager::Context& socketContext;
 		Courier::PacketExchange::Header reqPEX;
 		Courier::PacketExchange::Header resPEX;
 
-		Context(const SocketManager::Context& socketContext_) : socketContext(socketContext_) {}
+		Context(const SocketManager::Socket::Context* socketContext_) : SocketManager::Socket::Context(socketContext_) {}
 	};
 
 	const char* name;
@@ -30,7 +29,7 @@ public:
 class SocketPEX : public SocketManager::Socket {
 public:
 	SocketPEX(Courier::PacketExchange::ClientType clientType_, PEX* pex) : SocketManager::Socket("PEX"), clientType(clientType_) {}
-	void process(const SocketManager::Context& context, ByteBuffer& request, ByteBuffer& response);
+	void process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
 
 protected:
 	const Courier::PacketExchange::ClientType clientType;

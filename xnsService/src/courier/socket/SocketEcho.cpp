@@ -41,7 +41,7 @@ static log4cpp::Category& logger = Logger::getLogger("sockEcho");
 #include "../stub/StubDatagram.h"
 #include "../stub/StubEcho.h"
 
-void SocketEcho::process(const SocketManager::Context& context, ByteBuffer& request, ByteBuffer& response) {
+void SocketEcho::process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	Echo::Header echo;

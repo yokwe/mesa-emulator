@@ -96,7 +96,7 @@ void SocketManager::SocketThread::run() {
 		if (dataLength <= 0) RUNTIME_ERROR();
 		request.setLimit((quint32)dataLength);
 
-		Context context(socketManager.localNetworkNumber, socketManager.network.getAddress());
+		Socket::Context context(socketManager.localNetworkNumber, socketManager.network.getAddress());
 
 		// make alias of fields in context
 		Courier::Ethernet::Header& reqEthernet = context.reqEthernet;

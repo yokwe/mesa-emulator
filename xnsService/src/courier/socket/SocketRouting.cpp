@@ -63,7 +63,7 @@ void SocketRouting::addNetwork(quint32 networkNumber, quint16 hop) {
 	networkMap.insert(networkNumber, hop);
 }
 
-void SocketRouting::process(const SocketManager::Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
+void SocketRouting::process(const Socket::Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	Routing::Header  routing;
