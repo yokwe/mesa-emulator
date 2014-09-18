@@ -111,9 +111,13 @@ void SocketManager::SocketThread::run() {
 
 		try {
 			// check integrity of packet
-			if (reqDatagram.checksum != Courier::checksum(request.getData(), reqDatagram.base + 2, reqDatagram.length - 2)) {
-				// packet data is corrupted
-				throw PacketError(Courier::Error::ErrorNumber::BAD_CHECKSUM);
+			if (reqDatagram.checksum == Courier::Datagram::CHECKSUM_NONE) {
+				// DON'T VERIFY CHECKSUM
+			} else {
+				if (reqDatagram.checksum != Courier::checksum(request.getData(), reqDatagram.base + 2, reqDatagram.length - 2)) {
+					// packet data is corrupted
+					throw PacketError(Courier::Error::ErrorNumber::BAD_CHECKSUM);
+				}
 			}
 
 			// check destination network
@@ -171,6 +175,7 @@ void SocketManager::SocketThread::run() {
 				listener->process(context, request, response);
 			} else {
 				// no one listen the socket
+				logger.warn("NO SOCKET LISTENER  %s (%d)", Courier::getSocketName(reqDatagram.destination.socket), reqDatagram.destination.socket);
 				throw PacketError(Courier::Error::ErrorNumber::NO_SOCKET);
 			}
 		} catch (PacketError& packetError) {
