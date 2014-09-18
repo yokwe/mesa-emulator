@@ -67,6 +67,12 @@ void Courier::serialize  (ByteBuffer& buffer, const Time2::PacketData& value) {
 }
 
 void Courier::deserialize(ByteBuffer& buffer, Time2::PacketData& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.tag);
     switch(value.tag) {
     case Time2::PacketType::REQUEST:

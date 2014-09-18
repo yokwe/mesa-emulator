@@ -78,6 +78,12 @@ void Courier::serialize  (ByteBuffer& buffer, const Protocol::Protocol2Body& val
 }
 
 void Courier::deserialize(ByteBuffer& buffer, Protocol::Protocol2Body& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.tag);
     switch(value.tag) {
     case Protocol::MessageType::CALL:
@@ -157,6 +163,12 @@ void Courier::serialize  (ByteBuffer& buffer, const Protocol::RejectBody& value)
 }
 
 void Courier::deserialize(ByteBuffer& buffer, Protocol::RejectBody& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.tag);
     switch(value.tag) {
     case Protocol::RejectCode::NO_SUCH_PROGRAM_NUMBER:
@@ -198,6 +210,12 @@ void Courier::serialize  (ByteBuffer& buffer, const Protocol::Protocol3Body& val
 }
 
 void Courier::deserialize(ByteBuffer& buffer, Protocol::Protocol3Body& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.tag);
     switch(value.tag) {
     case Protocol::MessageType::CALL:
@@ -240,6 +258,12 @@ void Courier::serialize  (ByteBuffer& buffer, const Protocol::MessageObject& val
 }
 
 void Courier::deserialize(ByteBuffer& buffer, Protocol::MessageObject& value) {
+    if (value.base != CourierData::UNITILIAZED_BASE) {
+        logger.fatal("value.base = %d", value.base);
+        COURIER_ERROR()
+    }
+    value.base = buffer.getPos();
+    
     Courier::deserialize(buffer, value.tag);
     switch(value.tag) {
     case Protocol::ProtocolType::PROTOCOL0:
