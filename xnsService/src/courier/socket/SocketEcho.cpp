@@ -37,8 +37,6 @@ static log4cpp::Category& logger = Logger::getLogger("sockEcho");
 #include "SocketEcho.h"
 
 #include "../Courier.h"
-#include "../stub/StubEthernet.h"
-#include "../stub/StubDatagram.h"
 #include "../stub/StubEcho.h"
 
 void SocketEcho::process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {

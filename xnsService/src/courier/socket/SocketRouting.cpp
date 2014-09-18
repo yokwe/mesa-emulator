@@ -37,8 +37,6 @@ static log4cpp::Category& logger = Logger::getLogger("sockRouting");
 #include "SocketRouting.h"
 
 #include "../Courier.h"
-#include "../stub/StubEthernet.h"
-#include "../stub/StubDatagram.h"
 #include "../stub/StubRouting.h"
 
 void SocketRouting::addNetwork(quint32 networkNumber, quint16 hop) {
