@@ -67,7 +67,8 @@ void PEXTime::process(const Context& /*context*/, ByteBuffer& request, ByteBuffe
 
 		QTimeZone timeZone = dateTime.timeZone();
 
-		const quint32 currentTime              = dateTime.toTime_t() + (24 * 60 * 60);
+		//const quint32 currentTime            = dateTime.toTime_t() + (24 * 60 * 60);
+		const quint32 currentTime              = dateTime.toTime_t();
 		const QTimeZone::OffsetData offsetData = timeZone.offsetData(dateTime);
 		const qint32 offset                    = offsetData.offsetFromUtc;
 		const qint32 offsetInMinutes = ::abs(offset) / 60;
