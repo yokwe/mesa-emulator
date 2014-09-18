@@ -20,6 +20,9 @@ SOURCES += stub/StubDatagram.cpp stub/StubEcho.cpp stub/StubError.cpp stub/StubE
 HEADERS += stub/StubExpeditedCourier.h   stub/StubPacketExchange.h   stub/StubProtocol.h   stub/StubTime2.h
 SOURCES += stub/StubExpeditedCourier.cpp stub/StubPacketExchange.cpp stub/StubProtocol.cpp stub/StubTime2.cpp
 
+HEADERS += pex/PEXTime.h
+SOURCES += pex/PEXTIme.cpp
+
 ###############################################
 
 INCLUDEPATH += .
