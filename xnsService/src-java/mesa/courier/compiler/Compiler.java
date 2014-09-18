@@ -269,6 +269,16 @@ public class Compiler {
 					outc.indent().println();
 					outc.indent().format("void Courier::deserialize(ByteBuffer& buffer, %s::%s& value) {", program.info.getProgramVersion(), name).println();
 					outc.nest();
+					
+					outc.indent().println("if (value.base != CourierData::UNITILIAZED_BASE) {");
+					outc.nest();
+					outc.indent().println("logger.fatal(\"value.base = %d\", value.base);");
+					outc.indent().println("COURIER_ERROR()");
+					outc.unnest();
+					outc.indent().println("}");
+					outc.indent().println("value.base = buffer.getPos();");
+					outc.indent().println();
+					
 					outc.indent().format("Courier::deserialize(buffer, value.tag);").println();
 					outc.indent().format("switch(value.tag) {").println();
 					
