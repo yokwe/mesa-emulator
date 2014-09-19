@@ -26,7 +26,7 @@ OF SUCH DAMAGE.
 
 
 //
-// Datagram.cpp
+// SocketManager.cpp
 //
 
 #include "../util/Util.h"
@@ -202,7 +202,6 @@ void SocketManager::SocketThread::run() {
 
 			// output request packet data from datagram
 			quint8* p = request.getData() + reqDatagram.base;
-			//Courier::checksum(request.getData(), datagram.base + 2, datagram.length - 2)
 			for(quint32 i = response.getPos(); i < reqDatagram.length; i++) {
 				response.put8(*p++);
 			}
