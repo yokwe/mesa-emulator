@@ -75,6 +75,19 @@ public:
 		virtual ~Socket() {}
 
 		virtual void process(const Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
+
+		Courier::Datagram::PacketType getPacketType(Courier::Datagram::Header datagram) {
+			return (Courier::Datagram::PacketType)(datagram.flags & 0xff);
+		}
+		quint32 getHopCount(Courier::Datagram::Header datagram) {
+			return (datagram.flags >> 8) & 0xff;
+		}
+		void setPacketType(Courier::Datagram::Header& datagram, Courier::Datagram::PacketType packetType) {
+			datagram.flags |= ((datagram.flags & 0xff00) | ((quint16)packetType & 0x00ff));
+		}
+		void setHopCount(Courier::Datagram::Header& datagram, quint16 hopCount) {
+			datagram.flags |= ((hopCount << 8) & 0xff00) | (datagram.flags & 0x00ff);
+		}
 	};
 
 	SocketManager(Network& network_, quint48 localNetworkNumber_) : network(network_), thread(0), localNetworkNumber(localNetworkNumber_) {}
