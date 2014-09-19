@@ -161,6 +161,7 @@ void SocketManager::SocketThread::run() {
 
 			SocketManager::Socket* listener = socketManager.map.value(reqDatagram.destination.socket, 0);
 			if (listener) {
+				logger.debug("====  >>>>");
 				Courier::Datagram::PacketType reqPacketType = (Courier::Datagram::PacketType)(reqDatagram.flags & 0xff);
 				logger.debug("ETHER     %012llX  %012llX  %04X", reqEthernet.destination, reqEthernet.source, reqEthernet.type);
 				logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
@@ -168,7 +169,6 @@ void SocketManager::SocketThread::run() {
 					reqDatagram.destination.network, reqDatagram.destination.host, Courier::getSocketName(reqDatagram.destination.socket),
 					reqDatagram.source.network, reqDatagram.source.host, Courier::getSocketName(reqDatagram.source.socket));
 
-				logger.debug("====");
 
 				// Call listener if exists.
 				QMutexLocker mutexLocker(&socketManager.mutex);
@@ -205,6 +205,15 @@ void SocketManager::SocketThread::run() {
 			for(quint32 i = response.getPos(); i < reqDatagram.length; i++) {
 				response.put8(*p++);
 			}
+
+			Courier::Datagram::PacketType resPacketType = (Courier::Datagram::PacketType)(resDatagram.flags & 0xff);
+			logger.debug("====  <<<<  ERROR");
+			logger.debug("ETHER     %012llX  %012llX  %04X", resEthernet.destination, resEthernet.source, resEthernet.type);
+			logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
+				resDatagram.checksum, resDatagram.length, (resDatagram.flags >> 8), Courier::getName(resPacketType),
+				resDatagram.destination.network, resDatagram.destination.host, Courier::getSocketName(resDatagram.destination.socket),
+				resDatagram.source.network, resDatagram.source.host, Courier::getSocketName(resDatagram.source.socket));
+			logger.debug("ERROR     %4d %d", resError.number, resError.parameter);
 		}
 
 		// if something is written to response, sent it
