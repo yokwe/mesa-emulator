@@ -50,11 +50,19 @@ static quint32 toMesaTime(quint32 unixTime) {
 	return unixTime + EPOCH_DIFF;
 }
 
+static quint32 toUnixTime(quint32 mesaTime) {
+	return mesaTime - EPOCH_DIFF;
+}
+
 void PEXTime::process(const Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	Time2::Packet reqPacket;
 	deserialize(request, reqPacket);
+
+	Time2::Packet resPacket;
+	resPacket.base      = reqPacket.base;
+	resPacket.data.base = reqPacket.data.base;
 
 	if (reqPacket.version != Time2::VERSION) {
 		logger.error("Unexpected version = %d", reqPacket.version);
@@ -63,22 +71,17 @@ void PEXTime::process(const Context& /*context*/, ByteBuffer& request, ByteBuffe
 
 	switch(reqPacket.data.tag) {
 	case Time2::PacketType::REQUEST: {
-		QDateTime dateTime;
-
-		QTimeZone timeZone = dateTime.timeZone();
-
-		//const quint32 currentTime            = dateTime.toTime_t() + (24 * 60 * 60);
+		const QDateTime dateTime(QDateTime::currentDateTime());
+		const QTimeZone timeZone               = dateTime.timeZone();
+		//const quint32 currentTime              = dateTime.toTime_t() + ((24 * 60 * 60) * 2);
 		const quint32 currentTime              = dateTime.toTime_t();
 		const QTimeZone::OffsetData offsetData = timeZone.offsetData(dateTime);
 		const qint32 offset                    = offsetData.offsetFromUtc;
-		const qint32 offsetInMinutes = ::abs(offset) / 60;
+		const qint32 offsetInMinutes           = ::abs(offset) / 60;
 
 		// start of build response
-		Time2::Packet resPacket;
-		resPacket.base      = reqPacket.base;
 		resPacket.version   = Time2::VERSION;
 
-		resPacket.data.base = reqPacket.data.base;
 		resPacket.data.tag  = Time2::PacketType::RESPONSE;
 
 		resPacket.data.RESPONSE.currentTime     = toMesaTime(currentTime);
@@ -96,6 +99,12 @@ void PEXTime::process(const Context& /*context*/, ByteBuffer& request, ByteBuffe
 
 		// end of building response
 		response.rewind();
+
+		{
+			QDateTime t;
+			t.setTime_t(toUnixTime(resPacket.data.RESPONSE.currentTime));
+			logger.debug("REQUEST  %s  %08X", qPrintable(t.toString("yyyy-MM-dd HH:mm:ss")), resPacket.data.RESPONSE.currentTime);
+		}
 	}
 		break;
 	case Time2::PacketType::RESPONSE:
@@ -108,5 +117,4 @@ void PEXTime::process(const Context& /*context*/, ByteBuffer& request, ByteBuffe
 		RUNTIME_ERROR();
 		break;
 	}
-
 }
