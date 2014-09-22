@@ -76,16 +76,16 @@ public:
 
 		virtual void process(const Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
 
-		Courier::Datagram::PacketType getPacketType(Courier::Datagram::Header datagram) {
+		static Courier::Datagram::PacketType getPacketType(Courier::Datagram::Header datagram) {
 			return (Courier::Datagram::PacketType)(datagram.flags & 0xff);
 		}
-		quint32 getHopCount(Courier::Datagram::Header datagram) {
+		static quint32 getHopCount(Courier::Datagram::Header datagram) {
 			return (datagram.flags >> 8) & 0xff;
 		}
-		void setPacketType(Courier::Datagram::Header& datagram, Courier::Datagram::PacketType packetType) {
+		static void setPacketType(Courier::Datagram::Header& datagram, Courier::Datagram::PacketType packetType) {
 			datagram.flags |= ((datagram.flags & 0xff00) | ((quint16)packetType & 0x00ff));
 		}
-		void setHopCount(Courier::Datagram::Header& datagram, quint16 hopCount) {
+		static void setHopCount(Courier::Datagram::Header& datagram, quint16 hopCount) {
 			datagram.flags |= ((hopCount << 8) & 0xff00) | (datagram.flags & 0x00ff);
 		}
 	};
@@ -98,6 +98,8 @@ public:
 	void start();
 	void stop();
 	int  isRunning();
+	
+	static void dumpPacket(Courier::Ethernet::Header ethernet, Courier::Datagram::Header datagram);
 private:
 	class SocketThread : public QThread {
 	public:
