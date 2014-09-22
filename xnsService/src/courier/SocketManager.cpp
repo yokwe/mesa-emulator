@@ -162,13 +162,7 @@ void SocketManager::SocketThread::run() {
 			SocketManager::Socket* listener = socketManager.map.value(reqDatagram.destination.socket, 0);
 			if (listener) {
 				logger.debug("====  >>>>");
-				Courier::Datagram::PacketType reqPacketType = (Courier::Datagram::PacketType)(reqDatagram.flags & 0xff);
-				logger.debug("ETHER     %012llX  %012llX  %04X", reqEthernet.destination, reqEthernet.source, reqEthernet.type);
-				logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
-					reqDatagram.checksum, reqDatagram.length, (reqDatagram.flags >> 8), Courier::getName(reqPacketType),
-					reqDatagram.destination.network, reqDatagram.destination.host, Courier::getSocketName(reqDatagram.destination.socket),
-					reqDatagram.source.network, reqDatagram.source.host, Courier::getSocketName(reqDatagram.source.socket));
-
+				dumpPacket(reqEthernet, reqDatagram);
 
 				// Call listener if exists.
 				QMutexLocker mutexLocker(&socketManager.mutex);
@@ -206,13 +200,8 @@ void SocketManager::SocketThread::run() {
 				response.put8(*p++);
 			}
 
-			Courier::Datagram::PacketType resPacketType = (Courier::Datagram::PacketType)(resDatagram.flags & 0xff);
 			logger.debug("====  <<<<  ERROR");
-			logger.debug("ETHER     %012llX  %012llX  %04X", resEthernet.destination, resEthernet.source, resEthernet.type);
-			logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
-				resDatagram.checksum, resDatagram.length, (resDatagram.flags >> 8), Courier::getName(resPacketType),
-				resDatagram.destination.network, resDatagram.destination.host, Courier::getSocketName(resDatagram.destination.socket),
-				resDatagram.source.network, resDatagram.source.host, Courier::getSocketName(resDatagram.source.socket));
+			dumpPacket(resEthernet, resDatagram);
 			logger.debug("ERROR     %4d %d", resError.number, resError.parameter);
 		}
 
@@ -256,3 +245,13 @@ void SocketManager::SocketThread::run() {
 		}
 	}
 }
+
+void SocketManager::dumpPacket(Courier::Ethernet::Header ethernet, Courier::Datagram::Header datagram) {
+	Courier::Datagram::PacketType reqPacketType = (Courier::Datagram::PacketType)(datagram.flags & 0xff);
+	logger.debug("ETHER     %012llX  %012llX  %04X", ethernet.destination, ethernet.source, ethernet.type);
+	logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
+		datagram.checksum, datagram.length, (datagram.flags >> 8), Courier::getName(reqPacketType),
+		datagram.destination.network, datagram.destination.host, Courier::getSocketName(datagram.destination.socket),
+		datagram.source.network, datagram.source.host, Courier::getSocketName(datagram.source.socket));
+}
+
