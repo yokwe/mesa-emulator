@@ -61,8 +61,29 @@ void SocketRouting::addNetwork(quint32 networkNumber, quint16 hop) {
 	networkMap.insert(networkNumber, hop);
 }
 
-void SocketRouting::process(const Socket::Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
+void SocketRouting::process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
+
+	// Sanity check of packetType
+	{
+		Error::Header reqError;
+		Datagram::PacketType reqPacketType = getPacketType(context.reqDatagram);
+		switch(reqPacketType) {
+		case Datagram::PacketType::ROUTING:
+			break;
+		case Datagram::PacketType::ERROR:
+			Courier::deserialize(request, reqError);
+			logger.warn("packetType = ERROR");
+			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
+			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
+			response.clear();
+			return;
+		default:
+			logger.fatal("Unknown packetType = %d", (quint16)reqPacketType);
+			RUNTIME_ERROR();
+		}
+	}
+
 
 	Routing::Header  routing;
 	deserialize(request, routing);

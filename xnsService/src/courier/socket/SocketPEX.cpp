@@ -42,6 +42,27 @@ static log4cpp::Category& logger = Logger::getLogger("sockPEX");
 void SocketPEX::process(const Socket::Context& socketContext, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
+	// Sanity check of packetType
+	{
+		Error::Header reqError;
+		Datagram::PacketType reqPacketType = getPacketType(socketContext.reqDatagram);
+		switch(reqPacketType) {
+		case Datagram::PacketType::PACKET_EXCHANGE:
+			break;
+		case Datagram::PacketType::ERROR:
+			Courier::deserialize(request, reqError);
+			logger.warn("packetType = ERROR");
+			SocketManager::dumpPacket(socketContext.reqEthernet, socketContext.reqDatagram);
+			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
+			response.clear();
+			return;
+		default:
+			logger.fatal("Unknown packetType = %d", (quint16)reqPacketType);
+			RUNTIME_ERROR();
+		}
+	}
+
+
 	PEX::Context context(socketContext);
 	Courier::PacketExchange::Header& reqPEX = context.reqPEX;
 	Courier::PacketExchange::Header& resPEX = context.resPEX;
