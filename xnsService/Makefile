@@ -62,14 +62,14 @@ CLASSPATH	:= bin:$(JARDIR)/antlr-4.1-complete.jar:$(JARDIR)/hamcrest-core-1.3.ja
 COURIER_TARGET	:= Time2 Ethernet Datagram Echo Error ExpeditedCourier PacketExchange Routing Protocol
 
 
-clear-antlr:
-	rm -rf java-src/mesa/courier/antlr
+clean-antlr:
+	rm -rf src-java/mesa/courier/antlr/*.java
 	
 gen-antlr:
 	mkdir -p tmp/antlr
 	rm   -rf tmp/antlr/*
 	java -jar ../Externals/jar/antlr-4.1-complete.jar -o tmp/antlr -package mesa.courier.antlr -no-listener -visitor src-java/mesa/courier/antlr/Courier.g
-	rm   -rf java-src/mesa/courier/antlr/*.java
+	rm   -rf src-java/mesa/courier/antlr/*.java
 	cp   -p  tmp/antlr/src-java/mesa/courier/antlr/*.java src-java/mesa/courier/antlr
 
 gen-stub:
