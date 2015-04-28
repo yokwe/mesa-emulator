@@ -26,7 +26,7 @@ qt5-default:
 clean:
 	echo "PATH = $(PATH)"
 	rm -rf tmp/build
-	mkdir  tmp/build
+	mkdir  -p tmp/build
 	mkdir  tmp/build/app
 	mkdir  tmp/build/courier
 	mkdir  tmp/build/util
