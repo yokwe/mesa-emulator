@@ -1,0 +1,8 @@
+#
+# .gitignore for guam
+#
+
+tmp/
+data/Dawn/
+data/GVWin/
+src/*/Makefile
