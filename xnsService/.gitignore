@@ -1,6 +1,6 @@
 #
 # .gitignore for xnsService
 #
-
+bin/
 tmp/
 src/*/Makefile
