@@ -9,10 +9,8 @@ CONFIG  += staticlib
 
 # Input
 
-HEADERS += HotSpot.h   Interpreter.h   Opcode.h   Run.h
-SOURCES += HotSpot.cpp Interpreter.cpp Opcode.cpp Run.cpp
-
-SORUCES += Run_decl.h
+HEADERS += Interpreter.h   Opcode.h   Run.h
+SOURCES += Interpreter.cpp Opcode.cpp Run.cpp
 
 SOURCES += Opcode_bitblt.cpp Opcode_block.cpp Opcode_control.cpp Opcode_process.cpp
 SOURCES += Opcode_simple.cpp Opcode_special.cpp

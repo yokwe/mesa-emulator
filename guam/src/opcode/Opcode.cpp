@@ -38,7 +38,6 @@ static log4cpp::Category& logger = Logger::getLogger("Opcode");
 #include "../mesa/MesaThread.h"
 
 #include "Opcode.h"
-#include "HotSpot.h"
 #include "Interpreter.h"
 
 __attribute__((always_inline)) static inline void R_MOP_OPCODE_TRAP_(Run run) {

@@ -41,7 +41,6 @@ static log4cpp::Category& logger = Logger::getLogger("process");
 #include "../mesa/MesaThread.h"
 
 #include "Opcode.h"
-#include "HotSpot.h"
 
 #define PDA_OFFSET(m) (PDA + OFFSET(ProcessDataArea, m))
 #define SV_OFFSET(sv,m) (sv + OFFSET(StateVector, m))
@@ -442,7 +441,6 @@ void I_##name(Opcode* opcode) { \
 	Run run = C_##name##_(opcode); \
 	PC = savedPC + L_##name; \
 	R_##name##_(run); \
-	if (DEBUG_ENABLE_HOTSPOT) HotSpot::update_PROC(); \
 }
 
 #define DEF_C_0_RESCHEDULE(name) \

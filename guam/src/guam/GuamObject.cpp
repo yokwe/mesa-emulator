@@ -36,7 +36,6 @@ static log4cpp::Category& logger = Logger::getLogger("guamobject");
 
 #include "../mesa/Memory.h"
 #include "../opcode/Interpreter.h"
-#include "../opcode/HotSpot.h"
 
 GuamObject::GuamObject() {
 	preference = new Preference();
@@ -97,7 +96,5 @@ void GuamObject::startEmulator() {
 	//extern void MonoBlt_stats();
 	//MonoBlt_stats();
 
-	HotSpot::stats();
-	//
 	emulatorStopped();
 }

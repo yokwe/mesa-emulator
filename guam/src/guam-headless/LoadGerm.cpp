@@ -42,7 +42,6 @@ static log4cpp::Category& logger = Logger::getLogger("LoadGerm");
 #include "../mesa/Memory.h"
 
 #include "../opcode/Interpreter.h"
-#include "../opcode/HotSpot.h"
 
 #include <QtCore>
 
@@ -101,8 +100,6 @@ int main() {
 
 	//extern void MonoBlt_stats();
 	//MonoBlt_stats();
-
-	HotSpot::stats();
 
 	logger.info("elapsedTime = %lld msec", elapsedTime / (1000 * 1000)); // display as milliseconds
 

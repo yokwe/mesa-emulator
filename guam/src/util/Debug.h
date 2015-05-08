@@ -90,13 +90,6 @@ static const int DEBUG_STOP_MESSAGE_UNTIL_MP = 0;
 static const int DEBUG_SHOW_STATS_OPCODE    = 0;
 static const int DEBUG_SHOW_STATS_RUN       = 0;
 
-static const int DEBUG_ENABLE_HOTSPOT       = 0;
-static const int DEBUG_ENABLE_PEEPHOLE      = 0;
-static const int DEBUG_SHOW_HOTSPOT_COMPILE = 0;
-static const int DEBUG_SHOW_HOTSPOT_RUN     = 0;
-static const int DEBUG_SHOW_HOTSPOT_DETAIL  = 0;
-static const int DEBUG_SHOW_HOTSPOT_USAGE   = 0;
-
 static const int DEBUG_TRACE_COMPILE        = 0;
 static const int DEBUG_TRACE_RUN            = 0;
 static const int DEBUG_USE_COMPILE_RUN      = 0;

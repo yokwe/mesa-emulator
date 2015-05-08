@@ -41,7 +41,6 @@ static log4cpp::Category& logger = Logger::getLogger("control");
 #include "../mesa/MesaThread.h"
 
 #include "Opcode.h"
-#include "HotSpot.h"
 
 // 9.5.2 Trap Processing
 // Trap: PROC[ptr: POINTER TO ControlLink]
@@ -320,7 +319,6 @@ void I_##name(Opcode* opcode) { \
 	Run run = C_##name##_(opcode); \
 	PC = savedPC + L_##name; \
 	R_##name##_(run); \
-	if (DEBUG_ENABLE_HOTSPOT) HotSpot::update_XFER(); \
 }
 
 #define DEF_CI_n_XFER(name, n) \
@@ -331,7 +329,6 @@ void I_##name##n(Opcode* opcode) { \
 	Run run = C_##name##n##_(opcode); \
 	PC = savedPC + L_##name##n; \
 	R_##name##_(run); \
-	if (DEBUG_ENABLE_HOTSPOT) HotSpot::update_XFER(); \
 }
 
 #define DEF_C_0_XFER(name) \
@@ -383,7 +380,6 @@ void I_##name(Opcode* opcode) { \
 	Run run = C_##name##_(opcode); \
 	PC = savedPC + L_##name; \
 	R_##r##_(run); \
-	if (DEBUG_ENABLE_HOTSPOT) HotSpot::update_XFER(); \
 }
 
 
