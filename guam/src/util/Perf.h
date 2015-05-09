@@ -32,7 +32,7 @@ OF SUCH DAMAGE.
 #ifndef PERF_H__
 #define PERF_H__
 
-static const int PERF_ENABLE    = 0;
+static const int PERF_ENABLE    = 1;
 
 extern int perf_stop_at_mp_8000;
 
@@ -61,7 +61,10 @@ extern long long perf_FetchPda;
 extern long long perf_StorePda;
 extern long long perf_storeLF;
 extern long long perf_storeLFHit;
-
+extern long long perf_storeMDS;
+extern long long perf_storeMDSHit;
+extern long long perf_storePDA;
+extern long long perf_storePDAHit;
 
 #define Perf_log() if (PERF_ENABLE) { \
 		logger.info("perf_Dispatch      = %10llu", perf_Dispatch); \
@@ -89,6 +92,10 @@ extern long long perf_storeLFHit;
 		logger.info("perf_StorePda      = %10llu", perf_StorePda); \
 		logger.info("perf_storeLF       = %10llu", perf_storeLF); \
 		logger.info("perf_storeLFHit    = %10llu", perf_storeLFHit); \
+		logger.info("perf_storeMDS      = %10llu", perf_storeMDS); \
+		logger.info("perf_storeMDSHit   = %10llu", perf_storeMDSHit); \
+		logger.info("perf_storePDA      = %10llu", perf_storePDA); \
+		logger.info("perf_storePDAHit   = %10llu", perf_storePDAHit); \
 }
 
 #endif

@@ -345,17 +345,18 @@ public:
 		return mds;
 	}
 	__attribute__((always_inline)) static inline CARD16* storeMDS(CARD16 ptr) {
+		if (PERF_ENABLE) perf_storeMDS++;
 		const CARD32 vp = ptr / PageSize;
 		const CARD32 of = ptr % PageSize;
-		{
-			CARD16* ret = cacheMDS[vp].page;
-			if (ret) return ret + of;
+
+		CARD16* ret = cacheMDS[vp].page;
+		if (ret == 0) {
+			ret = Memory::Store(lengthenPointer(ptr)) - of;
+			cacheMDS[vp].page = ret;
+		} else {
+			if (PERF_ENABLE) perf_storeMDSHit++;
 		}
-		{
-			CARD16* ret = Memory::Store(lengthenPointer(ptr));
-			cacheMDS[vp].page = ret - of;
-			return ret;
-		}
+		return ret + of;
 	}
 protected:
 	static const CARD32 N_BIT = 8;
@@ -575,13 +576,52 @@ static inline POINTER OffsetPda(LONG_POINTER ptr) {
 	if ((ptr & 0xffff0000) != (PDA & 0xffff0000)) ERROR();
 	return (CARD16)(ptr - PDA);
 }
+
+class PDACache {
+public:
+	static void statsAll() {
+		int used = 0;
+		for(CARD32 i = 0; i < N_ENTRY; i++) {
+			if (cachePDA[i].page) used++;
+		}
+		logger.info("PDACache  %3d / %3d", used, N_ENTRY);
+	}
+	__attribute__((always_inline)) static inline CARD16* storePDA(CARD16 ptr) {
+		if (PERF_ENABLE) perf_storePDA++;
+		const CARD32 vp = ptr / PageSize;
+		const CARD32 of = ptr % PageSize;
+
+		CARD16* ret = cachePDA[vp].page;
+		if (ret == 0) {
+			ret = Memory::Store(LengthenPdaPtr(ptr)) - of;
+			cachePDA[vp].page = ret;
+		} else {
+			if (PERF_ENABLE) perf_storePDAHit++;
+		}
+		return ret + of;
+	}
+protected:
+	static const CARD32 N_BIT = 8;
+	static const CARD32 N_ENTRY = 1 << N_BIT;
+	static const CARD32 MASK = (1 << N_BIT) - 1;
+	struct Entry {
+		CARD16* page;
+		Entry() : page(0) {}
+		void invalidate() {
+			page = 0;
+		}
+	};
+
+	static Entry  cachePDA[N_ENTRY];
+};
+
 static inline CARD16* FetchPda(POINTER ptr) {
 	if (PERF_ENABLE) perf_FetchPda++;
-	return fetchCache.fetch(LengthenPdaPtr(ptr));
+	return PDACache::storePDA(ptr);
 }
 static inline CARD16* StorePda(POINTER ptr) {
 	if (PERF_ENABLE) perf_StorePda++;
-	return storeCache.store(LengthenPdaPtr(ptr));
+	return PDACache::storePDA(ptr);
 }
 
 // 9.5.3 Trap Handlers

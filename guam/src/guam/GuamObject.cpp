@@ -88,6 +88,7 @@ void GuamObject::startEmulator() {
 	Perf_log();
 	PageCache::statsAll();
 	MDSCache::statsAll();
+	PDACache::statsAll();
 	CodeCache::stats();
 
 	//extern void MonoBlt_MemoryCache_stats();

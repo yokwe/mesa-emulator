@@ -58,3 +58,7 @@ long long perf_FetchPda = 0;
 long long perf_StorePda = 0;
 long long perf_storeLF = 0;
 long long perf_storeLFHit = 0;
+long long perf_storeMDS = 0;
+long long perf_storeMDSHit = 0;
+long long perf_storePDA = 0;
+long long perf_storePDAHit = 0;

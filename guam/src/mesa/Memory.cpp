@@ -84,6 +84,8 @@ CARD32         Memory::displayBytesPerLine = 0;
 CARD32          MDSCache::mds = 0;
 MDSCache::Entry MDSCache::cacheMDS[N_ENTRY];
 
+PDACache::Entry PDACache::cachePDA[N_ENTRY];
+
 CARD16          LFCache::lf = 0;
 CARD16          LFCache::endCacheLF = 0;
 CARD16*         LFCache::cacheLF = 0;
