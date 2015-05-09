@@ -44,7 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentkyeboard");
 void AgentKeyboard::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (KeyboardIOFaceGuam::KeyboardFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (KeyboardIOFaceGuam::KeyboardFCBType *)Store(fcbAddress);
 	fcb->keyStates[0] = 0xffff;
 	fcb->keyStates[1] = 0xffff;
 	fcb->keyStates[2] = 0xffff;

@@ -106,7 +106,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 
 		CARD32 dataPtr = iocb->dataPtr;
 		for(int i = 0; i < iocb->pageCount; i++) {
-			CARD16 *buffer = Memory::getAddress(dataPtr);
+			CARD16 *buffer = Store(dataPtr);
 			diskFile->readPage(block++, buffer);
 			dataPtr += PageSize;
 		}
@@ -120,7 +120,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 
 		CARD32 dataPtr = iocb->dataPtr;
 		for(int i = 0; i < iocb->pageCount; i++) {
-			CARD16 *buffer = Memory::getAddress(dataPtr);
+			CARD16 *buffer = Fetch(dataPtr);
 			diskFile->writePage(block++, buffer);
 			dataPtr += PageSize;
 		}
@@ -135,7 +135,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 		int ret = 0;
 		CARD32 dataPtr = iocb->dataPtr;
 		for(int i = 0; i < iocb->pageCount; i++) {
-			CARD16 *buffer = Memory::getAddress(dataPtr);
+			CARD16 *buffer = Fetch(dataPtr);
 			ret |= diskFile->verifyPage(block++, buffer);
 			dataPtr += PageSize;
 		}
@@ -159,7 +159,7 @@ CARD32 AgentDisk::getFCBSize() {
 void AgentDisk::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (DiskIOFaceGuam::DiskFCBType*)Memory::getAddress(fcbAddress);
+	fcb = (DiskIOFaceGuam::DiskFCBType*)Store(fcbAddress);
 	fcb->nextIOCB = 0;
 	fcb->interruptSelector = 0;
 	fcb->stopAgent = 0;
@@ -199,7 +199,7 @@ void AgentDisk::Call() {
 		if (DEBUG_SHOW_AGENT_DISK) logger.debug("AGENT %s fcb->nextIOCB == 0", name);
 		return; // Return if there is no IOCB
 	}
-	DiskIOFaceGuam::DiskIOCBType *iocb = (DiskIOFaceGuam::DiskIOCBType *)Memory::getAddress(fcb->nextIOCB);
+	DiskIOFaceGuam::DiskIOCBType *iocb = (DiskIOFaceGuam::DiskIOCBType *)Store(fcb->nextIOCB);
 	for(;;) {
 		// sanity check
 		CARD16 deviceIndex = iocb->deviceIndex;
@@ -223,7 +223,7 @@ void AgentDisk::Call() {
 
 		if (iocb->nextIOCB == 0) break;
 		// advance to next IOCB
-		iocb = (DiskIOFaceGuam::DiskIOCBType *)Memory::getAddress(iocb->nextIOCB);
+		iocb = (DiskIOFaceGuam::DiskIOCBType *)Store(iocb->nextIOCB);
 	}
 
 	// notify with interrupt

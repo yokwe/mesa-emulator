@@ -44,7 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentmouse");
 void AgentMouse::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (MouseIOFaceGuam::MouseFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (MouseIOFaceGuam::MouseFCBType *)Store(fcbAddress);
 	fcb->currentMousePosition.mouseXCoord = 0;
 	fcb->currentMousePosition.mouseYCoord = 0;
 	fcb->cursorOffset.mouseXCoord         = 0;

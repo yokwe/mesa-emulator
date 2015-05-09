@@ -44,7 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentbeep");
 void AgentBeep::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (BeepIOFaceGuam::BeepFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (BeepIOFaceGuam::BeepFCBType *)Store(fcbAddress);
 	fcb->frequency = 0;
 }
 

@@ -50,7 +50,7 @@ CARD32 AgentFloppy::getFCBSize() {
 void AgentFloppy::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (FloppyIOFaceGuam::FloppyFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (FloppyIOFaceGuam::FloppyFCBType *)Store(fcbAddress);
 	fcb->nextIOCB = 0;
 	fcb->interruptSelector = 0;
 	fcb->stopAgent = 0;
@@ -84,7 +84,7 @@ void AgentFloppy::Call() {
 		if (DEBUG_SHOW_AGENT_FLOPPY) logger.debug("AGENT %s fcb->nextIOCB == 0", name);
 		return; // Return if there is no IOCB
 	}
-	FloppyIOFaceGuam::FloppyIOCBType *iocb = (FloppyIOFaceGuam::FloppyIOCBType *)Memory::getAddress(fcb->nextIOCB);
+	FloppyIOFaceGuam::FloppyIOCBType *iocb = (FloppyIOFaceGuam::FloppyIOCBType *)Store(fcb->nextIOCB);
 	for(;;) {
 		CARD16 deviceIndex = iocb->operation.device; // TODO Is this correct?
 		if (fcb->numberOfDCBs <= deviceIndex) ERROR();
@@ -102,7 +102,7 @@ void AgentFloppy::Call() {
 
 			CARD32 dataPtr = iocb->operation.dataPtr;
 			for(int i = 0; i < iocb->operation.count; i++) {
-				CARD16 *buffer = Memory::getAddress(dataPtr);
+				CARD16 *buffer = Store(dataPtr);
 				diskFile->readPage(block++, buffer);
 				dataPtr += PageSize;
 			}
@@ -116,7 +116,7 @@ void AgentFloppy::Call() {
 
 			CARD32 dataPtr = iocb->operation.dataPtr;
 			for(int i = 0; i < iocb->operation.count; i++) {
-				CARD16 *buffer = Memory::getAddress(dataPtr);
+				CARD16 *buffer = Fetch(dataPtr);
 				diskFile->writePage(block++, buffer);
 				dataPtr += PageSize;
 			}
@@ -133,7 +133,7 @@ void AgentFloppy::Call() {
 
 		if (iocb->nextIOCB == 0) break;
 		// advance to next IOCB
-		iocb = (FloppyIOFaceGuam::FloppyIOCBType *)Memory::getAddress(iocb->nextIOCB);
+		iocb = (FloppyIOFaceGuam::FloppyIOCBType *)Store(iocb->nextIOCB);
 	}
 
 	// notify with interrupt

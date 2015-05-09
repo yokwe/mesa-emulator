@@ -73,7 +73,7 @@ void Agent::InitializeFCB() {
 
 void Agent::InitializeAgent() {
 	// First allocate IORegionType at ioRegionPtr and fill with zero
-	ioRegionType = (GuamInputOutput::IORegionType*) Memory::getAddress(Alloc(SIZE(GuamInputOutput::IORegionType)));
+	ioRegionType = (GuamInputOutput::IORegionType*)Store(Alloc(SIZE(GuamInputOutput::IORegionType)));
 	for(int i = 0; i < GuamInputOutput::AgentDeviceIndex_SIZE; i++) {
 		ioRegionType->fcbptrs[i] = 0;
 	}

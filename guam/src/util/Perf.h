@@ -65,6 +65,8 @@ extern long long perf_storeMDS;
 extern long long perf_storeMDSHit;
 extern long long perf_storePDA;
 extern long long perf_storePDAHit;
+extern long long perf_MemoryFetch;
+extern long long perf_MemoryStore;
 
 #define Perf_log() if (PERF_ENABLE) { \
 		logger.info("perf_Dispatch      = %10llu", perf_Dispatch); \
@@ -96,6 +98,8 @@ extern long long perf_storePDAHit;
 		logger.info("perf_storeMDSHit   = %10llu", perf_storeMDSHit); \
 		logger.info("perf_storePDA      = %10llu", perf_storePDA); \
 		logger.info("perf_storePDAHit   = %10llu", perf_storePDAHit); \
+		logger.info("perf_MemoryFetch   = %10llu", perf_MemoryFetch); \
+		logger.info("perf_MemoryStore   = %10llu", perf_MemoryStore); \
 }
 
 #endif

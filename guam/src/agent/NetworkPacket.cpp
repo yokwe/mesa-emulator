@@ -147,7 +147,7 @@ void NetworkPacket::transmit(EthernetIOFaceGuam::EthernetIOCBType* iocb) {
 	if (iocb->bufferAddress == 0) ERROR();
 
 	CARD32 dataLen = iocb->bufferLength;
-	CARD8* data    = (CARD8*)Memory::getAddress(iocb->bufferAddress);
+	CARD8* data    = (CARD8*)Fetch(iocb->bufferAddress);
 	int    opErrno = 0;
 
 	int ret = transmit(data, dataLen, opErrno);
@@ -220,7 +220,7 @@ void NetworkPacket::receive(EthernetIOFaceGuam::EthernetIOCBType* iocb) {
 	if (iocb->bufferLength == 0) ERROR();
 	if (iocb->bufferAddress == 0) ERROR();
 
-	CARD8* data    = (CARD8*)Memory::getAddress(iocb->bufferAddress);
+	CARD8* data    = (CARD8*)Store(iocb->bufferAddress);
 	CARD32 dataLen = iocb->bufferLength;
 	int    opErrno = 0;
 
@@ -228,7 +228,7 @@ void NetworkPacket::receive(EthernetIOFaceGuam::EthernetIOCBType* iocb) {
 	int ret = receive(data, dataLen, opErrno);
 
 	if (ret == -1) {
-		// set iocb->status if possibble
+		// set iocb->status if possible
 
 		//static const CARD16 S_inProgress              =   1;
 		//static const CARD16 S_completedOK             =   2;

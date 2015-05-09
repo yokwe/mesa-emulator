@@ -234,6 +234,7 @@ ReadCache  fetchCache("Fetch");
 WriteCache storeCache("Store");
 
 CARD16* Memory::Fetch(CARD32 virtualAddress) {
+	if (PERF_ENABLE) perf_MemoryFetch++;
 	const CARD32 vp = virtualAddress / PageSize;
 	const CARD32 of = virtualAddress % PageSize;
 	if (vpSize <= vp) {
@@ -253,6 +254,7 @@ CARD16* Memory::Fetch(CARD32 virtualAddress) {
 	return page->word + of;
 }
 CARD16* Memory::Store(CARD32 virtualAddress) {
+	if (PERF_ENABLE) perf_MemoryStore++;
 	const CARD32 vp = virtualAddress / PageSize;
 	const CARD32 of = virtualAddress % PageSize;
 	if (vpSize <= vp) {

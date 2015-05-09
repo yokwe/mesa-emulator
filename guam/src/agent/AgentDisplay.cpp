@@ -46,7 +46,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentdisplay");
 void AgentDisplay::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (DisplayIOFaceGuam::DisplayFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (DisplayIOFaceGuam::DisplayFCBType *)Store(fcbAddress);
 	fcb->command                = DisplayIOFaceGuam::C_nop;
 	fcb->status                 = DisplayIOFaceGuam::S_success;
 	fcb->displayMemoryAddress   = Memory::getDisplayRealPage();

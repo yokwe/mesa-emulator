@@ -72,7 +72,7 @@ static quint32 getMesaTime() {
 void AgentProcessor::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (ProcessorIOFaceGuam::ProcessorFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (ProcessorIOFaceGuam::ProcessorFCBType *)Store(fcbAddress);
 	fcb->processorID[0]               = processorID0;
 	fcb->processorID[1]               = processorID1;
 	fcb->processorID[2]               = processorID2;

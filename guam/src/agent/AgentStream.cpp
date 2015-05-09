@@ -44,7 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (CoProcessorIOFaceGuam::CoProcessorFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (CoProcessorIOFaceGuam::CoProcessorFCBType *)Store(fcbAddress);
 	fcb->iocbHead          = 0;
 	fcb->iocbNext          = 0;
 	fcb->headCommand       = 0;
@@ -80,13 +80,13 @@ void AgentStream::Call() {
 	if (DEBUG_SHOW_AGENT_STREAM) {
 		logger.debug("AGENT %s  head = %08X  next = %08X  command = %2d  result = %2d", name, fcb->iocbHead, fcb->iocbNext, fcb->headCommand, fcb->headResult);
 		if (fcb->iocbHead) {
-			CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Memory::getAddress(fcb->iocbHead);
+			CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 			for(;;) {
 				logger.debug("    serverID = %3d  mesaIsServer = %d  mesaConnectionState = %d  pcConnectionState = %d  next = %8X",
 					iocb->serverID, iocb->mesaIsServer, iocb->mesaConnectionState, iocb->pcConnectionState, iocb->nextIOCB);
 				//
 				if (iocb->nextIOCB == 0) break;
-				iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Memory::getAddress(iocb->nextIOCB);
+				iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
 			}
 		}
 	}

@@ -62,3 +62,5 @@ long long perf_storeMDS = 0;
 long long perf_storeMDSHit = 0;
 long long perf_storePDA = 0;
 long long perf_storePDAHit = 0;
+long long perf_MemoryFetch = 0;
+long long perf_MemoryStore = 0;

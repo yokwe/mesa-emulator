@@ -195,7 +195,7 @@ void AgentNetwork::Initialize() {
 	if (fcbAddress == 0) ERROR();
 	if (networkPacket == 0) ERROR();
 
-	fcb = (EthernetIOFaceGuam::EthernetFCBType *)Memory::getAddress(fcbAddress);
+	fcb = (EthernetIOFaceGuam::EthernetFCBType *)Store(fcbAddress);
 
 	fcb->receiveIOCB               = 0;
 	fcb->transmitIOCB              = 0;
@@ -239,7 +239,7 @@ void AgentNetwork::Call() {
 	if (DEBUG_SHOW_AGENT_NETWORK) logger.debug("AGENT %s  receiveIOCB = %08X  transmitIOCB = %08X", name, fcb->receiveIOCB, fcb->transmitIOCB);
 
 	if (fcb->receiveIOCB) {
-		EthernetIOFaceGuam::EthernetIOCBType* iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Memory::getAddress(fcb->receiveIOCB);
+		EthernetIOFaceGuam::EthernetIOCBType* iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Store(fcb->receiveIOCB);
 
 		for(;;) {
 			CARD16 packetType= iocb->packetType;
@@ -249,12 +249,12 @@ void AgentNetwork::Call() {
 			receiveThread.enqueue(iocb);
 			//
 			if (iocb->nextIOCB == 0) break;
-			iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Memory::getAddress(iocb->nextIOCB);
+			iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Store(iocb->nextIOCB);
 		}
 	}
 
 	if (fcb->transmitIOCB) {
-		EthernetIOFaceGuam::EthernetIOCBType* iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Memory::getAddress(fcb->transmitIOCB);
+		EthernetIOFaceGuam::EthernetIOCBType* iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Store(fcb->transmitIOCB);
 
 		for(;;) {
 			CARD16 packetType= iocb->packetType;
@@ -264,7 +264,7 @@ void AgentNetwork::Call() {
 			transmitThread.enqueue(iocb);
 			//
 			if (iocb->nextIOCB == 0) break;
-			iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Memory::getAddress(iocb->nextIOCB);
+			iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Store(iocb->nextIOCB);
 		}
 	}
 }
