@@ -273,7 +273,7 @@ static inline CARD16* Store(CARD32 virtualAddress) {
 static inline CARD32 ReadDbl(CARD32 virtualAddress) {
 	if (PERF_ENABLE) perf_ReadDbl++;
 	const CARD16* p0 = Fetch(virtualAddress);
-	const CARD16* p1 = ((virtualAddress & (PageSize - 1)) == (PageSize - 1)) ? Fetch(virtualAddress + 1) : p0 + 1;
+	const CARD16* p1 = ((virtualAddress & (PageSize - 1)) == (PageSize - 1)) ? Fetch(virtualAddress + 1) : (p0 + 1);
 //	Long t;
 //	t.low  = *p0;
 //	t.high = *p1;
@@ -354,7 +354,7 @@ __attribute__((always_inline)) static inline CARD16* StoreMds(CARD16 ptr) {
 __attribute__((always_inline)) static inline CARD32 ReadDblMds(CARD16 ptr) {
 	if (PERF_ENABLE) perf_ReadDblMds++;
 	const CARD16* p0 = MDSCache::storeMDS(ptr + 0);
-	const CARD16* p1 = MDSCache::storeMDS(ptr + 1);
+	const CARD16* p1 = (ptr & (PageSize - 1)) == (PageSize - 1) ? MDSCache::storeMDS(ptr + 1) : (p0 + 1);
 //	Long t;
 //	t.low  = *p0;
 //	t.high = *p1;
