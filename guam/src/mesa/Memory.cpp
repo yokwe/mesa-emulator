@@ -81,14 +81,16 @@ CARD32         Memory::displayWidth        = 0;
 CARD32         Memory::displayHeight       = 0;
 CARD32         Memory::displayBytesPerLine = 0;
 
-CARD32          MDSCache::mds = 0;
 MDSCache::Entry MDSCache::cacheMDS[N_ENTRY];
+CARD32          MDSCache::mds   = 0;
+long long       MDSCache::hit   = 0;
+long long       MDSCache::miss  = 0;
 
-PDACache::Entry PDACache::cachePDA[N_ENTRY];
-
-CARD16          LFCache::lf = 0;
+CARD16          LFCache::lf         = 0;
 CARD16          LFCache::endCacheLF = 0;
-CARD16*         LFCache::cacheLF = 0;
+CARD16*         LFCache::cacheLF    = 0;
+long long       LFCache::hit        = 0;
+long long       LFCache::miss       = 0;
 
 
 CARD8* CodeCache::page    = 0;
@@ -229,9 +231,11 @@ void Memory::mapDisplay(CARD32 vp, CARD32 rp, CARD32 pageCount) {
 	}
 }
 
-QVector<PageCache*> PageCache::all;
-ReadCache  fetchCache("Fetch");
-WriteCache storeCache("Store");
+long long        PageCache::missConflict;
+long long        PageCache::missEmpty;
+long long        PageCache::hit;
+PageCache::Entry PageCache::entry[N_ENTRY];
+
 
 CARD16* Memory::Fetch(CARD32 virtualAddress) {
 	if (PERF_ENABLE) perf_MemoryFetch++;
@@ -275,18 +279,18 @@ CARD16* Memory::Store(CARD32 virtualAddress) {
 	//
 	return page->word + of;
 }
-CARD16* Memory::getAddress(CARD32 va) {
+CARD16* Memory::getAddress(CARD32 virtualAddress) {
 	if (PERF_ENABLE) perf_GetAddress++;
-	const CARD32 vp = va / PageSize;
-	const CARD32 of = va % PageSize;
+	const CARD32 vp = virtualAddress / PageSize;
+	const CARD32 of = virtualAddress % PageSize;
 	if (vpSize <= vp) {
-		logger.fatal("%s  va = %6X  vp = %4X", __FUNCTION__, va, vp);
+		logger.fatal("%s  va = %6X  vp = %4X", __FUNCTION__, virtualAddress, vp);
 		ERROR();
 	}
 	Map *p = maps + vp;
 	MapFlags mf = p->mf;
 	if (Vacant(mf)) {
-		logger.fatal("%s  va = %6X  vp = %4X", __FUNCTION__, va, vp);
+		logger.fatal("%s  va = %6X  vp = %4X", __FUNCTION__, virtualAddress, vp);
 		logger.fatal("%s  mf = %4X  rp = %4X", __FUNCTION__, maps[vp].mf.u, maps[vp].rp);
 		ERROR();
 	}
@@ -294,6 +298,27 @@ CARD16* Memory::getAddress(CARD32 va) {
 	if (page == 0) ERROR();
 	//
 	return page->word + of;
+}
+void Memory::setReferencedFlag(CARD32 vp) {
+	if (vpSize <= vp) {
+		logger.fatal("%s  vp = %4X", __FUNCTION__, vp);
+		ERROR();
+	}
+	Map *p = maps + vp;
+	MapFlags mf = p->mf;
+	mf.referenced = 1;
+	p->mf = mf;
+}
+void Memory::setReferencedDirtyFlag(CARD32 vp) {
+	if (vpSize <= vp) {
+		logger.fatal("%s  vp = %4X", __FUNCTION__, vp);
+		ERROR();
+	}
+	Map *p = maps + vp;
+	MapFlags mf = p->mf;
+	mf.referenced = 1;
+	mf.dirty      = 1;
+	p->mf = mf;
 }
 
 Memory::Map Memory::ReadMap(CARD32 vp) {
@@ -309,14 +334,14 @@ void Memory::WriteMap(CARD32 vp, Map map) {
 	if (Vacant(map.mf)) map.rp = 0;
 	maps[vp] = map;
 	if (PERF_ENABLE) perf_WriteMap++;
-	PageCache::invalidateAll(vp);
+	PageCache::invalidate(vp);
 	MDSCache::invalidate(vp);
 }
 
 void CodeCache::setup() {
 	// To prevent bogus PageFault, PC need to have real value
 	const CARD32 ptr = (CB_ + (PC / 2)) & ~(PageSize - 1);
-	page   = (CARD8*)fetchCache.fetch(ptr); // address of page
+	page   = (CARD8*)PageCache::fetch(ptr); // address of page
 	CARD32 offsetCB = (CB_ * 2) & PAGE_MASK;
 
 	if ((PC + offsetCB) < PAGE_SIZE) {
@@ -333,8 +358,75 @@ void CodeCache::setup() {
 	//logger.info("SETUP  ptr = %6d  offset = %8X (%d)  offsetCB = %8X  startPC = %4X  endPC = %4X", ptr, offset, offset, offsetCB, startPC, endPC);
 }
 
+void PageCache::fetchSetup(Entry *p, CARD32 vp) {
+	if (PERF_ENABLE) {
+		if (p->vpno) missConflict++;
+		else missEmpty++;
+	}
+	// Overwrite content of entry
+	p->vpno      = vp;
+	p->flagFetch = 1;
+	p->flagStore = 0;
+	p->page      = Memory::Fetch(vp * PageSize);
+}
+void PageCache::fetchMaintainFlag(Entry *p, CARD32 vp) {
+	Memory::setReferencedFlag(vp);
+	p->flagFetch = 1;
+	p->flagStore = 0;
+}
+void PageCache::storeSetup(Entry *p, CARD32 vp) {
+	if (PERF_ENABLE) {
+		if (p->vpno) missConflict++;
+		else missEmpty++;
+	}
+	// Overwrite content of entry
+	p->vpno      = vp;
+	p->flagFetch = 1;
+	p->flagStore = 1;
+	p->page      = Memory::Store(vp * PageSize);
+}
+void PageCache::storeMaintainFlag(Entry *p, CARD32 vp) {
+	Memory::setReferencedDirtyFlag(vp);
+	p->flagFetch = 1;
+	p->flagStore = 1;
+}
+
+void PageCache::stats() {
+	int used = 0;
+	for(CARD32 i = 0; i < N_ENTRY; i++) {
+		if (entry[i].vpno) used++;
+	}
+
+	if (PERF_ENABLE) {
+		long long total = (missEmpty + missConflict) + hit;
+		logger.info("PageCache %5d / %5d  %10llu %6.2f%%   miss empty %10llu  conflict %10llu", used, N_ENTRY, total, ((double)hit / total) * 100.0, missEmpty, missConflict);
+	} else {
+		logger.info("PageCache %5d / %5d", used, N_ENTRY);
+	}
+}
+
+void MDSCache::stats() {
+	int used = 0;
+	for(CARD32 i = 0; i < N_ENTRY; i++) {
+		if (cacheMDS[i].page) used++;
+	}
+
+	if (PERF_ENABLE) {
+		long long total = miss + hit;
+		logger.info("MDSCache  %5d / %5d  %10llu %6.2f%%   miss %10llu", used, N_ENTRY, total, ((double)hit / total) * 100.0, miss);
+	} else {
+		logger.info("MDSCache  %5d / %5d", used, N_ENTRY);
+	}
+}
+
+void LFCache::stats() {
+	if (!PERF_ENABLE) return;
+	long long total = hit + miss;
+	logger.info("LFCache   %10llu %6.2f%%   miss %10llu", total, ((double)hit / total) * 100.0, miss);
+}
+
 void CodeCache::stats() {
 	if (!PERF_ENABLE) return;
-	long long total = miss + hit;
-	logger.info("CodeCache                          %10llu %6.2f%%   miss %10llu", total, ((double)hit / total) * 100.0, miss);
+	long long total = hit + miss;
+	logger.info("CodeCache %10llu %6.2f%%   miss %10llu", total, ((double)hit / total) * 100.0, miss);
 }

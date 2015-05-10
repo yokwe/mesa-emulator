@@ -59,12 +59,6 @@ extern long long perf_WriteMap;
 extern long long perf_GetAddress;
 extern long long perf_FetchPda;
 extern long long perf_StorePda;
-extern long long perf_storeLF;
-extern long long perf_storeLFHit;
-extern long long perf_storeMDS;
-extern long long perf_storeMDSHit;
-extern long long perf_storePDA;
-extern long long perf_storePDAHit;
 extern long long perf_MemoryFetch;
 extern long long perf_MemoryStore;
 
@@ -92,12 +86,6 @@ extern long long perf_MemoryStore;
 		logger.info("perf_GetAddress    = %10llu", perf_GetAddress); \
 		logger.info("perf_FetchPda      = %10llu", perf_FetchPda); \
 		logger.info("perf_StorePda      = %10llu", perf_StorePda); \
-		logger.info("perf_storeLF       = %10llu", perf_storeLF); \
-		logger.info("perf_storeLFHit    = %10llu", perf_storeLFHit); \
-		logger.info("perf_storeMDS      = %10llu", perf_storeMDS); \
-		logger.info("perf_storeMDSHit   = %10llu", perf_storeMDSHit); \
-		logger.info("perf_storePDA      = %10llu", perf_storePDA); \
-		logger.info("perf_storePDAHit   = %10llu", perf_storePDAHit); \
 		logger.info("perf_MemoryFetch   = %10llu", perf_MemoryFetch); \
 		logger.info("perf_MemoryStore   = %10llu", perf_MemoryStore); \
 }

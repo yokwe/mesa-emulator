@@ -131,7 +131,10 @@ public:
 
 	static void finalize();
 
-	static CARD16 *getAddress(CARD32 va);
+	static CARD16 *getAddress(CARD32 virtualAddress);
+	//
+	static void setReferencedFlag(CARD32 vp);
+	static void setReferencedDirtyFlag(CARD32 vp);
 
 	static inline CARD32 getVPSize() {
 		return vpSize;
@@ -186,118 +189,86 @@ protected:
 	static const CARD32 N_BIT = 14;
 	static const CARD32 N_ENTRY = 1 << N_BIT;
 	static const CARD32 MASK = (1 << N_BIT) - 1;
-	//
-	struct Entry {
-		CARD32  vpno;
-		CARD16* page;
-	};
-	long long   missConflict;
-	long long   missEmpty;
-	long long   hit;
-	const char* name;
-	Entry       entry[N_ENTRY];
-	inline CARD32 hash(CARD32 vp_) {
+	static inline CARD32 hash(CARD32 vp_) {
 		return ((vp_ >> N_BIT) ^ vp_) & MASK;
 		// NOTE above expression calculate better hash value than "vp_ & MASK"
 	}
-	void clear() {
+	//
+	struct Entry {
+		union {
+			CARD32 flag;
+			struct {
+				CARD32 vpno      : 30;
+				CARD32 flagFetch :  1;
+				CARD32 flagStore :  1;
+			};
+		};
+		CARD16* page;
+	};
+	static long long   hit;
+	static long long   missConflict;
+	static long long   missEmpty;
+	static Entry       entry[N_ENTRY];
+
+public:
+	static void initialize() {
 		for(CARD32 i = 0; i < N_ENTRY; i++) {
-			entry[i].vpno = 0;
+			entry[i].flag = 0;
 			entry[i].page = 0;
 		}
-		missEmpty = 0;
+		hit          = 0;
+		missEmpty    = 0;
 		missConflict = 0;
-		hit  = 0;
 	}
-	inline void invalidate(CARD32 vp_) {
+	static inline void invalidate(CARD32 vp_) {
 		const CARD32 index = hash(vp_);
 		if (entry[index].vpno != vp_) return;
 		// void entry of vp_
-		entry[index].vpno = 0;
+		entry[index].flag = 0;
 		entry[index].page = 0;
 	}
-	void stats() {
-		int used = 0;
-		for(CARD32 i = 0; i < N_ENTRY; i++) {
-			if (entry[i].vpno) used++;
-		}
-		if (PERF_ENABLE) {
-			long long total = (missEmpty + missConflict) + hit;
-			logger.info("PageCache %12s  %5d / %5d  %10llu %6.2f%%   miss empty %10llu  conflict %10llu", name, used, N_ENTRY, total, ((double)hit / total) * 100.0, missEmpty, missConflict);
-		} else {
-			logger.info("PageCache %12s  %5d / %5d", name, used, N_ENTRY);
-		}
-	}
-public:
-	PageCache(const char* name_) {
-		name = name_;
-		clear();
-		all.append(this);
-	}
-	static void invalidateAll(CARD32 vp_) {
-		for(auto p: all) {
-			p->invalidate(vp_);
-		}
-	}
-	static void statsAll() {
-		for(auto p: all) {
-			p->stats();
-		}
-	}
-private:
-	static QVector<PageCache*> all;
-};
-class ReadCache : public PageCache {
-public:
-	ReadCache(const char* name) : PageCache(name) {}
-	__attribute__((always_inline)) inline CARD16* fetch(CARD32 va) {
+	static void stats();
+
+	static void fetchSetup(Entry *p, CARD32 vp);
+	static void fetchMaintainFlag(Entry *p, CARD32 vp);
+	__attribute__((always_inline)) static inline CARD16* fetch(CARD32 va) {
 		const CARD32 vp = va / PageSize;
 		const CARD32 of = va % PageSize;
-		const CARD32 index = hash(vp);
-		if (entry[index].vpno != vp) {
-			if (PERF_ENABLE) {
-				if (entry[index].vpno) missConflict++;
-				else missEmpty++;
-			}
-			entry[index].vpno = vp;
-			entry[index].page = Memory::Fetch(va) - of;
+
+		Entry *p = entry + hash(vp);
+		if (p->vpno != vp) {
+			fetchSetup(p, vp);
 		} else {
 			if (PERF_ENABLE) hit++;
+			if (p->flagFetch == 0) fetchMaintainFlag(p, vp);
 		}
-		return entry[index].page + of;
+		return p->page + of;
 	}
-};
-class WriteCache : public PageCache {
-public:
-	WriteCache(const char* name) : PageCache(name) {}
-	__attribute__((always_inline)) inline CARD16* store(CARD32 va) {
+	static void storeSetup(Entry *p, CARD32 vp);
+	static void storeMaintainFlag(Entry *p, CARD32 vp);
+	__attribute__((always_inline)) static inline CARD16* store(CARD32 va) {
 		const CARD32 vp = va / PageSize;
 		const CARD32 of = va % PageSize;
-		const CARD32 index = hash(vp);
-		if (entry[index].vpno != vp) {
-			if (PERF_ENABLE) {
-				if (entry[index].vpno) missConflict++;
-				else missEmpty++;
-			}
-			entry[index].vpno = vp;
-			entry[index].page = Memory::Store(va) - of;
+
+		Entry *p = entry + hash(vp);
+		if (p->vpno != vp) {
+			storeSetup(p, vp);
 		} else {
 			if (PERF_ENABLE) hit++;
+			if (p->flagStore == 0) storeMaintainFlag(p, vp);
 		}
-		return entry[index].page + of;
+		return p->page + of;
 	}
 };
 
 // 3.1.3 Virtual Memory Access
-extern ReadCache fetchCache;
 static inline CARD16* Fetch(CARD32 virtualAddress) {
 	if (PERF_ENABLE) perf_Fetch++;
-	return fetchCache.fetch(virtualAddress);
+	return PageCache::fetch(virtualAddress);
 }
-extern WriteCache storeCache;
 static inline CARD16* Store(CARD32 virtualAddress) {
 	if (PERF_ENABLE) perf_Store++;
-	return storeCache.store(virtualAddress);
+	return PageCache::store(virtualAddress);
 }
 static inline CARD32 ReadDbl(CARD32 virtualAddress) {
 	if (PERF_ENABLE) perf_ReadDbl++;
@@ -326,13 +297,7 @@ public:
 		// invalidate entry of index
 		cacheMDS[index].page = 0;
 	}
-	static void statsAll() {
-		int used = 0;
-		for(CARD32 i = 0; i < N_ENTRY; i++) {
-			if (cacheMDS[i].page) used++;
-		}
-		logger.info("MDSCache  %3d / %3d", used, N_ENTRY);
-	}
+	static void stats();
 	//
 	// MDS
 	//
@@ -345,16 +310,16 @@ public:
 		return mds;
 	}
 	__attribute__((always_inline)) static inline CARD16* storeMDS(CARD16 ptr) {
-		if (PERF_ENABLE) perf_storeMDS++;
 		const CARD32 vp = ptr / PageSize;
 		const CARD32 of = ptr % PageSize;
 
 		CARD16* ret = cacheMDS[vp].page;
 		if (ret == 0) {
-			ret = Memory::Store(lengthenPointer(ptr)) - of;
+			if (PERF_ENABLE) miss++;
+			ret = PageCache::store(lengthenPointer(ptr)) - of;
 			cacheMDS[vp].page = ret;
 		} else {
-			if (PERF_ENABLE) perf_storeMDSHit++;
+			if (PERF_ENABLE) hit++;
 		}
 		return ret + of;
 	}
@@ -364,7 +329,7 @@ protected:
 	static const CARD32 MASK = (1 << N_BIT) - 1;
 	struct Entry {
 		CARD16* page;
-		Entry() :page(0) {}
+		Entry() : page(0) {}
 		void invalidate() {
 			page = 0;
 		}
@@ -372,6 +337,8 @@ protected:
 
 	static CARD32 mds;
 	static Entry  cacheMDS[N_ENTRY];
+	static long long hit;
+	static long long miss;
 };
 __attribute__((always_inline)) static inline CARD32 LengthenPointer(CARD16 pointer) {
 	return MDSCache::lengthenPointer(pointer);
@@ -406,17 +373,20 @@ public:
 		return lf;
 	}
 	__attribute__((always_inline)) static inline CARD16* storeLF(CARD16 ptr) {
-		if (PERF_ENABLE) perf_storeLF++;
 		if (ptr <= endCacheLF) {
-			if (PERF_ENABLE) perf_storeLFHit++;
+			if (PERF_ENABLE) hit++;
 			return cacheLF + ptr;
 		}
+		if (PERF_ENABLE) miss++;
 		return MDSCache::storeMDS(lf + ptr);
 	}
+	static void stats();
 protected:
-	static CARD16  lf;
-	static CARD16  endCacheLF;
-	static CARD16* cacheLF;
+	static CARD16    lf;
+	static CARD16    endCacheLF;
+	static CARD16*   cacheLF;
+	static long long hit;
+	static long long miss;
 };
 __attribute__((always_inline)) static inline CARD16* FetchLF(CARD16 ptr) {
 	if (PERF_ENABLE) perf_FetchLF++;
@@ -486,7 +456,7 @@ private:
 };
 static inline CARD16* FetchCode(CARD16 offset) {
 	if (PERF_ENABLE) perf_FetchCode++;
-	return fetchCache.fetch(CodeCache::CB() + offset);
+	return PageCache::fetch(CodeCache::CB() + offset);
 }
 static inline CARD16 ReadCode(CARD16 offset) {
 	return *FetchCode(offset);
@@ -577,51 +547,13 @@ static inline POINTER OffsetPda(LONG_POINTER ptr) {
 	return (CARD16)(ptr - PDA);
 }
 
-class PDACache {
-public:
-	static void statsAll() {
-		int used = 0;
-		for(CARD32 i = 0; i < N_ENTRY; i++) {
-			if (cachePDA[i].page) used++;
-		}
-		logger.info("PDACache  %3d / %3d", used, N_ENTRY);
-	}
-	__attribute__((always_inline)) static inline CARD16* storePDA(CARD16 ptr) {
-		if (PERF_ENABLE) perf_storePDA++;
-		const CARD32 vp = ptr / PageSize;
-		const CARD32 of = ptr % PageSize;
-
-		CARD16* ret = cachePDA[vp].page;
-		if (ret == 0) {
-			ret = Memory::Store(LengthenPdaPtr(ptr)) - of;
-			cachePDA[vp].page = ret;
-		} else {
-			if (PERF_ENABLE) perf_storePDAHit++;
-		}
-		return ret + of;
-	}
-protected:
-	static const CARD32 N_BIT = 8;
-	static const CARD32 N_ENTRY = 1 << N_BIT;
-	static const CARD32 MASK = (1 << N_BIT) - 1;
-	struct Entry {
-		CARD16* page;
-		Entry() : page(0) {}
-		void invalidate() {
-			page = 0;
-		}
-	};
-
-	static Entry  cachePDA[N_ENTRY];
-};
-
 static inline CARD16* FetchPda(POINTER ptr) {
 	if (PERF_ENABLE) perf_FetchPda++;
-	return PDACache::storePDA(ptr);
+	return PageCache::fetch(LengthenPdaPtr(ptr));
 }
 static inline CARD16* StorePda(POINTER ptr) {
 	if (PERF_ENABLE) perf_StorePda++;
-	return PDACache::storePDA(ptr);
+	return PageCache::store(LengthenPdaPtr(ptr));
 }
 
 // 9.5.3 Trap Handlers
