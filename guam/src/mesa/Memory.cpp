@@ -160,6 +160,9 @@ void Memory::initialize(int vmBits, int rmBits, CARD16 ioRegionPage) {
 		maps[i].mf = vacant;
 		maps[i].rp = 0;
 	}
+
+	// initialize related class
+	PageCache::initialize();
 }
 
 void Memory::finalize() {
