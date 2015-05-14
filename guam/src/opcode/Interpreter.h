@@ -43,15 +43,19 @@ public:
 		// ESC and ESCL
 		//logger.debug("dispatch ESC  %04X opcode = %03o", savedPC, opcode);
 		tableEsc[opcode].interpret();
-		// increment stat counter
+		// increment stat counter after execution. We don't count ABORTED instruction.
 		if (DEBUG_SHOW_STATS_OPCODE) statEsc[opcode]++;
+		// NOTE
+		// dispatchEsc is called from dispatchMop.
+		// statMop[opcode] is incremented in dispatchMop after exits of this method.
+		// to adjust false increment of statMop[opcode], we need to decrement statMop[opcode] in here.
 		if (DEBUG_SHOW_STATS_OPCODE) statMop[opcode]--;
 	}
 
 	__attribute__((always_inline)) static inline void dispatchMop() {
 		if (PERF_ENABLE) perf_Dispatch++;
 		tableMop[opcode].interpret();
-		// increment stat counter
+		// increment stat counter after execution. We don't count ABORTED instruction.
 		if (DEBUG_SHOW_STATS_OPCODE) statMop[opcode]++;
 	}
 
