@@ -78,18 +78,17 @@ void ProcessorThread::run() {
 	logger.info("PC  = %04X  MDS = %08X  LF = %04X", PC, MDSCache::MDS(), LFCache::LF());
 
 	int abortCount = 0;
+	int rescheduleCount = 0;
 	stopThread = 0;
 	try {
 		for(;;) {
 			try {
 				// Execute opcode
 				Interpreter::execute();
-
-				if (!InterruptThread::isEnabled()) continue;
-				if (!getRequestReschedule()) continue;
-				// If there is reschedule request, throw exception.
-				ERROR_RequestReschedule();
+				if (InterruptThread::isEnabled() && getRequestReschedule()) ERROR_RequestReschedule();
 			} catch(RequestReschedule& e) {
+				rescheduleCount++;
+				//logger.debug("Reschedule %-20s  %8d", e.func, rescheduleCount);
 				QMutexLocker locker(&mutexRequestReschedule);
 				for(;;) {
 					// break if OP_STOPEMULATOR is called
@@ -148,6 +147,7 @@ exitLoop:
 	InterruptThread::stop();
 
 	logger.info("abortCount = %d", abortCount);
+	logger.info("rescheduleCount = %d", rescheduleCount);
 	logger.info("ProcessorThread::run STOP");
 }
 void ProcessorThread::requestRescheduleTimer() {
