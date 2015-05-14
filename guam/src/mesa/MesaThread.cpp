@@ -85,6 +85,7 @@ void ProcessorThread::run() {
 			try {
 				// Execute opcode
 				Interpreter::execute();
+				// Handle reschedule from InterruptThread and TimerThread
 				if (InterruptThread::isEnabled() && getRequestReschedule()) ERROR_RequestReschedule();
 			} catch(RequestReschedule& e) {
 				rescheduleCount++;
