@@ -43,7 +43,6 @@ Opcode    Interpreter::tableMop[Interpreter::TABLE_SIZE];
 Opcode    Interpreter::tableEsc[Interpreter::TABLE_SIZE];
 long long Interpreter::statMop [Interpreter::TABLE_SIZE];
 long long Interpreter::statEsc [Interpreter::TABLE_SIZE];
-CARD32    Interpreter::opcode;
 
 void Interpreter::assignMop(const Opcode& op) {
 	CARD32 code = op.getCode();

@@ -136,8 +136,7 @@ DEF_R(BNDCK)
 __attribute__((always_inline)) static inline void R_BRK_(Run /*run*/) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  BRK", savedPC);
 	if (breakByte == 0) BreakTrap();
-	Interpreter::setOpcode(breakByte);
-	Interpreter::dispatchMop();
+	Interpreter::dispatchMop(breakByte);
 	breakByte = 0;
 }
 DEF_R(BRK)
@@ -1086,8 +1085,7 @@ __attribute__((always_inline)) static inline void R_LP_(Run /*run*/) {
 DEF_R(LP)
 
 __attribute__((always_inline)) static inline void R_ESC_(Run /*run*/) {
-	Interpreter::setOpcode(GetCodeByte());
-	Interpreter::dispatchEsc();
+	Interpreter::dispatchEsc(GetCodeByte());
 }
 DEF_R(ESC)
 

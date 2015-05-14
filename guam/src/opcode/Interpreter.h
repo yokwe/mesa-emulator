@@ -39,38 +39,25 @@ class Interpreter {
 public:
 	static const int TABLE_SIZE = 256;
 
-	__attribute__((always_inline)) static void dispatchEsc() {
+	__attribute__((always_inline)) static void dispatchEsc(CARD32 opcode) {
 		// ESC and ESCL
 		//logger.debug("dispatch ESC  %04X opcode = %03o", savedPC, opcode);
 		tableEsc[opcode].interpret();
 		// increment stat counter after execution. We don't count ABORTED instruction.
 		if (DEBUG_SHOW_STATS_OPCODE) statEsc[opcode]++;
-		// NOTE
-		// dispatchEsc is called from dispatchMop.
-		// statMop[opcode] is incremented in dispatchMop after exits of this method.
-		// to adjust false increment of statMop[opcode], we need to decrement statMop[opcode] in here.
-		if (DEBUG_SHOW_STATS_OPCODE) statMop[opcode]--;
 	}
 
-	__attribute__((always_inline)) static inline void dispatchMop() {
+	__attribute__((always_inline)) static inline void dispatchMop(CARD32 opcode) {
 		if (PERF_ENABLE) perf_Dispatch++;
 		tableMop[opcode].interpret();
 		// increment stat counter after execution. We don't count ABORTED instruction.
 		if (DEBUG_SHOW_STATS_OPCODE) statMop[opcode]++;
 	}
 
-	static inline void setOpcode(CARD32 opcode_) {
-		opcode = opcode_;
-	}
-	static inline CARD32 getOpcode() {
-		return opcode;
-	}
-
 	static inline void execute() {
 		savedPC = PC;
 		savedSP = SP;
-		setOpcode(GetCodeByte());
-		dispatchMop();
+		dispatchMop(GetCodeByte());
 	}
 
 	// Implementation Specific
@@ -108,8 +95,6 @@ private:
 	static Opcode    tableEsc[TABLE_SIZE];
 	static long long statMop [TABLE_SIZE];
 	static long long statEsc [TABLE_SIZE];
-
-	static CARD32 opcode;
 
 	static void initTable();
 	static void initRegisters();
