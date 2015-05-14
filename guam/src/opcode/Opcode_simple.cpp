@@ -1368,8 +1368,8 @@ DEF_R(WRPSB)
 
 __attribute__((always_inline)) static inline void R_WRMDS_(Run /*run*/) {
 	CARD32 mds = Pop() << WordSize;
-	MDSCache::setMDS(mds);
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRMDS  %04X", savedPC, (MDSCache::MDS() >> WordSize));
+	Memory::setMDS(mds);
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
 }
 DEF_R(WRMDS)
 
@@ -1500,8 +1500,8 @@ __attribute__((always_inline)) static inline void R_RRPSB_(Run /*run*/) {
 DEF_R(RRPSB)
 
 __attribute__((always_inline)) static inline void R_RRMDS_(Run /*run*/) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRMDS  %04X", savedPC, (MDSCache::MDS() >> WordSize));
-	Push((CARD16)(MDSCache::MDS() >> WordSize));
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
+	Push((CARD16)(Memory::MDS() >> WordSize));
 }
 DEF_R(RRMDS)
 

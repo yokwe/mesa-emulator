@@ -171,6 +171,16 @@ public:
 		return (displayVirtualPage <= vp && vp < (displayVirtualPage + displayPageSize));
 	}
 
+	static CARD32 lengthenPointer(CARD16 pointer) {
+		return mds + pointer;
+	}
+	static void setMDS(CARD32 newValue) {
+		mds = newValue;
+	}
+	static CARD32 MDS() {
+		return mds;
+	}
+
 private:
 	static CARD32  vpSize;
 	static CARD32  rpSize;
@@ -183,7 +193,10 @@ private:
 	static CARD32  displayWidth;
 	static CARD32  displayHeight;
 	static CARD32  displayBytesPerLine;
+	static CARD32  mds;
 };
+
+
 class PageCache {
 protected:
 	static const CARD32 N_BIT = 14;
@@ -282,79 +295,21 @@ static inline CARD32 ReadDbl(CARD32 virtualAddress) {
 }
 
 // 3.2.1 Main Data Space Access
-class MDSCache {
-public:
-	static CARD32 lengthenPointer(CARD16 pointer) {
-		return mds + pointer;
-	}
-	static void invalidateAll() {
-		for(CARD32 i = 0; i < N_ENTRY; i++) cacheMDS[i].invalidate();
-	}
-	static inline void invalidate(CARD32 vp) {
-		// If vp is not in MDS region, just return
-		if ((vp & ~MASK) != ((mds / PageSize) & ~MASK)) return;
-		CARD32 index = vp & MASK;
-		// invalidate entry of index
-		cacheMDS[index].page = 0;
-	}
-	static void stats();
-	//
-	// MDS
-	//
-	static void setMDS(CARD32 newValue) {
-		if (mds == newValue) return;
-		mds = newValue;
-		invalidateAll();
-	}
-	static CARD32 MDS() {
-		return mds;
-	}
-	__attribute__((always_inline)) static inline CARD16* storeMDS(CARD16 ptr) {
-		const CARD32 vp = ptr / PageSize;
-		const CARD32 of = ptr % PageSize;
-
-		CARD16* ret = cacheMDS[vp].page;
-		if (ret == 0) {
-			if (PERF_ENABLE) miss++;
-			ret = PageCache::store(lengthenPointer(ptr)) - of;
-			cacheMDS[vp].page = ret;
-		} else {
-			if (PERF_ENABLE) hit++;
-		}
-		return ret + of;
-	}
-protected:
-	static const CARD32 N_BIT = 8;
-	static const CARD32 N_ENTRY = 1 << N_BIT;
-	static const CARD32 MASK = (1 << N_BIT) - 1;
-	struct Entry {
-		CARD16* page;
-		Entry() : page(0) {}
-		void invalidate() {
-			page = 0;
-		}
-	};
-
-	static CARD32 mds;
-	static Entry  cacheMDS[N_ENTRY];
-	static long long hit;
-	static long long miss;
-};
 __attribute__((always_inline)) static inline CARD32 LengthenPointer(CARD16 pointer) {
-	return MDSCache::lengthenPointer(pointer);
+	return Memory::lengthenPointer(pointer);
 }
 __attribute__((always_inline)) static inline CARD16* FetchMds(CARD16 ptr) {
 	if (PERF_ENABLE) perf_FetchMds++;
-	return MDSCache::storeMDS(ptr);
+	return PageCache::store(Memory::lengthenPointer(ptr));
 }
 __attribute__((always_inline)) static inline CARD16* StoreMds(CARD16 ptr) {
 	if (PERF_ENABLE) perf_StoreMds++;
-	return MDSCache::storeMDS(ptr);
+	return PageCache::store(Memory::lengthenPointer(ptr));
 }
 __attribute__((always_inline)) static inline CARD32 ReadDblMds(CARD16 ptr) {
 	if (PERF_ENABLE) perf_ReadDblMds++;
-	const CARD16* p0 = MDSCache::storeMDS(ptr + 0);
-	const CARD16* p1 = (ptr & (PageSize - 1)) == (PageSize - 1) ? MDSCache::storeMDS(ptr + 1) : (p0 + 1);
+	const CARD16* p0 = PageCache::store(Memory::lengthenPointer(ptr + 0));
+	const CARD16* p1 = (ptr & (PageSize - 1)) == (PageSize - 1) ? PageCache::store(Memory::lengthenPointer(ptr + 1)) : (p0 + 1);
 //	Long t;
 //	t.low  = *p0;
 //	t.high = *p1;
@@ -367,7 +322,7 @@ public:
 	static void setLF(CARD16 newValue) {
 		lf = newValue;
 		endCacheLF = PageSize - (lf % PageSize) - 1;
-		cacheLF = MDSCache::storeMDS(lf);
+		cacheLF = PageCache::store(Memory::lengthenPointer(lf));
 	}
 	static CARD16 LF() {
 		return lf;
@@ -378,7 +333,7 @@ public:
 			return cacheLF + ptr;
 		}
 		if (PERF_ENABLE) miss++;
-		return MDSCache::storeMDS(lf + ptr);
+		return store(Memory::lengthenPointer(lf + ptr));
 	}
 	static void stats();
 protected:
@@ -387,6 +342,8 @@ protected:
 	static CARD16*   cacheLF;
 	static long long hit;
 	static long long miss;
+
+	static CARD16* store(CARD32 ptr);
 };
 __attribute__((always_inline)) static inline CARD16* FetchLF(CARD16 ptr) {
 	if (PERF_ENABLE) perf_FetchLF++;

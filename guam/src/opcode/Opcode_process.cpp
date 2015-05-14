@@ -191,7 +191,7 @@ LocalFrameHandle LoadProcess() {
 			}
 		}
 		CARD32 mds = *FetchPda(OFFSET(ProcessDataArea, block[PSB].mds)) << WordSize;
-		MDSCache::setMDS(mds);
+		Memory::setMDS(mds);
 		return frame;
 	} catch (Abort &abort) {
 		ERROR();

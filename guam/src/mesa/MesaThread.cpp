@@ -75,7 +75,7 @@ void ProcessorThread::run() {
 
 	XFER(bootLink.u, 0, XT_call, 0);
 	logger.info("GFI = %04X  CB  = %08X  GF = %08X", GFI, CodeCache::CB(), GF);
-	logger.info("PC  = %04X  MDS = %08X  LF = %04X", PC, MDSCache::MDS(), LFCache::LF());
+	logger.info("PC  = %04X  MDS = %08X  LF = %04X", PC, Memory::MDS(), LFCache::LF());
 
 	int abortCount = 0;
 	int rescheduleCount = 0;

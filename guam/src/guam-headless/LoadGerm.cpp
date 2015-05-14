@@ -92,7 +92,6 @@ int main() {
 	Run::stats();
 	Perf_log();
 	PageCache::stats();
-	MDSCache::stats();
 
 	CodeCache::stats();
 	LFCache::stats();

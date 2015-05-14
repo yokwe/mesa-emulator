@@ -80,11 +80,8 @@ CARD32         Memory::displayVirtualPage  = 0;
 CARD32         Memory::displayWidth        = 0;
 CARD32         Memory::displayHeight       = 0;
 CARD32         Memory::displayBytesPerLine = 0;
+CARD32         Memory::mds   = 0;
 
-MDSCache::Entry MDSCache::cacheMDS[N_ENTRY];
-CARD32          MDSCache::mds   = 0;
-long long       MDSCache::hit   = 0;
-long long       MDSCache::miss  = 0;
 
 CARD16          LFCache::lf         = 0;
 CARD16          LFCache::endCacheLF = 0;
@@ -338,7 +335,6 @@ void Memory::WriteMap(CARD32 vp, Map map) {
 	maps[vp] = map;
 	if (PERF_ENABLE) perf_WriteMap++;
 	PageCache::invalidate(vp);
-	MDSCache::invalidate(vp);
 }
 
 void CodeCache::setup() {
@@ -408,24 +404,14 @@ void PageCache::stats() {
 	}
 }
 
-void MDSCache::stats() {
-	int used = 0;
-	for(CARD32 i = 0; i < N_ENTRY; i++) {
-		if (cacheMDS[i].page) used++;
-	}
-
-	if (PERF_ENABLE) {
-		long long total = miss + hit;
-		logger.info("MDSCache  %5d / %5d  %10llu %6.2f%%   miss %10llu", used, N_ENTRY, total, ((double)hit / total) * 100.0, miss);
-	} else {
-		logger.info("MDSCache  %5d / %5d", used, N_ENTRY);
-	}
-}
-
 void LFCache::stats() {
 	if (!PERF_ENABLE) return;
 	long long total = hit + miss;
 	logger.info("LFCache   %10llu %6.2f%%   miss %10llu", total, ((double)hit / total) * 100.0, miss);
+}
+
+CARD16* LFCache::store(CARD32 ptr) {
+	return PageCache::store(ptr);
 }
 
 void CodeCache::stats() {
