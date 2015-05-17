@@ -53,12 +53,24 @@ QAtomicInt     ProcessorThread::running;
 int            ProcessorThread::stopThread;
 QAtomicInt     ProcessorThread::requestReschedule;
 QMutex         ProcessorThread::mutexRequestReschedule;
+
+static int startRunningCount = 0;
+static int stopRunningCount = 0;
+static int timerCount = 0;
+static int interruptCount = 0;
+
 void ProcessorThread::startRunning() {
-	if (running.testAndSetOrdered(0, 1)) return;
+	if (running.testAndSetOrdered(0, 1)) {
+		startRunningCount++;
+		return;
+	}
 	logger.error("startRunning testAndSetOrdered returns false  running = %d", getRunning());
 }
 void ProcessorThread::stopRunning() {
-	if (running.testAndSetOrdered(1, 0)) return;
+	if (running.testAndSetOrdered(1, 0)) {
+		stopRunningCount++;
+		return;
+	}
 	logger.error("stopRunning testAndSetOrdered returns false  running = %d", getRunning());
 }
 void ProcessorThread::stop() {
@@ -79,6 +91,7 @@ void ProcessorThread::run() {
 
 	int abortCount = 0;
 	int rescheduleCount = 0;
+	int rescheduleRequestCount = 0;
 	stopThread = 0;
 	try {
 		for(;;) {
@@ -86,7 +99,10 @@ void ProcessorThread::run() {
 				// Execute opcode
 				Interpreter::execute();
 				// Handle reschedule from InterruptThread and TimerThread
-				if (InterruptThread::isEnabled() && getRequestReschedule()) ERROR_RequestReschedule();
+				if (InterruptThread::isEnabled() && getRequestReschedule()) {
+					rescheduleRequestCount++;
+					ERROR_RequestReschedule();
+				}
 			} catch(RequestReschedule& e) {
 				rescheduleCount++;
 				//logger.debug("Reschedule %-20s  %8d", e.func, rescheduleCount);
@@ -147,8 +163,13 @@ exitLoop:
 	TimerThread::stop();
 	InterruptThread::stop();
 
-	logger.info("abortCount = %u", abortCount);
-	logger.info("rescheduleCount = %u", rescheduleCount);
+	logger.info("abortCount             = %8u", abortCount);
+	logger.info("rescheduleCount        = %8u", rescheduleCount);
+	logger.info("rescheduleRequestCount = %8u", rescheduleRequestCount);
+	logger.info("timerCount             = %8u", timerCount);
+	logger.info("interruptCount         = %8u", interruptCount);
+	logger.info("startRunningCount      = %8u", startRunningCount);
+	logger.info("stopRunningCount       = %8u", stopRunningCount);
 	logger.info("ProcessorThread::run STOP");
 }
 void ProcessorThread::requestRescheduleTimer() {
@@ -186,7 +207,6 @@ void TimerThread::run() {
 
 	lastTimeoutTime = QDateTime::currentMSecsSinceEpoch();
 	stopThread = 0;
-	int timerCount = 0;
 	QMutexLocker locker(&mutexTimer);
 	for (;;) {
 		if (stopThread) break;
@@ -220,7 +240,6 @@ void TimerThread::run() {
 	}
 exitLoop:
 	logger.info("TimerThread::run STOP");
-	logger.info("TimerThread::run timerCount = %u", timerCount);
 }
 
 int TimerThread::processTimeout() {
@@ -278,7 +297,6 @@ void InterruptThread::run() {
 	QThread::currentThread()->setPriority(PRIORITY);
 
 	stopThread = 0;
-	int interruptCount = 0;
 	QMutexLocker locker(&mutexWP);
 	for (;;) {
 		if (stopThread) break;
@@ -295,5 +313,4 @@ void InterruptThread::run() {
 	}
 exitLoop:
 	logger.info("InterruptThread::run STOP");
-	logger.info("InterruptThread::run interruptCount = %u", interruptCount);
 }
