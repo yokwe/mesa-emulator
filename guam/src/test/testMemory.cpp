@@ -91,7 +91,7 @@ public:
     	CARD32 t1 = 0x12345678;
     	page_MDS[0x1000 + 0] = LowHalf(t1);
     	page_MDS[0x1000 + 1] = HighHalf(t1);
-    	CARD32 t2 = ReadDbl(MDSCache::MDS() + 0x1000);
+    	CARD32 t2 = ReadDbl(Memory::MDS() + 0x1000);
 
     	CPPUNIT_ASSERT_EQUAL(t1, t2);
     	CPPUNIT_ASSERT_EQUAL((CARD16)0x5678, page_MDS[0x1000 + 0]);

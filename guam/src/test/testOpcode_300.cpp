@@ -709,10 +709,10 @@ class testOpcode_300 : public testBase {
 
     void testBLTL_n() {
 		page_CB[(PC / 2) + 0] = zBLTL << 8 | 0x00;
-		LONG_POINTER dest   = MDSCache::MDS() + 0x0020;
+		LONG_POINTER dest   = Memory::MDS() + 0x0020;
 		CARDINAL count = 0x0010;
-		LONG_POINTER source = MDSCache::MDS() + 0x0080;
-		for(CARDINAL i = 0; i < count; i++) page_MDS[source - MDSCache::MDS() + i] = (0x00 | i);
+		LONG_POINTER source = Memory::MDS() + 0x0080;
+		for(CARDINAL i = 0; i < count; i++) page_MDS[source - Memory::MDS() + i] = (0x00 | i);
 		stack[SP++] = LowHalf(source);
 		stack[SP++] = HighHalf(source);
 		stack[SP++] = count;
@@ -723,13 +723,13 @@ class testOpcode_300 : public testBase {
 		CPPUNIT_ASSERT_EQUAL(savedPC + 1, (int)PC);
 		CPPUNIT_ASSERT_EQUAL(0, (int)SP);
 		for(CARDINAL i = 0; i < count; i++)
-			CPPUNIT_ASSERT_EQUAL((CARD16)(0x00 | i), page_MDS[dest - MDSCache::MDS() + i]);
+			CPPUNIT_ASSERT_EQUAL((CARD16)(0x00 | i), page_MDS[dest - Memory::MDS() + i]);
     }
     void testBLTL_o() {
 		page_CB[(PC / 2) + 0] = zBLTL << 8 | 0x00;
-		LONG_POINTER dest   = MDSCache::MDS() + 0x0021;
+		LONG_POINTER dest   = Memory::MDS() + 0x0021;
 		CARDINAL count = 0x0010;
-		LONG_POINTER source = MDSCache::MDS() + 0x0020;
+		LONG_POINTER source = Memory::MDS() + 0x0020;
 		CARD16 value = 0xCAFE;
 		page_MDS[(source + 0) % PageSize] = value;
 		stack[SP++] = LowHalf(source);
@@ -742,14 +742,14 @@ class testOpcode_300 : public testBase {
 		CPPUNIT_ASSERT_EQUAL(savedPC + 1, (int)PC);
 		CPPUNIT_ASSERT_EQUAL(0, (int)SP);
 		for(CARDINAL i = 0; i < count; i++)
-			CPPUNIT_ASSERT_EQUAL((CARD16)value, page_MDS[dest - MDSCache::MDS() + i]);
+			CPPUNIT_ASSERT_EQUAL((CARD16)value, page_MDS[dest - Memory::MDS() + i]);
     }
     void testBLTL_l() {
 		page_CB[(PC / 2) + 0] = zBLTL << 8 | 0x00;
-		LONG_POINTER dest   = MDSCache::MDS() + 0x0620;
+		LONG_POINTER dest   = Memory::MDS() + 0x0620;
 		CARDINAL count = 0x0340;
-		LONG_POINTER source = MDSCache::MDS() + 0x0180;
-		for(CARDINAL i = 0; i < count; i++) page_MDS[source - MDSCache::MDS() + i] = (0xB000 | i);
+		LONG_POINTER source = Memory::MDS() + 0x0180;
+		for(CARDINAL i = 0; i < count; i++) page_MDS[source - Memory::MDS() + i] = (0xB000 | i);
 		stack[SP++] = LowHalf(source);
 		stack[SP++] = HighHalf(source);
 		stack[SP++] = count;
@@ -760,7 +760,7 @@ class testOpcode_300 : public testBase {
 		CPPUNIT_ASSERT_EQUAL(savedPC + 1, (int)PC);
 		CPPUNIT_ASSERT_EQUAL(0, (int)SP);
 		for(CARDINAL i = 0; i < count; i++)
-			CPPUNIT_ASSERT_EQUAL((CARD16)(0xB000 | i), page_MDS[dest - MDSCache::MDS() + i]);
+			CPPUNIT_ASSERT_EQUAL((CARD16)(0xB000 | i), page_MDS[dest - Memory::MDS() + i]);
     }
 
 
@@ -798,7 +798,7 @@ class testOpcode_300 : public testBase {
     }
     void testBLTCL() {
 		page_CB[(PC / 2) + 0] = zBLTCL << 8 | 0x00;
-		LONG_POINTER dest = MDSCache::MDS() + 0x0020;
+		LONG_POINTER dest = Memory::MDS() + 0x0020;
 		CARDINAL count = 0x0010;
 		POINTER source = 0x0080;
 		for(CARDINAL i = 0; i < count; i++) page_CB[source + i] = (0xB000 | i);
@@ -811,11 +811,11 @@ class testOpcode_300 : public testBase {
 		CPPUNIT_ASSERT_EQUAL(savedPC + 1, (int)PC);
 		CPPUNIT_ASSERT_EQUAL(0, (int)SP);
 		for(CARDINAL i = 0; i < count; i++)
-			CPPUNIT_ASSERT_EQUAL((CARD16)(0xB000 | i), page_MDS[dest - MDSCache::MDS() + i]);
+			CPPUNIT_ASSERT_EQUAL((CARD16)(0xB000 | i), page_MDS[dest - Memory::MDS() + i]);
     }
     void testBLTCL_l() {
 		page_CB[(PC / 2) + 0] = zBLTCL << 8 | 0x00;
-		LONG_POINTER dest = MDSCache::MDS() + 0x0020;
+		LONG_POINTER dest = Memory::MDS() + 0x0020;
 		CARDINAL count = 0x0340;
 		POINTER source = 0x0080;
 		for(CARDINAL i = 0; i < count; i++) page_CB[source + i] = (0xB000 | i);
@@ -828,7 +828,7 @@ class testOpcode_300 : public testBase {
 		CPPUNIT_ASSERT_EQUAL(savedPC + 1, (int)PC);
 		CPPUNIT_ASSERT_EQUAL(0, (int)SP);
 		for(CARDINAL i = 0; i < count; i++)
-			CPPUNIT_ASSERT_EQUAL((CARD16)(0xB000 | i), page_MDS[dest - MDSCache::MDS() + i]);
+			CPPUNIT_ASSERT_EQUAL((CARD16)(0xB000 | i), page_MDS[dest - Memory::MDS() + i]);
     }
 
 
@@ -849,7 +849,7 @@ class testOpcode_300 : public testBase {
 		stack[SP++] = ptr;
 		Interpreter::execute();
 
-		CARD32 p = MDSCache::MDS() + ptr;
+		CARD32 p = Memory::MDS() + ptr;
 		CPPUNIT_ASSERT_EQUAL(savedPC + 1, (int)PC);
 		CPPUNIT_ASSERT_EQUAL(2, (int)SP);
 		CPPUNIT_ASSERT_EQUAL(LowHalf(p),  stack[0]);
