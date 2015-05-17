@@ -35,61 +35,9 @@ OF SUCH DAMAGE.
 #include "MesaBasic.h"
 #include "Constant.h"
 
+#include "../util/Util.h"
+
 #include <QtCore>
-
-class ProcessorThread : public QRunnable {
-public:
-	static const QThread::Priority PRIORITY = QThread::LowPriority;
-
-	// Wait interval in milliseconds for QWaitCondition::wait
-	static const int WAIT_INTERVAL = 1000;
-
-	// Use this condition variable to wake and wait processor
-	static QWaitCondition cvRunning;
-
-	static int getRunning() {
-#if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)
-		return running.loadAcquire();
-#else
-		return (int)running;
-#endif
-	}
-	static void startRunning(); // running = 1
-	static void stopRunning();  // running = 0
-
-	static void stop();
-
-	static void requestRescheduleTimer();
-	static void requestRescheduleInterrupt();
-
-	static int getRequestReschedule() {
-#if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)
-		return requestReschedule.loadAcquire();
-#else
-		return (int)requestReschedule;
-#endif
-	}
-
-	void run();
-
-private:
-	static QAtomicInt running;
-	static int        stopThread;
-	//
-	static const int  REQUESET_RESCHEDULE_TIMER     = 0x01;
-	static const int  REQUSEST_RESCHEDULE_INTERRUPT = 0x02;
-	static QAtomicInt requestReschedule;
-	static QMutex     mutexRequestReschedule;
-
-	static void setRequestReschedule(int newValue) {
-#if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)
-		requestReschedule.storeRelease(newValue);
-#else
-		requestReschedule = newValue;
-#endif
-	}
-};
-
 
 class TimerThread : public QRunnable {
 public:
@@ -157,6 +105,64 @@ private:
 	static QMutex         mutexWP;
 	static QWaitCondition cvWP;
 	static int            stopThread;
+};
+
+
+class ProcessorThread : public QRunnable {
+public:
+	static const QThread::Priority PRIORITY = QThread::LowPriority;
+
+	// Wait interval in milliseconds for QWaitCondition::wait
+	static const int WAIT_INTERVAL = 1000;
+
+	// Use this condition variable to wake and wait processor
+	static QWaitCondition cvRunning;
+
+	static int getRunning() {
+#if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)
+		return running.loadAcquire();
+#else
+		return (int)running;
+#endif
+	}
+	static void startRunning(); // running = 1
+	static void stopRunning();  // running = 0
+
+	static void stop();
+
+	static void requestRescheduleTimer();
+	static void requestRescheduleInterrupt();
+
+	static int getRequestReschedule() {
+#if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)
+		return requestReschedule.loadAcquire();
+#else
+		return (int)requestReschedule;
+#endif
+	}
+
+	static void checkRequestReschedule() {
+		if (InterruptThread::isEnabled() && getRequestReschedule()) ERROR_RequestReschedule();
+	}
+
+	void run();
+
+private:
+	static QAtomicInt running;
+	static int        stopThread;
+	//
+	static const int  REQUESET_RESCHEDULE_TIMER     = 0x01;
+	static const int  REQUSEST_RESCHEDULE_INTERRUPT = 0x02;
+	static QAtomicInt requestReschedule;
+	static QMutex     mutexRequestReschedule;
+
+	static void setRequestReschedule(int newValue) {
+#if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)
+		requestReschedule.storeRelease(newValue);
+#else
+		requestReschedule = newValue;
+#endif
+	}
 };
 
 #endif
