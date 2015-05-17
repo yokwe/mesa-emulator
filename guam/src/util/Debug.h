@@ -84,6 +84,7 @@ static const int DEBUG_STOP_AT_OPCODE_TRAP  = 0;
 static const int DEBUG_STOP_AT_PAGE_FAULT   = 0;
 static const int DEBUG_STOP_AT_MP_915       = 0;
 static const int DEBUG_STOP_AT_STACK_ERROR  = 1;
+static const int DEBUG_STOP_AT_NOT_RUNNING  = 0;
 
 static const int DEBUG_STOP_MESSAGE_UNTIL_MP = 0;
 
