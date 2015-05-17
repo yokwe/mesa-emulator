@@ -98,13 +98,17 @@ void ProcessorThread::run() {
 	try {
 		for(;;) {
 			try {
-				// Execute opcode
-				Interpreter::execute();
 				// Handle reschedule from InterruptThread and TimerThread
 				if (InterruptThread::isEnabled() && getRequestReschedule()) {
 					rescheduleRequestCount++;
 					ERROR_RequestReschedule();
 				}
+				// Execute opcode
+				if (getRunning()) {
+					Interpreter::execute();
+					continue;
+				}
+				ERROR();
 			} catch(RequestReschedule& e) {
 				rescheduleCount++;
 				//logger.debug("Reschedule %-20s  %8d", e.func, rescheduleCount);
