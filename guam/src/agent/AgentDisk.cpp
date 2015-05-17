@@ -45,10 +45,15 @@ static log4cpp::Category& logger = Logger::getLogger("agentdisk");
 
 int AgentDisk::IOThread::stopThread = 0;
 
+static int readCount = 0;
+static int writeCount = 0;
+static int verifyCount = 0;
+
 void AgentDisk::IOThread::run() {
 	logger.info("AgentDisk::IOThread::run START");
 
 	stopThread = 0;
+	int processCount = 0;
 	QThread::currentThread()->setPriority(PRIORITY);
 
 	for(;;) {
@@ -74,8 +79,13 @@ void AgentDisk::IOThread::run() {
 
 		process(iocb, diskFile);
 		InterruptThread::notifyInterrupt(interruptSelector);
+		processCount++;
 	}
 exitLoop:
+	logger.info("processCount           = %8u", processCount);
+	logger.info("readCount              = %8u", readCount);
+	logger.info("writeCount             = %8u", writeCount);
+	logger.info("verifyCount            = %8u", verifyCount);
 	logger.info("AgentDisk::IOThread::run STOP");
 }
 void AgentDisk::IOThread::reset() {
@@ -113,6 +123,8 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 		//
 		iocb->pageCount = 0;
 		iocb->status = PilotDiskFace::goodCompletion;
+		//
+		readCount++;
 	}
 		break;
 	case PilotDiskFace::write: {
@@ -127,6 +139,8 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 		//
 		iocb->pageCount = 0;
 		iocb->status = PilotDiskFace::goodCompletion;
+		//
+		writeCount++;
 	}
 		break;
 	case PilotDiskFace::verify: {
@@ -142,6 +156,8 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 		//
 		iocb->pageCount = 0;
 		iocb->status = ret ? PilotDiskFace::dataVerifyError : PilotDiskFace::goodCompletion;
+		//
+		verifyCount++;
 	}
 		break;
 	default:

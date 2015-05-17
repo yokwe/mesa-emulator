@@ -58,6 +58,8 @@ static int startRunningCount = 0;
 static int stopRunningCount = 0;
 static int timerCount = 0;
 static int interruptCount = 0;
+static int notifyCount = 0;
+static int notifyWakeupCount = 0;
 
 void ProcessorThread::startRunning() {
 	if (running.testAndSetOrdered(0, 1)) {
@@ -168,6 +170,8 @@ exitLoop:
 	logger.info("rescheduleRequestCount = %8u", rescheduleRequestCount);
 	logger.info("timerCount             = %8u", timerCount);
 	logger.info("interruptCount         = %8u", interruptCount);
+	logger.info("notifyCount            = %8u", notifyCount);
+	logger.info("notifyWakeupCount      = %8u", notifyWakeupCount);
 	logger.info("startRunningCount      = %8u", startRunningCount);
 	logger.info("stopRunningCount       = %8u", stopRunningCount);
 	logger.info("ProcessorThread::run STOP");
@@ -286,7 +290,19 @@ void InterruptThread::setWP(CARD16 newValue) {
 	}
 }
 void InterruptThread::notifyInterrupt(CARD16 interruptSelector) {
-	setWP(WP | interruptSelector);
+	QMutexLocker locker(&mutexWP);
+	notifyCount++;
+	CARD16 newValue = (WP | interruptSelector);
+	//
+	CARD16 oldValue = WP;
+	WP = newValue;
+	if (oldValue && !newValue) {
+		// become no interrupt
+	} else if (!oldValue && newValue) {
+		// start interrupt, wake waiting thread
+		cvWP.wakeOne();
+		notifyWakeupCount++;
+	}
 }
 int InterruptThread::isPending() {
 	return WP && isEnabled();

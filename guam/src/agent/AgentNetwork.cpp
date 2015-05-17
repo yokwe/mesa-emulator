@@ -58,6 +58,7 @@ void AgentNetwork::TransmitThread::run() {
 	logger.info("AgentNetwork::TransmitThread::run START");
 	if (networkPacket == 0) ERROR();
 
+	int transmitCount = 0;
 	stopThread = 0;
 	QThread::currentThread()->setPriority(PRIORITY);
 
@@ -83,8 +84,10 @@ void AgentNetwork::TransmitThread::run() {
 
 		networkPacket->transmit(iocb);
 		InterruptThread::notifyInterrupt(interruptSelector);
+		transmitCount++;
 	}
 exitLoop:
+	logger.info("transmitCount          = %8u", transmitCount);
 	logger.info("AgentNetwork::TransmitThread::run STOP");
 }
 void AgentNetwork::TransmitThread::reset() {
@@ -126,6 +129,7 @@ void AgentNetwork::ReceiveThread::run() {
 	logger.info("AgentNetwork::ReceiveThread::run START");
 	if (networkPacket == 0) ERROR();
 
+	int receiveCount = 0;
 	stopThread = 0;
 	QThread::currentThread()->setPriority(PRIORITY);
 
@@ -177,10 +181,12 @@ void AgentNetwork::ReceiveThread::run() {
 					// use this iocb to receive packet
 					networkPacket->receive(iocb);
 					InterruptThread::notifyInterrupt(interruptSelector);
+					receiveCount++;
 				}
 			}
 		}
 	}
+	logger.info("receiveCount           = %8u", receiveCount);
 	logger.info("AgentNetwork::ReceiveThread::run STOP");
 }
 void AgentNetwork::ReceiveThread::reset() {
