@@ -51,6 +51,7 @@ static log4cpp::Category& logger = Logger::getLogger("mesathread");
 QWaitCondition ProcessorThread::cvRunning;
 QAtomicInt     ProcessorThread::running;
 int            ProcessorThread::stopThread;
+int            ProcessorThread::rescheduleRequestCount;
 QAtomicInt     ProcessorThread::requestReschedule;
 QMutex         ProcessorThread::mutexRequestReschedule;
 
@@ -163,6 +164,7 @@ exitLoop:
 
 	logger.info("abortCount             = %8u", abortCount);
 	logger.info("rescheduleCount        = %8u", rescheduleCount);
+	logger.info("rescheduleRequestCount = %8u", rescheduleRequestCount);
 	logger.info("timerCount             = %8u", timerCount);
 	logger.info("interruptCount         = %8u", interruptCount);
 	logger.info("notifyCount            = %8u", notifyCount);
