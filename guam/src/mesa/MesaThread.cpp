@@ -93,7 +93,6 @@ void ProcessorThread::run() {
 
 	int abortCount = 0;
 	int rescheduleCount = 0;
-	int rescheduleRequestCount = 0;
 	stopThread = 0;
 	try {
 		for(;;) {
@@ -164,7 +163,6 @@ exitLoop:
 
 	logger.info("abortCount             = %8u", abortCount);
 	logger.info("rescheduleCount        = %8u", rescheduleCount);
-	logger.info("rescheduleRequestCount = %8u", rescheduleRequestCount);
 	logger.info("timerCount             = %8u", timerCount);
 	logger.info("interruptCount         = %8u", interruptCount);
 	logger.info("notifyCount            = %8u", notifyCount);
