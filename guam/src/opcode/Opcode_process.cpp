@@ -242,6 +242,9 @@ BusyWait:
 // 10.2.1 Monitor Entry
 
 // EnerFailed: PROC[m: LONG POINTER TO Monitor]
+// EnterFailed calls Reschedule at it's end.
+// Also EnterFailed is called at very end of opcode implementation of ME and MR
+// So even if RequestReschedule is thrown within Reschedule, it is fine.
 static void EnterFailed(LONG_POINTER m) {
 	PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].link))};
 	link.failed = 1;
@@ -357,7 +360,11 @@ static inline PsbIndex Fault(FaultIndex fi) {
 	NotifyWakeup(PDA_OFFSET(fault[fi].condition));
 	PC = savedPC;
 	SP = savedSP;
-	Reschedule(1);
+	try {
+		Reschedule(1);
+	} catch (RequestReschedule& e) {
+		ERROR();
+	}
 	return faulted;
 }
 // FaultOne: PROC[fi: FaultIndex, parameter: UNSPEC]
@@ -475,6 +482,7 @@ __attribute__((always_inline)) static inline void R_MX_(Run /*run*/) {
 	LONG_POINTER m = PopLong();
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  MX  %08X", savedPC, m);
 	MINIMAL_STACK();
+	// Reschedule must be placed at very end of implementation of opcode.
 	if (Exit(m)) Reschedule();
 }
 DEF_R(MX)
@@ -505,6 +513,7 @@ __attribute__((always_inline)) static inline void R_MW_(Run /*run*/) {
 			requeue = 1;
 		}
 	}
+	// Reschedule must be placed at very end of implementation of opcode.
 	if (requeue) Reschedule();
 }
 DEF_R(MW)
@@ -543,6 +552,7 @@ __attribute__((always_inline)) static inline void R_NC_(Run /*run*/) {
 	Condition cond = {*Fetch(c)};
 	if (cond.tail != PsbNull) {
 		WakeHead(c);
+		// Reschedule must be placed at very end of implementation of opcode.
 		Reschedule();
 	}
 }
@@ -559,6 +569,7 @@ __attribute__((always_inline)) static inline void R_BC_(Run /*run*/) {
 		WakeHead(c);
 		requeue = 1;
 	}
+	// Reschedule must be placed at very end of implementation of opcode.
 	if (requeue) Reschedule();
 }
 DEF_R(BC)
@@ -571,6 +582,7 @@ __attribute__((always_inline)) static inline void R_REQ_(Run /*run*/) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  REQ  %08X  %08X  %04X", savedPC, srcque, dstque, psb);
 	MINIMAL_STACK();
 	Requeue(srcque, dstque, Index(psb));
+	// Reschedule must be placed at very end of implementation of opcode.
 	Reschedule();
 }
 DEF_R(REQ)
@@ -584,6 +596,7 @@ __attribute__((always_inline)) static inline void R_SPP_(Run /*run*/) {
 	link.priority = priority;
 	*StorePda(OFFSET(ProcessDataArea, block[PSB].link)) = link.u;
 	Requeue(PDA_OFFSET(ready), PDA_OFFSET(ready), PSB);
+	// Reschedule must be placed at very end of implementation of opcode.
 	Reschedule();
 }
 DEF_R(SPP)

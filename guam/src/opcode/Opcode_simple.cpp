@@ -537,6 +537,8 @@ DEF_R(CATCH)
 __attribute__((always_inline)) static inline void R_J_(Run run) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  J %5d", savedPC, (INT16)run.getArg());
 	PC = savedPC + (INT16)run.getArg();
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
+	ProcessorThread::checkRequestReschedule();
 }
 DEF_R(J)
 
@@ -567,6 +569,8 @@ __attribute__((always_inline)) static inline void R_JNEB_(Run run) {
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	if (u != v) PC = savedPC + run.getArg();
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
+	ProcessorThread::checkRequestReschedule();
 }
 DEF_R(JNEB)
 
@@ -607,6 +611,8 @@ __attribute__((always_inline)) static inline void R_JULB_(Run run) {
 	CARDINAL v = Pop();
 	CARDINAL u = Pop();
 	if (u < v) PC = savedPC + run.getArg();
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
+	ProcessorThread::checkRequestReschedule();
 }
 DEF_R(JULB)
 
@@ -641,6 +647,8 @@ __attribute__((always_inline)) static inline void JZn(CARD16 n) {
 __attribute__((always_inline)) static inline void R_JZ_(Run run) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JZ %5d", savedPC, (INT16)run.getArg());
 	JZn(run.getArg());
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
+	ProcessorThread::checkRequestReschedule();
 }
 DEF_R(JZ)
 
@@ -651,6 +659,8 @@ __attribute__((always_inline)) static inline void JNZn(CARD16 n) {
 __attribute__((always_inline)) static inline void R_JNZ_(Run run) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JZ %5d", savedPC, (INT16)run.getArg());
 	JNZn(run.getArg());
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
+	ProcessorThread::checkRequestReschedule();
 }
 DEF_R(JNZ)
 
@@ -1160,6 +1170,7 @@ __attribute__((always_inline)) static inline void R_EI_(Run /*run*/) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  EI  %3d", savedPC, InterruptThread::getWDC());
 	if (InterruptThread::getWDC() == 0) InterruptError();
 	InterruptThread::enable();
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
 DEF_R(EI)
@@ -1562,38 +1573,32 @@ DEF_CI_BREAK(name)
 
 #define DEF_CI_JUMP(name) \
 Run C_##name(Opcode* opcode_) { \
-	ProcessorThread::checkRequestReschedule(); \
 	return C_##name##_(opcode_); \
 } \
 void I_##name(Opcode* opcode) { \
 	Run run = C_##name##_(opcode); \
 	PC = savedPC + L_##name; \
 	R_##name##_(run); \
-	ProcessorThread::checkRequestReschedule(); \
 }
 
 #define DEF_CI_n_JUMP(name, n) \
 Run C_##name##n(Opcode* opcode_) { \
-	ProcessorThread::checkRequestReschedule(); \
 	return C_##name##n##_(opcode_); \
 } \
 void I_##name##n(Opcode* opcode) { \
 	Run run = C_##name##n##_(opcode); \
 	PC = savedPC + L_##name##n; \
 	R_##name##_(run); \
-	ProcessorThread::checkRequestReschedule(); \
 }
 
 #define DEF_CI_r_JUMP(name, r) \
 Run C_##name(Opcode* opcode_) { \
-	ProcessorThread::checkRequestReschedule(); \
 	return C_##name##_(opcode_); \
 } \
 void I_##name(Opcode* opcode) { \
 	Run run = C_##name##_(opcode); \
 	PC = savedPC + L_##name; \
 	R_##r##_(run); \
-	ProcessorThread::checkRequestReschedule(); \
 }
 
 #define DEF_C_0_n_JUMP(name, n) \
