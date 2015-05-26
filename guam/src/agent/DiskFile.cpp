@@ -34,11 +34,41 @@ static log4cpp::Category& logger = Logger::getLogger("diskfile");
 
 #include "DiskFile.h"
 
+void DiskFile::readPage(CARD32 block, CARD16 *buffer, CARD32 sizeInWord) {
+	if (maxBlock <= block) {
+		logger.fatal("block = %d  maxBlock = %d", block, maxBlock);
+		ERROR();
+	}
+	memcpy(buffer, page + block, sizeInWord * Environment::bytesPerWord);
+}
+void DiskFile::writePage(CARD32 block, CARD16 *buffer, CARD32 sizeInWord) {
+	if (maxBlock <= block) {
+		logger.fatal("block = %d  maxBlock = %d", block, maxBlock);
+		ERROR();
+	}
+	memcpy(page + block, buffer, sizeInWord * Environment::bytesPerWord);
+}
+void DiskFile::zeroPage(CARD32 block) {
+	if (maxBlock <= block) {
+		logger.fatal("block = %d  maxBlock = %d", block, maxBlock);
+		ERROR();
+	}
+	bzero(page + block, SIZE(Page));
+}
+int DiskFile::verifyPage(CARD32 block, CARD16 *buffer) {
+	if (maxBlock <= block) {
+		logger.fatal("block = %d  maxBlock = %d", block, maxBlock);
+		ERROR();
+	}
+	return memcmp(page + block, buffer, sizeof(Page));
+}
+
 void DiskFile::attach(const QString& path_) {
 	path = path_;
 	logger.info("DiskFile::attach %s", path.toLatin1().constData());
 
 	page = (Page*)Util::mapFile(path, size);
+	maxBlock = getBlockSize();
 }
 
 void DiskFile::setDiskDCBType(DiskIOFaceGuam::DiskDCBType *dcb) {
