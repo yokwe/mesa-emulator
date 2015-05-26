@@ -124,6 +124,9 @@ void MesaProcessor::wait() {
 	logger.info("MesaProcessor::wait STOP");
 	//
 	setRunning(0);
+	// Properly detach DiskFile
+	diskFile.detach();
+	floppyFile.detach();
 }
 
 void MesaProcessor::loadGerm(QString& path) {
