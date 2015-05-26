@@ -58,6 +58,9 @@ public:
 	void setGermPath(const QString& germPath_) {
 		germPath = germPath_;
 	}
+	void setFloppyPath(const QString& floppyPath_) {
+		floppyPath = floppyPath_;
+	}
 	void setBootSwitch(const QString& bootSwitch_) {
 		bootSwitch = bootSwitch_;
 	}
@@ -88,6 +91,7 @@ public:
 private:
 	QString        diskPath;
 	QString        germPath;
+	QString        floppyPath;
 	QString        bootSwitch;
 	int            vmBits;
 	int            rmBits;
@@ -97,6 +101,7 @@ private:
 
 	//
 	DiskFile       diskFile;
+	DiskFile       floppyFile;
 	NetworkPacket  networkPacket;
 
 	// agent
