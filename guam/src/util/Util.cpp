@@ -135,7 +135,7 @@ void* Util::mapFile  (const QString& path, quint32& mapSize) {
 	}
 
 	allMap[mapInfo->page] = mapInfo;
-	logger.info("mapFile    %d  size = %6X  path = %s", mapInfo->id, (quint32)mapInfo->size, qPrintable(mapInfo->file.fileName()));
+	logger.info("mapFile    %d  size = %8X  path = %s", mapInfo->id, (quint32)mapInfo->size, qPrintable(mapInfo->file.fileName()));
 
 	return mapInfo->page;
 }
@@ -146,7 +146,7 @@ void  Util::unmapFile(void* page) {
 	}
 	MapInfo* mapInfo = allMap[page];
 
-	logger.info("unmapFile  %d  size = %6X  path = %s", mapInfo->id, (quint32)mapInfo->size, qPrintable(mapInfo->file.fileName()));
+	logger.info("unmapFile  %d  size = %8X  path = %s", mapInfo->id, (quint32)mapInfo->size, qPrintable(mapInfo->file.fileName()));
 
 	if (!mapInfo->file.unmap((uchar*)(mapInfo->page))) {
 		logger.fatal("file.unmap returns false.  error = %s", qPrintable(mapInfo->file.errorString()));
