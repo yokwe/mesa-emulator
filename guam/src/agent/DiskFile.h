@@ -41,29 +41,32 @@ public:
 	struct Page { CARD16 word[PageSize]; };
 
 	DiskFile() {
-		page = 0;
-		size = 0;
+		page     = 0;
+		size     = 0;
+		maxBlock = 0;
 	}
 
 	void attach(const QString& path);
 
 	void readPage(CARD32 block, CARD16 *buffer) {
-		memcpy(buffer, page + block, sizeof(Page));
+		readPage(block, buffer, SIZE(Page));
 	}
+	void readPage(CARD32 block, CARD16 *buffer, CARD32 sizeInWord);
 
 	void writePage(CARD32 block, CARD16 *buffer) {
-		memcpy(page + block, buffer, sizeof(Page));
+		writePage(block, buffer, SIZE(Page));
 	}
+	void writePage(CARD32 block, CARD16 *buffer, CARD32 sizeInWord);
 
-	int verifyPage(CARD32 block, CARD16 *buffer) {
-		return memcmp(page + block, buffer, sizeof(Page));
-	}
+	void zeroPage(CARD32 block);
+
+	int verifyPage(CARD32 block, CARD16 *buffer);
 
 	void setDiskDCBType(DiskIOFaceGuam::DiskDCBType *dcb);
 	void setFloppyDCBType(FloppyIOFaceGuam::FloppyDCBType *dcb);
 
-	CARD32 getDiskSize() {
-		return size / PageSize;
+	CARD32 getBlockSize() {
+		return size / Environment::bytesPerPage;
 	}
 
 	const QString& getPath() {
@@ -82,7 +85,8 @@ public:
 	CARD32 getBlock(FloppyIOFaceGuam::FloppyIOCBType* iocb) {
 		const CARD32 C = iocb->operation.address.cylinder;
 		const CARD32 H = iocb->operation.address.head;
-		const CARD32 S = iocb->operation.address.sector;
+		// Sector in Floppy is [1..maxSectorsPerTrack)
+		const CARD32 S = iocb->operation.address.sector - 1;
 		CARD32 block = ((C * FLOPPY_NUMBER_OF_HEADS + H) * FLOPPY_SECTORS_PER_TRACK + S);
 
 		return block;
@@ -99,6 +103,7 @@ private:
 	QString path;
 	Page  *page;
 	CARD32 size;
+	CARD32 maxBlock;
 };
 
 #endif
