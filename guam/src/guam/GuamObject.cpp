@@ -49,6 +49,7 @@ GuamObject::GuamObject() {
 void GuamObject::init() {
 	QString diskPath         = preference->getAsString(section, "DiskPath");
 	QString germPath         = preference->getAsString(section, "GermPath");
+	QString floppyPath       = preference->getAsString(section, "FloppyPath");
 	QString bootSwitch       = preference->getAsString(section, "BootSwitch");
 	QString networkInterface = preference->getAsString(section, "NetworkInterface");
 
@@ -57,6 +58,7 @@ void GuamObject::init() {
 
 	mesaProcessor.setDiskPath(diskPath);
 	mesaProcessor.setGermPath(germPath);
+	mesaProcessor.setFloppyPath(floppyPath);
 	mesaProcessor.setBootSwitch(bootSwitch);
 
 	mesaProcessor.setMemorySize(vmBits, rmBits);
