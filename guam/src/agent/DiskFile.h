@@ -47,6 +47,7 @@ public:
 	}
 
 	void attach(const QString& path);
+	void detach();
 
 	void readPage(CARD32 block, CARD16 *buffer) {
 		readPage(block, buffer, SIZE(Page));

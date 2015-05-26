@@ -71,6 +71,13 @@ void DiskFile::attach(const QString& path_) {
 	maxBlock = getBlockSize();
 }
 
+void DiskFile::detach() {
+	Util::unmapFile(page);
+	page     = 0;
+	size     = 0;
+	maxBlock = 0;
+}
+
 void DiskFile::setDiskDCBType(DiskIOFaceGuam::DiskDCBType *dcb) {
 	dcb->deviceType         = Device::T_anyPilotDisk;
 	dcb->numberOfHeads      = DISK_NUMBER_OF_HEADS;
