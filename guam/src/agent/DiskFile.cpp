@@ -72,10 +72,15 @@ void DiskFile::attach(const QString& path_) {
 }
 
 void DiskFile::detach() {
+	logger.info("DiskFile::detach %s", path.toLatin1().constData());
+
 	Util::unmapFile(page);
-	page     = 0;
-	size     = 0;
-	maxBlock = 0;
+	page              = 0;
+	size              = 0;
+	maxBlock          = 0;
+	numberOfCylinders = 0;
+	numberOfHeads     = 0;
+	sectorsPerTrack   = 0;
 }
 
 void DiskFile::setDiskDCBType(DiskIOFaceGuam::DiskDCBType *dcb) {
@@ -91,17 +96,25 @@ void DiskFile::setDiskDCBType(DiskIOFaceGuam::DiskDCBType *dcb) {
 	dcb->agentDeviceData[5] = 0;
 
 	if (size != (CARD32)(dcb->numberOfHeads * dcb->sectorsPerTrack * dcb->numberOfCylinders * sizeof(Page))) ERROR();
+
+	numberOfCylinders = dcb->numberOfCylinders;
+	numberOfHeads     = dcb->numberOfHeads;
+	sectorsPerTrack   = dcb->sectorsPerTrack;
 }
 
 void DiskFile::setFloppyDCBType(FloppyIOFaceGuam::FloppyDCBType *dcb) {
-	dcb->deviceType         = Device::T_microFloppy;
+	dcb->deviceType         = Device::T_anyFloppy;
 	dcb->numberOfHeads      = FLOPPY_NUMBER_OF_HEADS;
 	dcb->sectorsPerTrack    = FLOPPY_SECTORS_PER_TRACK;
-	dcb->numberOfCylinders  = FLOPPY_NUMBER_OF_CYLINDERS;
+	dcb->numberOfCylinders  = size / (dcb->numberOfHeads * dcb->sectorsPerTrack * sizeof(Page));
 	dcb->ready              = 1;
 	dcb->diskChanged        = 1;
 	dcb->twoSided           = 1;
 	dcb->suggestedTries     = 1;
 
 	if (size != (CARD32)(dcb->numberOfHeads * dcb->sectorsPerTrack * dcb->numberOfCylinders * sizeof(Page))) ERROR();
+
+	numberOfCylinders = dcb->numberOfCylinders;
+	numberOfHeads     = dcb->numberOfHeads;
+	sectorsPerTrack   = dcb->sectorsPerTrack;
 }

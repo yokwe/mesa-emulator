@@ -41,9 +41,12 @@ public:
 	struct Page { CARD16 word[PageSize]; };
 
 	DiskFile() {
-		page     = 0;
-		size     = 0;
-		maxBlock = 0;
+		page              = 0;
+		size              = 0;
+		maxBlock          = 0;
+		numberOfCylinders = 0;
+		numberOfHeads     = 0;
+		sectorsPerTrack   = 0;
 	}
 
 	void attach(const QString& path);
@@ -78,7 +81,7 @@ public:
 		const CARD32 C = iocb->diskAddress.cylinder;
 		const CARD32 H = iocb->diskAddress.head;
 		const CARD32 S = iocb->diskAddress.sector;
-		CARD32 block = ((C * DISK_NUMBER_OF_HEADS + H) * DISK_SECTORS_PER_TRACK + S);
+		CARD32 block = ((C * numberOfHeads + H) * sectorsPerTrack + S);
 
 		return block;
 	}
@@ -88,7 +91,7 @@ public:
 		const CARD32 H = iocb->operation.address.head;
 		// Sector in Floppy is [1..maxSectorsPerTrack)
 		const CARD32 S = iocb->operation.address.sector - 1;
-		CARD32 block = ((C * FLOPPY_NUMBER_OF_HEADS + H) * FLOPPY_SECTORS_PER_TRACK + S);
+		CARD32 block = (C * numberOfHeads + H) * sectorsPerTrack + S;
 
 		return block;
 	}
@@ -99,12 +102,15 @@ private:
 
 	static const CARD32 FLOPPY_NUMBER_OF_HEADS     =  2;
 	static const CARD32 FLOPPY_SECTORS_PER_TRACK   = 18;
-	static const CARD32 FLOPPY_NUMBER_OF_CYLINDERS = 80;
 
 	QString path;
 	Page  *page;
 	CARD32 size;
 	CARD32 maxBlock;
+	//
+	CARD32 numberOfCylinders;
+	CARD32 numberOfHeads;
+	CARD32 sectorsPerTrack;
 };
 
 #endif
