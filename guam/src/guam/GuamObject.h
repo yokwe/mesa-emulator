@@ -48,14 +48,17 @@ public:
 	void init();
 
 	int isEmulatorRunning() {
-		return mesaProcessor.isRunning();
+		return 	emulatorIsRunning;
 	}
 	void stopEmulator() {
-		if (mesaProcessor.isRunning()) {
+		if (emulatorIsRunning) {
 			// Interrupt must be enabled to stop processor thread
 			if (!InterruptThread::isEnabled()) InterruptThread::setWDC(0);
 			mesaProcessor.stop();
-			mesaProcessor.wait();
+			// Wait all thread is stopped
+			QThreadPool::globalInstance()->waitForDone();
+			//
+			emulatorIsRunning = 0;
 		}
 	}
 
@@ -76,6 +79,8 @@ private:
 	quint32     displayHeight;
 
 	MesaProcessor mesaProcessor;
+
+	quint32     emulatorIsRunning;
 };
 
 #endif
