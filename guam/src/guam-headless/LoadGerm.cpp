@@ -60,6 +60,7 @@ int main() {
 
 	QString diskPath         = preference.getAsString(group, "DiskPath");
 	QString germPath         = preference.getAsString(group, "GermPath");
+	QString floppyPath       = preference.getAsString(group, "FloppyPath");
 	QString bootSwitch       = preference.getAsString(group, "BootSwitch");
 	QString networkInterface = preference.getAsString(group, "NetworkInterface");
 
@@ -73,6 +74,7 @@ int main() {
 
 	mesaProcessor.setDiskPath(diskPath);
 	mesaProcessor.setGermPath(germPath);
+	mesaProcessor.setFloppyPath(floppyPath);
 	mesaProcessor.setBootSwitch(bootSwitch);
 
 	mesaProcessor.setMemorySize(vmBits, rmBits);
