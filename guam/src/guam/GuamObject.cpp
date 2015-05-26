@@ -44,6 +44,8 @@ GuamObject::GuamObject() {
 
 	displayWidth  = preference->getAsUINT32(section, "DisplayWidth");
 	displayHeight = preference->getAsUINT32(section, "DisplayHeight");
+
+	emulatorIsRunning = 0;
 }
 
 void GuamObject::init() {
@@ -82,8 +84,10 @@ QImage* GuamObject::getDisplayImage() {
 }
 
 void GuamObject::startEmulator() {
+	emulatorIsRunning = 1;
 	mesaProcessor.boot();
 	mesaProcessor.wait();
+	emulatorIsRunning = 0;
 
 	Interpreter::stats();
 	Run::stats();
@@ -99,4 +103,5 @@ void GuamObject::startEmulator() {
 	//MonoBlt_stats();
 
 	emulatorStopped();
+	logger.info("emulator stopped");
 }
