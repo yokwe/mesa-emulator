@@ -60,6 +60,10 @@ void MesaProcessor::initialize() {
 	diskFile.attach(diskPath);
 	disk.addDiskFile(&diskFile);
 
+	logger.info("Floppy %s", floppyPath.toLatin1().constData());
+	floppyFile.attach(floppyPath);
+	floppy.addDiskFile(&floppyFile);
+
 	// AgentNetwork use networkPacket
 	logger.info("networkInterfaceName = %s", networkInterfaceName.toLatin1().constData());
 	networkPacket.attach(networkInterfaceName);
