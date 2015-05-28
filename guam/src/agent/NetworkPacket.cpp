@@ -279,7 +279,7 @@ int NetworkPacket::receive(CARD8* data, CARD32 dataLen, int& opErrno) {
 				ERROR();
 			}
 			CARD32 len = dataLen / 2;
-			for(CARD32 i = 0; i < len; i++) q[i] = qToBigEndian(p[i]);
+			for(CARD32 i = 0; i < len; i++) q[i] = qFromBigEndian(p[i]);
 		}
 
 		if (DEBUG_TRACE_NETWORK_PACKET) {
