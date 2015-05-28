@@ -92,5 +92,8 @@ public:
 
 	static void*   mapFile  (const QString& path, quint32& mapSize);
 	static void    unmapFile(void* page);
+
+	static void    toBigEndian  (quint16* source, quint16* dest, int size);
+	static void    fromBigEndian(quint16* source, quint16* dest, int size);
 };
 #endif

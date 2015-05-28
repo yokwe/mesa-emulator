@@ -189,3 +189,14 @@ quint32 Util::getUnixTime() {
 void Util::msleep(quint32 milliSeconds) {
 	QThreadWrpper::msleep(milliSeconds);
 }
+
+void Util::toBigEndian(quint16* source, quint16* dest, int size) {
+	for(int i = 0; i < size; i++) {
+		dest[i] = qToBigEndian(source[i]);
+	}
+}
+void Util::fromBigEndian(quint16* source, quint16* dest, int size) {
+	for(int i = 0; i < size; i++) {
+		dest[i] = qFromBigEndian(source[i]);
+	}
+}
