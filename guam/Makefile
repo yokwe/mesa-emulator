@@ -18,7 +18,7 @@ RASPI_ROOT        := /mnt/raspi
 RASPI_DEPLOY_ROOT := $(RASPI_ROOT)/home/pi/gaum
 
 .PHONY: all qt4-default qt5-default clean distclean
-.PHONY: guam guam-headless test
+.PHONY: guam guam-headless test floppy
 .PHONY: run-guam run-guam-headless run-test
 .PHONY: callgrind memecheck tar
 .PHONY: qmake
@@ -34,6 +34,7 @@ all: src/opcode/Run_decl.h
 	(cd src/test;          make all)
 	(cd src/guam-headless; make all)
 	(cd src/guam;          make all)
+	(cd src/floppy;        make all)
 
 qt4-default:
 	sudo apt-get install qt4-default
@@ -52,6 +53,7 @@ clean:
 	mkdir  tmp/build/test
 	mkdir  tmp/build/guam-headless
 	mkdir  tmp/build/guam
+	mkdir  tmp/build/floppy
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -81,6 +83,10 @@ test: src/opcode/Run_decl.h
 	(cd src/util;          make all)
 	(cd src/test;          make all)
 
+floppy:
+	(cd src/util;          make all)
+	(cd src/floppy;        make all)
+
 src/opcode/Run_decl.h: data/Run_decl.h
 	awk -f bin/gen_Run_decl.awk data/Run_decl.h >src/opcode/Run_decl.h
 
@@ -95,6 +101,11 @@ run-guam-headless: guam-headless
 run-test: test
 	echo -n >tmp/debug.log
 	tmp/build/test/test
+
+run-floppy: floppy
+	echo -n >tmp/debug.log
+	tmp/build/floppy/floppy
+	
 
 callgrind:
 	mkdir -p tmp/callgrind
@@ -134,6 +145,7 @@ qmake:
 	(cd src/test;          qmake)
 	(cd src/guam-headless; qmake)
 	(cd src/guam;          qmake)
+	(cd src/floppy;        qmake)
 	qmake --version
 
 
