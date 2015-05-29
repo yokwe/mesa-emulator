@@ -110,7 +110,7 @@ void AgentFloppy::Call() {
 			for(int i = 0; i < iocb->operation.count; i++) {
 				CARD16 *buffer = Store(dataPtr);
 				diskFile->readPage(block++, sector.word, iocb->sectorLength);
-				Util::fromBigEndian(sector.word, buffer, iocb->sectorLength);
+				Util::fromLittleEndian(sector.word, buffer, iocb->sectorLength);
 				if (iocb->operation.incrementDataPointer) dataPtr += iocb->sectorLength;
 			}
 			iocb->operation.count = 0;
@@ -128,7 +128,7 @@ void AgentFloppy::Call() {
 			CARD32 dataPtr = iocb->operation.dataPtr;
 			for(int i = 0; i < iocb->operation.count; i++) {
 				CARD16 *buffer = Fetch(dataPtr);
-				Util::toBigEndian(buffer, sector.word, iocb->sectorLength);
+				Util::toLittleEndian(buffer, sector.word, iocb->sectorLength);
 				diskFile->writePage(block++, sector.word, iocb->sectorLength);
 				if (iocb->operation.incrementDataPointer) dataPtr += iocb->sectorLength;
 			}

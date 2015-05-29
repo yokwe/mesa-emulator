@@ -190,9 +190,9 @@ int NetworkPacket::transmit(CARD8* data, CARD32 dataLen, int& opErrno) {
 			logger.fatal("dataLen = %d", dataLen);
 			ERROR();
 		}
-		CARD32 len = dataLen / 2;
-		for(CARD32 i = 0; i < len; i++) q[i] = qToBigEndian(p[i]);
+		Util::toLittleEndian(p, q, dataLen);
 	}
+
 
 	if (DEBUG_TRACE_NETWORK_PACKET) {
 		logger.debug("TRANS    dataLen = %d", dataLen);
@@ -278,8 +278,7 @@ int NetworkPacket::receive(CARD8* data, CARD32 dataLen, int& opErrno) {
 				logger.fatal("dataLen = %d", dataLen);
 				ERROR();
 			}
-			CARD32 len = dataLen / 2;
-			for(CARD32 i = 0; i < len; i++) q[i] = qFromBigEndian(p[i]);
+			Util::fromLittleEndian(p, q, dataLen);
 		}
 
 		if (DEBUG_TRACE_NETWORK_PACKET) {
