@@ -85,6 +85,7 @@ test: src/opcode/Run_decl.h
 
 floppy:
 	(cd src/util;          make all)
+	(cd src/agent;         make all)
 	(cd src/floppy;        make all)
 
 src/opcode/Run_decl.h: data/Run_decl.h
