@@ -9,6 +9,9 @@ TEMPLATE = app
 #HEADERS += testBase.h
 SOURCES += main.cpp
 
+HEADERS += FloppyByteBuffer.h
+SOURCES += FloppyByteBuffer.cpp
+
 LIBS += ../../tmp/build/agent/libagent.a
 LIBS += ../../tmp/build/util/libutil.a
 
