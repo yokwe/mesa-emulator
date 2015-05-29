@@ -190,13 +190,13 @@ void Util::msleep(quint32 milliSeconds) {
 	QThreadWrpper::msleep(milliSeconds);
 }
 
-void Util::toLittleEndian(quint16* source, quint16* dest, int size) {
+void Util::toBigEndian(quint16* source, quint16* dest, int size) {
 	for(int i = 0; i < size; i++) {
-		dest[i] = qToLittleEndian(source[i]);
+		dest[i] = qToBigEndian(source[i]);
 	}
 }
-void Util::fromLittleEndian(quint16* source, quint16* dest, int size) {
+void Util::fromBigEndian(quint16* source, quint16* dest, int size) {
 	for(int i = 0; i < size; i++) {
-		dest[i] = qFromLittleEndian(source[i]);
+		dest[i] = qFromBigEndian(source[i]);
 	}
 }
