@@ -52,8 +52,7 @@ public:
 	FloppyByteBuffer(FloppyByteBuffer* that) : data(that->data), capacity(that->capacity), limit(that->limit), pos(that->pos) {}
 
 	// NOTE
-	//   Floppy image is array of big    endian CARD16.
-	//   Disk   image is array of little endian CARD16.
+	//   Floppy image is array of big endian CARD16.
 	//   Layout of 32 bit data is MESA order(low CARD16 and high CARD16. byte order of each CARD16 is big endian).
 
 	// Absolute get and put
