@@ -124,8 +124,8 @@ public:
 
 	//PatternParm: TYPE = MACHINE DEPENDENT RECORD [
 	//  -- used with Src to describe pattern brick
-	//  reserved: [0..7] ¬ 0,
-	//  unpacked: BOOLEAN ¬ FALSE, -- must be FALSE for bit source
+	//  reserved: [0..7] ï¿½ 0,
+	//  unpacked: BOOLEAN ï¿½ FALSE, -- must be FALSE for bit source
 	//  yOffset: [0..15],
 	//  widthMinusOne: [0..15],
 	//  -- restricted to 0 for bit source
@@ -175,13 +175,13 @@ public:
 
 	//ColorBltFlags: TYPE = MACHINE DEPENDENT RECORD [
 	//  -- determines the ColorBlt function
-	//  direction: Direction ¬ forward,
-	//  srcType: PixelType ¬ bit,
-	//  dstType: PixelType ¬ bit,
-	//  pattern: BOOLEAN ¬ FALSE,
-	//  srcFunc: SrcFunc ¬ null,
-	//  dstFunc: DstFunc ¬ src,
-	//  reserved: [0..255] ¬ 0];
+	//  direction: Direction ï¿½ forward,
+	//  srcType: PixelType ï¿½ bit,
+	//  dstType: PixelType ï¿½ bit,
+	//  pattern: BOOLEAN ï¿½ FALSE,
+	//  srcFunc: SrcFunc ï¿½ null,
+	//  dstFunc: DstFunc ï¿½ src,
+	//  reserved: [0..255] ï¿½ 0];
 	union ColorBltFlags {
 		CARD16 u;
 		struct {
@@ -1373,11 +1373,11 @@ public:
 	static const CARD16 LC_spare    = 3;
 
 	//VolumeLock: TYPE = MACHINE DEPENDENT RECORD [
-	//  owner (0): Volume.ID ¬ Volume.nullID,
+	//  owner (0): Volume.ID ï¿½ Volume.nullID,
 	//  lock (5:0..15): SELECT stateTag (5:0..1): LockState FROM
-	//    unlocked => [null (5:2..15): [0..16384) ¬ 0],
-	//    write => [null (5:2..15): [0..16384) ¬ 0],
-	//    read => [count (5:2..5): [0..16) ¬ 0, null (5:6..15): [0..1024) ¬ 0],
+	//    unlocked => [null (5:2..15): [0..16384) ï¿½ 0],
+	//    write => [null (5:2..15): [0..16384) ï¿½ 0],
+	//    read => [count (5:2..5): [0..16) ï¿½ 0, null (5:6..15): [0..1024) ï¿½ 0],
 	//  ENDCASE];
 	struct VolumeLock {
 		System::UniversalID owner;
@@ -1396,31 +1396,31 @@ public:
 	//  seal(0):          CARDINAL  -- absolutely must be 1st field
 	//  version(1):       CARDINAL  -- absolutely must be 2nd field
 	//  vID(2):           Volume.ID,
-	//  labelLength(7):   CARDINAL [0..maxLogicalVolumeLabelLength] ¬ 0,
-	//  label(10B):       LabelArray ¬ nullName,
+	//  labelLength(7):   CARDINAL [0..maxLogicalVolumeLabelLength] ï¿½ 0,
+	//  label(10B):       LabelArray ï¿½ nullName,
 	//  type(34B):        Volume.Type,
 	//  volumeSize(35B):  Volume.PageCount,
-	//  bootingInfo(37B): Boot.LVBootFiles ¬ nullBoot,
-	//  pad(125B):	      CARDINAL ¬ 0,
-	//  pad1(126B:0..14):  [0..77777B] ¬ 0,
-	//  changing(126B:15..15): BOOLEAN ¬ TRUE,  -- see documentation for semantics.
-	//  freePageCount(127B):       Volume.PageCount ¬ 0,
-	//  vamStart(131B):            Volume.PageNumber ¬ 1,
-	//  primaryETableStartPage(133B): Volume.PageNumber ¬ 0,
-	//  copyETableStartPage(135B): Volume.PageNumber ¬ 0,
+	//  bootingInfo(37B): Boot.LVBootFiles ï¿½ nullBoot,
+	//  pad(125B):	      CARDINAL ï¿½ 0,
+	//  pad1(126B:0..14):  [0..77777B] ï¿½ 0,
+	//  changing(126B:15..15): BOOLEAN ï¿½ TRUE,  -- see documentation for semantics.
+	//  freePageCount(127B):       Volume.PageCount ï¿½ 0,
+	//  vamStart(131B):            Volume.PageNumber ï¿½ 1,
+	//  primaryETableStartPage(133B): Volume.PageNumber ï¿½ 0,
+	//  copyETableStartPage(135B): Volume.PageNumber ï¿½ 0,
 	//  lowerBound(137B):          Volume.PageNumber
-	//  volumeRootDirectory(141B): File.ID ¬ File.nullID,
+	//  volumeRootDirectory(141B): File.ID ï¿½ File.nullID,
 	//  rootFileID(143B):          ARRAY PilotFileTypes.PilotRootFileType OF File.ID
 	//  lastIDAllocated(165B):     LONG CARDINAL
 	//  scavengerLogVolume(167B):  Volume.ID
-	//  lastTimeOpendForWrite(174B):         System.GreenwichMeanTime ¬
-	//  statusPrimaryETableFile(176B:0..7):  [0..400B) ¬ 0,
-	//  statusCopyETableFile(176B:8..15):    [0..400B) ¬ 0,
-	//  numberOfFile(177B):        LONG CARDINAL ¬ 0,
+	//  lastTimeOpendForWrite(174B):         System.GreenwichMeanTime ï¿½
+	//  statusPrimaryETableFile(176B:0..7):  [0..400B) ï¿½ 0,
+	//  statusCopyETableFile(176B:8..15):    [0..400B) ï¿½ 0,
+	//  numberOfFile(177B):        LONG CARDINAL ï¿½ 0,
 	//  lock(201B): VolumeLock,
-	//  numberOfBadPagesLastTime(207B): Volume.PageCount ¬ 0,
-	//  fill(211B):                ARRAY [0..377B - 211B) OF WORD ¬ ALL[0],
-	//  checksum(377B):            CARDINAL ¬ 0];  -- MUST be the last field
+	//  numberOfBadPagesLastTime(207B): Volume.PageCount ï¿½ 0,
+	//  fill(211B):                ARRAY [0..377B - 211B) OF WORD ï¿½ ALL[0],
+	//  checksum(377B):            CARDINAL ï¿½ 0];  -- MUST be the last field
 
 #pragma pack(push, 1)
 	struct Descriptor {
@@ -1509,25 +1509,25 @@ public:
 
 	//  Descriptor: TYPE = MACHINE DEPENDENT RECORD [
 	//    -- the following information is relatively static
-	//    seal(0): CARDINAL ¬ Seal,  -- must be 1st field
-	//    version(1): CARDINAL ¬ currentVersion,  -- must be 2nd field
-	//    labelLength(2): CARDINAL [0..physicalVolumeLabelLength] ¬ 0,
+	//    seal(0): CARDINAL ï¿½ Seal,  -- must be 1st field
+	//    version(1): CARDINAL ï¿½ currentVersion,  -- must be 2nd field
+	//    labelLength(2): CARDINAL [0..physicalVolumeLabelLength] ï¿½ 0,
 	//    pvID(3): System.PhysicalVolumeID,
-	//    bootingInfo(10B): Boot.PVBootFiles ¬ nullPVBootFiles,
+	//    bootingInfo(10B): Boot.PVBootFiles ï¿½ nullPVBootFiles,
 	//    -- must be at this offset as the microcode knows where to find it.
-	//    label(54B): LabelArray ¬ nullLabel | NULL,
+	//    label(54B): LabelArray ï¿½ nullLabel | NULL,
 	//    subVolumeCount(100B): CARDINAL [0..maxSubVols],
-	//    subVolumeMarkerID(101B): MarkerID ¬ [System.nullID],
-	//    badPageCount(106B): PageCount ¬ 0,
-	//    maxBadPages(110B): PageCount ¬ maxNumberBadPages,
-	//    dataLostPageCount(112B): PageCount ¬ 0,
-	//    maxDataLostPages(114B): PageCount ¬ maxNumberDataLostPages,
-	//    onLineCount(116B): CARDINAL ¬ 0,  -- TEMPORARILY unused.
+	//    subVolumeMarkerID(101B): MarkerID ï¿½ [System.nullID],
+	//    badPageCount(106B): PageCount ï¿½ 0,
+	//    maxBadPages(110B): PageCount ï¿½ maxNumberBadPages,
+	//    dataLostPageCount(112B): PageCount ï¿½ 0,
+	//    maxDataLostPages(114B): PageCount ï¿½ maxNumberDataLostPages,
+	//    onLineCount(116B): CARDINAL ï¿½ 0,  -- TEMPORARILY unused.
 	//    subVolumes(117B): ARRAY [0..maxSubVols) OF SubVolumeDesc,
-	//    fill1(321B): ARRAY [0..374B - 321B) OF WORD ¬ ALL[0],  -- fill to whole page
-	//    localTimeParametersValid(374B:0..15): BOOLEAN ¬ FALSE,
-	//    localTimeParameters(375B): System.LocalTimeParameters ¬ LOOPHOLE[LONG[0]],
-	//    checksum(377B): CARDINAL ¬ 0,  -- MUST be the last field of this page
+	//    fill1(321B): ARRAY [0..374B - 321B) OF WORD ï¿½ ALL[0],  -- fill to whole page
+	//    localTimeParametersValid(374B:0..15): BOOLEAN ï¿½ FALSE,
+	//    localTimeParameters(375B): System.LocalTimeParameters ï¿½ LOOPHOLE[LONG[0]],
+	//    checksum(377B): CARDINAL ï¿½ 0,  -- MUST be the last field of this page
 	//
 	//    -- followed, on immediately following pages, by a BadPageList with maxBadPages entries
 	//
@@ -2087,6 +2087,10 @@ public:
 	static const CARD32 fileAccess                             = 1;
 	// unixFileService, windowToUNIXFileService: ServerID = 2;  -- service on UNIX end.
 	// triggerApplicationService, triggerApp: ServerID = 5;  -- service on nonGV end?
+
+	// TcpStreamGuamImpl.tcpService = CoProcessorServerIDsExtra.tcpService
+	static const CARD32 tcpService                             = 21;
+
 	// mswindowsCopyAndPasteService, copyPaste: ServerID = 101;  -- service on MS Windows end.
 	static const CARD32 mswindowsCopyAndPasteService           = 101;
 	static const CARD32 copyPaste                              = 101;
@@ -2801,7 +2805,7 @@ public:
 	//largestArraySize: CARDINAL = 4086;	-- supports almost 32 MB of real memory
 	//
 	//--RealMemory.--
-	//allocMap: PUBLIC DESCRIPTOR FOR ARRAY OF WORD ¬ DESCRIPTOR[allocMapArray];
+	//allocMap: PUBLIC DESCRIPTOR FOR ARRAY OF WORD ï¿½ DESCRIPTOR[allocMapArray];
 	//allocMapArray: ARRAY [0..largestArraySize) OF WORD;  -- (initial state not important)
 	static const int largestArraySize = 4086;
 };
