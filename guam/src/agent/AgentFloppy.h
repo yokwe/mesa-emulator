@@ -39,6 +39,9 @@ OF SUCH DAMAGE.
 
 class AgentFloppy : public Agent {
 public:
+	 // 1 means LITTLE ENDIAN, 0 means BIG ENDIAN
+	static const int USE_LITTLE_ENDIAN = 0;
+
 	AgentFloppy() : Agent(GuamInputOutput::floppy, "Floppy") {
 		fcb = 0;
 		dcb = 0;

@@ -100,7 +100,6 @@ void AgentFloppy::Call() {
 			break;
 		case FloppyDiskFace::F_readSector: {
 			if (DEBUG_SHOW_AGENT_FLOPPY) logger.debug("AGENT %s %1d READ   %08X + %4d %3d %d  dataPtr = %08X  nextIOCB = %08X", name, deviceIndex, block, iocb->operation.count, iocb->sectorLength, iocb->operation.incrementDataPointer, iocb->operation.dataPtr, iocb->nextIOCB);
-			DiskFile::Page sector;
 			if (PageSize < iocb->sectorLength) {
 				logger.fatal("PageSize = %d  iocb->sectorLength = %d", PageSize, iocb->sectorLength);
 				ERROR();
@@ -109,8 +108,13 @@ void AgentFloppy::Call() {
 			CARD32 dataPtr = iocb->operation.dataPtr;
 			for(int i = 0; i < iocb->operation.count; i++) {
 				CARD16 *buffer = Store(dataPtr);
-				diskFile->readPage(block++, sector.word, iocb->sectorLength);
-				Util::fromBigEndian(sector.word, buffer, iocb->sectorLength);
+				if (USE_LITTLE_ENDIAN) {
+					DiskFile::Page sector;
+					diskFile->readPage(block++, sector.word, iocb->sectorLength);
+					Util::fromBigEndian(sector.word, buffer, iocb->sectorLength);
+				} else {
+					diskFile->readPage(block++, buffer, iocb->sectorLength);
+				}
 				if (iocb->operation.incrementDataPointer) dataPtr += iocb->sectorLength;
 			}
 			iocb->operation.count = 0;
@@ -119,7 +123,6 @@ void AgentFloppy::Call() {
 			break;
 		case FloppyDiskFace::F_writeSector: {
 			if (DEBUG_SHOW_AGENT_FLOPPY) logger.debug("AGENT %s %1d WRITE  %08X + %4d %3d %d  dataPtr = %08X  nextIOCB = %08X", name, deviceIndex, block, iocb->operation.count, iocb->sectorLength, iocb->operation.incrementDataPointer, iocb->operation.dataPtr, iocb->nextIOCB);
-			DiskFile::Page sector;
 			if (PageSize < iocb->sectorLength) {
 				logger.fatal("PageSize = %d  iocb->sectorLength = %d", PageSize, iocb->sectorLength);
 				ERROR();
@@ -128,8 +131,13 @@ void AgentFloppy::Call() {
 			CARD32 dataPtr = iocb->operation.dataPtr;
 			for(int i = 0; i < iocb->operation.count; i++) {
 				CARD16 *buffer = Fetch(dataPtr);
-				Util::toBigEndian(buffer, sector.word, iocb->sectorLength);
-				diskFile->writePage(block++, sector.word, iocb->sectorLength);
+				if (USE_LITTLE_ENDIAN) {
+					DiskFile::Page sector;
+					Util::toBigEndian(buffer, sector.word, iocb->sectorLength);
+					diskFile->writePage(block++, sector.word, iocb->sectorLength);
+				} else {
+					diskFile->writePage(block++, buffer, iocb->sectorLength);
+				}
 				if (iocb->operation.incrementDataPointer) dataPtr += iocb->sectorLength;
 			}
 			iocb->operation.count = 0;

@@ -34,6 +34,8 @@ static log4cpp::Category& logger = Logger::getLogger("bytebuffer");
 
 #include "FloppyByteBuffer.h"
 
+#include "../agent/AgentFloppy.h"
+
 void FloppyByteBuffer::setPos(quint32 newValue) {
 	if (limit < newValue) ERROR();
 	pos = newValue;
@@ -45,38 +47,72 @@ void FloppyByteBuffer::setLimit(quint32 newValue) {
 }
 
 static inline quint32 get32_(quint8* p) {
-	quint32 ret = p[2];
-	ret <<= 8;
-	ret |= p[3];
-	ret <<= 8;
-	ret |= p[0];
-	ret <<= 8;
-	ret |= p[1];
-	return ret;
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		quint32 ret = p[2];
+		ret <<= 8;
+		ret |= p[3];
+		ret <<= 8;
+		ret |= p[0];
+		ret <<= 8;
+		ret |= p[1];
+		return ret;
+	} else {
+		quint32 ret = p[3];
+		ret <<= 8;
+		ret |= p[2];
+		ret <<= 8;
+		ret |= p[1];
+		ret <<= 8;
+		ret |= p[0];
+		return ret;
+	}
 }
 static inline quint16 get16_(quint8* p) {
-	quint16 ret = p[0];
-	ret <<= 8;
-	ret |= p[1];
-	return ret;
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		quint16 ret = p[0];
+		ret <<= 8;
+		ret |= p[1];
+		return ret;
+	} else {
+		quint16 ret = p[1];
+		ret <<= 8;
+		ret |= p[0];
+		return ret;
+	}
 }
 static inline quint8 get8_(quint8* p) {
 	return p[0];
 }
 
 static inline void put32_(quint8* p, quint32 value) {
-	p[1] = (quint8)value;
-	value >>= 8;
-	p[0] = (quint8)value;
-	value >>= 8;
-	p[3] = (quint8)value;
-	value >>= 8;
-	p[2] = (quint8)value;
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		p[1] = (quint8)value;
+		value >>= 8;
+		p[0] = (quint8)value;
+		value >>= 8;
+		p[3] = (quint8)value;
+		value >>= 8;
+		p[2] = (quint8)value;
+	} else {
+		p[0] = (quint8)value;
+		value >>= 8;
+		p[1] = (quint8)value;
+		value >>= 8;
+		p[2] = (quint8)value;
+		value >>= 8;
+		p[3] = (quint8)value;
+	}
 }
 static inline void put16_(quint8* p, quint16 value) {
-	p[1] = (quint8)value;
-	value >>= 8;
-	p[0] = (quint8)value;
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		p[1] = (quint8)value;
+		value >>= 8;
+		p[0] = (quint8)value;
+	} else {
+		p[0] = (quint8)value;
+		value >>= 8;
+		p[1] = (quint8)value;
+	}
 }
 static inline void put8_(quint8* p, quint8 value) {
 	p[0] = value;
