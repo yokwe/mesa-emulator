@@ -137,7 +137,11 @@ quint8 FloppyByteBuffer::get8(quint32 offset) {
 		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_8);
 		ERROR();
 	}
-	return get8_(data + offset);
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		return get8_(data + offset);
+	} else {
+		return get8_(data + (offset ^ 1));
+	}
 }
 
 quint32 FloppyByteBuffer::get32() {
@@ -163,7 +167,8 @@ quint8 FloppyByteBuffer::get8() {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_8);
 		ERROR();
 	}
-	quint8 ret = get8_(data + pos);
+	const quint32 offset = AgentFloppy::USE_LITTLE_ENDIAN ? pos : (pos ^ 1);
+	quint8 ret = get8_(data + offset);
 	pos += SIZE_8;
 	return ret;
 }
@@ -189,7 +194,11 @@ void FloppyByteBuffer::set8(quint32 offset, quint8 value) {
 		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_8);
 		ERROR();
 	}
-	put8_(data + offset, value);
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		put8_(data + offset, value);
+	} else {
+		put8_(data + (offset ^ 1), value);
+	}
 }
 
 void FloppyByteBuffer::put32(quint32 value) {
@@ -215,7 +224,11 @@ void FloppyByteBuffer::put8(quint8 value) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_8);
 		ERROR();
 	}
-	put8_(data + pos, value);
+	if (AgentFloppy::USE_LITTLE_ENDIAN) {
+		put8_(data + pos, value);
+	} else {
+		put8_(data + (pos ^ 1), value);
+	}
 	pos += SIZE_8;
 	if (limit < pos) limit = pos;
 }
