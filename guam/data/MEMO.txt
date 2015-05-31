@@ -1,4 +1,6 @@
-serverID 21 is tcpService
+SrverID for TcpService is 21.
+See TcpStreamGuamImpl.mesa for detail of CoProcessorStream of tcpService.
+
 ----
 hasegawa@ubuntu:~/git/mesa-emulator/guam$ grep agentstream tmp/debug.log 
 18:04:15.06 INFO  agentstream  AGENT Stream start  0200
