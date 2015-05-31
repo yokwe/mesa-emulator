@@ -1,0 +1,32 @@
+serverID 21 is tcpService
+----
+hasegawa@ubuntu:~/git/mesa-emulator/guam$ grep agentstream tmp/debug.log 
+18:04:15.06 INFO  agentstream  AGENT Stream start  0200
+18:04:15.06 DEBUG agentstream  AGENT Stream  fcb->iocbHead == 0
+18:04:19.06 DEBUG agentstream  AGENT Stream  head = 000064B0  next = 000064B0  command =  2  result =  0
+18:04:19.06 DEBUG agentstream      serverID = 108  mesaIsServer = 0  mesaConnectionState = 0  pcConnectionState = 0  next =        0
+18:04:30.06 DEBUG agentstream  AGENT Stream  head = 00006530  next = 00006530  command =  2  result =  2
+18:04:30.06 DEBUG agentstream      serverID =   1  mesaIsServer = 0  mesaConnectionState = 0  pcConnectionState = 0  next =     64B0
+18:04:30.06 DEBUG agentstream      serverID = 106  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =        0
+18:04:38.06 DEBUG agentstream  AGENT Stream  head = 00006590  next = 00006590  command =  2  result =  2
+18:04:38.06 DEBUG agentstream      serverID =   1  mesaIsServer = 0  mesaConnectionState = 0  pcConnectionState = 0  next =     6560
+18:04:38.06 DEBUG agentstream      serverID = 104  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     6530
+18:04:38.06 DEBUG agentstream      serverID =  32  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     64B0
+18:04:38.06 DEBUG agentstream      serverID = 106  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =        0
+18:08:29.06 DEBUG agentstream  AGENT Stream  head = 00006590  next = 00006590  command =  2  result =  2
+18:08:29.06 DEBUG agentstream      serverID = 19832  mesaIsServer = 0  mesaConnectionState = 0  pcConnectionState = 0  next =     6560
+18:08:29.06 DEBUG agentstream      serverID = 104  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     6530
+18:08:29.06 DEBUG agentstream      serverID =  32  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     64B0
+18:08:29.06 DEBUG agentstream      serverID = 106  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =        0
+18:22:53.06 DEBUG agentstream  AGENT Stream  head = 00006590  next = 00006590  command =  2  result =  2
+18:22:53.06 DEBUG agentstream      serverID =  21  mesaIsServer = 0  mesaConnectionState = 0  pcConnectionState = 0  next =     6560
+18:22:53.06 DEBUG agentstream      serverID = 104  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     6530
+18:22:53.06 DEBUG agentstream      serverID =  32  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     64B0
+18:22:53.06 DEBUG agentstream      serverID = 106  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =        0
+18:23:22.06 DEBUG agentstream  AGENT Stream  head = 00006590  next = 00006590  command =  2  result =  2
+18:23:22.06 DEBUG agentstream      serverID =  21  mesaIsServer = 0  mesaConnectionState = 0  pcConnectionState = 0  next =     6560
+18:23:22.06 DEBUG agentstream      serverID = 104  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     6530
+18:23:22.06 DEBUG agentstream      serverID =  32  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =     64B0
+18:23:22.06 DEBUG agentstream      serverID = 106  mesaIsServer = 1  mesaConnectionState = 1  pcConnectionState = 0  next =        0
+hasegawa@ubuntu:~/git/mesa-emulator/guam$ 
+----
