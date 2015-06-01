@@ -73,8 +73,8 @@ public:
 	}
 	quint8  get8 (quint32 offset_) {
 		const quint32 offset = getOffset(offset_);
-		if (limit <= offset) {
-			logger.fatal("%s  limit = %d  offset_ = %d  offset = %d", __FUNCTION__, limit, offset_, offset);
+		if (capacity <= offset) {
+			logger.fatal("%s  capacity = %d  offset_ = %d  offset = %d", __FUNCTION__, capacity, offset_, offset);
 			ERROR();
 		}
 		return data[offset];
@@ -90,7 +90,7 @@ public:
 	}
 	void    set8 (quint32 offset_, quint8  value) {
 		const quint32 offset = getOffset(offset_);
-		if (limit <= offset) {
+		if (capacity <= offset) {
 			logger.fatal("%s  limit = %d  offset_ = %d  offset = %d", __FUNCTION__, limit, offset_, offset);
 			ERROR();
 		}
@@ -115,7 +115,13 @@ public:
 		return limit;
 	}
 	// set buffer limit. newValue must be [0..capacity)
-	void setLimit(quint32 newValue);
+	void setLimit(quint32 newValue) {
+		if (capacity < newValue) {
+			logger.fatal("%s  capacity = %d  newValue = %d", __FUNCTION__, capacity, newValue);
+			ERROR();
+		}
+		limit = newValue;
+	}
 
 	quint32 getCapacity() {
 		return capacity;
@@ -151,19 +157,23 @@ public:
 		pos += sizeof(ret);
 		return ret;
 	}
-	quint8  get8_() {
+	quint8  get8() {
 		return get8(pos++);
 	}
 	void    put32(quint32 value) {
 		set32(pos, value);
 		pos += sizeof(value);
+		if (limit < pos) limit = pos;
 	}
 	void    put16(quint16 value) {
 		set16(pos, value);
 		pos += sizeof(value);
+		if (limit < pos) limit = pos;
 	}
 	void    put8 (quint8  value) {
-		set8(pos++, value);
+		set8(pos, value);
+		pos += sizeof(value);
+		if (limit < pos) limit = pos;
 	}
 };
 
