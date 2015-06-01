@@ -6,11 +6,11 @@ TARGET   = floppy
 TEMPLATE = app
 
 # Input
-#HEADERS += testBase.h
+#HEADERS += 
 SOURCES += main.cpp
 
-HEADERS += FloppyByteBuffer.h
-SOURCES += FloppyByteBuffer.cpp
+#HEADERS += 
+#SOURCES += 
 
 LIBS += ../../tmp/build/agent/libagent.a
 LIBS += ../../tmp/build/util/libutil.a

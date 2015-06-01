@@ -4,7 +4,7 @@ static log4cpp::Category& logger = Logger::getLogger("floppy");
 #include "../mesa/MesaBasic.h"
 #include "../agent/DiskFile.h"
 
-#include "FloppyByteBuffer.h"
+#include "../util/ByteBuffer.h"
 
 class FloppyDisk {
 public:
@@ -12,7 +12,7 @@ public:
 		diskFile.attach(path);
 	}
 
-	void readSector(int sector, FloppyByteBuffer& bb) {
+	void readSector(int sector, ByteBuffer& bb) {
 		if (sector <= 0) {
 			logger.fatal("sector = %d", sector);
 			ERROR();
@@ -32,7 +32,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	logger.info("path = %s", path);
 	FloppyDisk floppyDisk(path);
 
-	FloppyByteBuffer bb;
+	LittleEndianByteBuffer bb(512);
 
 	floppyDisk.readSector(9, bb);
 
@@ -57,7 +57,10 @@ int main(int /*argc*/, char** /*argv*/) {
 	int labelSize = bb.get16();
 	logger.info("page  labelSize           %6d", labelSize);
 	QByteArray label;
-	for(int i = 0; i < labelSize; i++) label.append(bb.get8());
+	for(int i = 0; i < labelSize; i++) {
+		quint8 c = bb.get8_();
+		label.append(c);
+	}
 	logger.info("page  label               %s",  label.constData());
 
 	return 0;
