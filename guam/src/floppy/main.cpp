@@ -58,7 +58,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	logger.info("page  labelSize           %6d", labelSize);
 	QByteArray label;
 	for(int i = 0; i < labelSize; i++) {
-		quint8 c = bb.get8_();
+		quint8 c = bb.get8();
 		label.append(c);
 	}
 	logger.info("page  label               %s",  label.constData());
