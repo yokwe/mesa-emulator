@@ -85,8 +85,8 @@ public:
 		set16(offset + 2, (quint16)(value >> 16));
 	}
 	void    set16(quint32 offset, quint16 value) {
-		set8(offset + 0, (quint8)value);
-		set8(offset + 1, (quint8)(value >> 8));
+		set8(offset + 0, (quint8)(value >> 8));
+		set8(offset + 1, (quint8)(value >> 0));
 	}
 	void    set8 (quint32 offset_, quint8  value) {
 		const quint32 offset = getOffset(offset_);
@@ -182,7 +182,7 @@ public:
 	BigEndianByteBuffer(quint32 size) : ByteBuffer(size) {}
 	BigEndianByteBuffer(quint8* data_, quint32 dataSize_) : ByteBuffer(data_, dataSize_) {}
 	quint32  getOffset(quint32 offset) {
-		return offset ^ 1;
+		return offset;
 	}
 };
 
@@ -191,7 +191,7 @@ public:
 	LittleEndianByteBuffer(quint32 size) : ByteBuffer(size) {}
 	LittleEndianByteBuffer(quint8* data_, quint32 dataSize_) : ByteBuffer(data_, dataSize_) {}
 	quint32  getOffset(quint32 offset) {
-		return offset;
+		return offset ^ 1;
 	}
 };
 #endif
