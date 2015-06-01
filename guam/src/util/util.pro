@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += GuiOp.h   Perf.h   Preference.h   Util.h
-SOURCES += GuiOp.cpp Perf.cpp preference.cpp Util.cpp
+HEADERS += ByteBuffer.h   GuiOp.h   Perf.h   Preference.h   Util.h
+SOURCES += ByteBuffer.cpp GuiOp.cpp Perf.cpp preference.cpp Util.cpp
 
 HEADERS += Debug.h
 
