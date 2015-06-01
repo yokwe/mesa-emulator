@@ -38,10 +38,6 @@ class ByteBuffer {
 protected:
 	static log4cpp::Category& logger;
 
-	static const quint32 SIZE_32 = 4;
-	static const quint32 SIZE_16 = 2;
-	static const quint32 SIZE_8  = 1;
-
 	quint8*       data;
 	const quint32 capacity; // data capacity [0..limit)
 	quint32       limit;    // valid data range [0..limit)
@@ -55,14 +51,14 @@ protected:
 		if (deleteData) delete[] data;
 	}
 
-public:
 	virtual quint32 getOffset(quint32 offset) = 0;
 
+public:
 	// Absolute get and put
 	quint32 get32(quint32 offset) {
-		quint32 ret = get16(offset + 0);
+		quint32 ret = get16(offset + 2);
 		ret <<= 16;
-		ret |= get16(offset + 2);
+		ret |= get16(offset + 0);
 		return ret;
 	}
 	quint16 get16(quint32 offset) {
@@ -177,21 +173,25 @@ public:
 	}
 };
 
-class BigEndianByteBuffer : public ByteBuffer {
+class BigEndianByteBuffer final : public ByteBuffer {
+private:
+	quint32 getOffset(quint32 offset) {
+		return offset;
+	};
+
 public:
 	BigEndianByteBuffer(quint32 size) : ByteBuffer(size) {}
 	BigEndianByteBuffer(quint8* data_, quint32 dataSize_) : ByteBuffer(data_, dataSize_) {}
-	quint32  getOffset(quint32 offset) {
-		return offset;
-	}
 };
 
-class LittleEndianByteBuffer : public ByteBuffer {
+class LittleEndianByteBuffer final : public ByteBuffer {
+private:
+	quint32 getOffset(quint32 offset) {
+		return offset ^ 1;
+	};
+
 public:
 	LittleEndianByteBuffer(quint32 size) : ByteBuffer(size) {}
 	LittleEndianByteBuffer(quint8* data_, quint32 dataSize_) : ByteBuffer(data_, dataSize_) {}
-	quint32  getOffset(quint32 offset) {
-		return offset ^ 1;
-	}
 };
 #endif
