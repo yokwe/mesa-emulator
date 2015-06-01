@@ -175,6 +175,8 @@ public:
 				// Big Endian => 34 56
 				CPPUNIT_ASSERT_EQUAL((quint32)((setVal >> 8) & 0xff), (quint32)(data[setPos + 0]));
 				CPPUNIT_ASSERT_EQUAL((quint32)((setVal >> 0) & 0xff), (quint32)(data[setPos + 1]));
+				//
+				CPPUNIT_ASSERT_EQUAL(pos, bb.getPos());
 			}
 			{
 				quint32 setPos = 64;
@@ -185,6 +187,8 @@ public:
 				CPPUNIT_ASSERT_EQUAL((quint8)(setVal >>  0), data[setPos + 1]);
 				CPPUNIT_ASSERT_EQUAL((quint8)(setVal >> 24), data[setPos + 2]);
 				CPPUNIT_ASSERT_EQUAL((quint8)(setVal >> 16), data[setPos + 3]);
+				//
+				CPPUNIT_ASSERT_EQUAL(pos, bb.getPos());
 			}
 		}
 
@@ -200,30 +204,31 @@ public:
 		{
 			BigEndianByteBuffer bb(data, size);
 
-			bb.setPos(0);
-			bb.setLimit(0);
-			CPPUNIT_ASSERT_EQUAL((quint32)0, bb.getPos());
-			CPPUNIT_ASSERT_EQUAL((quint32)0, bb.getLimit());
-			bb.put8((quint8)0x12);
-			CPPUNIT_ASSERT_EQUAL((quint32)1, bb.getPos());
-			CPPUNIT_ASSERT_EQUAL((quint32)1, bb.getLimit());
-			CPPUNIT_ASSERT_EQUAL((quint8)0x12, data[0]);
+			{
+				quint32 putPos = 16;
+				quint8  putVal = 100;
+				bb.setPos(putPos);
+				bb.put8(putVal);
+				//
+				CPPUNIT_ASSERT_EQUAL(putVal, data[putPos]);
+				CPPUNIT_ASSERT_EQUAL((quint32)(putPos + sizeof(putVal)), bb.getPos());
+			}
 
+			{
+				quint32 putPos = 32;
+				quint16 putVal = 0x3456;
+				bb.setPos(putPos);
+				bb.put16(putVal);
+				//
+				CPPUNIT_ASSERT_EQUAL((quint32)((putVal >> 8) & 0xff), (quint32)(data[putPos + 0]));
+				CPPUNIT_ASSERT_EQUAL((quint32)((putVal >> 0) & 0xff), (quint32)(data[putPos + 1]));
+				CPPUNIT_ASSERT_EQUAL((quint32)(putPos + sizeof(putVal)), bb.getPos());
+			}
 
-			bb.setPos(0);
-			bb.setLimit(0);
-			CPPUNIT_ASSERT_EQUAL((quint32)0, bb.getPos());
-			CPPUNIT_ASSERT_EQUAL((quint32)0, bb.getLimit());
-			bb.put16((quint16)0x1234);
-
-			logger.info("data00 = %02X", data[0]);
-			logger.info("data01 = %02X", data[1]);
-
-			CPPUNIT_ASSERT_EQUAL((quint32)2, bb.getPos());
-			CPPUNIT_ASSERT_EQUAL((quint32)2, bb.getLimit());
-			CPPUNIT_ASSERT_EQUAL((quint8)0x34, data[0]);
-			CPPUNIT_ASSERT_EQUAL((quint8)0x12, data[1]);
+			// TODO add test case of put32
 		}
+
+		{} // TODO add test case of LittleEndian
 	}
 };
 
