@@ -10,7 +10,7 @@ HEADERS += testBase.h
 SOURCES += testBase.cpp
 
 SOURCES += testAgent.cpp testMain.cpp testMemory.cpp testOpcode_000.cpp testOpcode_100.cpp testOpcode_200.cpp
-SOURCES += testOpcode_300.cpp testOpcode_esc.cpp testPilot.cpp testType.cpp
+SOURCES += testOpcode_300.cpp testOpcode_esc.cpp testPilot.cpp testType.cpp testByteBuffer.cpp
 
 LIBS += ../../tmp/build/mesa/libmesa.a
 LIBS += ../../tmp/build/opcode/libopcode.a
