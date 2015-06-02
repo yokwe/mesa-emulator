@@ -42,32 +42,9 @@ static log4cpp::Category& logger = Logger::getLogger("agentproc");
 #include "Agent.h"
 #include "AgentProcessor.h"
 
-//From System.mesa
-//-- Time of day
-//
-//GreenwichMeanTime: TYPE = RECORD [LONG CARDINAL];
-//-- A greenwich mean time t represents the time which is t-gmtEpoch seconds after
-//-- midnight, 1 January 1968, the time chosen as the epoch or beginning of the Pilot
-//-- time standard.  Within the range in which they overlap, the Alto and Pilot time
-//-- standards assign identical bit patterns, but the Pilot standard runs an additional
-//-- 67 years before overflowing.
-//-- Greenwich mean times should be compared directly only for equality; to find which of
-//-- two gmt's comes first, apply SecondsSinceEpoch to each and compare the result.  If t2
-//-- is a gmt known to occur after t1, then t2-t1 is the seconds between t1 and t2.  If t
-//-- is a gmt, then System.GreenwichMeanTime[t+60] is the gmt one minute after t.
-//gmtEpoch: GreenwichMeanTime = [2114294400];
-//-- = (67 years * 365 days + 16 leap days) * 24 hours * 60 minutes * 60 seconds
-//GetGreenwichMeanTime: PROCEDURE RETURNS [gmt: GreenwichMeanTime];
-
-// Unix Time Epoch  1970-01-01 00:00:00
-// Mesa Time Epoch  1968-01-01 00:00:00
-//   Difference between above 2 date is 731 days.
-static const quint32 EPOCH_DIFF = (quint32)2114294400 + (quint32)(731 * 60 * 60 * 24);
-
 static quint32 getMesaTime() {
-	return Util::getUnixTime() + EPOCH_DIFF;
+	return AgentProcessor::toMesaTime(Util::getUnixTime());
 }
-
 
 void AgentProcessor::Initialize() {
 	if (fcbAddress == 0) ERROR();
