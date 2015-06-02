@@ -436,7 +436,9 @@ public:
 
 	// APilot/15.3/Faces/Private/FloppyHeadGuam.mesa
 	//   microFloppy: Device.Type = [23]; -- 1.44MB, 3 1/2" disks
-	static const CARD16 T_microFloppy  = 23;
+	//   microFloppyQuad: Device.Type = [22]; -- 2.88MB, 3 1/2" disks
+	static const CARD16 T_microFloppy     = 23;
+	static const CARD16 T_microFloppyQuad = 22;
 
 	// APilot/15.3/Pilot/Public/DeviceTypesExtras11.mesa
     //   Stream: TYPE = CARDINAL [4000..4010);
