@@ -3,6 +3,7 @@ static log4cpp::Category& logger = Logger::getLogger("floppy");
 
 #include "../mesa/MesaBasic.h"
 #include "../agent/DiskFile.h"
+#include "../agent/AgentProcessor.h"
 
 #include "../util/ByteBuffer.h"
 
@@ -27,19 +28,6 @@ public:
 
 	// AMesa/14.0/Floppy/Friends/AccessFloppy.mesa
 	static const quint16 tFloppyLeaderPage         = tCarryVolumeDirectory;
-
-	// Unix Time Epoch  1970-01-01 00:00:00
-	// Mesa Time Epoch  1968-01-01 00:00:00
-	//   Difference between above 2 date is 731 days.
-	static const quint32 EPOCH_DIFF = (quint32)2114294400 + (quint32)(731 * 60 * 60 * 24);
-
-	static quint32 getMesaTime(quint32 unixTime) {
-		return unixTime + EPOCH_DIFF;
-	}
-	static quint32 getUnixTime(quint32 mesaTime) {
-		return mesaTime - EPOCH_DIFF;
-	}
-
 
 	FloppyDisk(const char* path) {
 		diskFile.attach(path);
@@ -257,18 +245,27 @@ public:
 
 	// File attributes
 	quint32 size;              // number of pages in the floppy file not including the leader page.
-	quint32 offset;            // page number in the disk file correspoinding to the first page in the floppy file piece.
+	quint32 offset;            // page number in the disk file corresponding to the first page in the floppy file piece.
 	quint32 totalSize;         // number of pages in the disk file.
 	quint32 totalSizeInBytes;  // the number of bytes in the disk file
 
-	// Name attributes
+	//Name attributes
+	//  -- name attributes
+	//  length: CARDINAL _ 0,
+	//  maxLength: CARDINAL _ maxNameLength, -- so that @length is STRING.
+	//  name: PACKED ARRAY [0..maxNameLength) OF Environment.Byte,
 	quint16 length;
 	quint16 maxLength;
 	QByteArray name;
 
-	// Client attributes
+	//Client attributes
+	//  -- client attributes
+	//  clientDataLength: CARDINAL _ 0 ,-- number of component in client's private data.
+	//  clientData: SEQUENCE maxlength: CARDINAL OF UNSPECIFIED
 	quint16 clientDataLength;  // number of component in client's private data.
 	QByteArray clientData;
+	quint32    contentsPos;
+	QByteArray contents;
 
 	FloppyLeaderPage(FloppyDisk& floppyDisk, const FileList::Entry* entry) {
 		quint32 dataSize = Environment::bytesPerPage * entry->size;
@@ -287,8 +284,8 @@ public:
 		}
 		type             = bb.get16();
 
-		createData.setTime_t(FloppyDisk::getUnixTime(bb.get32()));
-		lastWrittenData.setTime_t(FloppyDisk::getUnixTime(bb.get32()));
+		createData.setTime_t(AgentProcessor::toUnixTime(bb.get32()));
+		lastWrittenData.setTime_t(AgentProcessor::toUnixTime(bb.get32()));
 
 		size             = bb.get32();
 		offset           = bb.get32();
@@ -300,11 +297,19 @@ public:
 		for(quint16 i = 0; i < length; i++) {
 			name.append(bb.get8());
 		}
-		for(quint16 i = 0; i < (maxLength - length); i++) bb.get8();
+		bb.skipByte(maxLength - length);
 
 		clientDataLength = bb.get16();
+		quint16 clientDataMaxLength = bb.get16();
 		for(quint16 i = 0; i < clientDataLength; i++) {
-			clientData.append(bb.get8());
+			clientData.append(bb.get16());
+		}
+		bb.skipWord(clientDataMaxLength - clientDataLength);
+
+		contentsPos = bb.getPos();
+
+		for(quint32 i = 0; i < totalSizeInBytes; i++) {
+			contents.append(bb.get8());
 		}
 	}
 
@@ -319,6 +324,9 @@ public:
 		logger.info("lastWrittenData %s", lastWrittenData.toString("yyyy-MM-dd HH:mm:ss").toLocal8Bit().constData());
 		logger.info("name            \"%s\"", name.constData());
 		logger.info("clientDataLength %6d", clientDataLength);
+		logger.info("clientDataMax    %6d", clientData.size());
+		logger.info("contentsPos      %6d", contentsPos);
+		logger.info("contents         %6d", contents.size());
 	}
 
 };
