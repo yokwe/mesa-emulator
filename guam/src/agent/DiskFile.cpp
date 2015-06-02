@@ -103,7 +103,7 @@ void DiskFile::setDiskDCBType(DiskIOFaceGuam::DiskDCBType *dcb) {
 }
 
 void DiskFile::setFloppyDCBType(FloppyIOFaceGuam::FloppyDCBType *dcb) {
-	dcb->deviceType         = Device::T_anyFloppy;
+	dcb->deviceType         = Device::T_microFloppy; // Don't use Device::T_anyFloppy
 	dcb->numberOfHeads      = FLOPPY_NUMBER_OF_HEADS;
 	dcb->sectorsPerTrack    = FLOPPY_SECTORS_PER_TRACK;
 	dcb->numberOfCylinders  = size / (dcb->numberOfHeads * dcb->sectorsPerTrack * sizeof(Page));
