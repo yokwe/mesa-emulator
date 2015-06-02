@@ -39,8 +39,9 @@ OF SUCH DAMAGE.
 
 class AgentFloppy : public Agent {
 public:
-	 // 1 means LITTLE ENDIAN, 0 means BIG ENDIAN
-	static const int USE_LITTLE_ENDIAN = 0;
+	// 1 means LITTLE ENDIAN, 0 means BIG ENDIAN
+	// Little endian is better. because od command of intel cpu use little endian
+	static const int USE_LITTLE_ENDIAN = 1;
 
 	AgentFloppy() : Agent(GuamInputOutput::floppy, "Floppy") {
 		fcb = 0;

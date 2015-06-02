@@ -86,8 +86,11 @@ void AgentFloppy::Call() {
 	}
 	FloppyIOFaceGuam::FloppyIOCBType *iocb = (FloppyIOFaceGuam::FloppyIOCBType *)Store(fcb->nextIOCB);
 	for(;;) {
-		CARD16 deviceIndex = iocb->operation.device; // TODO Is this correct?
-		if (fcb->numberOfDCBs <= deviceIndex) ERROR();
+		const CARD16 deviceIndex = iocb->operation.device;
+		if (fcb->numberOfDCBs <= deviceIndex) {
+			logger.fatal("numberOfDCBs = %d  deviceIndex = %d", fcb->numberOfDCBs, deviceIndex);
+			ERROR();
+		}
 		DiskFile* diskFile = diskFileList[deviceIndex];
 		CARD32 block = diskFile->getBlock(iocb);
 
@@ -109,11 +112,13 @@ void AgentFloppy::Call() {
 			for(int i = 0; i < iocb->operation.count; i++) {
 				CARD16 *buffer = Store(dataPtr);
 				if (USE_LITTLE_ENDIAN) {
+					// Assume cpu is big endian
+					diskFile->readPage(block++, buffer, iocb->sectorLength);
+				} else {
 					DiskFile::Page sector;
 					diskFile->readPage(block++, sector.word, iocb->sectorLength);
+					// Assume cpu is big endian
 					Util::fromBigEndian(sector.word, buffer, iocb->sectorLength);
-				} else {
-					diskFile->readPage(block++, buffer, iocb->sectorLength);
 				}
 				if (iocb->operation.incrementDataPointer) dataPtr += iocb->sectorLength;
 			}
@@ -132,11 +137,13 @@ void AgentFloppy::Call() {
 			for(int i = 0; i < iocb->operation.count; i++) {
 				CARD16 *buffer = Fetch(dataPtr);
 				if (USE_LITTLE_ENDIAN) {
+					// Assume CPU is big endian
+					diskFile->writePage(block++, buffer, iocb->sectorLength);
+				} else {
 					DiskFile::Page sector;
+					// Assume CPU is big endian
 					Util::toBigEndian(buffer, sector.word, iocb->sectorLength);
 					diskFile->writePage(block++, sector.word, iocb->sectorLength);
-				} else {
-					diskFile->writePage(block++, buffer, iocb->sectorLength);
 				}
 				if (iocb->operation.incrementDataPointer) dataPtr += iocb->sectorLength;
 			}
