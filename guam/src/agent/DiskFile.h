@@ -38,6 +38,12 @@ OF SUCH DAMAGE.
 
 class DiskFile {
 public:
+	static const CARD32 DISK_NUMBER_OF_HEADS       =  2;
+	static const CARD32 DISK_SECTORS_PER_TRACK     = 16;
+
+	static const CARD32 FLOPPY_NUMBER_OF_HEADS     =  2;
+	static const CARD32 FLOPPY_SECTORS_PER_TRACK   = 18;
+
 	struct Page { CARD16 word[PageSize]; };
 
 	DiskFile() {
@@ -97,12 +103,6 @@ public:
 	}
 
 private:
-	static const CARD32 DISK_NUMBER_OF_HEADS       =  2;
-	static const CARD32 DISK_SECTORS_PER_TRACK     = 16;
-
-	static const CARD32 FLOPPY_NUMBER_OF_HEADS     =  2;
-	static const CARD32 FLOPPY_SECTORS_PER_TRACK   = 18;
-
 	QString path;
 	Page  *page;
 	CARD32 size;
