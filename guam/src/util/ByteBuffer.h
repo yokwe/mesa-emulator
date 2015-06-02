@@ -33,6 +33,7 @@ OF SUCH DAMAGE.
 #define BYTEBUFFER_H__
 
 #include "../util/Util.h"
+#include "../mesa/Pilot.h"
 
 class ByteBuffer {
 protected:
@@ -104,6 +105,12 @@ public:
 			ERROR();
 		}
 		pos = newValue;
+	}
+	void skipByte(quint32 bytes) {
+		setPos(pos + bytes);
+	}
+	void skipWord(quint32 bytes) {
+		setPos(pos + (bytes * Environment::bytesPerWord));
 	}
 
 	// limit
