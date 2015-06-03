@@ -32,6 +32,9 @@ public:
 	FloppyDisk(const char* path) {
 		diskFile.attach(path);
 	}
+	~FloppyDisk() {
+		diskFile.detach();
+	}
 
 	void readSector(int sector, ByteBuffer& bb, quint32 count) {
 		if (sector <= 0) {
@@ -307,7 +310,7 @@ public:
 		bb.skipWord(clientDataMaxLength - clientDataLength);
 
 		contentsPos = bb.getPos();
-
+		if (contentsPos != Environment::bytesPerPage) ERROR();
 		for(quint32 i = 0; i < totalSizeInBytes; i++) {
 			contents.append(bb.get8());
 		}
@@ -332,24 +335,42 @@ public:
 };
 
 int main(int /*argc*/, char** /*argv*/) {
-	const char* path = "tmp/floppy/floppy144";
+	const char* floppyImagePath   = "tmp/floppy/floppy144";
+	const char* floppyDiskDirPath = "tmp/floppy/disk";
 
-	logger.info("path = %s", path);
-	FloppyDisk floppyDisk(path);
+	QDir floppyDiskDir(floppyDiskDirPath);
+	logger.info("floppyDiskDirPath = %s", floppyDiskDirPath);
+	if (!floppyDiskDir.exists()) ERROR();
+
+	logger.info("floppyImagePath   = %s", floppyImagePath);
+	FloppyDisk floppyDisk(floppyImagePath);
 
 	SectorNine sectorNine(floppyDisk);
-	sectorNine.dump();
-	logger.info("");
+	//sectorNine.dump();
+	logger.info("floppy  %d-%d-%d  %s", sectorNine.cylinders, sectorNine.tracksPerCylinder, sectorNine.sectorsPerTrack, sectorNine.label.constData());
 
 	FileList fileList(floppyDisk, sectorNine.fileList, sectorNine.fileListSize);
-	fileList.dump();
+	//fileList.dump();
+
+	QString floppyName(sectorNine.label.constData());
+	floppyDiskDir.rmdir(floppyName);
+	floppyDiskDir.mkdir(floppyName);
+	QDir floppyDir(floppyDiskDir);
+	floppyDir.cd(floppyName);
+	QDir::setCurrent(floppyDir.path());
 
 	for(int i = 0; i < fileList.count; i++) {
 		const FileList::Entry* entry = fileList.files.at(i);
 		if (entry->type != FloppyDisk::tFloppyLeaderPage) continue;
 		FloppyLeaderPage leaderPage(floppyDisk, entry);
-		logger.info("----");
-		leaderPage.dump();
+		logger.info("  file %8d  %s  %s", leaderPage.totalSizeInBytes, leaderPage.createData.toString("yyyy-MM-dd HH:mm:ss").toLocal8Bit().constData(), leaderPage.name.constData());
+		//leaderPage.dump();
+
+		QString fileName(leaderPage.name.constData());
+		QFile file(fileName);
+		file.open(QIODevice::WriteOnly);
+		file.write(leaderPage.contents);
+		file.close();
 	}
 
 	return 0;
