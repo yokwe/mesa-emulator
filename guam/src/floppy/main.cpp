@@ -353,10 +353,10 @@ int main(int /*argc*/, char** /*argv*/) {
 	//fileList.dump();
 
 	QString floppyName(sectorNine.label.constData());
-	floppyDiskDir.rmdir(floppyName);
-	floppyDiskDir.mkdir(floppyName);
 	QDir floppyDir(floppyDiskDir);
 	floppyDir.cd(floppyName);
+	if (floppyDir.exists()) floppyDir.removeRecursively();
+	floppyDiskDir.mkdir(floppyName);
 	QDir::setCurrent(floppyDir.path());
 
 	for(int i = 0; i < fileList.count; i++) {
