@@ -33,7 +33,6 @@ OF SUCH DAMAGE.
 
 class StreamDefault : public AgentStream::Stream {
 public:
-	StreamDefault() : AgentStream::Stream(DEFAULT_SERVER_ID, "DEFAULT") {}
-
+	StreamDefault();
 	CARD16 process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 };

@@ -39,6 +39,8 @@ static log4cpp::Category& logger = Logger::getLogger("default");
 
 #define DEBUG_SHOW_STREAM_DEFAULT 1
 
+StreamDefault::StreamDefault() : AgentStream::Stream(DEFAULT_SERVER_ID, "DEFAULT") {}
+
 CARD16 StreamDefault::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_DEFAULT) {
 		logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %10s  pcState = %10s  next = %8X",
