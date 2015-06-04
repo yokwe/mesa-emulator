@@ -9,7 +9,6 @@
 </language>
 <language name="GNU C++">
 <includepath>/usr/lib/i386-linux-gnu/qt5/mkspecs/linux-g++</includepath>
-<includepath workspace_path="true">/opcode-compiler-20140610/src</includepath>
 <includepath>/usr/include/qt5</includepath>
 <includepath>/usr/include/qt5/QtGui</includepath>
 <includepath>/usr/include/qt5/QtWidgets</includepath>
@@ -22,6 +21,7 @@
 <includepath>/usr/lib/gcc/i686-linux-gnu/4.8/include-fixed</includepath>
 <includepath>/usr/include/i386-linux-gnu</includepath>
 <includepath>/usr/include</includepath>
+<includepath workspace_path="true">/guam/src</includepath>
 
 </language>
 <language name="GNU C">
@@ -36,6 +36,9 @@
 
 </language>
 <language name="GNU C++">
+<macro>
+<name>__linux__</name><value>1</value>
+</macro>
 
 </language>
 <language name="GNU C">
