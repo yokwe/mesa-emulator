@@ -41,6 +41,93 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "Agent.h"
 #include "AgentStream.h"
 
+#include "StreamDefault.h"
+
+#define DEBUG_SHOW_AGENT_STREAM 1
+
+QMap<CARD32, AgentStream::Stream*>AgentStream::Stream::map;
+
+const char* AgentStream::Stream::getCommandString(CARD16 command) {
+	switch(command) {
+	case CoProcessorIOFaceGuam::C_idle:    return "idle";
+	case CoProcessorIOFaceGuam::C_accept:  return "accept";
+	case CoProcessorIOFaceGuam::C_connect: return "connect";
+	case CoProcessorIOFaceGuam::C_delete:  return "delete";
+	case CoProcessorIOFaceGuam::C_read:    return "read";
+	case CoProcessorIOFaceGuam::C_write:   return "write";
+	default:
+		logger.fatal("command = %d", command);
+		ERROR();
+		return "UNKNONW";
+	}
+}
+
+const char* AgentStream::Stream::getStateString(CARD16 state) {
+	switch(state) {
+	case CoProcessorIOFaceGuam::S_idle:      return "idle";
+	case CoProcessorIOFaceGuam::S_accepting: return "accepting";
+	case CoProcessorIOFaceGuam::S_connected: return "connected";
+	case CoProcessorIOFaceGuam::S_deleted:   return "deleted";
+	default:
+		logger.fatal("state = %d", state);
+		ERROR();
+		return "UNKNONW";
+	}
+}
+
+const char* AgentStream::Stream::getResultString(CARD16 result) {
+	switch(result) {
+	case CoProcessorIOFaceGuam::R_completed:  return "completed";
+	case CoProcessorIOFaceGuam::R_inProgress: return "inProgress";
+	case CoProcessorIOFaceGuam::R_error:      return "error";
+	default:
+		logger.fatal("result = %d", result);
+		ERROR();
+		return "UNKNONW";
+	}
+}
+
+const char* AgentStream::Stream::getServerIDString(CARD32 serverID) {
+	static char buffer[20];
+
+	switch(serverID) {
+	case CoProcessorServerIDs::fileAccess:                             return "fileAccess";
+	case CoProcessorServerIDs::dragAndDropToGVService:                 return "dragAndDrop";
+	case CoProcessorServerIDs::workspaceWindowControlGVService:        return "wwc-gv";
+	case CoProcessorServerIDs::workspaceWindowControlMSWindowsService: return "wwc-pc";
+	case CoProcessorServerIDs::tcpService:                             return "tcpService";
+	default:
+		sprintf(buffer, "ID-%d", serverID);
+		return buffer;
+	}
+}
+
+
+void AgentStream::Stream::addHandler(AgentStream::Stream* handler) {
+	const CARD32 serverID = handler->serverID;
+	if (map.contains(serverID)) {
+		logger.fatal("serverID = %5d  name = %s", serverID, handler->name.toLocal8Bit().constData());
+		ERROR();
+	}
+	map[serverID] = handler;
+}
+CARD16 AgentStream::Stream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	const CARD32 serverID = iocb->serverID;
+	AgentStream::Stream* handler = 0;
+	if (map.contains(serverID)) {
+		handler = map[serverID];
+	} {
+		const CARD32 defaultServerID = DEFAULT_SERVER_ID;
+		handler = map[defaultServerID];
+	}
+	return handler->process(fcb, iocb);
+}
+
+
+void AgentStream::Stream::initialize() {
+	AgentStream::Stream::addHandler(new StreamDefault());
+}
+
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
@@ -55,9 +142,14 @@ void AgentStream::Initialize() {
 	fcb->stopAgent         = 0;
 	fcb->agentStopped      = 1;
 	fcb->streamWordSize    = 0;
+
+	// Initialize AgentStream::Stream
+	AgentStream::Stream::initialize();
 }
 
 void AgentStream::Call() {
+	fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+
 	if (fcb->stopAgent) {
 		if (!fcb->agentStopped) {
 			logger.info("AGENT %s stop", name);
@@ -78,18 +170,19 @@ void AgentStream::Call() {
 	}
 
 	if (DEBUG_SHOW_AGENT_STREAM) {
-		logger.debug("AGENT %s  head = %08X  next = %08X  command = %2d  result = %2d", name, fcb->iocbHead, fcb->iocbNext, fcb->headCommand, fcb->headResult);
-		if (fcb->iocbHead) {
-			CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-			for(;;) {
-				logger.debug("    serverID = %3d  mesaIsServer = %d  mesaConnectionState = %d  pcConnectionState = %d  next = %8X",
-					iocb->serverID, iocb->mesaIsServer, iocb->mesaConnectionState, iocb->pcConnectionState, iocb->nextIOCB);
-				//
-				if (iocb->nextIOCB == 0) break;
-				iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
-			}
-		}
+		logger.debug("AGENT %s  head = %8X  next = %8X  command = %10s  result = %10s  interruptSelector = %04X", name, fcb->iocbHead, fcb->iocbNext, AgentStream::Stream::getCommandString(fcb->headCommand), AgentStream::Stream::getResultString(fcb->headResult), fcb->interruptSelector);
 	}
-	// TODO implement AgentStream::Call
-	fcb->headResult = CoProcessorIOFaceGuam::R_error;
+	if (fcb->iocbHead) {
+		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocbHead = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
+		// Process just iocbHead
+		fcb->headResult = AgentStream::Stream::processRequest(fcb, iocbHead);
+
+//		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = iocbHead;
+//		for(;;) {
+//			if (iocb->nextIOCB == 0) break;
+//			iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
+//			AgentStream::Stream::processRequest(fcb, iocb);
+//		}
+
+	}
 }
