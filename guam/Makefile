@@ -107,10 +107,10 @@ run-floppy: floppy
 	echo -n >tmp/debug.log
 	tmp/build/floppy/floppy
 
-create-blank-floppy-image:
-	mkdir -p tmp/floppy
-	rm -f tmp/floppy/floppy144
-	dd if=/dev/zero of=tmp/floppy/floppy144 bs=512 count=2880
+create-floppy-image:
+	mkdir -p tmp/floppy/image
+	rm -f tmp/floppy/image/floppy144
+	dd if=/dev/zero of=tmp/floppy/image/floppy144 bs=512 count=2880
 
 callgrind:
 	mkdir -p tmp/callgrind

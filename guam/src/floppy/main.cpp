@@ -335,7 +335,7 @@ public:
 };
 
 int main(int /*argc*/, char** /*argv*/) {
-	const char* floppyImagePath   = "tmp/floppy/floppy144";
+	const char* floppyImagePath   = "tmp/floppy/image/floppy144";
 	const char* floppyDiskDirPath = "tmp/floppy/disk";
 
 	QDir floppyDiskDir(floppyDiskDirPath);
