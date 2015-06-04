@@ -42,9 +42,6 @@ static log4cpp::Category& logger = Logger::getLogger("agentflop");
 #include "Agent.h"
 #include "AgentFloppy.h"
 
-#define DEBUG_SHOW_AGENT_FLOPPY 1
-
-
 //SectorToDiskAddress: PROCEDURE [
 //   sector: Sector, cylinders: CARDINAL, tracksPerCylinder: CARDINAL,
 //   sectorsPerTrack: CARDINAL]
