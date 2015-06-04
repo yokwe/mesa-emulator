@@ -2103,6 +2103,7 @@ public:
 	static const CARD32 documentConversionService              = 103;
 	static const CARD32 docCnvSrv                              = 103;
 	// dragAndDropToGVService, dragAndDropBWSID: ServerID = 104;  -- service on GlobalView end.
+	static const CARD32 dragAndDropToGVService                 = 104;
 	// helpService, help: ServerID = 105;  -- service on nonGV end.
 	static const CARD32 helpService                            = 105;
 	static const CARD32 help                                   = 105;
