@@ -42,6 +42,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "AgentStream.h"
 
 #include "StreamDefault.h"
+#include "StreamTcpService.h"
 
 #define DEBUG_SHOW_AGENT_STREAM 1
 
@@ -116,7 +117,7 @@ CARD16 AgentStream::Stream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCB
 	AgentStream::Stream* handler = 0;
 	if (map.contains(serverID)) {
 		handler = map[serverID];
-	} {
+	} else {
 		const CARD32 defaultServerID = DEFAULT_SERVER_ID;
 		handler = map[defaultServerID];
 	}
@@ -126,6 +127,7 @@ CARD16 AgentStream::Stream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCB
 
 void AgentStream::Stream::initialize() {
 	AgentStream::Stream::addHandler(new StreamDefault());
+	AgentStream::Stream::addHandler(new StreamTcpService());
 }
 
 void AgentStream::Initialize() {
