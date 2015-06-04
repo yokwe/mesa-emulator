@@ -58,6 +58,10 @@ private:
 	DiskFile   diskFile;
 };
 
+
+//
+// APilot/15.0.1/ComSoft/Private/FloppyFormat.mesa
+//
 class SectorNine {
 public:
 	static const quint16 SEAL    = 0141414;
@@ -155,6 +159,10 @@ public:
 	}
 };
 
+
+//
+// APilot/15.0.1/ComSoft/Private/FloppyFormat.mesa
+//
 class FileList {
 public:
 	static const quint16 SEAL    = 0131313;
