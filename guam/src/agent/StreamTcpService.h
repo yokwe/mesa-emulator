@@ -31,8 +31,99 @@ OF SUCH DAMAGE.
 
 #include "AgentStream.h"
 
+#include <QtCore>
+
 class StreamTcpService : public AgentStream::Stream {
 public:
+	// MsgId: TYPE = MACHINE DEPENDENT {connect(0), listen(1), put(2), get(3), close(4), setWaitTime(5), endStream(6), shutDown(7), reset(8)};
+	static const CARD32 M_connect     = 0;
+	static const CARD32 M_listen      = 1;
+	static const CARD32 M_put         = 2;
+	static const CARD32 M_get         = 3;
+	static const CARD32 M_close       = 4;
+	static const CARD32 M_setWaitTime = 5;
+	static const CARD32 M_endStream   = 6;
+	static const CARD32 M_shutDown    = 7;
+	static const CARD32 M_reset       = 8;
+	const char* getMsgIdString(CARD32 msgId);
+
+	// Status: TYPE = MACHINE DEPENDENT {success(0), failure(1)};
+	static const CARD32 S_success     = 0;
+	static const CARD32 S_failure     = 1;
+	const char* getStatusString(CARD32 status);
+
+	// State: TYPE = {closed, established, finWait, closing};
+	static const CARD32 S_closed      = 0;
+	static const CARD32 S_established = 1;
+	static const CARD32 S_finWait     = 2;
+	static const CARD32 S_closing     = 3;
+	const char* getStateString(CARD32 state);
+
 	StreamTcpService();
 	CARD16 process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+
+protected:
+	class SocketInfo {
+	public:
+		static CARD32 socketIDNext;
+		static QMap<CARD32, SocketInfo*> map;
+		static SocketInfo* get(CARD32 socketID_);
+
+		const CARD32 socketID;
+
+		CARD32 state;
+		CARD32 localAddress;
+		CARD32 remoteAddress;
+		CARD16 localPort;
+		CARD16 remotePort;
+		CARD32 timeout;
+
+		SocketInfo() : socketID(++socketIDNext) {
+			map.insert(socketID, this);
+			clear();
+		}
+
+		void clear() {
+			state = 0;
+			localAddress = remoteAddress = localPort = remotePort = 0;
+			timeout = 0;
+		}
+	};
+
+
+	class Task {
+	public:
+		static const CARD32 MESSAGE_OFFSET = 1000;
+		static const CARD32 MESSAGE_SIZE   = 4;
+
+		static CARD16 hTaskNext;
+		static QMap<CARD32, Task*> map;
+		static Task* get(CARD16 hTask_);
+
+		const CARD16 hTask;
+
+		CARD32 message[MESSAGE_SIZE];
+		CARD32 messageSize;
+
+		Task() : hTask(++hTaskNext) {
+			clear();
+			map.insert(hTask, this);
+		}
+		void clear() {
+			message[0] = message[1] = message[2] = message[3] = 0;
+			messageSize = 0;
+		}
+
+		void addMessage(CARD32 message_);
+
+		void connect();
+		void listen();
+		void put();
+		void get();
+		void close();
+		void setWaitTime();
+		void endStream();
+		void shutDown();
+		void reset();
+	};
 };
