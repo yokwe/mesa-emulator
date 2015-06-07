@@ -129,8 +129,13 @@ CARD16 StreamTcpService::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb,
 		iocb->mesaPut.hTask = iocb->mesaGet.hTask = task->hTask;
 
 		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaPut.buffer), iocb->mesaPut.bytesWritten);
+		bb.setPos(iocb->mesaPut.bytesRead);
 		CARD32 message = bb.get32();
 		task->addMessage(message);
+		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
+		if (bb.remaining() != 0) {
+			ERROR();
+		}
 	}
 		break;
 	case CoProcessorIOFaceGuam::C_write:
@@ -172,7 +177,7 @@ void StreamTcpService::Task::addMessage(CARD32 message_) {
 	message[messageSize++] = message_;
 
 	if (messageSize == MESSAGE_SIZE) {
-		switch(message[0]) {
+		switch(message[0] - MESSAGE_OFFSET) {
 		case M_connect:
 			connect();
 			break;
@@ -204,7 +209,7 @@ void StreamTcpService::Task::addMessage(CARD32 message_) {
 			logger.fatal("message[0] = %d", message[0] - MESSAGE_OFFSET);
 			ERROR();
 		}
-		reset();
+		clear();
 	}
 }
 
@@ -224,7 +229,14 @@ void StreamTcpService::Task::connect() {
 	CARD32 remoteAddress = message[1];
 	CARD32 remotePort    = message[2];
 	CARD32 localPort     = message[3];
-	logger.info("connect  %4d  %08X  %5d  %5d", hTask, remoteAddress, remotePort, localPort);
+	CARD8  ra[4];
+	// AA.BB.CC.DD
+	ra[0] = (CARD8)(remoteAddress >> 24); // CC
+	ra[1] = (CARD8)(remoteAddress >> 16); // DD
+	ra[2] = (CARD8)(remoteAddress >>  8); // AA
+	ra[3] = (CARD8)(remoteAddress >>  0); // BB
+
+	logger.info("connect  %4d  remote %03d.%03d.%03d.%03d:%d  localPort %5d", hTask, ra[0], ra[1], ra[2], ra[3], remotePort, localPort);
 	/*SocketInfo* socket = */ SocketInfo::get(0);
 	// TODO
 }
