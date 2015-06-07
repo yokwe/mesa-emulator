@@ -113,9 +113,10 @@ CARD16 StreamTcpService::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb,
 		break;
 	case CoProcessorIOFaceGuam::C_connect:
 	{
+		Task* task = new Task();
 		iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
-		iocb->mesaPut.hTask = 1; // Need to be set not zero to enable actual put operation
-		iocb->mesaGet.hTask = 1; // Need to be set not zero to enable actual get operation
+		iocb->mesaPut.hTask = task->hTask; // Need to be set not zero to enable actual put operation
+		iocb->mesaGet.hTask = task->hTask; // Need to be set not zero to enable actual get operation
 		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 	}
 		break;
@@ -143,16 +144,23 @@ CARD16 StreamTcpService::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb,
 	return fcb->headResult;
 }
 
-CARD16                                     StreamTcpService::SocketInfo::socketIDNext = 1;
-QMap<CARD32, StreamTcpService::SocketInfo> StreamTcpService::SocketInfo::map;
+CARD32                                      StreamTcpService::SocketInfo::socketIDNext = 1;
+QMap<CARD32, StreamTcpService::SocketInfo*> StreamTcpService::SocketInfo::map;
 
-CARD16                               StreamTcpService::Task::hTaskNext = 1;
-QMap<CARD32, StreamTcpService::Task> StreamTcpService::Task::map;
+CARD16                                StreamTcpService::Task::hTaskNext = 1;
+QMap<CARD32, StreamTcpService::Task*> StreamTcpService::Task::map;
 
+StreamTcpService::SocketInfo* StreamTcpService::SocketInfo::get(CARD32 socketID_) {
+	if (socketID_ == 0) return new SocketInfo();
+	if (map.contains(socketID_)) return map[socketID_];
+	logger.fatal("socketID_ = %d", socketID_);
+	ERROR();
+	return 0;
+}
 
 StreamTcpService::Task* StreamTcpService::Task::get(CARD16 hTask_) {
 	if (hTask_ == 0) return new Task();
-	if (map.contains(hTask)) return map[hTask_];
+	if (map.contains(hTask_)) return map[hTask_];
 	logger.fatal("hTask_ = %d", hTask_);
 	ERROR();
 	return 0;
@@ -165,15 +173,33 @@ void StreamTcpService::Task::addMessage(CARD32 message_) {
 
 	if (messageSize == MESSAGE_SIZE) {
 		switch(message[0]) {
-		case M_connect:     connect();
-		case M_listen:      listen();
-		case M_put:         put();
-		case M_get:         get();
-		case M_close:       close();
-		case M_setWaitTime: setWaitTime();
-		case M_endStream:   endStream();
-		case M_shutDown:    shutDown();
-		case M_reset:       reset();
+		case M_connect:
+			connect();
+			break;
+		case M_listen:
+			listen();
+			break;
+		case M_put:
+			put();
+			break;
+		case M_get:
+			get();
+			break;
+		case M_close:
+			close();
+			break;
+		case M_setWaitTime:
+			setWaitTime();
+			break;
+		case M_endStream:
+			endStream();
+			break;
+		case M_shutDown:
+			shutDown();
+			break;
+		case M_reset:
+			reset();
+			break;
 		default:
 			logger.fatal("message[0] = %d", message[0] - MESSAGE_OFFSET);
 			ERROR();
@@ -199,7 +225,7 @@ void StreamTcpService::Task::connect() {
 	CARD32 remotePort    = message[2];
 	CARD32 localPort     = message[3];
 	logger.info("connect  %4d  %08X  %5d  %5d", hTask, remoteAddress, remotePort, localPort);
-	SocketInfo* socket = new SocketInfo();
+	/*SocketInfo* socket = */ SocketInfo::get(0);
 	// TODO
 }
 
@@ -224,7 +250,7 @@ void StreamTcpService::Task::listen() {
 	CARD32 socketID = message[1];
 	CARD32 timeout  = message[2];
 	logger.info("listen  %4d  %4d  %4d", hTask, socketID, timeout);
-	SocketInfo* socket = SocketInfo::get(socketID);
+	/*SocketInfo* socket =*/ SocketInfo::get(socketID);
 	// TODO
 }
 
@@ -249,7 +275,7 @@ void StreamTcpService::Task::put() {
 	CARD32 socketID = message[1];
 	CARD32 length   = message[2];
 	logger.info("put  %4d  %4d  %4d", hTask, socketID, length);
-	SocketInfo* socket = SocketInfo::get(socketID);
+	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 }
 
@@ -269,7 +295,7 @@ void StreamTcpService::Task::get() {
 	CARD32 socketID = message[1];
 	CARD32 length   = message[2];
 	logger.info("get  %4d  %4d  %4d", hTask, socketID, length);
-	SocketInfo* socket = SocketInfo::get(socketID);
+	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 }
 
@@ -285,7 +311,7 @@ void StreamTcpService::Task::get() {
 void StreamTcpService::Task::close() {
 	CARD32 socketID = message[1];
 	logger.info("close  %4d  %4d", hTask, socketID);
-	SocketInfo* socket = SocketInfo::get(socketID);
+	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 }
 
@@ -329,7 +355,7 @@ void StreamTcpService::Task::endStream() {
 void StreamTcpService::Task::shutDown() {
 	CARD32 socketID = message[1];
 	logger.info("shutDown  %4d  %4d", hTask, socketID);
-	SocketInfo* socket = SocketInfo::get(socketID);
+	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 }
 
@@ -341,7 +367,7 @@ void StreamTcpService::Task::shutDown() {
 void StreamTcpService::Task::reset() {
 	CARD32 socketID = message[1];
 	logger.info("reset  %4d  %4d", hTask, socketID);
-	SocketInfo* socket = SocketInfo::get(socketID);
+	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 }
 
