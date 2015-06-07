@@ -114,16 +114,16 @@ protected:
 			messageSize = 0;
 		}
 
-		void addMessage(CARD32 message_);
+		void addMessage(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, CARD32 message_);
 
-		void connect();
-		void listen();
-		void put();
-		void get();
-		void close();
-		void setWaitTime();
-		void endStream();
-		void shutDown();
-		void reset();
+		void connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void listen(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void put(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void close(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void endStream(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		void reset(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 	};
 };
