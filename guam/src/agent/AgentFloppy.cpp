@@ -118,7 +118,7 @@ void AgentFloppy::Call() {
 		return;
 	} else {
 		if (fcb->agentStopped) {
-			logger.info("AGENT %s start", name);
+			logger.info("AGENT %s start  %04X", name, fcb->interruptSelector);
 		}
 		fcb->agentStopped = 0;
 	}
