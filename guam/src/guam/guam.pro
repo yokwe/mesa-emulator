@@ -7,6 +7,7 @@ TARGET = guam
 TEMPLATE = app
 
 QT += widgets
+QT += network
 
 unix {
 	QMAKE_POST_LINK = sudo setcap CAP_NET_RAW+pe $(TARGET)

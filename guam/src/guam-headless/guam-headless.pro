@@ -6,6 +6,8 @@ TARGET = guam-headless
 
 TEMPLATE = app
 
+QT += network
+
 unix {
 	QMAKE_POST_LINK = sudo setcap CAP_NET_RAW+pe $(TARGET)
 }
