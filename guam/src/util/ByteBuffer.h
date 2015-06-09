@@ -35,6 +35,8 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 #include "../mesa/Pilot.h"
 
+#include "QtCore"
+
 class ByteBuffer {
 protected:
 	static log4cpp::Category& logger;
@@ -178,8 +180,13 @@ public:
 		pos += sizeof(value);
 		if (limit < pos) limit = pos;
 	}
-	void    putAll(const quint8* data, qint32 dataSize) {
+	void    putAll(const quint8* data, const qint32 dataSize) {
 		for(qint32 i = 0; i < dataSize; i++) put8(data[i]);
+	}
+	void    putAll(QByteArray byteArray) {
+		const char* data     = byteArray.constData();
+		const int    dataSize = byteArray.size();
+		putAll((const quint8*)data, dataSize);
 	}
 };
 
