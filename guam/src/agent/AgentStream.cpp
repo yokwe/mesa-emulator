@@ -44,63 +44,71 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "StreamDefault.h"
 #include "StreamTcpService.h"
 
-#define DEBUG_SHOW_AGENT_STREAM 1
+#define DEBUG_SHOW_AGENT_STREAM 0
 
 QMap<CARD32, AgentStream::Stream*>AgentStream::Stream::map;
 
-const char* AgentStream::Stream::getCommandString(CARD16 command) {
-	switch(command) {
-	case CoProcessorIOFaceGuam::C_idle:    return "idle";
-	case CoProcessorIOFaceGuam::C_accept:  return "accept";
-	case CoProcessorIOFaceGuam::C_connect: return "connect";
-	case CoProcessorIOFaceGuam::C_delete:  return "delete";
-	case CoProcessorIOFaceGuam::C_read:    return "read";
-	case CoProcessorIOFaceGuam::C_write:   return "write";
-	default:
-		logger.fatal("command = %d", command);
-		ERROR();
-		return "UNKNONW";
+static QMap<CARD16, const char*> commandStringMap {
+	{CoProcessorIOFaceGuam::C_idle,    "idle"},
+	{CoProcessorIOFaceGuam::C_accept,  "accept"},
+	{CoProcessorIOFaceGuam::C_connect, "connect"},
+	{CoProcessorIOFaceGuam::C_delete,  "delete"},
+	{CoProcessorIOFaceGuam::C_read,    "read"},
+	{CoProcessorIOFaceGuam::C_write,   "write"},
+};
+const char* AgentStream::Stream::getCommandString(const CARD16 command) {
+	if (commandStringMap.contains(command)) {
+		return commandStringMap[command];
 	}
+	logger.fatal("command = %d", command);
+	ERROR();
+	return "UNKNONW";
 }
 
-const char* AgentStream::Stream::getStateString(CARD16 state) {
-	switch(state) {
-	case CoProcessorIOFaceGuam::S_idle:      return "idle";
-	case CoProcessorIOFaceGuam::S_accepting: return "accepting";
-	case CoProcessorIOFaceGuam::S_connected: return "connected";
-	case CoProcessorIOFaceGuam::S_deleted:   return "deleted";
-	default:
-		logger.fatal("state = %d", state);
-		ERROR();
-		return "UNKNONW";
+static QMap<CARD16, const char*> stateStringMap {
+	{CoProcessorIOFaceGuam::S_idle,      "idle"},
+	{CoProcessorIOFaceGuam::S_accepting, "accepting"},
+	{CoProcessorIOFaceGuam::S_connected, "connected"},
+	{CoProcessorIOFaceGuam::S_deleted,   "deleted"},
+};
+const char* AgentStream::Stream::getStateString(const CARD16 state) {
+	if (stateStringMap.contains(state)) {
+		return stateStringMap[state];
 	}
+	logger.fatal("state = %d", state);
+	ERROR();
+	return "UNKNONW";
 }
 
-const char* AgentStream::Stream::getResultString(CARD16 result) {
-	switch(result) {
-	case CoProcessorIOFaceGuam::R_completed:  return "completed";
-	case CoProcessorIOFaceGuam::R_inProgress: return "inProgress";
-	case CoProcessorIOFaceGuam::R_error:      return "error";
-	default:
-		logger.fatal("result = %d", result);
-		ERROR();
-		return "UNKNONW";
+static QMap<CARD16, const char*> resultStringMap {
+	{CoProcessorIOFaceGuam::R_completed,  "completed"},
+	{CoProcessorIOFaceGuam::R_inProgress, "inProgress"},
+	{CoProcessorIOFaceGuam::R_error,      "error"},
+};
+const char* AgentStream::Stream::getResultString(const CARD16 result) {
+	if (resultStringMap.contains(result)) {
+		return resultStringMap[result];
 	}
+	logger.fatal("result = %d", result);
+	ERROR();
+	return "UNKNONW";
 }
 
-const char* AgentStream::Stream::getServerIDString(CARD32 serverID) {
+
+static QMap<CARD32, const char*> serverIDStringMap {
+	{CoProcessorServerIDs::fileAccess,                             "fileAccess"},
+	{CoProcessorServerIDs::dragAndDropToGVService,                 "dragAndDrop"},
+	{CoProcessorServerIDs::workspaceWindowControlGVService,        "wwc-gv"},
+	{CoProcessorServerIDs::workspaceWindowControlMSWindowsService, "wwc-pc"},
+	{CoProcessorServerIDs::tcpService,                             "tcpService"},
+};
+const char* AgentStream::Stream::getServerIDString(const CARD32 serverID) {
+	if (serverIDStringMap.contains(serverID)) {
+		return serverIDStringMap[serverID];
+	}
 	static char buffer[20];
-
-	switch(serverID) {
-	case CoProcessorServerIDs::fileAccess:                             return "fileAccess";
-	case CoProcessorServerIDs::dragAndDropToGVService:                 return "dragAndDrop";
-	case CoProcessorServerIDs::workspaceWindowControlGVService:        return "wwc-gv";
-	case CoProcessorServerIDs::workspaceWindowControlMSWindowsService: return "wwc-pc";
-	case CoProcessorServerIDs::tcpService:                             return "tcpService";
-	default:
-		sprintf(buffer, "ID-%d", serverID);
-		return buffer;
-	}
+	sprintf(buffer, "ID-%d", serverID);
+	return buffer;
 }
 
 
