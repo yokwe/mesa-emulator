@@ -30,6 +30,7 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt5"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtGui"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtWidgets"/>
+									<listOptionValue builtIn="false" value="/usr/include/qt5/QtNetwork"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtCore"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8"/>
 									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/c++/4.8"/>
