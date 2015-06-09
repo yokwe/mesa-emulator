@@ -7,6 +7,8 @@ TARGET   = agent
 TEMPLATE = lib
 CONFIG  += staticlib
 
+QT += network
+
 # Input
 HEADERS += Agent.h   AgentBeep.h   AgentDisk.h   AgentDisplay.h   AgentFloppy.h   AgentKeyboard.h
 SOURCES += Agent.cpp AgentBeep.cpp AgentDisk.cpp AgentDisplay.cpp AgentFloppy.cpp AgentKeyboard.cpp
