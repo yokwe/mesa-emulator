@@ -39,18 +39,19 @@ static log4cpp::Category& logger = Logger::getLogger("default");
 
 #define DEBUG_SHOW_STREAM_DEFAULT 0
 
-StreamDefault::StreamDefault() : AgentStream::Stream(DEFAULT_SERVER_ID, "DEFAULT") {}
+StreamDefault::StreamDefault() : AgentStream::Handler(DEFAULT_SERVER_ID, "DEFAULT") {}
 
-CARD16 StreamDefault::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+void StreamDefault::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_DEFAULT) {
 		logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %10s  pcState = %10s  next = %8X",
-				getServerIDString(iocb->serverID), iocb->mesaIsServer, getStateString(iocb->mesaConnectionState), getStateString(iocb->pcConnectionState), iocb->nextIOCB);
-		logger.debug("    %-8s  %-8s  %6X %6X", getCommandString(fcb->headCommand), getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
+			AgentStream::getServerIDString(iocb->serverID), iocb->mesaIsServer, AgentStream::getStateString(iocb->mesaConnectionState), AgentStream::getStateString(iocb->pcConnectionState), iocb->nextIOCB);
+		logger.debug("    %-8s  %-8s  %6X %6X",
+			AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
 
 		logger.debug("        put  sst = %3d  u2 = %02X  bytesWritten = %4d  bytesRead = %4d  hTask = %d  interruptMesa = %d  writeLockedByMesa = %d",
-				iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
+			iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
 		logger.debug("        get  sst = %3d  u2 = %02X  bytesWritten = %4d  bytesRead = %4d  hTask = %d  interruptMesa = %d  writeLockedByMesa = %d",
-				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+			iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 	//	logger.debug("        -----");
 	//	logger.debug("        put  subSequence       %6X", iocb->mesaPut.subSequence);
 	//	logger.debug("        put  u2                %6X", iocb->mesaPut.u2);
@@ -72,5 +73,5 @@ CARD16 StreamDefault::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, Co
 	//	logger.debug("        get  bufferSize        %6X", iocb->mesaGet.bufferSize);
 	//	logger.debug("        get  writeLockedByMesa %6X", iocb->mesaGet.writeLockedByMesa);
 	}
-	return CoProcessorIOFaceGuam::R_error;
+	fcb->headResult = CoProcessorIOFaceGuam::R_error;
 }

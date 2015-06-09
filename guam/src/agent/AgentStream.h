@@ -36,31 +36,23 @@ OF SUCH DAMAGE.
 
 class AgentStream : public Agent {
 public:
-	class Stream {
+	class Handler {
 	public:
 		static const CARD32 DEFAULT_SERVER_ID = 0;
-
-		static QMap<CARD32, Stream*> map;
-
-		static void   addHandler(Stream* handler);
-		static CARD16 processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-		static void   initialize();
-
-		static const char* getServerIDString(CARD32 serverID);
-		static const char* getCommandString (CARD16 command);
-		static const char* getStateString   (CARD16 state);
-		static const char* getResultString  (CARD16 result);
-
 
 		const CARD32  serverID;
 		const QString name;
 
-		Stream(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {}
-		virtual ~Stream() {}
+		Handler(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {}
+		virtual ~Handler() {}
 
-		virtual CARD16 process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual void process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
 	};
 
+	static const char* getServerIDString(CARD32 serverID);
+	static const char* getCommandString (CARD16 command);
+	static const char* getStateString   (CARD16 state);
+	static const char* getResultString  (CARD16 result);
 
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
 		fcb = 0;
@@ -75,6 +67,12 @@ public:
 
 private:
 	CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
+
+	QMap<CARD32, Handler*> handlerMap;
+
+	void   addHandler(Handler* handler);
+	CARD16 processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	void   initialize();
 };
 
 #endif

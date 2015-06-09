@@ -46,96 +46,91 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 #define DEBUG_SHOW_AGENT_STREAM 0
 
-QMap<CARD32, AgentStream::Stream*>AgentStream::Stream::map;
+const char* AgentStream::getCommandString(const CARD16 value) {
+	static QMap<CARD16, const char*> map {
+		{CoProcessorIOFaceGuam::C_idle,    "idle"},
+		{CoProcessorIOFaceGuam::C_accept,  "accept"},
+		{CoProcessorIOFaceGuam::C_connect, "connect"},
+		{CoProcessorIOFaceGuam::C_delete,  "delete"},
+		{CoProcessorIOFaceGuam::C_read,    "read"},
+		{CoProcessorIOFaceGuam::C_write,   "write"},
+	};
 
-static QMap<CARD16, const char*> commandStringMap {
-	{CoProcessorIOFaceGuam::C_idle,    "idle"},
-	{CoProcessorIOFaceGuam::C_accept,  "accept"},
-	{CoProcessorIOFaceGuam::C_connect, "connect"},
-	{CoProcessorIOFaceGuam::C_delete,  "delete"},
-	{CoProcessorIOFaceGuam::C_read,    "read"},
-	{CoProcessorIOFaceGuam::C_write,   "write"},
-};
-const char* AgentStream::Stream::getCommandString(const CARD16 command) {
-	if (commandStringMap.contains(command)) {
-		return commandStringMap[command];
-	}
-	logger.fatal("command = %d", command);
+	if (map.contains(value)) return map[value];
+	logger.fatal("value = %d", value);
 	ERROR();
 	return "UNKNONW";
 }
 
-static QMap<CARD16, const char*> stateStringMap {
-	{CoProcessorIOFaceGuam::S_idle,      "idle"},
-	{CoProcessorIOFaceGuam::S_accepting, "accepting"},
-	{CoProcessorIOFaceGuam::S_connected, "connected"},
-	{CoProcessorIOFaceGuam::S_deleted,   "deleted"},
-};
-const char* AgentStream::Stream::getStateString(const CARD16 state) {
-	if (stateStringMap.contains(state)) {
-		return stateStringMap[state];
-	}
-	logger.fatal("state = %d", state);
+const char* AgentStream::getStateString(const CARD16 value) {
+	static QMap<CARD16, const char*> map {
+		{CoProcessorIOFaceGuam::S_idle,      "idle"},
+		{CoProcessorIOFaceGuam::S_accepting, "accepting"},
+		{CoProcessorIOFaceGuam::S_connected, "connected"},
+		{CoProcessorIOFaceGuam::S_deleted,   "deleted"},
+	};
+
+	if (map.contains(value)) return map[value];
+	logger.fatal("value = %d", value);
 	ERROR();
 	return "UNKNONW";
 }
 
-static QMap<CARD16, const char*> resultStringMap {
-	{CoProcessorIOFaceGuam::R_completed,  "completed"},
-	{CoProcessorIOFaceGuam::R_inProgress, "inProgress"},
-	{CoProcessorIOFaceGuam::R_error,      "error"},
-};
-const char* AgentStream::Stream::getResultString(const CARD16 result) {
-	if (resultStringMap.contains(result)) {
-		return resultStringMap[result];
-	}
-	logger.fatal("result = %d", result);
+const char* AgentStream::getResultString(const CARD16 value) {
+	static QMap<CARD16, const char*> map {
+		{CoProcessorIOFaceGuam::R_completed,  "completed"},
+		{CoProcessorIOFaceGuam::R_inProgress, "inProgress"},
+		{CoProcessorIOFaceGuam::R_error,      "error"},
+	};
+
+	if (map.contains(value)) return map[value];
+	logger.fatal("value = %d", value);
 	ERROR();
 	return "UNKNONW";
 }
 
 
-static QMap<CARD32, const char*> serverIDStringMap {
-	{CoProcessorServerIDs::fileAccess,                             "fileAccess"},
-	{CoProcessorServerIDs::dragAndDropToGVService,                 "dragAndDrop"},
-	{CoProcessorServerIDs::workspaceWindowControlGVService,        "wwc-gv"},
-	{CoProcessorServerIDs::workspaceWindowControlMSWindowsService, "wwc-pc"},
-	{CoProcessorServerIDs::tcpService,                             "tcpService"},
-};
-const char* AgentStream::Stream::getServerIDString(const CARD32 serverID) {
-	if (serverIDStringMap.contains(serverID)) {
-		return serverIDStringMap[serverID];
-	}
+const char* AgentStream::getServerIDString(const CARD32 value) {
+	static QMap<CARD32, const char*> map {
+		{CoProcessorServerIDs::fileAccess,                             "fileAccess"},
+		{CoProcessorServerIDs::dragAndDropToGVService,                 "dragAndDrop"},
+		{CoProcessorServerIDs::workspaceWindowControlGVService,        "wwc-gv"},
+		{CoProcessorServerIDs::workspaceWindowControlMSWindowsService, "wwc-pc"},
+		{CoProcessorServerIDs::tcpService,                             "tcpService"},
+	};
+
+	if (map.contains(value)) return map[value];
 	static char buffer[20];
-	sprintf(buffer, "ID-%d", serverID);
+	sprintf(buffer, "ID-%d", value);
 	return buffer;
 }
 
 
-void AgentStream::Stream::addHandler(AgentStream::Stream* handler) {
+void AgentStream::addHandler(AgentStream::Handler* handler) {
 	const CARD32 serverID = handler->serverID;
-	if (map.contains(serverID)) {
+	if (handlerMap.contains(serverID)) {
 		logger.fatal("serverID = %5d  name = %s", serverID, handler->name.toLocal8Bit().constData());
 		ERROR();
 	}
-	map[serverID] = handler;
+	handlerMap[serverID] = handler;
 }
-CARD16 AgentStream::Stream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+CARD16 AgentStream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	const CARD32 serverID = iocb->serverID;
-	AgentStream::Stream* handler = 0;
-	if (map.contains(serverID)) {
-		handler = map[serverID];
+	AgentStream::Handler* handler = 0;
+	if (handlerMap.contains(serverID)) {
+		handler = handlerMap[serverID];
 	} else {
-		const CARD32 defaultServerID = DEFAULT_SERVER_ID;
-		handler = map[defaultServerID];
+		const CARD32 defaultServerID = Handler::DEFAULT_SERVER_ID;
+		handler = handlerMap[defaultServerID];
 	}
-	return handler->process(fcb, iocb);
+	handler->process(fcb, iocb);
+	return fcb->headResult;
 }
 
 
-void AgentStream::Stream::initialize() {
-	AgentStream::Stream::addHandler(new StreamDefault());
-	AgentStream::Stream::addHandler(new StreamTcpService());
+void AgentStream::initialize() {
+	addHandler(new StreamDefault());
+	addHandler(new StreamTcpService());
 }
 
 void AgentStream::Initialize() {
@@ -153,8 +148,8 @@ void AgentStream::Initialize() {
 	fcb->agentStopped      = 1;
 	fcb->streamWordSize    = 0;
 
-	// Initialize AgentStream::Stream
-	AgentStream::Stream::initialize();
+	// Initialize AgentStream::Handler
+	AgentStream::initialize();
 }
 
 void AgentStream::Call() {
@@ -180,18 +175,18 @@ void AgentStream::Call() {
 	}
 
 	if (DEBUG_SHOW_AGENT_STREAM) {
-		logger.debug("AGENT %s  head = %8X  next = %8X  command = %10s  result = %10s  interruptSelector = %04X", name, fcb->iocbHead, fcb->iocbNext, AgentStream::Stream::getCommandString(fcb->headCommand), AgentStream::Stream::getResultString(fcb->headResult), fcb->interruptSelector);
+		logger.debug("AGENT %s  head = %8X  next = %8X  command = %10s  result = %10s  interruptSelector = %04X", name, fcb->iocbHead, fcb->iocbNext, AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->interruptSelector);
 	}
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocbHead = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 		// Process just iocbHead
-		fcb->headResult = AgentStream::Stream::processRequest(fcb, iocbHead);
+		fcb->headResult = processRequest(fcb, iocbHead);
 
 //		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = iocbHead;
 //		for(;;) {
 //			if (iocb->nextIOCB == 0) break;
 //			iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
-//			AgentStream::Stream::processRequest(fcb, iocb);
+//			AgentStream::Handler::processRequest(fcb, iocb);
 //		}
 
 	}

@@ -31,8 +31,8 @@ OF SUCH DAMAGE.
 
 #include "AgentStream.h"
 
-class StreamDefault : public AgentStream::Stream {
+class StreamDefault : public AgentStream::Handler {
 public:
 	StreamDefault();
-	CARD16 process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	void process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 };

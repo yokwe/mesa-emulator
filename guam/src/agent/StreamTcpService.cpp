@@ -44,115 +44,160 @@ static log4cpp::Category& logger = Logger::getLogger("tcpservice");
 
 #define DEBUG_SHOW_STREAM_TCP_SERVICE 1
 
-StreamTcpService::StreamTcpService() : AgentStream::Stream(CoProcessorServerIDs::tcpService, "TcpService") {}
+StreamTcpService::StreamTcpService() : AgentStream::Handler(CoProcessorServerIDs::tcpService, "TcpService") {}
 
-const char* StreamTcpService::getMsgIdString(MsgID msgId) {
-	static QMap<MsgID, const char*> msgIDStringMap {
-		{connect,     "connect"},
-		{listen,      "listen"},
-		{put,         "put"},
-		{get,         "get"},
-		{close,       "close"},
-		{setWaitTime, "setWaitTime"},
-		{endStream,   "endStream"},
-		{shutDown,    "shutDown"},
-		{reset,       "reset"},
+const char* StreamTcpService::getMsgIdString(MsgID value) {
+	static QMap<MsgID, const char*> map {
+		{MsgID::connect,     "connect"},
+		{MsgID::listen,      "listen"},
+		{MsgID::put,         "put"},
+		{MsgID::get,         "get"},
+		{MsgID::close,       "close"},
+		{MsgID::setWaitTime, "setWaitTime"},
+		{MsgID::endStream,   "endStream"},
+		{MsgID::shutDown,    "shutDown"},
+		{MsgID::reset,       "reset"},
 	};
 
-	if (msgIDStringMap.contains(msgId)) {
-		return msgIDStringMap[msgId];
+	if (map.contains(value)) {
+		return map[value];
 	}
-	logger.fatal("msgId = %d", msgId);
+	logger.fatal("value = %d", value);
 	ERROR();
 	return "UNKNONW";
 }
 
-static QMap<CARD32, const char*> statusStringMap {
-	{StreamTcpService::S_success, "success"},
-	{StreamTcpService::S_failure, "failure"},
-};
-const char* StreamTcpService::getStatusString(CARD32 status) {
-	if (statusStringMap.contains(status)) {
-		return statusStringMap[status];
+const char* StreamTcpService::getStatusString(Status value) {
+	static QMap<Status, const char*> map {
+		{Status::success, "success"},
+		{Status::failure, "failure"},
+	};
+
+	if (map.contains(value)) {
+		return map[value];
 	}
-	logger.fatal("status = %d", status);
+	logger.fatal("value = %d", value);
 	ERROR();
 	return "UNKNONW";
 }
 
 // State: TYPE = {closed, established, finWait, closing};
-static QMap<CARD32, const char*> stateStringMap {
-	{StreamTcpService::S_closed,      "closed"},
-	{StreamTcpService::S_established, "established"},
-	{StreamTcpService::S_finWait,     "finWait"},
-	{StreamTcpService::S_closing,     "closing"},
-};
-const char* StreamTcpService::getStateString(CARD32 state) {
-	if (stateStringMap.contains(state)) {
-		return stateStringMap[state];
+const char* StreamTcpService::getStateString(State value) {
+	static QMap<State, const char*> map {
+		{State::closed,      "closed"},
+		{State::established, "established"},
+		{State::finWait,     "finWait"},
+		{State::closing,     "closing"},
+	};
+
+	if (map.contains(value)) {
+		return map[value];
 	}
-	logger.fatal("state = %d", state);
+	logger.fatal("value = %d", value);
 	ERROR();
 	return "UNKNONW";
 }
 
-CARD16 StreamTcpService::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+void StreamTcpService::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
-		logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %10s  pcState = %10s  next = %8X",
-				getServerIDString(iocb->serverID), iocb->mesaIsServer, getStateString(iocb->mesaConnectionState), getStateString(iocb->pcConnectionState), iocb->nextIOCB);
-		logger.debug("    %-8s  %-8s  %6X %6X", getCommandString(fcb->headCommand), getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
+		logger.debug("%-8s  %-8s  %6X %6X",
+			AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
 
-		logger.debug("        put  sst = %3d  u2 = %02X  %6X  size = %4d written = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-				iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.buffer, iocb->mesaPut.bufferSize, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
-		logger.debug("        get  sst = %3d  u2 = %02X  %6X  size = %4d written = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.buffer, iocb->mesaGet.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+		//		logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %10s  pcState = %10s  next = %8X",
+//				getServerIDString(iocb->serverID), iocb->mesaIsServer, getStateString(iocb->mesaConnectionState), getStateString(iocb->pcConnectionState), iocb->nextIOCB);
+//		logger.debug("    %-8s  %-8s  %6X %6X", getCommandString(fcb->headCommand), getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
+
+//		logger.debug("        put  sst = %3d  u2 = %02X  %6X  size = %4d written = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+//				iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.buffer, iocb->mesaPut.bufferSize, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
+//		logger.debug("        get  sst = %3d  u2 = %02X  %6X  size = %4d written = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+//				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.buffer, iocb->mesaGet.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 	}
 	// Sanity check
 	if (iocb->serverID != this->serverID) ERROR();
 
 	fcb->headResult = CoProcessorIOFaceGuam::R_error;
-	switch (fcb->headCommand) {
-	case CoProcessorIOFaceGuam::C_idle:
-		ERROR(); // TODO implements this
-		break;
-	case CoProcessorIOFaceGuam::C_accept:
-		ERROR(); // TODO implements this
-		break;
-	case CoProcessorIOFaceGuam::C_connect:
-	{
+
+	// very new connection
+	if (iocb->mesaPut.hTask == 0) {
+		// Create new task and assign hTask
 		Task* task = new Task();
-		iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
 		iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
+		iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
 		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+		return;
 	}
-		break;
-	case CoProcessorIOFaceGuam::C_delete:
-		ERROR(); // TODO implements this
-		break;
-	case CoProcessorIOFaceGuam::C_read:
-	{
-		Task* task = Task::get(iocb->mesaPut.hTask);
-		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaPut.buffer), iocb->mesaPut.bytesWritten);
-		bb.setPos(iocb->mesaPut.bytesRead);
-		if (bb.remaining() != sizeof(CARD32)) ERROR();
-		CARD32 message = bb.get32();
-		task->addMessage(iocb, message);
-		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
-		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-	}
-		break;
-	case CoProcessorIOFaceGuam::C_write:
-		// DO nothing now
-		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-		if (iocb->mesaGet.interruptMesa && iocb->mesaGet.bytesRead < iocb->mesaGet.bytesWritten) {
-			InterruptThread::notifyInterrupt(fcb->interruptSelector);
-		}
-		break;
-	default:
-		logger.fatal("headCommand = %d", fcb->headCommand);
+
+	Task* task = Task::get(iocb->mesaPut.hTask);
+	CARD16* buffer = Store(iocb->mesaPut.buffer);
+	BigEndianByteBuffer  bb((CARD8*)buffer, iocb->mesaPut.bytesWritten);
+	bb.setPos(iocb->mesaPut.bytesRead);
+	if (bb.remaining() != sizeof(CARD32)) {
+		CARD8* p8 = (CARD8*)buffer;
+		p8 += iocb->mesaPut.bytesRead;
+		QByteArray qba((const char*)p8, (iocb->mesaPut.bytesWritten - iocb->mesaPut.bytesRead));
+
+		logger.fatal("mesaPut = (%d)%s", qba.size(), qba.toHex().constData());
 		ERROR();
 	}
-	return fcb->headResult;
+	const CARD32 value = bb.get32();
+	switch(task->msgCount) {
+	case 0:
+		task->msg0 = static_cast<MsgID>(value - Task::MESSAGE_OFFSET);
+		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
+		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+		return;
+	case 1:
+		task->msg1 = value;
+		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
+		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+		return;
+	case 2:
+		task->msg2 = value;
+		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
+		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+		return;
+	case 3:
+		task->msg3 = value;
+		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
+		//
+		switch(task->msg0) {
+		case MsgID::connect:
+			task->connect(iocb);
+			break;
+		case MsgID::listen:
+			task->listen(iocb);
+			break;
+		case MsgID::put:
+			task->put(iocb);
+			break;
+		case MsgID::get:
+			task->get(iocb);
+			break;
+		case MsgID::close:
+			task->close(iocb);
+			break;
+		case MsgID::setWaitTime:
+			task->setWaitTime(iocb);
+			break;
+		case MsgID::endStream:
+			task->endStream(iocb);
+			break;
+		case MsgID::shutDown:
+			task->shutDown(iocb);
+			break;
+		case MsgID::reset:
+			task->reset(iocb);
+			break;
+		default:
+			logger.fatal("msg0 = %d",task->msg0);
+			ERROR();
+		}
+		//
+		task->clear();
+		break;
+	default:
+		ERROR();
+	}
 }
 
 CARD32                                      StreamTcpService::SocketInfo::socketIDNext = 1;
@@ -177,49 +222,6 @@ StreamTcpService::Task* StreamTcpService::Task::get(CARD16 hTask_) {
 	return 0;
 }
 
-void StreamTcpService::Task::addMessage(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, CARD32 message_) {
-	logger.debug("addMessage %d %8X", messageSize, message_);
-
-	message[messageSize++] = message_;
-
-	if (messageSize == MESSAGE_SIZE) {
-		MsgID msgid = static_cast<MsgID>(message[0] - MESSAGE_OFFSET);
-		switch(msgid) {
-		case MsgID::connect:
-			connect(iocb);
-			break;
-		case MsgID::listen:
-			listen(iocb);
-			break;
-		case MsgID::put:
-			put(iocb);
-			break;
-		case MsgID::get:
-			get(iocb);
-			break;
-		case MsgID::close:
-			close(iocb);
-			break;
-		case MsgID::setWaitTime:
-			setWaitTime(iocb);
-			break;
-		case MsgID::endStream:
-			endStream(iocb);
-			break;
-		case MsgID::shutDown:
-			shutDown(iocb);
-			break;
-		case MsgID::reset:
-			reset(iocb);
-			break;
-		default:
-			logger.fatal("message[0] = %d", message[0] - MESSAGE_OFFSET);
-			ERROR();
-		}
-		clear();
-	}
-}
-
 
 
 //    PutCommand[stream, connect];
@@ -233,9 +235,9 @@ void StreamTcpService::Task::addMessage(CoProcessorIOFaceGuam::CoProcessorIOCBTy
 //    }
 //    socketID _ GetLongNumber[stream];
 void StreamTcpService::Task::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	const CARD32 remoteAddress = message[1];
-	const CARD32 remotePort    = message[2];
-	const CARD32 localPort     = message[3];
+	const CARD32 remoteAddress = msg1;
+	const CARD32 remotePort    = msg2;
+	const CARD32 localPort     = msg3;
 	const CARD8  a = (CARD8)(remoteAddress >>  8); // AA
 	const CARD8  b = (CARD8)(remoteAddress >>  0); // BB
 	const CARD8  c = (CARD8)(remoteAddress >> 24); // CC
@@ -247,18 +249,41 @@ void StreamTcpService::Task::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType*
 
 	logger.info("connect  %4d  remote %s:%d  localPort %5d", hTask, address.toLocal8Bit().constData(), remotePort, localPort);
 	SocketInfo* socketInfo = new SocketInfo;
-	socketInfo->socket.bind(localPort);
-	logger.debug("After bind     state = %d", socketInfo->socket.state());
+	{
+		bool success = socketInfo->socket.bind(localPort);
+		if (!success) {
+			logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
+			ERROR();
+		}
+	}
 
 	socketInfo->socket.connectToHost(address, remotePort, 0);
-	logger.debug("After connect  state = %d", socketInfo->socket.state());
+	{
+		bool success = socketInfo->socket.waitForConnected();
+		if (!success) {
+			logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
+			ERROR();
+		}
+	}
 
 	// Output response
-	BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
-	bb.put32(S_success);
-	bb.put32(socketInfo->socketID);
-	iocb->mesaGet.bytesWritten = bb.getPos();
-	logger.info("    socketID = %4d  mesaGet.bytesWritten = %4d", socketInfo->socketID, iocb->mesaGet.bytesWritten);
+	{
+		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
+		// Status
+		{
+			bb.clear();
+			bb.put32(Status::success);
+			QByteArray qba((const char*)bb.getData(), (int)bb.getPos());
+			outputList.append(qba);
+		}
+		// socketID
+		{
+			bb.clear();
+			bb.put32(socketInfo->socketID);
+			QByteArray qba((const char*)bb.getData(), (int)bb.getPos());
+			outputList.append(qba);
+		}
+	}
 }
 
 
@@ -279,11 +304,12 @@ void StreamTcpService::Task::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType*
 //    }
 //    socketID _ GetLongNumber[stream];
 void StreamTcpService::Task::listen(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	CARD32 socketID = message[1];
-	CARD32 timeout  = message[2];
+	const CARD32 socketID = msg1;
+	const CARD32 timeout  = msg2;
 	logger.info("listen  %4d  %4d  %4d", hTask, socketID, timeout);
 	/*SocketInfo* socket =*/ SocketInfo::get(socketID);
 	// TODO
+	ERROR();
 }
 
 
@@ -304,11 +330,12 @@ void StreamTcpService::Task::listen(CoProcessorIOFaceGuam::CoProcessorIOCBType* 
 //      }
 //      ENDLOOP
 void StreamTcpService::Task::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	CARD32 socketID = message[1];
-	CARD32 length   = message[2];
+	const CARD32 socketID = msg1;;
+	const CARD32 length   = msg2;
 	logger.info("put  %4d  %4d  %4d", hTask, socketID, length);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
+	ERROR();
 }
 
 
@@ -324,8 +351,8 @@ void StreamTcpService::Task::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*i
 //      reason _ GetReason[stream];
 //    }
 void StreamTcpService::Task::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	CARD32 socketID = message[1];
-	CARD32 length   = message[2];
+	const CARD32 socketID = msg1;
+	const CARD32 length   = msg2;
 	logger.info("get  %4d  %4d  %4d", hTask, socketID, length);
 	SocketInfo* socketInfo = SocketInfo::get(socketID);
 
@@ -333,8 +360,9 @@ void StreamTcpService::Task::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* ioc
 	if (0 < bytesAvailable) {
 		// Output response
 		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
-		bb.put32(S_success);
+		bb.put32(Status::success);
 		bb.put32((quint32)bytesAvailable);
+		//
 		QByteArray data = socketInfo->socket.read(bb.remaining());
 		quint32 dataSize = data.size();
 		bb.putAll((const quint8*)data.constData(), dataSize);
@@ -343,7 +371,7 @@ void StreamTcpService::Task::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* ioc
 	} else {
 		// Output response
 		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
-		bb.put32(S_success);
+		bb.put32(Status::success);
 		bb.put32(0);
 		iocb->mesaGet.bytesWritten = bb.getPos();
 	}
@@ -360,10 +388,11 @@ void StreamTcpService::Task::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* ioc
 //      reason _ GetReason[stream];
 //    }
 void StreamTcpService::Task::close(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	CARD32 socketID = message[1];
+	const CARD32 socketID = msg1;
 	logger.info("close  %4d  %4d", hTask, socketID);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
+	ERROR();
 }
 
 
@@ -377,12 +406,13 @@ void StreamTcpService::Task::close(CoProcessorIOFaceGuam::CoProcessorIOCBType* /
 //      reason _ GetReason[stream];
 //    }
 void StreamTcpService::Task::setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	CARD32 socketID = message[1];
-	CARD32 timeout  = message[2];
+	const CARD32 socketID = msg1;
+	const CARD32 timeout  = msg2;
 	logger.info("setWaitTime  %4d  %4d  %4d", hTask, socketID, timeout);
 	SocketInfo* socket = SocketInfo::get(socketID);
 	socket->timeout = timeout;
 	// TODO
+	ERROR();
 }
 
 //    PutCommand[stream, endStream];
@@ -392,6 +422,7 @@ void StreamTcpService::Task::setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBT
 void StreamTcpService::Task::endStream(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	logger.info("endStream  %4d", hTask);
 	// TODO
+	ERROR();
 }
 
 //    PutCommand[stream, shutDown];
@@ -404,10 +435,11 @@ void StreamTcpService::Task::endStream(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 //      reason _ GetReason[stream];
 //    }
 void StreamTcpService::Task::shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	CARD32 socketID = message[1];
+	const CARD32 socketID = msg1;
 	logger.info("shutDown  %4d  %4d", hTask, socketID);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
+	ERROR();
 }
 
 
@@ -416,9 +448,10 @@ void StreamTcpService::Task::shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType
 //    PutLongNumber[stream, LONG[0]];
 //    PutLongNumber[stream, LONG[0]];
 void StreamTcpService::Task::reset(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	CARD32 socketID = message[1];
+	const CARD32 socketID = msg1;
 	logger.info("reset  %4d  %4d", hTask, socketID);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
+	ERROR();
 }
 
