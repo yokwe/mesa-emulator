@@ -178,6 +178,9 @@ public:
 		pos += sizeof(value);
 		if (limit < pos) limit = pos;
 	}
+	void    putAll(const quint8* data, qint32 dataSize) {
+		for(qint32 i = 0; i < dataSize; i++) put8(data[i]);
+	}
 };
 
 class BigEndianByteBuffer final : public ByteBuffer {
