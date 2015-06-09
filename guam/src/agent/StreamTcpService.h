@@ -32,20 +32,16 @@ OF SUCH DAMAGE.
 #include "AgentStream.h"
 
 #include <QtCore>
+#include <QTcpSocket>
 
 class StreamTcpService : public AgentStream::Stream {
 public:
 	// MsgId: TYPE = MACHINE DEPENDENT {connect(0), listen(1), put(2), get(3), close(4), setWaitTime(5), endStream(6), shutDown(7), reset(8)};
-	static const CARD32 M_connect     = 0;
-	static const CARD32 M_listen      = 1;
-	static const CARD32 M_put         = 2;
-	static const CARD32 M_get         = 3;
-	static const CARD32 M_close       = 4;
-	static const CARD32 M_setWaitTime = 5;
-	static const CARD32 M_endStream   = 6;
-	static const CARD32 M_shutDown    = 7;
-	static const CARD32 M_reset       = 8;
-	const char* getMsgIdString(CARD32 msgId);
+	enum MsgID : CARD32 {
+		connect = 0, listen = 1, put = 2, get = 3, close = 4,
+		setWaitTime = 5, endStream = 6, shutDown = 7, reset = 8,
+	};
+	static const char* getMsgIdString(MsgID msgId);
 
 	// Status: TYPE = MACHINE DEPENDENT {success(0), failure(1)};
 	static const CARD32 S_success     = 0;
@@ -77,6 +73,8 @@ protected:
 		CARD16 localPort;
 		CARD16 remotePort;
 		CARD32 timeout;
+
+		QTcpSocket socket;
 
 		SocketInfo() : socketID(++socketIDNext) {
 			map.insert(socketID, this);
