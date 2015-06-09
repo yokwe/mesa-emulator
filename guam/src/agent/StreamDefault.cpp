@@ -37,7 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("default");
 
 #include "StreamDefault.h"
 
-#define DEBUG_SHOW_STREAM_DEFAULT 1
+#define DEBUG_SHOW_STREAM_DEFAULT 0
 
 StreamDefault::StreamDefault() : AgentStream::Stream(DEFAULT_SERVER_ID, "DEFAULT") {}
 
