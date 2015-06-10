@@ -37,7 +37,7 @@ OF SUCH DAMAGE.
 class StreamTcpService : public AgentStream::Handler {
 public:
 	// MsgId: TYPE = MACHINE DEPENDENT {connect(0), listen(1), put(2), get(3), close(4), setWaitTime(5), endStream(6), shutDown(7), reset(8)};
-	enum MsgID : CARD32 {
+	enum class MsgID : CARD32 {
 		connect = 0, listen = 1, put = 2, get = 3, close = 4,
 		setWaitTime = 5, endStream = 6, shutDown = 7, reset = 8,
 	};
@@ -56,7 +56,13 @@ public:
 	const char* getStateString(State state);
 
 	StreamTcpService();
-	void process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+
+	CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 
 protected:
 	class Task {

@@ -41,37 +41,27 @@ static log4cpp::Category& logger = Logger::getLogger("default");
 
 StreamDefault::StreamDefault() : AgentStream::Handler(DEFAULT_SERVER_ID, "DEFAULT") {}
 
-void StreamDefault::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) {
-		logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %10s  pcState = %10s  next = %8X",
-			AgentStream::getServerIDString(iocb->serverID), iocb->mesaIsServer, AgentStream::getStateString(iocb->mesaConnectionState), AgentStream::getStateString(iocb->pcConnectionState), iocb->nextIOCB);
-		logger.debug("    %-8s  %-8s  %6X %6X",
-			AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
-
-		logger.debug("        put  sst = %3d  u2 = %02X  bytesWritten = %4d  bytesRead = %4d  hTask = %d  interruptMesa = %d  writeLockedByMesa = %d",
-			iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
-		logger.debug("        get  sst = %3d  u2 = %02X  bytesWritten = %4d  bytesRead = %4d  hTask = %d  interruptMesa = %d  writeLockedByMesa = %d",
-			iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
-	//	logger.debug("        -----");
-	//	logger.debug("        put  subSequence       %6X", iocb->mesaPut.subSequence);
-	//	logger.debug("        put  u2                %6X", iocb->mesaPut.u2);
-	//	logger.debug("        put  bytesWritten      %6X", iocb->mesaPut.bytesWritten);
-	//	logger.debug("        put  bytesRead         %6X", iocb->mesaPut.bytesRead);
-	//	logger.debug("        put  hTask             %6X", iocb->mesaPut.hTask);
-	//	logger.debug("        put  interruptMesa     %6X", iocb->mesaPut.interruptMesa);
-	//	logger.debug("        put  buffer            %6X", iocb->mesaPut.buffer);
-	//	logger.debug("        put  bufferSize        %6X", iocb->mesaPut.bufferSize);
-	//	logger.debug("        put  writeLockedByMesa %6X", iocb->mesaPut.writeLockedByMesa);
-	//	logger.debug("        -----");
-	//	logger.debug("        get  subSequence       %6X", iocb->mesaGet.subSequence);
-	//	logger.debug("        get  u2                %6X", iocb->mesaGet.u2);
-	//	logger.debug("        get  bytesWritten      %6X", iocb->mesaGet.bytesWritten);
-	//	logger.debug("        get  bytesRead         %6X", iocb->mesaGet.bytesRead);
-	//	logger.debug("        get  hTask             %6X", iocb->mesaGet.hTask);
-	//	logger.debug("        get  interruptMesa     %6X", iocb->mesaGet.interruptMesa);
-	//	logger.debug("        get  buffer            %6X", iocb->mesaGet.buffer);
-	//	logger.debug("        get  bufferSize        %6X", iocb->mesaGet.bufferSize);
-	//	logger.debug("        get  writeLockedByMesa %6X", iocb->mesaGet.writeLockedByMesa);
-	}
-	fcb->headResult = CoProcessorIOFaceGuam::R_error;
+CARD16 StreamDefault::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+	return CoProcessorIOFaceGuam::R_error;
+}
+CARD16 StreamDefault::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+	return CoProcessorIOFaceGuam::R_error;
+}
+CARD16 StreamDefault::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+	return CoProcessorIOFaceGuam::R_error;
+}
+CARD16 StreamDefault::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+	return CoProcessorIOFaceGuam::R_error;
+}
+CARD16 StreamDefault::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+	return CoProcessorIOFaceGuam::R_error;
+}
+CARD16 StreamDefault::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+	return CoProcessorIOFaceGuam::R_error;
 }

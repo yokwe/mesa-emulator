@@ -32,6 +32,8 @@ OF SUCH DAMAGE.
 #ifndef AGENTSTREAM_H__
 #define AGENTSTREAM_H__
 
+#include <log4cpp/Category.hh>
+
 #include "Agent.h"
 
 class AgentStream : public Agent {
@@ -46,7 +48,14 @@ public:
 		Handler(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {}
 		virtual ~Handler() {}
 
-		virtual void process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+
+		static void debugDump(log4cpp::Category& logger, const char* name, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 	};
 
 	static const char* getServerIDString(CARD32 serverID);
@@ -70,9 +79,9 @@ private:
 
 	QMap<CARD32, Handler*> handlerMap;
 
-	void   addHandler(Handler* handler);
-	CARD16 processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void   initialize();
+	void addHandler(Handler* handler);
+	void processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	void initialize();
 };
 
 #endif

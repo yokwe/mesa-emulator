@@ -114,7 +114,7 @@ void AgentStream::addHandler(AgentStream::Handler* handler) {
 	}
 	handlerMap[serverID] = handler;
 }
-CARD16 AgentStream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+void AgentStream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	const CARD32 serverID = iocb->serverID;
 	AgentStream::Handler* handler = 0;
 	if (handlerMap.contains(serverID)) {
@@ -123,8 +123,29 @@ CARD16 AgentStream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fc
 		const CARD32 defaultServerID = Handler::DEFAULT_SERVER_ID;
 		handler = handlerMap[defaultServerID];
 	}
-	handler->process(fcb, iocb);
-	return fcb->headResult;
+	switch(fcb->headCommand) {
+	case CoProcessorIOFaceGuam::C_idle:
+		fcb->headResult = handler->idle(iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_accept:
+		fcb->headResult = handler->accept(iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_connect:
+		fcb->headResult = handler->connect(iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_delete:
+		fcb->headResult = handler->destroy(iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_read:
+		fcb->headResult = handler->read(iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_write:
+		fcb->headResult = handler->write(iocb);
+		break;
+	default:
+		logger.fatal("headCommand = %d", fcb->headCommand);
+		ERROR();
+	}
 }
 
 
@@ -180,7 +201,7 @@ void AgentStream::Call() {
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocbHead = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 		// Process just iocbHead
-		fcb->headResult = processRequest(fcb, iocbHead);
+		processRequest(fcb, iocbHead);
 
 //		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = iocbHead;
 //		for(;;) {
@@ -190,4 +211,15 @@ void AgentStream::Call() {
 //		}
 
 	}
+}
+
+
+void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	logger.debug("%s", name);
+	logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %-10s  pcState = %-10s",
+		AgentStream::getServerIDString(iocb->serverID), iocb->mesaIsServer, AgentStream::getStateString(iocb->mesaConnectionState), AgentStream::getStateString(iocb->pcConnectionState));
+	logger.debug("        put  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+		iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
+	logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+		iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 }

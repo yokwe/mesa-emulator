@@ -34,5 +34,11 @@ OF SUCH DAMAGE.
 class StreamDefault : public AgentStream::Handler {
 public:
 	StreamDefault();
-	void process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+
+	CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 };

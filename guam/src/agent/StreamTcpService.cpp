@@ -98,107 +98,117 @@ const char* StreamTcpService::getStateString(State value) {
 	return "UNKNONW";
 }
 
-void StreamTcpService::process(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
-		logger.debug("%-8s  %-8s  %6X %6X",
-			AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
+CARD16 StreamTcpService::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
 
-		//		logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %10s  pcState = %10s  next = %8X",
-//				getServerIDString(iocb->serverID), iocb->mesaIsServer, getStateString(iocb->mesaConnectionState), getStateString(iocb->pcConnectionState), iocb->nextIOCB);
-//		logger.debug("    %-8s  %-8s  %6X %6X", getCommandString(fcb->headCommand), getResultString(fcb->headResult), fcb->iocbHead, fcb->iocbNext);
-
-//		logger.debug("        put  sst = %3d  u2 = %02X  %6X  size = %4d written = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-//				iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.buffer, iocb->mesaPut.bufferSize, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
-//		logger.debug("        get  sst = %3d  u2 = %02X  %6X  size = %4d written = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-//				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.buffer, iocb->mesaGet.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
-	}
 	// Sanity check
 	if (iocb->serverID != this->serverID) ERROR();
-
-	fcb->headResult = CoProcessorIOFaceGuam::R_error;
-
-	// very new connection
-	if (iocb->mesaPut.hTask == 0) {
-		// Create new task and assign hTask
-		Task* task = new Task();
-		iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
-		iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
-		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-		return;
-	}
-
-	Task* task = Task::get(iocb->mesaPut.hTask);
-	CARD16* buffer = Store(iocb->mesaPut.buffer);
-	BigEndianByteBuffer  bb((CARD8*)buffer, iocb->mesaPut.bytesWritten);
-	bb.setPos(iocb->mesaPut.bytesRead);
-	if (bb.remaining() != sizeof(CARD32)) {
-		CARD8* p8 = (CARD8*)buffer;
-		p8 += iocb->mesaPut.bytesRead;
-		QByteArray qba((const char*)p8, (iocb->mesaPut.bytesWritten - iocb->mesaPut.bytesRead));
-
-		logger.fatal("mesaPut = (%d)%s", qba.size(), qba.toHex().constData());
+	if (iocb->mesaPut.hTask) {
+		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
 		ERROR();
 	}
-	const CARD32 value = bb.get32();
-	switch(task->msgCount) {
-	case 0:
-		task->msg0 = static_cast<MsgID>(value - Task::MESSAGE_OFFSET);
-		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
-		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-		return;
-	case 1:
-		task->msg1 = value;
-		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
-		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-		return;
-	case 2:
-		task->msg2 = value;
-		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
-		fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-		return;
-	case 3:
-		task->msg3 = value;
-		iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
-		//
-		switch(task->msg0) {
-		case MsgID::connect:
-			task->connect(iocb);
-			break;
-		case MsgID::listen:
-			task->listen(iocb);
-			break;
-		case MsgID::put:
-			task->put(iocb);
-			break;
-		case MsgID::get:
-			task->get(iocb);
-			break;
-		case MsgID::close:
-			task->close(iocb);
-			break;
-		case MsgID::setWaitTime:
-			task->setWaitTime(iocb);
-			break;
-		case MsgID::endStream:
-			task->endStream(iocb);
-			break;
-		case MsgID::shutDown:
-			task->shutDown(iocb);
-			break;
-		case MsgID::reset:
-			task->reset(iocb);
-			break;
-		default:
-			logger.fatal("msg0 = %d",task->msg0);
-			ERROR();
-		}
-		//
-		task->clear();
-		break;
-	default:
+	if (iocb->mesaGet.hTask) {
+		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
 		ERROR();
 	}
+
+	Task* task = new Task();
+	iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
+	iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
+	return CoProcessorIOFaceGuam::R_completed;
 }
+
+CARD16 StreamTcpService::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+
+	// Sanity check
+	if (iocb->serverID != this->serverID) ERROR();
+	if (iocb->mesaPut.hTask == 0) {
+		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+		ERROR();
+	}
+	if (iocb->mesaGet.hTask == 0) {
+		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+		ERROR();
+	}
+	// TODO implements accept
+	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+
+CARD16 StreamTcpService::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+
+	// Sanity check
+	if (iocb->serverID != this->serverID) ERROR();
+	if (iocb->mesaPut.hTask == 0) {
+		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+		ERROR();
+	}
+	if (iocb->mesaGet.hTask == 0) {
+		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+		ERROR();
+	}
+	// TODO implements accept
+	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+
+CARD16 StreamTcpService::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+
+	// Sanity check
+	if (iocb->serverID != this->serverID) ERROR();
+	if (iocb->mesaPut.hTask == 0) {
+		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+		ERROR();
+	}
+	if (iocb->mesaGet.hTask == 0) {
+		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+		ERROR();
+	}
+	// TODO implements accept
+	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+
+CARD16 StreamTcpService::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+
+	// Sanity check
+	if (iocb->serverID != this->serverID) ERROR();
+	if (iocb->mesaPut.hTask == 0) {
+		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+		ERROR();
+	}
+	if (iocb->mesaGet.hTask == 0) {
+		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+		ERROR();
+	}
+	// TODO implements accept
+	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+
+CARD16 StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+
+	// Sanity check
+	if (iocb->serverID != this->serverID) ERROR();
+	if (iocb->mesaPut.hTask == 0) {
+		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+		ERROR();
+	}
+	if (iocb->mesaGet.hTask == 0) {
+		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+		ERROR();
+	}
+	// TODO implements accept
+	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+
+
 
 CARD32                                      StreamTcpService::SocketInfo::socketIDNext = 1;
 QMap<CARD32, StreamTcpService::SocketInfo*> StreamTcpService::SocketInfo::map;
