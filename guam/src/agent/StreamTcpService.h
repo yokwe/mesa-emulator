@@ -41,7 +41,8 @@ public:
 		connect = 0, listen = 1, put = 2, get = 3, close = 4,
 		setWaitTime = 5, endStream = 6, shutDown = 7, reset = 8,
 	};
-	static const char* getMsgIdString(MsgID msgId);
+	static const char* getMsgIDString(MsgID msgId);
+	static const CARD32 MSG_ID_OFFSET = 1000;
 
 	enum Status : CARD32 {
 		success = 0, failure = 1,
@@ -65,10 +66,45 @@ public:
 	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 
 protected:
+	class Block {
+	public:
+		Block(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
+			put(mesaPut);
+		}
+		Block(const Block& that) {
+			this->data = that.data;
+		}
+		Block(const CARD32 value) {
+			put32(value);
+		}
+		int getSize() {
+			return data.size();
+		}
+		CARD32 get32() const;
+		QString getIPAddress() {
+			const CARD32 ipAddress = get32();
+			const CARD8  a = (CARD8)(ipAddress >>  8); // AA
+			const CARD8  b = (CARD8)(ipAddress >>  0); // BB
+			const CARD8  c = (CARD8)(ipAddress >> 24); // CC
+			const CARD8  d = (CARD8)(ipAddress >> 16); // DD
+
+			return QString("%1.%2.%3.%4").arg(a).arg(b).arg(c).arg(d);
+		}
+		void put32(CARD32 value);
+
+		void get(CoProcessorIOFaceGuam::TransferRec* mesaPut);
+		void put(CoProcessorIOFaceGuam::TransferRec* mesaGet);
+
+		QString toHexString() {
+			QString ret(data.toHex().constData());
+			return ret;
+		}
+	private:
+		QByteArray data;
+	};
+
 	class Task {
 	public:
-		static const CARD32 MESSAGE_OFFSET = 1000;
-		static const CARD32 MESSAGE_SIZE   = 4;
 
 		static CARD16 hTaskNext;
 		static QMap<CARD32, Task*> map;
@@ -76,27 +112,19 @@ protected:
 
 		const CARD16 hTask;
 
-		quint32 msgCount;
-		MsgID   msg0;
-		CARD32  msg1;
-		CARD32  msg2;
-		CARD32  msg3;
-
-		QList<QByteArray> outputList;
-		QList<QByteArray> inputList;
+		QList<Block> outputList;
+		QList<Block> inputList;
 
 		Task() : hTask(++hTaskNext) {
-			clear();
 			map.insert(hTask, this);
+			this->clear();
 		}
+
 		void clear() {
-			msgCount = 0;
-			msg0 = MsgID::connect;
-			msg1 = msg2 = msg3 = 0;
-			//
 			outputList.clear();
 			inputList.clear();
 		}
+		void add(CoProcessorIOFaceGuam::TransferRec* mesaPut);
 
 		void connect    (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 		void listen     (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
