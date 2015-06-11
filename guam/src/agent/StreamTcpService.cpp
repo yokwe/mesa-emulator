@@ -265,12 +265,16 @@ CARD16 StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb)
 		return CoProcessorIOFaceGuam::R_inProgress;
 	} else {
 		Block block = task->outputList.at(0);
-		logger.debug("    block %d %s", task->inputList.size(), block.toHexString().toLocal8Bit().constData());
+		logger.debug("    block  %s", block.toHexString().toLocal8Bit().constData());
 
 		block.get(&iocb->mesaGet);
 
 		task->outputList.removeFirst();
-		if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
+		if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
+			task->debugDump(logger, __FUNCTION__);
+			logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+		}
 		return CoProcessorIOFaceGuam::R_completed;
 	}
 }

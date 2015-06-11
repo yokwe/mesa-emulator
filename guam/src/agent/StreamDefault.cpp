@@ -39,7 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("default");
 
 #define DEBUG_SHOW_STREAM_DEFAULT 0
 
-StreamDefault::StreamDefault() : AgentStream::Handler(DEFAULT_SERVER_ID, "DEFAULT") {}
+StreamDefault::StreamDefault() : AgentStream::Handler(AgentStream::DEFAULT_HANDLER_ID, "DEFAULT") {}
 
 CARD16 StreamDefault::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);

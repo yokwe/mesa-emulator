@@ -114,39 +114,6 @@ void AgentStream::addHandler(AgentStream::Handler* handler) {
 	}
 	handlerMap[serverID] = handler;
 }
-void AgentStream::processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	const CARD32 serverID = iocb->serverID;
-	AgentStream::Handler* handler = 0;
-	if (handlerMap.contains(serverID)) {
-		handler = handlerMap[serverID];
-	} else {
-		const CARD32 defaultServerID = Handler::DEFAULT_SERVER_ID;
-		handler = handlerMap[defaultServerID];
-	}
-	switch(fcb->headCommand) {
-	case CoProcessorIOFaceGuam::C_idle:
-		fcb->headResult = handler->idle(iocb);
-		break;
-	case CoProcessorIOFaceGuam::C_accept:
-		fcb->headResult = handler->accept(iocb);
-		break;
-	case CoProcessorIOFaceGuam::C_connect:
-		fcb->headResult = handler->connect(iocb);
-		break;
-	case CoProcessorIOFaceGuam::C_delete:
-		fcb->headResult = handler->destroy(iocb);
-		break;
-	case CoProcessorIOFaceGuam::C_read:
-		fcb->headResult = handler->read(iocb);
-		break;
-	case CoProcessorIOFaceGuam::C_write:
-		fcb->headResult = handler->write(iocb);
-		break;
-	default:
-		logger.fatal("headCommand = %d", fcb->headCommand);
-		ERROR();
-	}
-}
 
 
 void AgentStream::initialize() {
@@ -199,16 +166,86 @@ void AgentStream::Call() {
 		logger.debug("AGENT %s  head = %8X  next = %8X  command = %10s  result = %10s  interruptSelector = %04X", name, fcb->iocbHead, fcb->iocbNext, AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->interruptSelector);
 	}
 	if (fcb->iocbHead) {
-		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocbHead = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-		// Process just iocbHead
-		processRequest(fcb, iocbHead);
+		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
+		const CARD32 serverID = iocb->serverID;
 
-//		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = iocbHead;
-//		for(;;) {
-//			if (iocb->nextIOCB == 0) break;
-//			iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
-//			AgentStream::Handler::processRequest(fcb, iocb);
-//		}
+		AgentStream::Handler* handler = (handlerMap.contains(serverID)) ? handlerMap[serverID] : handlerMap[Handler::DEFAULT_ID];
+
+		switch(fcb->headCommand) {
+		case CoProcessorIOFaceGuam::C_idle: {
+			fcb->headResult = handler->idle(iocb);
+		}
+			break;
+		case CoProcessorIOFaceGuam::C_accept: {
+			if (iocb->mesaPut.hTask == 0) {
+				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+				ERROR();
+			}
+			if (iocb->mesaGet.hTask == 0) {
+				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+				ERROR();
+			}
+			fcb->headResult = handler->accept(iocb);
+		}
+			break;
+		case CoProcessorIOFaceGuam::C_connect: {
+			if (iocb->mesaPut.hTask) {
+				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+				ERROR();
+			}
+			if (iocb->mesaGet.hTask) {
+				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+				ERROR();
+			}
+			Task* task = Task::getInstance();
+			iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
+			//
+			fcb->headResult = handler->connect(iocb);
+		}
+			break;
+		case CoProcessorIOFaceGuam::C_delete: {
+			if (iocb->mesaPut.hTask == 0) {
+				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+				ERROR();
+			}
+			if (iocb->mesaGet.hTask == 0) {
+				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+				ERROR();
+			}
+			//
+			fcb->headResult = handler->destroy(iocb);
+		}
+			break;
+		case CoProcessorIOFaceGuam::C_read: {
+			if (iocb->mesaPut.hTask == 0) {
+				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+				ERROR();
+			}
+			if (iocb->mesaGet.hTask == 0) {
+				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+				ERROR();
+			}
+			//
+			fcb->headResult = handler->read(iocb);
+		}
+			break;
+		case CoProcessorIOFaceGuam::C_write: {
+			if (iocb->mesaPut.hTask == 0) {
+				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+				ERROR();
+			}
+			if (iocb->mesaGet.hTask == 0) {
+				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+				ERROR();
+			}
+			//
+			fcb->headResult = handler->write(iocb);
+		}
+			break;
+		default:
+			logger.fatal("headCommand = %d", fcb->headCommand);
+			ERROR();
+		}
 
 	}
 }

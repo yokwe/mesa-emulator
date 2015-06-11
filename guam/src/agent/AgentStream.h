@@ -36,11 +36,67 @@ OF SUCH DAMAGE.
 
 #include "Agent.h"
 
+#include <QtCore>
+
 class AgentStream : public Agent {
 public:
+	class Block {
+	public:
+		Block(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
+			put(mesaPut);
+		}
+		Block(const Block& that) {
+			this->data = that.data;
+		}
+		Block(const CARD32 value) {
+			put32(value);
+		}
+		int getSize() const {
+			return data.size();
+		}
+		CARD32 get32() const;
+		void   put32(CARD32 value);
+
+		void get(CoProcessorIOFaceGuam::TransferRec* mesaPut);
+		void put(CoProcessorIOFaceGuam::TransferRec* mesaGet);
+
+		QString toHexString() {
+			QString ret(data.toHex().constData());
+			return ret;
+		}
+	private:
+		QByteArray data;
+	};
+
+	class Task {
+	protected:
+		static CARD16              NULL_HTASK = 0;
+		static CARD16              hTaskNext;
+		static QMap<CARD32, Task*> map;
+
+		Task() : hTask(++hTaskNext) {
+			map.insert(hTask, this);
+		}
+
+	public:
+		static Task* getInstance(CARD16 hTask_) {
+			return (map.contains(hTask_)) ? map[hTask_] : new Task();
+		}
+		static Task* getInstance() {
+			return new Task();
+		}
+
+		const CARD16 hTask;
+
+		QList<Block> readList;
+		QList<Block> writeList;
+
+		void debugDump(log4cpp::Category& logger, const char* name);
+	};
+
 	class Handler {
 	public:
-		static const CARD32 DEFAULT_SERVER_ID = 0;
+		static const CARD32 DEFAULT_ID = 0;
 
 		const CARD32  serverID;
 		const QString name;
