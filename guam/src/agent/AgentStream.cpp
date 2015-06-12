@@ -37,6 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 #include "../mesa/Pilot.h"
 #include "../mesa/Memory.h"
+#include "../mesa/MesaThread.h"
 
 #include "Agent.h"
 #include "AgentStream.h"
@@ -45,6 +46,54 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "StreamTcpService.h"
 
 #define DEBUG_SHOW_AGENT_STREAM 0
+
+
+//
+// AgentStream
+//
+
+QMap<CARD32, AgentStream::Handler*> AgentStream::handlerMap;
+AgentStream::Handler*               AgentStream::defaultHandler = 0;
+QMap<CARD16, AgentStream::Task*>    AgentStream::taskMap;
+CARD16                              AgentStream::interruptSelector = 0;
+
+
+void AgentStream::setDefaultHandler(AgentStream::Handler* handler) {
+	if (defaultHandler != 0) ERROR();
+	defaultHandler = handler;
+}
+
+void AgentStream::addHandler(AgentStream::Handler* handler) {
+	const CARD32 serverID = handler->serverID;
+	if (handlerMap.contains(serverID)) {
+		logger.fatal("serverID = %5d  name = %s", serverID, handler->name.toLocal8Bit().constData());
+		ERROR();
+	}
+	handlerMap[serverID] = handler;
+}
+
+AgentStream::Handler* AgentStream::getHandler(CARD32 serverID) {
+	return handlerMap.contains(serverID) ? handlerMap[serverID] : defaultHandler;
+}
+
+void AgentStream::addTask(Task* task) {
+	const CARD32 hTask = task->hTask;
+	if (taskMap.contains(hTask)) {
+		logger.fatal("hTask = %5d", hTask);
+		ERROR();
+	}
+	taskMap[hTask] = task;
+}
+AgentStream::Task* AgentStream::getTask(CARD16 hTask) {
+	if (taskMap.contains(hTask)) return taskMap[hTask];
+	logger.fatal("hTask = %d", hTask);
+	ERROR();
+	return 0;
+}
+
+void AgentStream::notifyInterrupt() {
+	InterruptThread::notifyInterrupt(interruptSelector);
+}
 
 const char* AgentStream::getCommandString(const CARD16 value) {
 	static QMap<CARD16, const char*> map {
@@ -106,21 +155,6 @@ const char* AgentStream::getServerIDString(const CARD32 value) {
 }
 
 
-void AgentStream::addHandler(AgentStream::Handler* handler) {
-	const CARD32 serverID = handler->serverID;
-	if (handlerMap.contains(serverID)) {
-		logger.fatal("serverID = %5d  name = %s", serverID, handler->name.toLocal8Bit().constData());
-		ERROR();
-	}
-	handlerMap[serverID] = handler;
-}
-
-
-void AgentStream::initialize() {
-	addHandler(new StreamDefault());
-	addHandler(new StreamTcpService());
-}
-
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
@@ -137,8 +171,9 @@ void AgentStream::Initialize() {
 	fcb->streamWordSize    = 0;
 
 	// Initialize AgentStream::Handler
-	AgentStream::initialize();
+	AgentStream::Handler::initialize();
 }
+
 
 void AgentStream::Call() {
 	fcb->headResult = CoProcessorIOFaceGuam::R_completed;
@@ -153,6 +188,7 @@ void AgentStream::Call() {
 	} else {
 		if (fcb->agentStopped) {
 			logger.info("AGENT %s start  %04X", name, fcb->interruptSelector);
+			interruptSelector = fcb->interruptSelector;
 		}
 		fcb->agentStopped = 0;
 	}
@@ -167,13 +203,12 @@ void AgentStream::Call() {
 	}
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-		const CARD32 serverID = iocb->serverID;
+		AgentStream::Handler* handler = Handler::getHandler(iocb->serverID);
 
-		AgentStream::Handler* handler = (handlerMap.contains(serverID)) ? handlerMap[serverID] : handlerMap[Handler::DEFAULT_ID];
-
+		Handler::ResultType headResult;
 		switch(fcb->headCommand) {
 		case CoProcessorIOFaceGuam::C_idle: {
-			fcb->headResult = handler->idle(iocb);
+			headResult = handler->idle(iocb);
 		}
 			break;
 		case CoProcessorIOFaceGuam::C_accept: {
@@ -185,7 +220,7 @@ void AgentStream::Call() {
 				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
 				ERROR();
 			}
-			fcb->headResult = handler->accept(iocb);
+			headResult = handler->accept(iocb);
 		}
 			break;
 		case CoProcessorIOFaceGuam::C_connect: {
@@ -197,10 +232,10 @@ void AgentStream::Call() {
 				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
 				ERROR();
 			}
-			Task* task = Task::getInstance();
+			Task* task = handler->createTask();
 			iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
 			//
-			fcb->headResult = handler->connect(iocb);
+			headResult = handler->connect(iocb);
 		}
 			break;
 		case CoProcessorIOFaceGuam::C_delete: {
@@ -213,7 +248,7 @@ void AgentStream::Call() {
 				ERROR();
 			}
 			//
-			fcb->headResult = handler->destroy(iocb);
+			headResult = handler->destroy(iocb);
 		}
 			break;
 		case CoProcessorIOFaceGuam::C_read: {
@@ -226,7 +261,7 @@ void AgentStream::Call() {
 				ERROR();
 			}
 			//
-			fcb->headResult = handler->read(iocb);
+			headResult = handler->read(iocb);
 		}
 			break;
 		case CoProcessorIOFaceGuam::C_write: {
@@ -239,7 +274,7 @@ void AgentStream::Call() {
 				ERROR();
 			}
 			//
-			fcb->headResult = handler->write(iocb);
+			headResult = handler->write(iocb);
 		}
 			break;
 		default:
@@ -247,9 +282,44 @@ void AgentStream::Call() {
 			ERROR();
 		}
 
+		switch(headResult) {
+		case Handler::ResultType::completed:
+		case Handler::ResultType::inProgress:
+		case Handler::ResultType::error:
+			fcb->headResult = static_cast<CARD16>(headResult);
+			break;
+		default: {
+			logger.fatal("result = %d", static_cast<CARD16>(headResult));
+			ERROR();
+		}
+		}
 	}
 }
 
+
+//
+// AgentStream::Task
+//
+
+CARD16 AgentStream::Task::hTaskNext;
+
+
+//
+// AgentStream::Handler
+//
+
+AgentStream::Handler::~Handler() {
+	//
+}
+void AgentStream::Handler::initialize() {
+	setDefaultHandler(new StreamDefault());
+	//add(new StreamTcpService());
+}
+
+AgentStream::Handler* AgentStream::Handler::getHandler(CARD32 serverID) {
+	if (defaultHandler == 0) ERROR();
+	return (handlerMap.contains(serverID)) ? handlerMap[serverID] : defaultHandler;
+}
 
 void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	logger.debug("%s", name);

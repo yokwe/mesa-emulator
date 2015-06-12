@@ -40,6 +40,9 @@ OF SUCH DAMAGE.
 
 class AgentStream : public Agent {
 public:
+	//
+	// Block
+	//
 	class Block {
 	public:
 		Block(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
@@ -68,24 +71,19 @@ public:
 		QByteArray data;
 	};
 
+
+	//
+	// Task
+	//
 	class Task {
 	protected:
-		static CARD16              NULL_HTASK = 0;
-		static CARD16              hTaskNext;
-		static QMap<CARD32, Task*> map;
+		static       CARD16              hTaskNext;
 
 		Task() : hTask(++hTaskNext) {
-			map.insert(hTask, this);
+			addTask(this);
 		}
 
 	public:
-		static Task* getInstance(CARD16 hTask_) {
-			return (map.contains(hTask_)) ? map[hTask_] : new Task();
-		}
-		static Task* getInstance() {
-			return new Task();
-		}
-
 		const CARD16 hTask;
 
 		QList<Block> readList;
@@ -94,30 +92,62 @@ public:
 		void debugDump(log4cpp::Category& logger, const char* name);
 	};
 
+
+	//
+	// Handler
+	//
 	class Handler {
 	public:
-		static const CARD32 DEFAULT_ID = 0;
+		//ResultType: TYPE = MACHINE DEPENDENT
+		//  {completed(0), inProgress(1), error(2)};
+		enum class ResultType : CARD16 {
+			completed  = CoProcessorIOFaceGuam::R_completed,
+			inProgress = CoProcessorIOFaceGuam::R_inProgress,
+			error      = CoProcessorIOFaceGuam::R_error,
+		};
+
+		static void     initialize();
+		static void     debugDump(log4cpp::Category& logger, const char* name, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		static Handler* getHandler(CARD32 serverID);
 
 		const CARD32  serverID;
 		const QString name;
 
-		Handler(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {}
-		virtual ~Handler() {}
+		Handler(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {
+			addHandler(this);
+		}
+		virtual ~Handler();
 
-		virtual CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
-		virtual CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
-		virtual CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
-		virtual CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
-		virtual CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
-		virtual CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		// Return Handler specific Task
+		virtual Task*      createTask() = 0;
 
-		static void debugDump(log4cpp::Category& logger, const char* name, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		virtual ResultType idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual ResultType accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual ResultType connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual ResultType destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual ResultType read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+		virtual ResultType write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
+
+	protected:
 	};
 
+
+	//
+	// AgentStream
+	//
 	static const char* getServerIDString(CARD32 serverID);
 	static const char* getCommandString (CARD16 command);
 	static const char* getStateString   (CARD16 state);
 	static const char* getResultString  (CARD16 result);
+
+	static void notifyInterrupt();
+
+	static void                  setDefaultHandler(Handler* handler);
+	static void                  addHandler(AgentStream::Handler* handler);
+	static AgentStream::Handler* getHandler(CARD32 serverID_);
+
+	static void                  addTask(Task* task_);
+	static AgentStream::Task*    getTask(CARD16 hTask);
 
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
 		fcb = 0;
@@ -131,12 +161,13 @@ public:
 	void Call();
 
 private:
+	static QMap<CARD32, Handler*> handlerMap;
+	static Handler*               defaultHandler;
+	static QMap<CARD16, Task*>    taskMap;
+	static CARD16                 interruptSelector;
+
 	CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
 
-	QMap<CARD32, Handler*> handlerMap;
-
-	void addHandler(Handler* handler);
-	void processRequest(CoProcessorIOFaceGuam::CoProcessorFCBType* fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 	void initialize();
 };
 

@@ -33,12 +33,19 @@ OF SUCH DAMAGE.
 
 class StreamDefault : public AgentStream::Handler {
 public:
+	class DefaultTask : public AgentStream::Task {
+	public:
+		DefaultTask();
+	};
+
 	StreamDefault();
 
-	CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	AgentStream::Task* createTask();
+
+	ResultType idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 };
