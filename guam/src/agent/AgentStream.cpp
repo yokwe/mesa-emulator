@@ -314,7 +314,7 @@ AgentStream::Handler::~Handler() {
 }
 void AgentStream::Handler::initialize() {
 	setDefaultHandler(new StreamDefault());
-	//add(new StreamTcpService());
+	addHandler(new StreamTcpService());
 }
 
 AgentStream::Handler* AgentStream::Handler::getHandler(CARD32 serverID) {
