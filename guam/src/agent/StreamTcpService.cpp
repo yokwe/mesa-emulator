@@ -98,108 +98,46 @@ const char* StreamTcpService::getStateString(State value) {
 	return "UNKNONW";
 }
 
-CARD16 StreamTcpService::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+
+AgentStream::Handler::ResultType StreamTcpService::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
-
-	// Sanity check
-	if (iocb->serverID != this->serverID) ERROR();
-	if (iocb->mesaPut.hTask) {
-		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-		ERROR();
-	}
-	if (iocb->mesaGet.hTask) {
-		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-		ERROR();
-	}
-
-	return CoProcessorIOFaceGuam::R_completed;
+	return ResultType::completed;
 }
 
-CARD16 StreamTcpService::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+AgentStream::Handler::ResultType StreamTcpService::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
-
-	// Sanity check
-	if (iocb->serverID != this->serverID) ERROR();
-	if (iocb->mesaPut.hTask == 0) {
-		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-		ERROR();
-	}
-	if (iocb->mesaGet.hTask == 0) {
-		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-		ERROR();
-	}
-	// TODO implements accept
 	ERROR();
-	return CoProcessorIOFaceGuam::R_error;
+	return ResultType::error;
 }
 
-CARD16 StreamTcpService::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+AgentStream::Handler::ResultType StreamTcpService::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
-
-	// Sanity check
-	if (iocb->serverID != this->serverID) ERROR();
-	if (iocb->mesaPut.hTask) {
-		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-		ERROR();
-	}
-	if (iocb->mesaGet.hTask) {
-		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-		ERROR();
-	}
-
-	Task* task = new Task();
-	iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
-	iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
-	logger.debug("connect  hTask = %04d", task->hTask);
-	return CoProcessorIOFaceGuam::R_completed;
+	return ResultType::completed;
 }
 
-CARD16 StreamTcpService::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+AgentStream::Handler::ResultType StreamTcpService::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
-
-	// Sanity check
-	if (iocb->serverID != this->serverID) ERROR();
-	if (iocb->mesaPut.hTask == 0) {
-		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-		ERROR();
-	}
-	if (iocb->mesaGet.hTask == 0) {
-		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-		ERROR();
-	}
-	// TODO implements destroy
 	ERROR();
-	return CoProcessorIOFaceGuam::R_error;
+	return ResultType::error;
 }
 
-CARD16 StreamTcpService::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+AgentStream::Handler::ResultType StreamTcpService::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
 
-	// Sanity check
-	if (iocb->serverID != this->serverID) ERROR();
-	if (iocb->mesaPut.hTask == 0) {
-		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-		ERROR();
-	}
-	if (iocb->mesaGet.hTask == 0) {
-		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-		ERROR();
-	}
-
-	Task* task = Task::getInstance(iocb->mesaPut.hTask);
+	TcpServiceTask* task = (TcpServiceTask*)AgentStream::getTask(iocb->mesaPut.hTask);
 	{
-		Block block(&iocb->mesaPut);
-		task->inputList.append(block);
+		AgentStream::Block block(&iocb->mesaPut);
+		task->readList.append(block);
 		logger.debug("    block  mesaPut  %s", block.toHexString().toLocal8Bit().constData());
 	}
 
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
 
-	if (task->inputList.size() == 4) {
-		Block block0 = task->inputList.at(0);
-		Block block1 = task->inputList.at(1);
-		Block block2 = task->inputList.at(2);
-		Block block3 = task->inputList.at(3);
+	if (task->readList.size() == 4) {
+		AgentStream::Block block0 = task->readList.at(0);
+		AgentStream::Block block1 = task->readList.at(1);
+		AgentStream::Block block2 = task->readList.at(2);
+		AgentStream::Block block3 = task->readList.at(3);
 
 		MsgID msgID = static_cast<MsgID>(block0.get32());
 		switch(msgID) {
@@ -234,17 +172,17 @@ CARD16 StreamTcpService::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) 
 			logger.fatal("msgID = %d", block0.get32());
 			ERROR();
 		}
-		task->inputList.removeFirst(); // 0
-		task->inputList.removeFirst(); // 1
-		task->inputList.removeFirst(); // 2
-		task->inputList.removeFirst(); // 3
+		task->readList.removeFirst(); // 0
+		task->readList.removeFirst(); // 1
+		task->readList.removeFirst(); // 2
+		task->readList.removeFirst(); // 3
 	}
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
 
-	return CoProcessorIOFaceGuam::R_completed;
+	return ResultType::completed;
 }
 
-CARD16 StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
 
 	// Sanity check
@@ -258,51 +196,38 @@ CARD16 StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb)
 		ERROR();
 	}
 
-	Task* task = Task::getInstance(iocb->mesaPut.hTask);
+	TcpServiceTask* task = (TcpServiceTask*)AgentStream::getTask(iocb->mesaPut.hTask);
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
 
-	if (task->outputList.isEmpty()) {
-		return CoProcessorIOFaceGuam::R_inProgress;
+	if (task->writeList.isEmpty()) {
+		return ResultType::inProgress;
 	} else {
-		Block block = task->outputList.at(0);
+		AgentStream::Block block = task->writeList.at(0);
 		logger.debug("    block  %s", block.toHexString().toLocal8Bit().constData());
 
 		block.get(&iocb->mesaGet);
 
-		task->outputList.removeFirst();
+		task->writeList.removeFirst();
 		if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
 			task->debugDump(logger, __FUNCTION__);
 			logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
 				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 		}
-		return CoProcessorIOFaceGuam::R_completed;
+		return ResultType::completed;
 	}
 }
 
 
-
 CARD32                                      StreamTcpService::SocketInfo::socketIDNext = 1;
-QMap<CARD32, StreamTcpService::SocketInfo*> StreamTcpService::SocketInfo::map;
+QMap<CARD32, StreamTcpService::SocketInfo*> StreamTcpService::socketMap;
 
-CARD16                                StreamTcpService::Task::hTaskNext = 1;
-QMap<CARD32, StreamTcpService::Task*> StreamTcpService::Task::map;
-
-StreamTcpService::SocketInfo* StreamTcpService::SocketInfo::getInstance(CARD32 socketID_) {
+StreamTcpService::SocketInfo* StreamTcpService::getSocket(CARD32 socketID_) {
 	if (socketID_ == 0) return new SocketInfo();
-	if (map.contains(socketID_)) return map[socketID_];
+	if (socketMap.contains(socketID_)) return socketMap[socketID_];
 	logger.fatal("socketID_ = %d", socketID_);
 	ERROR();
 	return 0;
 }
-
-StreamTcpService::Task* StreamTcpService::Task::getInstance(CARD16 hTask_) {
-	if (hTask_ == 0) return new Task();
-	if (map.contains(hTask_)) return map[hTask_];
-	logger.fatal("hTask_ = %d", hTask_);
-	ERROR();
-	return 0;
-}
-
 
 
 //    PutCommand[stream, connect];
@@ -315,10 +240,10 @@ StreamTcpService::Task* StreamTcpService::Task::getInstance(CARD16 hTask_) {
 //      reason _ GetReason[stream];
 //    }
 //    socketID _ GetLongNumber[stream];
-void StreamTcpService::Task::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	Block block1 = inputList.at(1);
-	Block block2 = inputList.at(2);
-	Block block3 = inputList.at(3);
+void StreamTcpService::TcpServiceTask::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const AgentStream::Block& block1 = readList.at(1);
+	const AgentStream::Block& block2 = readList.at(2);
+	const AgentStream::Block& block3 = readList.at(3);
 
 	const QString remoteAddress = block1.getIPAddress();
 	const CARD32  remotePort    = block2.get32();
@@ -345,11 +270,11 @@ void StreamTcpService::Task::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType*
 
 	// Output response
 	{
-		Block status(Status::success);
-		Block socketID(socketInfo->socketID);
+		AgentStream::Block status(Status::success);
+		AgentStream::Block socketID(socketInfo->socketID);
 
-		outputList.append(status);
-		outputList.append(socketID);
+		writeList.append(status);
+		writeList.append(socketID);
 	}
 }
 
@@ -370,9 +295,9 @@ void StreamTcpService::Task::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType*
 //      reason _ GetReason[stream];
 //    }
 //    socketID _ GetLongNumber[stream];
-void StreamTcpService::Task::listen(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	const CARD32 socketID = inputList.at(1).get32();
-	const CARD32 timeout  = inputList.at(2).get32();
+void StreamTcpService::TcpServiceTask::listen(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const CARD32 socketID = readList.at(1).get32();
+	const CARD32 timeout  = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  timeout %4d", hTask, __FUNCTION__, socketID, timeout);
 	/*SocketInfo* socket =*/ SocketInfo::getInstance(socketID);
 	// TODO
@@ -396,9 +321,9 @@ void StreamTcpService::Task::listen(CoProcessorIOFaceGuam::CoProcessorIOCBType* 
 //        LOOP
 //      }
 //      ENDLOOP
-void StreamTcpService::Task::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	const CARD32 socketID = inputList.at(1).get32();
-	const CARD32 length   = inputList.at(2).get32();
+void StreamTcpService::TcpServiceTask::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const CARD32 socketID = readList.at(1).get32();
+	const CARD32 length   = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  length %4d", hTask, __FUNCTION__, socketID, length);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
@@ -417,9 +342,9 @@ void StreamTcpService::Task::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*i
 //    } else {
 //      reason _ GetReason[stream];
 //    }
-void StreamTcpService::Task::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	const CARD32 socketID = inputList.at(1).get32();
-	const CARD32 length   = inputList.at(2).get32();
+void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+	const CARD32 socketID = readList.at(1).get32();
+	const CARD32 length   = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  length %4d", hTask, __FUNCTION__, socketID, length);
 	SocketInfo* socketInfo = SocketInfo::getInstance(socketID);
 
@@ -454,8 +379,8 @@ void StreamTcpService::Task::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* ioc
 //    IF status = failure THEN {
 //      reason _ GetReason[stream];
 //    }
-void StreamTcpService::Task::close(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	const CARD32 socketID = inputList.at(1).get32();
+void StreamTcpService::TcpServiceTask::close(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const CARD32 socketID = readList.at(1).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d", hTask, __FUNCTION__, socketID);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
@@ -472,9 +397,9 @@ void StreamTcpService::Task::close(CoProcessorIOFaceGuam::CoProcessorIOCBType* /
 //    IF status = failure THEN {
 //      reason _ GetReason[stream];
 //    }
-void StreamTcpService::Task::setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	const CARD32 socketID = inputList.at(1).get32();
-	const CARD32 timeout  = inputList.at(2).get32();
+void StreamTcpService::TcpServiceTask::setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const CARD32 socketID = readList.at(1).get32();
+	const CARD32 timeout  = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  timeout %4d", hTask, __FUNCTION__, socketID, timeout);
 	SocketInfo* socket = SocketInfo::getInstance(socketID);
 	socket->timeout = timeout;
@@ -486,7 +411,7 @@ void StreamTcpService::Task::setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBT
 //    PutLongNumber[stream, LONG[0]];
 //    PutLongNumber[stream, LONG[0]];
 //    PutLongNumber[stream, LONG[0]];
-void StreamTcpService::Task::endStream(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+void StreamTcpService::TcpServiceTask::endStream(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	logger.debug("%04d  Task::%-11s", hTask, __FUNCTION__);
 	// TODO
 	ERROR();
@@ -501,8 +426,8 @@ void StreamTcpService::Task::endStream(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 //    IF status = failure THEN {
 //      reason _ GetReason[stream];
 //    }
-void StreamTcpService::Task::shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	const CARD32 socketID = inputList.at(1).get32();
+void StreamTcpService::TcpServiceTask::shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const CARD32 socketID = readList.at(1).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d", hTask, __FUNCTION__, socketID);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
@@ -514,83 +439,28 @@ void StreamTcpService::Task::shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType
 //    PutLongNumber[stream, socketInfo.socketID];
 //    PutLongNumber[stream, LONG[0]];
 //    PutLongNumber[stream, LONG[0]];
-void StreamTcpService::Task::reset(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
-	const CARD32 socketID = inputList.at(1).get32();
+void StreamTcpService::TcpServiceTask::reset(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+	const CARD32 socketID = readList.at(1).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d", hTask, __FUNCTION__, socketID);
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 	ERROR();
 }
 
-void StreamTcpService::Task::debugDump(log4cpp::Category& logger, const char* name) {
-	QString outList;
-	QString inList;
+void StreamTcpService::TcpServiceTask::debugDump(log4cpp::Category& logger, const char* name) {
+	QString readMessage;
+	QString writeMessage;
 
-	for(int i = 0; i < outputList.size(); i++) {
-		const Block& block = outputList.at(i);
-		if (i) outList.append(" ");
-		outList.append(QString::number(block.getSize()));
+	for(int i = 0; i < readList.size(); i++) {
+		const AgentStream::Block& block = readList.at(i);
+		if (i) readMessage.append(" ");
+		readMessage.append(QString::number(block.getSize()));
 	}
-	for(int i = 0; i < inputList.size(); i++) {
-		const Block& block = inputList.at(i);
-		if (i) inList.append(" ");
-		inList.append(QString::number(block.getSize()));
-	}
-
-	logger.debug("%04d  %-11s  inputList [%s]  outputList[%s]", hTask, name, inList.toLocal8Bit().constData(), outList.toLocal8Bit().constData());
-}
-
-//
-// StreamTcpService::Block
-//
-CARD32 StreamTcpService::Block::get32() const {
-	// Sanity check
-	if (data.size() != sizeof(CARD32)) {
-		logger.fatal("data.size() = %d", data.size());
-		ERROR();
-	}
-	quint8 buffer[sizeof(CARD32)];
-	for(size_t i = 0; i < sizeof(buffer); i++) buffer[i] = data.at(i);
-	BigEndianByteBuffer bb(buffer, sizeof(buffer));
-	return bb.get32(0);
-}
-
-void StreamTcpService::Block::put32(CARD32 value) {
-	quint8 buffer[8];
-	BigEndianByteBuffer bb(buffer, sizeof(buffer));
-	bb.put32(value);
-	for(quint32 i = 0; i < bb.getPos(); i++) data.append(buffer[i]);
-}
-
-// copy from TransferRec to Block
-void StreamTcpService::Block::put(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
-	// Sanity check
-	if (mesaPut->bytesWritten < mesaPut->bytesRead) {
-		logger.fatal("bytesWritten = %d  bytesRead = %d", mesaPut->bytesWritten, mesaPut->bytesRead);
-		ERROR();
+	for(int i = 0; i < writeList.size(); i++) {
+		const AgentStream::Block& block = writeList.at(i);
+		if (i) writeMessage.append(" ");
+		writeMessage.append(QString::number(block.getSize()));
 	}
 
-	BigEndianByteBuffer bb((CARD8*)Store(mesaPut->buffer), mesaPut->bytesWritten);
-	// copy from bytesRead to bytesWritten
-	bb.setPos(mesaPut->bytesRead);
-	while(0 < bb.remaining()) data.append(bb.get8());
-	// update bytesRead
-	mesaPut->bytesRead = bb.getPos();
-}
-
-// copy from Block to TransferRec
-void StreamTcpService::Block::get(CoProcessorIOFaceGuam::TransferRec* mesaGet) {
-	// Sanity check
-	const CARD32 dataSize       = (CARD32)data.size();
-	const CARD32 bufferByteSize = mesaGet->bufferSize * Environment::bytesPerWord;
-	const CARD32 bytesWritten   = mesaGet->bytesWritten;
-	if (bufferByteSize < (bytesWritten + dataSize)) {
-		logger.fatal("bufferByteSize = %d  bytesWritten = %d  dataSize = %d", bufferByteSize, bytesWritten, dataSize);
-		ERROR();
-	}
-
-	BigEndianByteBuffer bb((CARD8*)Store(mesaGet->buffer), bufferByteSize);
-	bb.setPos(mesaGet->bytesWritten); // Move to end
-	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
-	mesaGet->bytesWritten = bb.getPos();
+	logger.debug("%04d  %-11s  readList [%s]  writeList[%s]", hTask, name, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
 }

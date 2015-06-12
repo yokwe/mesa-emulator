@@ -116,75 +116,10 @@ public:
 	};
 	const char* getStateString(State state);
 
-	StreamTcpService();
 
-	CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-
-protected:
-	class Block {
+	class TcpServiceTask : public AgentStream::Task {
 	public:
-		Block(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
-			put(mesaPut);
-		}
-		Block(const Block& that) {
-			this->data = that.data;
-		}
-		Block(const CARD32 value) {
-			put32(value);
-		}
-		int getSize() const {
-			return data.size();
-		}
-		CARD32 get32() const;
-		QString getIPAddress() {
-			const CARD32 ipAddress = get32();
-			const CARD8  a = (CARD8)(ipAddress >>  8); // AA
-			const CARD8  b = (CARD8)(ipAddress >>  0); // BB
-			const CARD8  c = (CARD8)(ipAddress >> 24); // CC
-			const CARD8  d = (CARD8)(ipAddress >> 16); // DD
-
-			return QString("%1.%2.%3.%4").arg(a).arg(b).arg(c).arg(d);
-		}
-		void put32(CARD32 value);
-
-		void get(CoProcessorIOFaceGuam::TransferRec* mesaPut);
-		void put(CoProcessorIOFaceGuam::TransferRec* mesaGet);
-
-		QString toHexString() {
-			QString ret(data.toHex().constData());
-			return ret;
-		}
-	private:
-		QByteArray data;
-	};
-
-	class Task {
-	public:
-
-		static CARD16 hTaskNext;
-		static QMap<CARD32, Task*> map;
-		static Task* getInstance(CARD16 hTask_);
-
-		const CARD16 hTask;
-
-		QList<Block> outputList;
-		QList<Block> inputList;
-
-		Task() : hTask(++hTaskNext) {
-			map.insert(hTask, this);
-			this->clear();
-		}
-
-		void clear() {
-			outputList.clear();
-			inputList.clear();
-		}
-		void add(CoProcessorIOFaceGuam::TransferRec* mesaPut);
+		TcpServiceTask();
 
 		void connect    (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 		void listen     (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
@@ -199,10 +134,22 @@ protected:
 		void debugDump(log4cpp::Category& logger, const char* name);
 	};
 
+
+	StreamTcpService();
+
+	AgentStream::Task* createTask();
+
+	ResultType idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	ResultType write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+
+protected:
 	class SocketInfo {
 	public:
 		static CARD32 socketIDNext;
-		static QMap<CARD32, SocketInfo*> map;
 		static SocketInfo* getInstance(CARD32 socketID_);
 
 		const CARD32 socketID;
@@ -217,14 +164,16 @@ protected:
 		QTcpSocket socket;
 
 		SocketInfo() : socketID(++socketIDNext) {
-			map.insert(socketID, this);
-			clear();
-		}
-
-		void clear() {
 			state = 0;
 			localAddress = remoteAddress = localPort = remotePort = 0;
 			timeout = 0;
+
+			addSocket(this);
 		}
 	};
+
+	static QMap<CARD32, SocketInfo*> socketMap;
+
+	static void addSocket(SocketInfo* socketInfo);
+	static SocketInfo* getSocket(CARD32 socketID_);
 };

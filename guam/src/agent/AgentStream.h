@@ -60,6 +60,16 @@ public:
 		CARD32 get32() const;
 		void   put32(CARD32 value);
 
+		QString getIPAddress() const {
+			const CARD32 ipAddress = get32();
+			const CARD8  a = (CARD8)(ipAddress >>  8); // AA
+			const CARD8  b = (CARD8)(ipAddress >>  0); // BB
+			const CARD8  c = (CARD8)(ipAddress >> 24); // CC
+			const CARD8  d = (CARD8)(ipAddress >> 16); // DD
+
+			return QString("%1.%2.%3.%4").arg(a).arg(b).arg(c).arg(d);
+		}
+
 		void get(CoProcessorIOFaceGuam::TransferRec* mesaPut);
 		void put(CoProcessorIOFaceGuam::TransferRec* mesaGet);
 

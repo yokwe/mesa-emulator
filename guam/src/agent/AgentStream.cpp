@@ -34,6 +34,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 
 #include "../util/Debug.h"
+#include "../util/ByteBuffer.h"
 
 #include "../mesa/Pilot.h"
 #include "../mesa/Memory.h"
@@ -301,7 +302,7 @@ void AgentStream::Call() {
 // AgentStream::Task
 //
 
-CARD16 AgentStream::Task::hTaskNext;
+CARD16 AgentStream::Task::hTaskNext = 0;
 
 
 //
@@ -329,4 +330,61 @@ void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name
 		iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
 	logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
 		iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+}
+
+
+//
+// Block
+//
+
+CARD32 AgentStream::Block::get32() const {
+	// Sanity check
+	if (data.size() != sizeof(CARD32)) {
+		logger.fatal("data.size() = %d", data.size());
+		ERROR();
+	}
+	quint8 buffer[sizeof(CARD32)];
+	for(size_t i = 0; i < sizeof(buffer); i++) buffer[i] = data.at(i);
+	BigEndianByteBuffer bb(buffer, sizeof(buffer));
+	return bb.get32(0);
+}
+
+void AgentStream::Block::put32(CARD32 value) {
+	quint8 buffer[8];
+	BigEndianByteBuffer bb(buffer, sizeof(buffer));
+	bb.put32(value);
+	for(quint32 i = 0; i < bb.getPos(); i++) data.append(buffer[i]);
+}
+
+// copy from TransferRec to AgentStream::Block
+void AgentStream::Block::put(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
+	// Sanity check
+	if (mesaPut->bytesWritten < mesaPut->bytesRead) {
+		logger.fatal("bytesWritten = %d  bytesRead = %d", mesaPut->bytesWritten, mesaPut->bytesRead);
+		ERROR();
+	}
+
+	BigEndianByteBuffer bb((CARD8*)Store(mesaPut->buffer), mesaPut->bytesWritten);
+	// copy from bytesRead to bytesWritten
+	bb.setPos(mesaPut->bytesRead);
+	while(0 < bb.remaining()) data.append(bb.get8());
+	// update bytesRead
+	mesaPut->bytesRead = bb.getPos();
+}
+
+// copy from AgentStream::Block to TransferRec
+void AgentStream::Block::get(CoProcessorIOFaceGuam::TransferRec* mesaGet) {
+	// Sanity check
+	const CARD32 dataSize       = (CARD32)data.size();
+	const CARD32 bufferByteSize = mesaGet->bufferSize * Environment::bytesPerWord;
+	const CARD32 bytesWritten   = mesaGet->bytesWritten;
+	if (bufferByteSize < (bytesWritten + dataSize)) {
+		logger.fatal("bufferByteSize = %d  bytesWritten = %d  dataSize = %d", bufferByteSize, bytesWritten, dataSize);
+		ERROR();
+	}
+
+	BigEndianByteBuffer bb((CARD8*)Store(mesaGet->buffer), bufferByteSize);
+	bb.setPos(mesaGet->bytesWritten); // Move to end
+	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
+	mesaGet->bytesWritten = bb.getPos();
 }
