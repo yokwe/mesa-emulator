@@ -215,7 +215,7 @@ void AgentStream::Call() {
 
 			if (iocb->mesaGet.hTask) {
 				AgentStream::Task* task = AgentStream::getTask(iocb->mesaGet.hTask);
-				task->debugDump(logger, headCommandString);
+				task->debugDump(logger);
 			}
 		}
 
@@ -322,7 +322,7 @@ void AgentStream::Call() {
 
 CARD16 AgentStream::Task::hTaskNext = 0;
 
-void AgentStream::Task::debugDump(log4cpp::Category& logger, const char* name) {
+void AgentStream::Task::debugDump(log4cpp::Category& logger) {
 	QString readMessage;
 	QString writeMessage;
 
@@ -337,7 +337,7 @@ void AgentStream::Task::debugDump(log4cpp::Category& logger, const char* name) {
 		writeMessage.append(QString::number(block.getSize()));
 	}
 
-	logger.debug("%04d  %-11s  readList [%s]  writeList[%s]", hTask, name, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
+	logger.debug("        %04d  readList [%s]  writeList[%s]", hTask, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
 }
 
 
@@ -362,10 +362,10 @@ void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name
 	logger.debug("%s", name);
 	logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %-10s  pcState = %-10s",
 		AgentStream::getServerIDString(iocb->serverID), iocb->mesaIsServer, AgentStream::getStateString(iocb->mesaConnectionState), AgentStream::getStateString(iocb->pcConnectionState));
-	logger.debug("        put  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-		iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
-	logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-		iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+	logger.debug("        put  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+		iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bufferSize, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
+	logger.debug("        get  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+		iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaPut.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 }
 
 //

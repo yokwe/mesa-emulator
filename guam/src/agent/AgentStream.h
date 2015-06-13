@@ -99,7 +99,7 @@ public:
 		QList<Block> readList;
 		QList<Block> writeList;
 
-		void debugDump(log4cpp::Category& logger, const char* name);
+		void debugDump(log4cpp::Category& logger);
 	};
 
 
