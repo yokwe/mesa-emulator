@@ -46,7 +46,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "StreamDefault.h"
 #include "StreamTcpService.h"
 
-#define DEBUG_SHOW_AGENT_STREAM 0
+#define DEBUG_SHOW_AGENT_STREAM 1
 
 
 //
@@ -209,6 +209,16 @@ void AgentStream::Call() {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 		AgentStream::Handler* handler = Handler::getHandler(iocb->serverID);
 
+		if (DEBUG_SHOW_AGENT_STREAM) {
+			const char* headCommandString = getCommandString(fcb->headCommand);
+			Handler::debugDump(logger, headCommandString, iocb);
+
+			if (iocb->mesaGet.hTask) {
+				AgentStream::Task* task = AgentStream::getTask(iocb->mesaGet.hTask);
+				task->debugDump(logger, headCommandString);
+			}
+		}
+
 		Handler::ResultType headResult;
 		switch(fcb->headCommand) {
 		case CoProcessorIOFaceGuam::C_idle: {
@@ -297,7 +307,11 @@ void AgentStream::Call() {
 			ERROR();
 		}
 		}
-		logger.debug("    headResult %s", AgentStream::getResultString(fcb->headResult));
+
+		if (DEBUG_SHOW_AGENT_STREAM) {
+			const char* headResultString = getResultString(fcb->headResult);
+			logger.debug("    result %s", headResultString);
+		}
 	}
 }
 
@@ -307,6 +321,24 @@ void AgentStream::Call() {
 //
 
 CARD16 AgentStream::Task::hTaskNext = 0;
+
+void AgentStream::Task::debugDump(log4cpp::Category& logger, const char* name) {
+	QString readMessage;
+	QString writeMessage;
+
+	for(int i = 0; i < readList.size(); i++) {
+		const AgentStream::Block& block = readList.at(i);
+		if (i) readMessage.append(" ");
+		readMessage.append(QString::number(block.getSize()));
+	}
+	for(int i = 0; i < writeList.size(); i++) {
+		const AgentStream::Block& block = writeList.at(i);
+		if (i) writeMessage.append(" ");
+		writeMessage.append(QString::number(block.getSize()));
+	}
+
+	logger.debug("%04d  %-11s  readList [%s]  writeList[%s]", hTask, name, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
+}
 
 
 //

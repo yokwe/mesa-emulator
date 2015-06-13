@@ -135,8 +135,6 @@ public:
 		virtual ResultType destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
 		virtual ResultType read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
 		virtual ResultType write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) = 0;
-
-	protected:
 	};
 
 

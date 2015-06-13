@@ -103,39 +103,31 @@ AgentStream::Task* StreamTcpService::createTask() {
 	return (AgentStream::Task*)new TcpServiceTask();
 }
 
-AgentStream::Handler::ResultType StreamTcpService::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamTcpService::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::completed;
 }
 
-AgentStream::Handler::ResultType StreamTcpService::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamTcpService::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	ERROR();
 	return ResultType::error;
 }
 
-AgentStream::Handler::ResultType StreamTcpService::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamTcpService::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::completed;
 }
 
-AgentStream::Handler::ResultType StreamTcpService::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamTcpService::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	ERROR();
 	return ResultType::error;
 }
 
 AgentStream::Handler::ResultType StreamTcpService::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
-
 	TcpServiceTask* task = (TcpServiceTask*)AgentStream::getTask(iocb->mesaPut.hTask);
 	{
 		AgentStream::Block block(&iocb->mesaPut);
 		task->readList.append(block);
 		logger.debug("    block  mesaPut  %s", block.toHexString().toLocal8Bit().constData());
 	}
-
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
 
 	if (task->readList.size() == 4) {
 		AgentStream::Block block0 = task->readList.at(0);
@@ -181,14 +173,10 @@ AgentStream::Handler::ResultType StreamTcpService::read(CoProcessorIOFaceGuam::C
 		task->readList.removeFirst(); // 2
 		task->readList.removeFirst(); // 3
 	}
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
-
 	return ResultType::completed;
 }
 
 AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
-
 	// Sanity check
 	if (iocb->serverID != this->serverID) ERROR();
 	if (iocb->mesaPut.hTask == 0) {
@@ -201,10 +189,9 @@ AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::
 	}
 
 	TcpServiceTask* task = (TcpServiceTask*)AgentStream::getTask(iocb->mesaPut.hTask);
-	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger, __FUNCTION__);
-
+	ResultType ret;
 	if (task->writeList.isEmpty()) {
-		return ResultType::inProgress;
+		ret = ResultType::inProgress;
 	} else {
 		AgentStream::Block block = task->writeList.at(0);
 		logger.debug("    block  %s", block.toHexString().toLocal8Bit().constData());
@@ -217,8 +204,9 @@ AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::
 			logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
 				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 		}
-		return ResultType::completed;
+		ret =  ResultType::completed;
 	}
+	return ret;
 }
 
 
@@ -458,22 +446,4 @@ void StreamTcpService::TcpServiceTask::reset(CoProcessorIOFaceGuam::CoProcessorI
 	//SocketInfo* socket = SocketInfo::get(socketID);
 	// TODO
 	ERROR();
-}
-
-void StreamTcpService::TcpServiceTask::debugDump(log4cpp::Category& logger, const char* name) {
-	QString readMessage;
-	QString writeMessage;
-
-	for(int i = 0; i < readList.size(); i++) {
-		const AgentStream::Block& block = readList.at(i);
-		if (i) readMessage.append(" ");
-		readMessage.append(QString::number(block.getSize()));
-	}
-	for(int i = 0; i < writeList.size(); i++) {
-		const AgentStream::Block& block = writeList.at(i);
-		if (i) writeMessage.append(" ");
-		writeMessage.append(QString::number(block.getSize()));
-	}
-
-	logger.debug("%04d  %-11s  readList [%s]  writeList[%s]", hTask, name, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
 }

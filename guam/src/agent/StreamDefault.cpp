@@ -37,7 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("default");
 
 #include "StreamDefault.h"
 
-#define DEBUG_SHOW_STREAM_DEFAULT 1
+//#define DEBUG_SHOW_STREAM_DEFAULT 1
 
 
 StreamDefault::DefaultTask::DefaultTask() : Task() {}
@@ -48,29 +48,21 @@ AgentStream::Task*      StreamDefault::createTask() {
 	return new DefaultTask();
 }
 
-AgentStream::Handler::ResultType StreamDefault::idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamDefault::idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::error;
 }
-AgentStream::Handler::ResultType StreamDefault::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamDefault::accept(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::error;
 }
-AgentStream::Handler::ResultType StreamDefault::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamDefault::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::error;
 }
-AgentStream::Handler::ResultType StreamDefault::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamDefault::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::error;
 }
-AgentStream::Handler::ResultType StreamDefault::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
-	DefaultTask* task = (DefaultTask*)AgentStream::getTask(iocb->mesaPut.hTask);
-	logger.info("hTask = %d", task->hTask);
+AgentStream::Handler::ResultType StreamDefault::read(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::error;
 }
-AgentStream::Handler::ResultType StreamDefault::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	if (DEBUG_SHOW_STREAM_DEFAULT) debugDump(logger, __FUNCTION__, iocb);
+AgentStream::Handler::ResultType StreamDefault::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	return ResultType::error;
 }

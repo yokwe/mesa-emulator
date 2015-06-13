@@ -130,8 +130,6 @@ public:
 		void endStream  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 		void shutDown   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 		void reset      (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-
-		void debugDump(log4cpp::Category& logger, const char* name);
 	};
 
 
