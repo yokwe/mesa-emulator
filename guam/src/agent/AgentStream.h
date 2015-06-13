@@ -123,9 +123,7 @@ public:
 		const CARD32  serverID;
 		const QString name;
 
-		Handler(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {
-			addHandler(this);
-		}
+		Handler(CARD32 serverID_, QString name_) : serverID(serverID_), name(name_) {}
 		virtual ~Handler();
 
 		// Return Handler specific Task

@@ -67,7 +67,10 @@ void AgentStream::setDefaultHandler(AgentStream::Handler* handler) {
 void AgentStream::addHandler(AgentStream::Handler* handler) {
 	const CARD32 serverID = handler->serverID;
 	if (handlerMap.contains(serverID)) {
-		logger.fatal("serverID = %5d  name = %s", serverID, handler->name.toLocal8Bit().constData());
+		//logger.fatal("serverID = %5d  name = %s", serverID, handler->name.toLocal8Bit().constData());
+		for(AgentStream::Handler* myHandler: handlerMap) {
+			logger.fatal("serverID = %5d  name = %s", myHandler->serverID, myHandler->name.toLocal8Bit().constData());
+		}
 		ERROR();
 	}
 	handlerMap[serverID] = handler;
@@ -294,6 +297,7 @@ void AgentStream::Call() {
 			ERROR();
 		}
 		}
+		logger.debug("    headResult %s", AgentStream::getResultString(fcb->headResult));
 	}
 }
 
@@ -331,7 +335,6 @@ void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name
 	logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
 		iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 }
-
 
 //
 // Block

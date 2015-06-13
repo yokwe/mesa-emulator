@@ -99,6 +99,10 @@ const char* StreamTcpService::getStateString(State value) {
 }
 
 
+AgentStream::Task* StreamTcpService::createTask() {
+	return (AgentStream::Task*)new TcpServiceTask();
+}
+
 AgentStream::Handler::ResultType StreamTcpService::idle(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	if (DEBUG_SHOW_STREAM_TCP_SERVICE) debugDump(logger, __FUNCTION__, iocb);
 	return ResultType::completed;
@@ -221,10 +225,19 @@ AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::
 CARD32                                      StreamTcpService::SocketInfo::socketIDNext = 1;
 QMap<CARD32, StreamTcpService::SocketInfo*> StreamTcpService::socketMap;
 
-StreamTcpService::SocketInfo* StreamTcpService::getSocket(CARD32 socketID_) {
-	if (socketID_ == 0) return new SocketInfo();
-	if (socketMap.contains(socketID_)) return socketMap[socketID_];
-	logger.fatal("socketID_ = %d", socketID_);
+void StreamTcpService::addSocket(SocketInfo* socketInfo) {
+	const CARD32 socketID = socketInfo->socketID;
+	if (socketMap.contains(socketID)) {
+		logger.fatal("socketID = %d", socketID);
+		ERROR();
+	}
+	socketMap[socketID] = socketInfo;
+
+}
+StreamTcpService::SocketInfo* StreamTcpService::getSocket(CARD32 socketID) {
+	if (socketID == 0) return new SocketInfo();
+	if (socketMap.contains(socketID)) return socketMap[socketID];
+	logger.fatal("socketID_ = %d", socketID);
 	ERROR();
 	return 0;
 }
@@ -299,7 +312,7 @@ void StreamTcpService::TcpServiceTask::listen(CoProcessorIOFaceGuam::CoProcessor
 	const CARD32 socketID = readList.at(1).get32();
 	const CARD32 timeout  = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  timeout %4d", hTask, __FUNCTION__, socketID, timeout);
-	/*SocketInfo* socket =*/ SocketInfo::getInstance(socketID);
+	/*SocketInfo* socket =*/ getSocket(socketID);
 	// TODO
 	ERROR();
 }
@@ -346,7 +359,7 @@ void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOC
 	const CARD32 socketID = readList.at(1).get32();
 	const CARD32 length   = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  length %4d", hTask, __FUNCTION__, socketID, length);
-	SocketInfo* socketInfo = SocketInfo::getInstance(socketID);
+	SocketInfo* socketInfo = getSocket(socketID);
 
 	quint32 bytesAvailable = (quint32)(socketInfo->socket.bytesAvailable());
 	if (0 < bytesAvailable) {
@@ -401,7 +414,7 @@ void StreamTcpService::TcpServiceTask::setWaitTime(CoProcessorIOFaceGuam::CoProc
 	const CARD32 socketID = readList.at(1).get32();
 	const CARD32 timeout  = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  timeout %4d", hTask, __FUNCTION__, socketID, timeout);
-	SocketInfo* socket = SocketInfo::getInstance(socketID);
+	SocketInfo* socket = getSocket(socketID);
 	socket->timeout = timeout;
 	// TODO
 	ERROR();

@@ -119,7 +119,7 @@ public:
 
 	class TcpServiceTask : public AgentStream::Task {
 	public:
-		TcpServiceTask();
+		TcpServiceTask() {}
 
 		void connect    (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
 		void listen     (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
@@ -150,7 +150,6 @@ protected:
 	class SocketInfo {
 	public:
 		static CARD32 socketIDNext;
-		static SocketInfo* getInstance(CARD32 socketID_);
 
 		const CARD32 socketID;
 
@@ -175,5 +174,5 @@ protected:
 	static QMap<CARD32, SocketInfo*> socketMap;
 
 	static void addSocket(SocketInfo* socketInfo);
-	static SocketInfo* getSocket(CARD32 socketID_);
+	static SocketInfo* getSocket(CARD32 socketID);
 };
