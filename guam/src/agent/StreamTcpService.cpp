@@ -200,7 +200,7 @@ AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::
 
 		task->writeList.removeFirst();
 		if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
-			task->debugDump(logger, __FUNCTION__);
+			task->debugDump(logger);
 			logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
 				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 		}
@@ -350,6 +350,8 @@ void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOC
 	SocketInfo* socketInfo = getSocket(socketID);
 
 	quint32 bytesAvailable = (quint32)(socketInfo->socket.bytesAvailable());
+	logger.debug("bytesAvailable  %d", bytesAvailable);
+
 	if (0 < bytesAvailable) {
 		// Output response
 		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
