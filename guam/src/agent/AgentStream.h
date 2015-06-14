@@ -54,6 +54,9 @@ public:
 		Block(const CARD32 value) {
 			put32(value);
 		}
+		Block(const QByteArray& data) {
+			this->data = data;
+		}
 		int getSize() const {
 			return data.size();
 		}
