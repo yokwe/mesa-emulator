@@ -201,8 +201,8 @@ AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::
 		task->writeList.removeFirst();
 		if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
 			task->debugDump(logger);
-			logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+			logger.debug("        get  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaPut.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 		}
 		ret =  ResultType::completed;
 	}
@@ -343,33 +343,37 @@ void StreamTcpService::TcpServiceTask::put(CoProcessorIOFaceGuam::CoProcessorIOC
 //    } else {
 //      reason _ GetReason[stream];
 //    }
-void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	const CARD32 socketID = readList.at(1).get32();
 	const CARD32 length   = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  length %4d", hTask, __FUNCTION__, socketID, length);
 	SocketInfo* socketInfo = getSocket(socketID);
 
 	if (socketInfo->socket.waitForReadyRead()) {
-		QByteArray data = socketInfo->socket.read(length);
-		const quint32 dataSize = (quint32)data.size();
+		QByteArray readData = socketInfo->socket.read(length);
+		const quint32 dataSize = (quint32)readData.size();
 		logger.debug("dataSize  %d", dataSize);
 
 		// Output response
-		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
-		bb.put32(Status::success);
-		bb.put32(dataSize);
-		//
-		bb.putAll(data);
-		logger.debug("data = %s!", data.constData());
-		iocb->mesaGet.bytesWritten = bb.getPos();
+		{
+			AgentStream::Block status(Status::success);
+			AgentStream::Block dataLen(dataSize);
+			AgentStream::Block data(readData);
+
+			writeList.append(status);
+			writeList.append(dataLen);
+			writeList.append(data);
+		}
 	} else {
 		// Output response
-		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
-		bb.put32(Status::success);
-		bb.put32(0);
-		iocb->mesaGet.bytesWritten = bb.getPos();
+		{
+			AgentStream::Block status(Status::success);
+			AgentStream::Block dataLen((CARD32)0);
+
+			writeList.append(status);
+			writeList.append(dataLen);
+		}
 	}
-	logger.debug("    socketID = %4d  mesaGet.bytesWritten = %4d", socketInfo->socketID, iocb->mesaGet.bytesWritten);
 }
 
 //    PutCommand[stream, close];
