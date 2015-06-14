@@ -183,9 +183,9 @@ public:
 	void    putAll(const quint8* data, const qint32 dataSize) {
 		for(qint32 i = 0; i < dataSize; i++) put8(data[i]);
 	}
-	void    putAll(QByteArray byteArray) {
+	void    putAll(QByteArray& byteArray) {
 		const char* data     = byteArray.constData();
-		const int    dataSize = byteArray.size();
+		const int   dataSize = byteArray.size();
 		putAll((const quint8*)data, dataSize);
 	}
 };
