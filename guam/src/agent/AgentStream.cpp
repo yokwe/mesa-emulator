@@ -380,13 +380,13 @@ CARD32 AgentStream::Block::get32() const {
 	}
 	quint8 buffer[sizeof(CARD32)];
 	for(size_t i = 0; i < sizeof(buffer); i++) buffer[i] = data.at(i);
-	BigEndianByteBuffer bb(buffer, sizeof(buffer));
+	LittleEndianByteBuffer bb(buffer, sizeof(buffer));
 	return bb.get32(0);
 }
 
 void AgentStream::Block::put32(CARD32 value) {
 	quint8 buffer[8];
-	BigEndianByteBuffer bb(buffer, sizeof(buffer));
+	LittleEndianByteBuffer bb(buffer, sizeof(buffer));
 	bb.put32(value);
 	for(quint32 i = 0; i < bb.getPos(); i++) data.append(buffer[i]);
 }
@@ -399,7 +399,7 @@ void AgentStream::Block::put(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
 		ERROR();
 	}
 
-	BigEndianByteBuffer bb((CARD8*)Store(mesaPut->buffer), mesaPut->bytesWritten);
+	LittleEndianByteBuffer bb((CARD8*)Store(mesaPut->buffer), mesaPut->bytesWritten);
 	// copy from bytesRead to bytesWritten
 	bb.setPos(mesaPut->bytesRead);
 	while(0 < bb.remaining()) data.append(bb.get8());
@@ -418,7 +418,7 @@ void AgentStream::Block::get(CoProcessorIOFaceGuam::TransferRec* mesaGet) {
 		ERROR();
 	}
 
-	BigEndianByteBuffer bb((CARD8*)Store(mesaGet->buffer), bufferByteSize);
+	LittleEndianByteBuffer bb((CARD8*)Store(mesaGet->buffer), bufferByteSize);
 	bb.setPos(mesaGet->bytesWritten); // Move to end
 	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
 	mesaGet->bytesWritten = bb.getPos();
