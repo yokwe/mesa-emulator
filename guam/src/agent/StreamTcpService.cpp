@@ -349,17 +349,16 @@ void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOC
 	logger.debug("%04d  Task::%-11s  socketID %4d  length %4d", hTask, __FUNCTION__, socketID, length);
 	SocketInfo* socketInfo = getSocket(socketID);
 
-	quint32 bytesAvailable = (quint32)(socketInfo->socket.bytesAvailable());
-	logger.debug("bytesAvailable  %d", bytesAvailable);
+	QByteArray data = socketInfo->socket.read(length);
+	const quint32 dataSize = (quint32)data.size();
+	logger.debug("dataSize  %d", dataSize);
 
-	if (0 < bytesAvailable) {
+	if (0 < dataSize) {
 		// Output response
 		BigEndianByteBuffer  bb((CARD8*)Store(iocb->mesaGet.buffer), iocb->mesaGet.bufferSize * sizeof(CARD16));
 		bb.put32(Status::success);
-		bb.put32((quint32)bytesAvailable);
+		bb.put32((quint32)dataSize);
 		//
-		QByteArray data = socketInfo->socket.read(bb.remaining());
-		quint32 dataSize = data.size();
 		bb.putAll((const quint8*)data.constData(), dataSize);
 		logger.debug("data = %s!", data.constData());
 		iocb->mesaGet.bytesWritten = bb.getPos();
