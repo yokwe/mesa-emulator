@@ -330,54 +330,16 @@ void AgentStream::Task::debugDump(log4cpp::Category& logger) {
 		const AgentStream::Block& block = readList.at(i);
 		if (i) readMessage.append(" ");
 
-		if (block.getSize() == 4) {
-			readMessage.append(QString::number(block.get32()));
-		} else {
-			QString t;
-			t.append(QString("(%1)\"").arg(block.getSize()));
-			for(int j = 0; j < block.getSize(); j++) {
-				unsigned char c = block.at(j);
-				if (c == 0x0a) {
-					t.append("\\n");
-				} else if (c == 0x0d) {
-					t.append("\\r");
-				} else if (c < 0x20 || 0x7e < c) {
-					t.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
-				} else {
-					t.append(QChar(c));
-				}
-			}
-			t.append("\"");
-			readMessage.append(t);
-		}
+		readMessage.append(block.toEscapedString());
 	}
 	for(int i = 0; i < writeList.size(); i++) {
 		const AgentStream::Block& block = writeList.at(i);
 		if (i) writeMessage.append(" ");
 
-		if (block.getSize() == 4) {
-			writeMessage.append(QString::number(block.get32()));
-		} else {
-			QString t;
-			t.append(QString("(%1)\"").arg(block.getSize()));
-			for(int j = 0; j < block.getSize(); j++) {
-				unsigned char c = block.at(j);
-				if (c == 0x0a) {
-					t.append("\\n");
-				} else if (c == 0x0d) {
-					t.append("\\r");
-				} else if (c < 0x20 || 0x7e < c) {
-					t.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
-				} else {
-					t.append(QChar(c));
-				}
-			}
-			t.append("\"");
-			writeMessage.append(t);
-		}
+		writeMessage.append(block.toEscapedString());
 	}
 
-	logger.debug("        %04d  readList [%s]  writeList[%s]", hTask, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
+	logger.debug("        %04d  readList[%s]  writeList[%s]", hTask, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
 }
 
 
@@ -462,4 +424,30 @@ void AgentStream::Block::get(CoProcessorIOFaceGuam::TransferRec* mesaGet) {
 	bb.setPos(mesaGet->bytesWritten); // Move to end
 	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
 	mesaGet->bytesWritten = bb.getPos();
+}
+
+QString AgentStream::Block::toEscapedString() const {
+	QString ret;
+
+	const int size = getSize();
+	if (size == 4) {
+		ret.append(QString::number(get32()));
+	} else {
+		ret.append(QString("(%1)\"").arg(size));
+		for(int j = 0; j < size; j++) {
+			unsigned char c = at(j);
+			if (c == 0x0a) {
+				ret.append("\\n");
+			} else if (c == 0x0d) {
+				ret.append("\\r");
+			} else if (c < 0x20 || 0x7e < c) {
+				ret.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
+			} else {
+				ret.append(QChar(c));
+			}
+		}
+		ret.append("\"");
+	}
+
+	return ret;
 }

@@ -84,6 +84,7 @@ public:
 			QString ret(data.constData());
 			return ret;
 		}
+		QString toEscapedString() const;
 		char at(int i) const {
 			return data.at(i);
 		}
