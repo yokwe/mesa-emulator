@@ -247,7 +247,8 @@ void AgentStream::Call() {
 				ERROR();
 			}
 			Task* task = handler->createTask();
-			iocb->mesaPut.hTask  = iocb->mesaGet.hTask = task->hTask;
+			iocb->mesaPut.hTask = iocb->mesaGet.hTask = task->hTask;
+			iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
 			//
 			headResult = handler->connect(iocb);
 		}
