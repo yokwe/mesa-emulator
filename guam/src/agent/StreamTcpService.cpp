@@ -126,7 +126,7 @@ AgentStream::Handler::ResultType StreamTcpService::read(CoProcessorIOFaceGuam::C
 	{
 		AgentStream::Block block(&iocb->mesaPut);
 		task->readList.append(block);
-		logger.debug("    block  mesaPut  %s", block.toHexString().toLocal8Bit().constData());
+		if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger);
 	}
 
 	if (task->readList.size() == 4) {
@@ -173,39 +173,27 @@ AgentStream::Handler::ResultType StreamTcpService::read(CoProcessorIOFaceGuam::C
 		task->readList.removeFirst(); // 2
 		task->readList.removeFirst(); // 3
 	}
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger);
 	return ResultType::completed;
 }
 
 AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	// Sanity check
-	if (iocb->serverID != this->serverID) ERROR();
-	if (iocb->mesaPut.hTask == 0) {
-		logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-		ERROR();
-	}
-	if (iocb->mesaGet.hTask == 0) {
-		logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-		ERROR();
-	}
-
 	TcpServiceTask* task = (TcpServiceTask*)AgentStream::getTask(iocb->mesaPut.hTask);
 	ResultType ret;
 	if (task->writeList.isEmpty()) {
 		ret = ResultType::inProgress;
 	} else {
 		AgentStream::Block block = task->writeList.at(0);
-		logger.debug("    block  %s", block.toHexString().toLocal8Bit().constData());
-
 		block.get(&iocb->mesaGet);
 
 		task->writeList.removeFirst();
 		if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
-			task->debugDump(logger);
 			logger.debug("        get  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
 				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaPut.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 		}
 		ret =  ResultType::completed;
 	}
+	if (DEBUG_SHOW_STREAM_TCP_SERVICE) task->debugDump(logger);
 	return ret;
 }
 

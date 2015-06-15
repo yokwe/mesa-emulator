@@ -80,6 +80,13 @@ public:
 			QString ret(data.toHex().constData());
 			return ret;
 		}
+		QString toString() {
+			QString ret(data.constData());
+			return ret;
+		}
+		char at(int i) const {
+			return data.at(i);
+		}
 	private:
 		QByteArray data;
 	};

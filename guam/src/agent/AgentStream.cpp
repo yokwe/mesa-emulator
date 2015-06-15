@@ -329,12 +329,52 @@ void AgentStream::Task::debugDump(log4cpp::Category& logger) {
 	for(int i = 0; i < readList.size(); i++) {
 		const AgentStream::Block& block = readList.at(i);
 		if (i) readMessage.append(" ");
-		readMessage.append(QString::number(block.getSize()));
+
+		if (block.getSize() == 4) {
+			readMessage.append(QString::number(block.get32()));
+		} else {
+			QString t;
+			t.append(QString("(%1)\"").arg(block.getSize()));
+			for(int j = 0; j < block.getSize(); j++) {
+				unsigned char c = block.at(j);
+				if (c == 0x0a) {
+					t.append("\\n");
+				} else if (c == 0x0d) {
+					t.append("\\r");
+				} else if (c < 0x20 || 0x7e < c) {
+					t.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
+				} else {
+					t.append(QChar(c));
+				}
+			}
+			t.append("\"");
+			readMessage.append(t);
+		}
 	}
 	for(int i = 0; i < writeList.size(); i++) {
 		const AgentStream::Block& block = writeList.at(i);
 		if (i) writeMessage.append(" ");
-		writeMessage.append(QString::number(block.getSize()));
+
+		if (block.getSize() == 4) {
+			writeMessage.append(QString::number(block.get32()));
+		} else {
+			QString t;
+			t.append(QString("(%1)\"").arg(block.getSize()));
+			for(int j = 0; j < block.getSize(); j++) {
+				unsigned char c = block.at(j);
+				if (c == 0x0a) {
+					t.append("\\n");
+				} else if (c == 0x0d) {
+					t.append("\\r");
+				} else if (c < 0x20 || 0x7e < c) {
+					t.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
+				} else {
+					t.append(QChar(c));
+				}
+			}
+			t.append("\"");
+			writeMessage.append(t);
+		}
 	}
 
 	logger.debug("        %04d  readList [%s]  writeList[%s]", hTask, readMessage.toLocal8Bit().constData(), writeMessage.toLocal8Bit().constData());
