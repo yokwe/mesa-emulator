@@ -383,14 +383,14 @@ CARD32 AgentStream::Block::get32() const {
 	quint8 buffer[sizeof(CARD32)];
 	for(size_t i = 0; i < sizeof(buffer); i++) buffer[i] = data.at(i);
 	LittleEndianByteBuffer bb(buffer, sizeof(buffer));
-	return bb.get32(0);
+	return bb.get32();
 }
 
 void AgentStream::Block::put32(CARD32 value) {
-	quint8 buffer[8];
+	quint8 buffer[sizeof(CARD32)];
 	LittleEndianByteBuffer bb(buffer, sizeof(buffer));
 	bb.put32(value);
-	for(quint32 i = 0; i < bb.getPos(); i++) data.append(buffer[i]);
+	for(quint32 i = 0; i < sizeof(buffer); i++) data.append(buffer[i]);
 }
 
 // copy from TransferRec to AgentStream::Block
