@@ -54,14 +54,13 @@ public:
 		Block(const CARD32 value) {
 			put32(value);
 		}
-		Block(const QByteArray& data) {
-			this->data = data;
-		}
+		Block(const QByteArray& data);
 		int getSize() const {
 			return data.size();
 		}
 		CARD32 get32() const;
 		void   put32(CARD32 value);
+		char   at(int i) const;
 
 		QString getIPAddress() const {
 			const CARD32 ipAddress = get32();
@@ -85,10 +84,8 @@ public:
 			return ret;
 		}
 		QString toEscapedString() const;
-		char at(int i) const {
-			return data.at(i);
-		}
 	private:
+		// data contains byte swapped data
 		QByteArray data;
 	};
 

@@ -375,6 +375,10 @@ void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name
 // Block
 //
 
+AgentStream::Block::Block(const QByteArray& data) {
+	this->data = data;
+}
+
 CARD32 AgentStream::Block::get32() const {
 	// Sanity check
 	if (data.size() != sizeof(CARD32)) {
@@ -383,13 +387,14 @@ CARD32 AgentStream::Block::get32() const {
 	}
 	quint8 buffer[sizeof(CARD32)];
 	for(size_t i = 0; i < sizeof(buffer); i++) buffer[i] = data.at(i);
-	LittleEndianByteBuffer bb(buffer, sizeof(buffer));
-	return bb.get32();
+	BigEndianByteBuffer bb(buffer, sizeof(buffer));
+	CARD32 ret = bb.get32();
+	return ret;
 }
 
 void AgentStream::Block::put32(CARD32 value) {
 	quint8 buffer[sizeof(CARD32)];
-	LittleEndianByteBuffer bb(buffer, sizeof(buffer));
+	BigEndianByteBuffer bb(buffer, sizeof(buffer));
 	bb.put32(value);
 	for(quint32 i = 0; i < sizeof(buffer); i++) data.append(buffer[i]);
 }
@@ -402,29 +407,37 @@ void AgentStream::Block::put(CoProcessorIOFaceGuam::TransferRec* mesaPut) {
 		ERROR();
 	}
 
-	LittleEndianByteBuffer bb((CARD8*)Store(mesaPut->buffer), mesaPut->bytesWritten);
-	// copy from bytesRead to bytesWritten
-	bb.setPos(mesaPut->bytesRead);
-	while(0 < bb.remaining()) data.append(bb.get8());
-	// update bytesRead
-	mesaPut->bytesRead = bb.getPos();
+	// Copy data from mesaPut->buffer[mesaPut->bytesRead..mesaPut->bytesWritten) to data
+	data.clear();
+	char* buffer = (char*)Store(mesaPut->buffer);
+	for(CARD32 i = mesaPut->bytesRead; i < mesaPut->bytesWritten; i++) {
+		data.append(buffer[i]);
+	}
+	mesaPut->bytesRead = mesaPut->bytesWritten;
 }
 
 // copy from AgentStream::Block to TransferRec
 void AgentStream::Block::get(CoProcessorIOFaceGuam::TransferRec* mesaGet) {
 	// Sanity check
-	const CARD32 dataSize       = (CARD32)data.size();
-	const CARD32 bufferByteSize = mesaGet->bufferSize * Environment::bytesPerWord;
-	const CARD32 bytesWritten   = mesaGet->bytesWritten;
+	const int dataSize       = (CARD32)data.size();
+	const int bufferByteSize = mesaGet->bufferSize * Environment::bytesPerWord;
+	const int bytesWritten   = mesaGet->bytesWritten;
 	if (bufferByteSize < (bytesWritten + dataSize)) {
 		logger.fatal("bufferByteSize = %d  bytesWritten = %d  dataSize = %d", bufferByteSize, bytesWritten, dataSize);
 		ERROR();
 	}
 
-	LittleEndianByteBuffer bb((CARD8*)Store(mesaGet->buffer), bufferByteSize);
-	bb.setPos(mesaGet->bytesWritten); // Move to end
-	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
-	mesaGet->bytesWritten = bb.getPos();
+	// Copy data from data to mesaGet->bufer[mesaGet->bytesWritten..mesaGet->bytesWritten + data.size())
+	char* buffer = (char*)Store(mesaGet->buffer);
+	for(int i = 0; i < dataSize; i++) {
+		buffer[mesaGet->bytesWritten + i] = data.at(i);
+	}
+	mesaGet->bytesWritten += dataSize;
+}
+
+char AgentStream::Block::at(int i) const {
+	BigEndianByteBuffer bb((CARD8*)data.data(), data.size());
+	return bb.get8(i);
 }
 
 QString AgentStream::Block::toEscapedString() const {
