@@ -52,7 +52,7 @@ public:
 	static const char* getMsgIDString(MsgID msgId);
 
 	// Status: TYPE = MACHINE DEPENDENT {success(0), failure(1)};
-	static const CARD16 STATUS_OFFSET = 10000;
+	static const CARD16 STATUS_OFFSET = 0;
 	enum Status : CARD32 {
 		success = STATUS_OFFSET + 0,
 		failure = STATUS_OFFSET + 1,
