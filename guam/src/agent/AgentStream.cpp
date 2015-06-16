@@ -40,6 +40,10 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #define DEBUG_SHOW_AGENT_STREAM 1
 
 
+CARD32 AgentStream::getFCBSize() {
+	return SIZE(*fcb);
+}
+
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
 

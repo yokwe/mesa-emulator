@@ -26,27 +26,11 @@ OF SUCH DAMAGE.
 
 
 //
+// Stream.cpp
 //
-//
 
-#ifndef AGENTSTREAM_H__
-#define AGENTSTREAM_H__
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("stream");
 
-#include "Agent.h"
+#include "Stream.h"
 
-class AgentStream : public Agent {
-public:
-	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
-		fcb = 0;
-	}
-
-	CARD32 getFCBSize();
-
-	void Initialize();
-	void Call();
-
-private:
-	CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
-};
-
-#endif
