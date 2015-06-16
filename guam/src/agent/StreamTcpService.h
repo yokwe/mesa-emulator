@@ -173,4 +173,5 @@ protected:
 
 	static void addSocket(SocketInfo* socketInfo);
 	static SocketInfo* getSocket(CARD32 socketID);
+	static void removeSocket(SocketInfo* socketInfo);
 };
