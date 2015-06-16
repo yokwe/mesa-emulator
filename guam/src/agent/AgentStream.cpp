@@ -203,7 +203,7 @@ void AgentStream::Call() {
 	}
 
 	if (DEBUG_SHOW_AGENT_STREAM) {
-		logger.debug("AGENT %s  head = %8X  next = %8X  command = %10s  result = %10s  interruptSelector = %04X", name, fcb->iocbHead, fcb->iocbNext, AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->interruptSelector);
+		logger.debug("AGENT %s  head = %8X  command = %10s  result = %10s  interrupt = %04X", name, fcb->iocbHead, AgentStream::getCommandString(fcb->headCommand), AgentStream::getResultString(fcb->headResult), fcb->interruptSelector);
 	}
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
@@ -212,11 +212,6 @@ void AgentStream::Call() {
 		if (DEBUG_SHOW_AGENT_STREAM) {
 			const char* headCommandString = getCommandString(fcb->headCommand);
 			Handler::debugDump(logger, headCommandString, iocb);
-
-			if (iocb->mesaGet.hTask) {
-				AgentStream::Task* task = AgentStream::getTask(iocb->mesaGet.hTask);
-				task->debugDump(logger);
-			}
 		}
 
 		Handler::ResultType headResult;
@@ -249,6 +244,8 @@ void AgentStream::Call() {
 			Task* task = handler->createTask();
 			iocb->mesaPut.hTask = iocb->mesaGet.hTask = task->hTask;
 			iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
+
+			if (DEBUG_SHOW_AGENT_STREAM) task->debugDump(logger);
 			//
 			headResult = handler->connect(iocb);
 		}
@@ -365,10 +362,21 @@ void AgentStream::Handler::debugDump(log4cpp::Category& logger, const char* name
 	logger.debug("%s", name);
 	logger.debug("    serverID = %-11s  mesaIsServer = %d  mesaState = %-10s  pcState = %-10s",
 		AgentStream::getServerIDString(iocb->serverID), iocb->mesaIsServer, AgentStream::getStateString(iocb->mesaConnectionState), AgentStream::getStateString(iocb->pcConnectionState));
-	logger.debug("        put  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-		iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bufferSize, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.hTask, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
-	logger.debug("        get  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-		iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaPut.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+
+	if (iocb->mesaPut.bytesWritten != iocb->mesaPut.bytesRead) {
+		logger.debug("        put  sst = %3d  u2 = %02X  write = %4d  read = %4d  interrupt = %d  writeLocked = %d",
+			iocb->mesaPut.subSequence, iocb->mesaPut.u2, iocb->mesaPut.bytesWritten, iocb->mesaPut.bytesRead, iocb->mesaPut.interruptMesa, iocb->mesaPut.writeLockedByMesa);
+	}
+
+	if (iocb->mesaGet.bytesWritten || iocb->mesaGet.bytesRead || iocb->mesaGet.interruptMesa) {
+		logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  interrupt = %d  writeLocked = %d",
+			iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+	}
+
+	if (iocb->mesaGet.hTask) {
+		AgentStream::Task* task = AgentStream::getTask(iocb->mesaGet.hTask);
+		task->debugDump(logger);
+	}
 }
 
 //
@@ -436,17 +444,21 @@ void AgentStream::Block::get(CoProcessorIOFaceGuam::TransferRec* mesaGet) {
 }
 
 char AgentStream::Block::at(int i) const {
-	BigEndianByteBuffer bb((CARD8*)data.data(), data.size());
+	LittleEndianByteBuffer bb((CARD8*)data.data(), data.size());
 	return bb.get8(i);
 }
 
 QString AgentStream::Block::toEscapedString() const {
-	QString ret;
-
 	const int size = getSize();
+	// Special for 4 byte data
 	if (size == 4) {
-		ret.append(QString::number(get32()));
-	} else {
+		const CARD32 value = get32();
+		if ((CARD8)value < 'A' || 'Z' < (CARD8)value) {
+			return QString::number(get32());
+		}
+	}
+	{
+		QString ret;
 		ret.append(QString("(%1)\"").arg(size));
 		for(int j = 0; j < size; j++) {
 			unsigned char c = at(j);
@@ -461,7 +473,6 @@ QString AgentStream::Block::toEscapedString() const {
 			}
 		}
 		ret.append("\"");
+		return ret;
 	}
-
-	return ret;
 }
