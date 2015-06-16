@@ -135,6 +135,8 @@ AgentStream::Handler::ResultType StreamTcpService::read(CoProcessorIOFaceGuam::C
 		AgentStream::Block block2 = task->readList.at(2);
 		AgentStream::Block block3 = task->readList.at(3);
 
+		task->writeList.clear();
+
 		MsgID msgID = static_cast<MsgID>(block0.get32());
 		switch(msgID) {
 		case MsgID::connect:
@@ -188,8 +190,8 @@ AgentStream::Handler::ResultType StreamTcpService::write(CoProcessorIOFaceGuam::
 
 		task->writeList.removeFirst();
 		if (DEBUG_SHOW_STREAM_TCP_SERVICE) {
-			logger.debug("        get  sst = %3d  u2 = %02X  size = %4d  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
-				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaPut.bufferSize, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
+			logger.debug("        get  sst = %3d  u2 = %02X  write = %4d  read = %4d  hTask = %d  interrupt = %d  writeLocked = %d",
+				iocb->mesaGet.subSequence, iocb->mesaGet.u2, iocb->mesaGet.bytesWritten, iocb->mesaGet.bytesRead, iocb->mesaGet.hTask, iocb->mesaGet.interruptMesa, iocb->mesaGet.writeLockedByMesa);
 		}
 		ret =  ResultType::completed;
 	}
@@ -218,6 +220,9 @@ StreamTcpService::SocketInfo* StreamTcpService::getSocket(CARD32 socketID) {
 	return 0;
 }
 
+void StreamTcpService::removeSocket(SocketInfo* socketInfo) {
+	socketMap.remove(socketInfo->socketID);
+}
 
 //    PutCommand[stream, connect];
 //    PutLongNumber[stream, LOOPHOLE[remote]];
@@ -261,9 +266,13 @@ void StreamTcpService::TcpServiceTask::connect(CoProcessorIOFaceGuam::CoProcesso
 	{
 		AgentStream::Block status(Status::success);
 		AgentStream::Block socketID(socketInfo->socketID);
+		// TODO What zero is used for?
+		// TODO Why after connect, mesa try to read 3 long words?
+		AgentStream::Block zero((CARD32)0);
 
 		writeList.append(status);
 		writeList.append(socketID);
+		writeList.append(zero);
 	}
 }
 
@@ -310,13 +319,23 @@ void StreamTcpService::TcpServiceTask::listen(CoProcessorIOFaceGuam::CoProcessor
 //        LOOP
 //      }
 //      ENDLOOP
-void StreamTcpService::TcpServiceTask::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
+void StreamTcpService::TcpServiceTask::put(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 	const CARD32 socketID = readList.at(1).get32();
 	const CARD32 length   = readList.at(2).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d  length %4d", hTask, __FUNCTION__, socketID, length);
-	//SocketInfo* socket = SocketInfo::get(socketID);
-	// TODO
-	ERROR();
+
+	AgentStream::Block block(&iocb->mesaPut);
+	logger.debug("put block = %s", block.toEscapedString().toLocal8Bit().constData());
+	logger.debug("put block = %s", block.toString().toLocal8Bit().constData());
+
+	// Output response
+	{
+		AgentStream::Block status(Status::failure);
+		AgentStream::Block dataLen(WSEReason::WSAEINTR);
+
+		writeList.append(status);
+		writeList.append(dataLen);
+	}
 }
 
 
@@ -376,9 +395,16 @@ void StreamTcpService::TcpServiceTask::get(CoProcessorIOFaceGuam::CoProcessorIOC
 void StreamTcpService::TcpServiceTask::close(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	const CARD32 socketID = readList.at(1).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d", hTask, __FUNCTION__, socketID);
-	//SocketInfo* socket = SocketInfo::get(socketID);
-	// TODO
-	ERROR();
+
+	SocketInfo* socketInfo = getSocket(socketID);
+	socketInfo->socket.close();
+	removeSocket(socketInfo);
+
+	// Output response
+	{
+		AgentStream::Block status(Status::success);
+		writeList.append(status);
+	}
 }
 
 
@@ -423,9 +449,14 @@ void StreamTcpService::TcpServiceTask::endStream(CoProcessorIOFaceGuam::CoProces
 void StreamTcpService::TcpServiceTask::shutDown(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/) {
 	const CARD32 socketID = readList.at(1).get32();
 	logger.debug("%04d  Task::%-11s  socketID %4d", hTask, __FUNCTION__, socketID);
-	//SocketInfo* socket = SocketInfo::get(socketID);
-	// TODO
-	ERROR();
+	SocketInfo* socketInfo = getSocket(socketID);
+	socketInfo->socket.disconnectFromHost();
+
+	// Output response
+	{
+		AgentStream::Block status(Status::success);
+		writeList.append(status);
+	}
 }
 
 
