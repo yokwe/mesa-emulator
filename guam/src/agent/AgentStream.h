@@ -26,7 +26,7 @@ OF SUCH DAMAGE.
 
 
 //
-//
+// AgentStream.h
 //
 
 #ifndef AGENTSTREAM_H__
@@ -34,19 +34,129 @@ OF SUCH DAMAGE.
 
 #include "Agent.h"
 
+#include <QtCore>
+
 class AgentStream : public Agent {
 public:
+	class Task {
+	private:
+		static CARD16 hTaskNext;
+	public:
+		const CARD16 hTask; // Start from one
+
+		Task() : hTask(hTaskNext++) {};
+	};
+
+	class Data {
+	private:
+		static const int WAIT_TIME_IN_MILLISECOND = 1000;
+
+		static QByteArray readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		static void writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data);
+
+		static QByteArray toByteArray(CARD32 data);
+		static CARD32 toCARD32(QByteArray data);
+
+		QMutex             mutex;
+		QWaitCondition     cv;
+		QQueue<QByteArray> queue;
+
+	public:
+		bool waitData(unsigned long time = WAIT_TIME_IN_MILLISECOND) {
+			QMutexLocker locker(&mutex);
+			const int size = queue.size();
+			if (size) return true;
+
+			return cv.wait(&mutex, time);
+		}
+		void put(QByteArray data) {
+			QMutexLocker locker(&mutex);
+			queue.enqueue(data);
+
+			cv.wakeAll();
+		}
+		QByteArray get() {
+			QMutexLocker locker(&mutex);
+			return queue.dequeue();
+		}
+		int size() {
+			QMutexLocker locker(&mutex);
+			return queue.size();
+		}
+
+		// Create QByteArra data from iocb->mesaPut and append to queue
+		void put(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+			put(readMesa(iocb));
+		}
+
+		// Take one QByteArray data from queue and append to iocb->mesaGet
+		void get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+			writeMesa(iocb, get());
+		}
+
+		void put32(CARD32 data) {
+			put(toByteArray(data));
+		}
+		CARD32 get32() {
+			return toCARD32(get());
+		}
+	};
+
+	class Handler {
+	public:
+		const CARD32 serverID;
+		const char*  name;
+
+		Data dataRead;
+		Data dataWrite;
+
+		Handler(CARD32 serverID_, const char* name_) : serverID(serverID_), name(name_), runnable(0) {}
+		virtual ~Handler() {}
+
+		virtual Task* createTask() = 0;
+
+		// Return value of methods below is CoProcessorIOFaceGuam::R_*
+		//   R_completed, R_inProgress, R_error
+		virtual CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		// To avoid conflict with keyword "delete", use "destroy" instead.
+		virtual CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+
+	private:
+		QRunnable* runnable;
+	};
+
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
 		fcb = 0;
 	}
 
-	CARD32 getFCBSize();
+	CARD32 getFCBSize() {
+		return SIZE(*fcb);
+	}
 
 	void Initialize();
 	void Call();
 
+	// Start and stop threads for AgentStream
+	static void startThread();
+	static void stopThread();
+
 private:
-	CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
+	static CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
+	static Handler*                                   defaultHandler;
+	static QMap<CARD32, Handler*>                     handlerMap;
+	static QMap<CARD32, Task*>                        taskMap;
+
+	static void     setDefaultHandler(Handler* handler);
+	static void     addHandler       (Handler* handler);
+	static Handler* getHandler       (CARD32 serverID);
+
+	static void  addTask   (Task* task);
+	static void  removeTask(Task* task);
+	static Task* getTask   (CARD32 taskID);
 };
 
 #endif
