@@ -142,6 +142,44 @@ CARD32 AgentStream::Data::toCARD32(QByteArray data) {
 	return bb.get32();
 }
 
+QString AgentStream::Data::toIPAddress(CARD32 data) {
+	const CARD8  a = (CARD8)(data >>  8); // AA
+	const CARD8  b = (CARD8)(data >>  0); // BB
+	const CARD8  c = (CARD8)(data >> 24); // CC
+	const CARD8  d = (CARD8)(data >> 16); // DD
+
+	return QString("%1.%2.%3.%4").arg(a).arg(b).arg(c).arg(d);
+}
+
+QString AgentStream::Data::toEscapedString(QByteArray data) {
+	const int size = data.size();
+	// Special for 4 byte data
+	if (size == 4) {
+		const CARD32 value = toCARD32(data);
+		if ((CARD8)value < 'A' || 'Z' < (CARD8)value) {
+			return QString::number(value);
+		}
+	}
+	{
+		QString ret;
+		ret.append(QString("(%1)\"").arg(size));
+		for(int j = 0; j < size; j++) {
+			unsigned char c = data.at(j);
+			if (c == 0x0a) {
+				ret.append("\\n");
+			} else if (c == 0x0d) {
+				ret.append("\\r");
+			} else if (c < 0x20 || 0x7e < c) {
+				ret.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
+			} else {
+				ret.append(QChar(c));
+			}
+		}
+		ret.append("\"");
+		return ret;
+	}
+}
+
 
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
@@ -277,6 +315,14 @@ void AgentStream::Call() {
 				// There is data to return.
 				handler->dataWrite.get(iocb);
 				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+
+				if (DEBUG_SHOW_AGENT_STREAM) {
+					QByteArray data;
+					CARD8* buffer = (CARD8*)Store(iocb->mesaGet.buffer);
+					for(CARD32 i = 0; i < iocb->mesaGet.bytesWritten; i++) data.append(buffer[i]);
+
+					logger.debug("    write  %s", AgentStream::Data::toEscapedString(data).toLocal8Bit().constData());
+				}
 			} else {
 				// There is no data to return
 				fcb->headResult = CoProcessorIOFaceGuam::R_inProgress;
@@ -291,6 +337,8 @@ void AgentStream::Call() {
 			break;
 		}
 	}
+
+	if (DEBUG_SHOW_AGENT_STREAM) logger.debug("    %s", Stream::getResultString(fcb->headResult));
 }
 
 

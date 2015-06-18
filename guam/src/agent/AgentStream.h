@@ -63,6 +63,8 @@ public:
 	public:
 		static QByteArray toByteArray(CARD32 data);
 		static CARD32     toCARD32(QByteArray data);
+		static QString    toIPAddress(CARD32 data);
+		static QString    toEscapedString(QByteArray data);
 
 		bool waitData(unsigned long time = WAIT_TIME_IN_MILLISECOND) {
 			QMutexLocker locker(&mutex);
