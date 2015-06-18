@@ -33,6 +33,7 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 #include "../mesa/Memory.h"
+#include "../mesa/MesaThread.h"
 
 #include "../util/ByteBuffer.h"
 
@@ -176,9 +177,7 @@ void AgentStream::Call() {
 		fcb->agentStopped = 0;
 	}
 
-	if (DEBUG_SHOW_AGENT_STREAM) {
-		logger.debug("AGENT %s  head = %8X  command = %s", name, fcb->iocbHead, Stream::getCommandString(fcb->headCommand));
-	}
+	if (DEBUG_SHOW_AGENT_STREAM) dump(logger);
 
 	if (fcb->iocbHead == 0) {
 		defaultHandler->idle(fcb);
@@ -188,9 +187,6 @@ void AgentStream::Call() {
 
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-		if (DEBUG_SHOW_AGENT_STREAM) {
-			logger.debug("serverID = %5d", iocb->serverID);
-		}
 		AgentStream::Handler* handler = getHandler(iocb->serverID);
 
 		switch(fcb->headCommand) {
@@ -358,4 +354,22 @@ void AgentStream::stopThread() {
 	for(Handler* handler: handlerMap.values()) {
 		handler->stop();
 	}
+}
+
+void AgentStream::dump(log4cpp::Category& logger) {
+	logger.debug("AGENT %s  %08X  %s", name, fcb->iocbHead, Stream::getCommandString(fcb->headCommand));
+	if (fcb->iocbHead) {
+		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
+		logger.debug("   %c%-10s  %c-%c  mesaGet[%04d%c%c%02X %X %3d %3d]  mesaPut[%04d%c%c%02X %X %3d %3d]",
+				(iocb->mesaIsServer ? 'S' : ' '), Stream::getServerString(iocb->serverID),
+			Stream::getConnectionStateString(iocb->mesaConnectionState)[0],
+			Stream::getConnectionStateString(iocb->pcConnectionState)[0],
+			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.u2 & 0x0F), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten,
+			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.u2 & 0x0F), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten
+			);
+	}
+}
+
+void AgentStream::notifyInterrupt() {
+	InterruptThread::notifyInterrupt(fcb->interruptSelector);
 }

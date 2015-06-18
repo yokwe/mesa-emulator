@@ -32,6 +32,8 @@ OF SUCH DAMAGE.
 #ifndef AGENTSTREAM_H__
 #define AGENTSTREAM_H__
 
+#include <log4cpp/Category.hh>
+
 #include "Agent.h"
 
 #include <QtCore>
@@ -151,10 +153,13 @@ public:
 	void Initialize();
 	void Call();
 
+	void dump(log4cpp::Category& logger);
+
 	// Start and stop threads for AgentStream
 	static void startThread();
 	static void stopThread();
 
+	static void notifyInterrupt();
 private:
 	static CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
 	static Handler*                                   defaultHandler;
