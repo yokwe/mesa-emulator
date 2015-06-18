@@ -101,13 +101,20 @@ void MesaProcessor::initialize() {
 void MesaProcessor::boot() {
 	setRunning(1);
 	//
+	QThreadPool* threadPool = QThreadPool::globalInstance();
+
 	logger.info("MesaProcessor::boot START");
-	QThreadPool::globalInstance()->start(&interruptThread);
-	QThreadPool::globalInstance()->start(&timerThread);
-	QThreadPool::globalInstance()->start(&network.receiveThread);
-	QThreadPool::globalInstance()->start(&network.transmitThread);
-	QThreadPool::globalInstance()->start(&disk.ioThread);
-	QThreadPool::globalInstance()->start(&processorThread);
+	threadPool->start(&interruptThread);
+	threadPool->start(&timerThread);
+	threadPool->start(&network.receiveThread);
+	threadPool->start(&network.transmitThread);
+	threadPool->start(&disk.ioThread);
+
+	AgentStream::startThread();
+
+	threadPool->start(&processorThread);
+
+	logger.info("MesaProcessor::boot threadCount %d / %d", threadPool->activeThreadCount(), threadPool->maxThreadCount());
 	logger.info("MesaProcessor::boot STOP");
 }
 

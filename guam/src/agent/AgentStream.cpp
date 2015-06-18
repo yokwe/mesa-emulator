@@ -50,7 +50,7 @@ CoProcessorIOFaceGuam::CoProcessorFCBType* AgentStream::fcb = 0;
 AgentStream::Handler*                      AgentStream::defaultHandler = 0;
 QMap<CARD32, AgentStream::Handler*>        AgentStream::handlerMap;
 QMap<CARD32, AgentStream::Task*>           AgentStream::taskMap;
-
+bool                                       AgentStream::Handler::stopThread = false;
 
 class DefaultHandler : public AgentStream::Handler {
 public:
@@ -71,11 +71,32 @@ public:
 	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
 		return CoProcessorIOFaceGuam::R_error;
 	}
-	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-		return CoProcessorIOFaceGuam::R_error;
-	}
-	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-		return CoProcessorIOFaceGuam::R_error;
+//	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+//		return CoProcessorIOFaceGuam::R_error;
+//	}
+//	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+//		return CoProcessorIOFaceGuam::R_error;
+//	}
+
+	void run() {
+		logger.info("AgentDisk::DefaultHandler::run START");
+
+		stopThread = 0;
+		QThread::currentThread()->setPriority(PRIORITY);
+		int processCount = 0;
+
+		for(;;) {
+			if (stopThread) break;
+
+			bool hasData = dataRead.waitData(WAIT_INTERVAL);
+			if (hasData) {
+				processCount++;
+				dataRead.get();
+			}
+		}
+
+		logger.info("processCount           = %8u", processCount);
+		logger.info("AgentDisk::DefaultHandler::run STOP");
 	}
 };
 
@@ -253,10 +274,9 @@ void AgentStream::Call() {
 				ERROR();
 			}
 
-			// TODO handler->dataRead.put(iocb);
-
-			Task* task = getTask(iocb->mesaPut.hTask);
-			fcb->headResult = handler->read(iocb, task);
+			// add data in iocb->mesaPut to dataRead
+			handler->dataRead.put(iocb);
+			fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 		}
 			break;
 		case CoProcessorIOFaceGuam::C_write: {
@@ -270,10 +290,15 @@ void AgentStream::Call() {
 				ERROR();
 			}
 
-			// TODO if (handler->dataWrite.size()) handler->dataWrite.get(iocb);
-
-			Task* task = getTask(iocb->mesaPut.hTask);
-			fcb->headResult = handler->write(iocb, task);
+			// Check dataWrite and return if not empty
+			if (handler->dataWrite.size()) {
+				// There is data to return.
+				handler->dataWrite.get(iocb);
+				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+			} else {
+				// There is no data to return
+				fcb->headResult = CoProcessorIOFaceGuam::R_inProgress;
+			}
 		}
 			break;
 		default:
@@ -334,5 +359,19 @@ AgentStream::Task* AgentStream::getTask   (CARD32 taskID) {
 		logger.fatal("taskID = %d", taskID);
 		ERROR();
 		return 0;
+	}
+}
+
+void AgentStream::startThread() {
+	QThreadPool::globalInstance()->start(defaultHandler);
+	for(Handler* handler: handlerMap.values()) {
+		QThreadPool::globalInstance()->start(handler);
+	}
+}
+
+void AgentStream::stopThread() {
+	defaultHandler->stop();
+	for(Handler* handler: handlerMap.values()) {
+		handler->stop();
 	}
 }

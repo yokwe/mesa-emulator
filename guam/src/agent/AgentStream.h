@@ -102,7 +102,7 @@ public:
 		}
 	};
 
-	class Handler {
+	class Handler : public QRunnable {
 	public:
 		const CARD32 serverID;
 		const char*  name;
@@ -110,7 +110,7 @@ public:
 		Data dataRead;
 		Data dataWrite;
 
-		Handler(CARD32 serverID_, const char* name_) : serverID(serverID_), name(name_), runnable(0) {}
+		Handler(CARD32 serverID_, const char* name_) : serverID(serverID_), name(name_) {}
 		virtual ~Handler() {}
 
 		virtual Task* createTask() = 0;
@@ -122,11 +122,20 @@ public:
 		virtual CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
 		// To avoid conflict with keyword "delete", use "destroy" instead.
 		virtual CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-		virtual CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-		virtual CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
 
-	private:
-		QRunnable* runnable;
+//		virtual CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+//		virtual CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+
+		virtual void run() = 0;
+		static void stop() {
+			stopThread = true;
+		}
+	protected:
+		// Wait interval in milliseconds for QWaitCondition::wait
+		static const int WAIT_INTERVAL = 1000;
+		static const QThread::Priority PRIORITY = QThread::HighPriority;
+
+		static bool stopThread;
 	};
 
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {

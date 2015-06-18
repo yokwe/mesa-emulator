@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("mesathread");
 
 #include "../agent/AgentNetwork.h"
 #include "../agent/AgentDisk.h"
+#include "../agent/AgentStream.h"
+
 
 #include "../opcode/Interpreter.h"
 
@@ -156,6 +158,7 @@ void ProcessorThread::run() {
 
 exitLoop:
 	// stop relevant thread
+	AgentStream::stopThread();
 	AgentNetwork::ReceiveThread::stop();
 	AgentNetwork::TransmitThread::stop();
 	AgentDisk::IOThread::stop();
