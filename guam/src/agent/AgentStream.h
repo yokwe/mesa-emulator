@@ -53,17 +53,17 @@ public:
 	private:
 		static const int WAIT_TIME_IN_MILLISECOND = 1000;
 
-		static QByteArray readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-		static void writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data);
-
-		static QByteArray toByteArray(CARD32 data);
-		static CARD32 toCARD32(QByteArray data);
+		static QByteArray readMesa (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		static void       writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data);
 
 		QMutex             mutex;
 		QWaitCondition     cv;
 		QQueue<QByteArray> queue;
 
 	public:
+		static QByteArray toByteArray(CARD32 data);
+		static CARD32     toCARD32(QByteArray data);
+
 		bool waitData(unsigned long time = WAIT_TIME_IN_MILLISECOND) {
 			QMutexLocker locker(&mutex);
 			const int size = queue.size();
@@ -94,6 +94,8 @@ public:
 		// Take one QByteArray data from queue and append to iocb->mesaGet
 		void get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
 			writeMesa(iocb, get());
+			// Notify interrupt if necessary
+			if (iocb->mesaGet.interruptMesa) notifyInterrupt();
 		}
 
 		void put32(CARD32 data) {
@@ -106,6 +108,8 @@ public:
 
 	class Handler : public QRunnable {
 	public:
+		class StopThreadException {};
+
 		const CARD32 serverID;
 		const char*  name;
 
@@ -134,6 +138,18 @@ public:
 		static void stop() {
 			stopThread = true;
 		}
+
+		CARD32 getData32() {
+			return AgentStream::Data::toCARD32(getData());
+		}
+		void   putData32(CARD32 value) {
+			putData(AgentStream::Data::toByteArray(value));
+		}
+
+		// get data from dataRead, wait until data is arrived. If stopThread is true, generate StotThreadException
+		QByteArray getData();
+		// put data to writeData
+		void       putData(QByteArray value);
 	protected:
 		// Wait interval in milliseconds for QWaitCondition::wait
 		static const int WAIT_INTERVAL = 1000;

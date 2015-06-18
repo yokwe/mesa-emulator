@@ -41,6 +41,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "AgentStream.h"
 
 #include "Stream.h"
+#include "StreamTCP.h"
 
 
 #define DEBUG_SHOW_AGENT_STREAM 1
@@ -158,6 +159,7 @@ void AgentStream::Initialize() {
 	fcb->streamWordSize    = 0;
 
 	setDefaultHandler(new DefaultHandler);
+	addHandler(new StreamTCP);
 }
 
 void AgentStream::Call() {
@@ -372,4 +374,20 @@ void AgentStream::dump(log4cpp::Category& logger) {
 
 void AgentStream::notifyInterrupt() {
 	InterruptThread::notifyInterrupt(fcb->interruptSelector);
+}
+
+
+QByteArray AgentStream::Handler::getData() {
+	for(;;) {
+		if (stopThread) throw new StopThreadException;
+
+		if (0 < dataRead.size()) break;
+		dataRead.waitData();
+	}
+	return dataRead.get();
+}
+
+void AgentStream::Handler::putData(QByteArray data) {
+	if (stopThread) throw new StopThreadException;
+	dataWrite.put(data);
 }
