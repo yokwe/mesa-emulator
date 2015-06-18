@@ -54,13 +54,14 @@ bool                                       AgentStream::Handler::stopThread = fa
 
 class DefaultHandler : public AgentStream::Handler {
 public:
-	DefaultHandler() : AgentStream::Handler(0, "default") {}
+	DefaultHandler() : AgentStream::Handler(0, "default") {
+		setAutoDelete(false);
+	}
 
 	AgentStream::Task* createTask() {
 		return new AgentStream::Task();
 	}
-	CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-		return CoProcessorIOFaceGuam::R_error;
+	void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
 	}
 	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
 		return CoProcessorIOFaceGuam::R_error;
@@ -71,12 +72,6 @@ public:
 	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
 		return CoProcessorIOFaceGuam::R_error;
 	}
-//	CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-//		return CoProcessorIOFaceGuam::R_error;
-//	}
-//	CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-//		return CoProcessorIOFaceGuam::R_error;
-//	}
 
 	void run() {
 		logger.info("AgentDisk::DefaultHandler::run START");
@@ -185,7 +180,11 @@ void AgentStream::Call() {
 		logger.debug("AGENT %s  head = %8X  command = %s", name, fcb->iocbHead, Stream::getCommandString(fcb->headCommand));
 	}
 
-	if (fcb->iocbHead == 0) return; // Return if there is no IOCB
+	if (fcb->iocbHead == 0) {
+		defaultHandler->idle(fcb);
+		for(Handler* handler: handlerMap.values()) handler->idle(fcb);
+		return;
+	}
 
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
@@ -195,21 +194,6 @@ void AgentStream::Call() {
 		AgentStream::Handler* handler = getHandler(iocb->serverID);
 
 		switch(fcb->headCommand) {
-		case CoProcessorIOFaceGuam::C_idle: {
-			// Sanity check
-			if (iocb->mesaPut.hTask == 0) {
-				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-				ERROR();
-			}
-			if (iocb->mesaGet.hTask == 0) {
-				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-				ERROR();
-			}
-
-			Task* task = getTask(iocb->mesaPut.hTask);
-			fcb->headResult = handler->idle(iocb, task);
-		}
-			break;
 		case CoProcessorIOFaceGuam::C_accept: {
 			// Sanity check
 			if (iocb->mesaPut.hTask == 0) {

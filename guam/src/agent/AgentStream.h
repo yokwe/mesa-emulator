@@ -115,9 +115,11 @@ public:
 
 		virtual Task* createTask() = 0;
 
+		virtual void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* fcb) = 0;
+
 		// Return value of methods below is CoProcessorIOFaceGuam::R_*
 		//   R_completed, R_inProgress, R_error
-		virtual CARD16 idle   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+
 		virtual CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
 		virtual CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
 		// To avoid conflict with keyword "delete", use "destroy" instead.
