@@ -427,7 +427,7 @@ void AgentStream::notifyInterrupt() {
 
 QByteArray AgentStream::Handler::getData() {
 	for(;;) {
-		if (stopThread) throw new StopThreadException;
+		if (stopThread) throw StopThreadException();
 
 		if (0 < dataRead.size()) break;
 		dataRead.waitData();
@@ -436,6 +436,6 @@ QByteArray AgentStream::Handler::getData() {
 }
 
 void AgentStream::Handler::putData(QByteArray data) {
-	if (stopThread) throw new StopThreadException;
+	if (stopThread) throw StopThreadException();
 	dataWrite.put(data);
 }
