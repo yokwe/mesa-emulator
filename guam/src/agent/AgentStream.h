@@ -103,20 +103,6 @@ public:
 			return queue.size();
 		}
 
-		// Create QByteArra data from iocb->mesaPut and append to queue
-		void put(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-			put(readMesa(iocb));
-		}
-
-		// Take one QByteArray data from queue and append to iocb->mesaGet
-		void getXX(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-			StreamData data = get();
-			writeMesa(iocb, data.getData());
-			if (data.isEndRecord()) iocb->mesaGet.endRecord = 1;
-			// Notify interrupt if necessary
-			if (iocb->mesaGet.interruptMesa) notifyInterrupt();
-		}
-
 		void put32(CARD32 data) {
 			put(toByteArray(data));
 		}
