@@ -53,14 +53,14 @@ public:
 	private:
 		static const int WAIT_TIME_IN_MILLISECOND = 1000;
 
-		static QByteArray readMesa (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-		static void       writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data);
-
 		QMutex             mutex;
 		QWaitCondition     cv;
 		QQueue<QByteArray> queue;
 
 	public:
+		static QByteArray readMesa (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+		static void       writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data);
+
 		static QByteArray toByteArray(CARD32 data);
 		static CARD32     toCARD32(QByteArray data);
 		static QString    toIPAddress(CARD32 data);
@@ -106,6 +106,7 @@ public:
 		CARD32 get32() {
 			return toCARD32(get());
 		}
+		QString toString();
 	};
 
 	class Handler : public QRunnable {

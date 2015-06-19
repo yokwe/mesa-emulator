@@ -129,17 +129,15 @@ public:
 	public:
 		const CARD32 socketID;
 
-		CARD32 state;
-		CARD32 localAddress;
 		CARD32 remoteAddress;
-		CARD16 localPort;
 		CARD16 remotePort;
+		CARD32 localAddress;
+		CARD16 localPort;
 		CARD32 timeout;
 
 		QTcpSocket socket;
 
 		SocketInfo() : socketID(++socketIDNext) {
-			state = 0;
 			localAddress = remoteAddress = localPort = remotePort = 0;
 			timeout = 0;
 
@@ -150,6 +148,7 @@ public:
 	static void addSocket(SocketInfo* socketInfo) {
 		socketMap.insert(socketInfo->socketID, socketInfo);
 	}
+	static void removeSocket(SocketInfo* socketInfo);
 	static SocketInfo* getSocket(CARD32 socketID);
 
 	//
@@ -184,17 +183,17 @@ public:
 
 	// Command described in MsgID
 
-	void connect    (CARD32 remoteAddres, CARD32 remotePort, CARD32 localPort);
+	void connect    (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void get        (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
 
 
-	void listen     (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void put        (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void get        (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void close      (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void setWaitTime(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void endStream  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void shutDown   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-	void reset      (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
+	void listen     (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void put        (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void close      (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void setWaitTime(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void endStream  (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void shutDown   (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
+	void reset      (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
 
 private:
 	static QMap<CARD32, SocketInfo*> socketMap;

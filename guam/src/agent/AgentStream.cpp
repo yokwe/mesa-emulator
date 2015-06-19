@@ -180,6 +180,19 @@ QString AgentStream::Data::toEscapedString(QByteArray data) {
 	}
 }
 
+QString AgentStream::Data::toString() {
+	QMutexLocker locker(&mutex);
+
+	QString ret;
+	ret.append("[");
+	for(int i = 0; i < queue.size(); i++) {
+		if (i) ret.append(" ");
+		ret.append(toEscapedString(queue.at(i)));
+	}
+	ret.append("]");
+	return ret;
+}
+
 
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
@@ -295,7 +308,11 @@ void AgentStream::Call() {
 			}
 
 			// add data in iocb->mesaPut to dataRead
-			handler->dataRead.put(iocb);
+			QByteArray data = Data::readMesa(iocb);
+			if (DEBUG_SHOW_AGENT_STREAM) {
+				logger.debug("    read   %s", Data::toEscapedString(data).toLocal8Bit().constData());
+			}
+			handler->dataRead.put(data);
 			fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 		}
 			break;
@@ -313,15 +330,13 @@ void AgentStream::Call() {
 			// Check dataWrite and return if not empty
 			if (handler->dataWrite.size()) {
 				// There is data to return.
-				handler->dataWrite.get(iocb);
+				QByteArray data = handler->dataWrite.get();
+				Data::writeMesa(iocb, data);
+				if (iocb->mesaGet.interruptMesa) notifyInterrupt();
 				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 
 				if (DEBUG_SHOW_AGENT_STREAM) {
-					QByteArray data;
-					CARD8* buffer = (CARD8*)Store(iocb->mesaGet.buffer);
-					for(CARD32 i = 0; i < iocb->mesaGet.bytesWritten; i++) data.append(buffer[i]);
-
-					logger.debug("    write  %s", AgentStream::Data::toEscapedString(data).toLocal8Bit().constData());
+					logger.debug("    write  %s", Data::toEscapedString(data).toLocal8Bit().constData());
 				}
 			} else {
 				// There is no data to return
@@ -338,7 +353,7 @@ void AgentStream::Call() {
 		}
 	}
 
-	if (DEBUG_SHOW_AGENT_STREAM) logger.debug("    %s", Stream::getResultString(fcb->headResult));
+	if (DEBUG_SHOW_AGENT_STREAM) logger.debug("    result %s", Stream::getResultString(fcb->headResult));
 }
 
 
@@ -417,6 +432,12 @@ void AgentStream::dump(log4cpp::Category& logger) {
 			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.u2 & 0x0F), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten,
 			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.u2 & 0x0F), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten
 			);
+
+		CARD32 serverID = iocb->serverID;
+		if (handlerMap.contains(serverID)) {
+			Handler* handler = handlerMap[serverID];
+			logger.debug("    %-10s  read%s  write%s", handler->name, handler->dataRead.toString().toLocal8Bit().constData(), handler->dataWrite.toString().toLocal8Bit().constData());
+		}
 	}
 }
 

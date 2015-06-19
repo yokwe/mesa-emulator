@@ -94,6 +94,18 @@ StreamTCP::SocketInfo* StreamTCP::getSocket(CARD32 socketID) {
 	return 0;
 }
 
+void StreamTCP::removeSocket(SocketInfo* socketInfo) {
+	const CARD32 socketID = socketInfo->socketID;
+	if (socketMap.contains(socketID)) {
+		socketMap.remove(socketID);
+		delete socketInfo;
+	} else {
+		logger.fatal("socketID = %d", socketID);
+		ERROR();
+	}
+}
+
+
 
 CARD32                               StreamTCP::SocketInfo::socketIDNext = 0;
 QMap<CARD32, StreamTCP::SocketInfo*> StreamTCP::socketMap;
@@ -133,28 +145,31 @@ void StreamTCP::run() {
 			MsgID msgID = static_cast<MsgID>(msg);
 			logger.debug("MsgID  %-8s  %5d  %5d  %5d", getMsgIDString(msgID), arg1, arg2, arg3);
 			switch(msgID) {
-			case MsgID::connect: {
+			case MsgID::connect:
 				connect(arg1, arg2, arg3);
-			}
 				break;
+			case MsgID::get:
+				get(arg1, arg2, arg3);
+				break;
+			case MsgID::shutDown:
+				shutDown(arg1, arg2, arg3);
+				break;
+			case MsgID::close:
+				close(arg1, arg2, arg3);
+				break;
+
 			case MsgID::listen:
 			case MsgID::put:
-			case MsgID::get:
-			case MsgID::close:
 			case MsgID::setWaitTime:
 			case MsgID::endStream:
-			case MsgID::shutDown:
 			case MsgID::reset:
+				ERROR();
 				break;
 			default: {
 				logger.fatal("msg = %d", msg);
 				ERROR();
 			}
 			}
-
-			putData32(Status::success);
-			putData32(WSEReason::WSAEACCES);
-
 		}
 	} catch(AgentStream::Handler::StopThreadException&) {
 		//
@@ -175,19 +190,27 @@ void StreamTCP::run() {
 //      reason _ GetReason[stream];
 //    }
 //    socketID _ GetLongNumber[stream];
-void StreamTCP::connect(CARD32 remote, CARD32 remotePort, CARD32 localPort) {
-	const QString remoteAddress = AgentStream::Data::toIPAddress(remote);
-
+void StreamTCP::connect(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	SocketInfo* socketInfo = new SocketInfo;
+	socketInfo->remoteAddress = arg1;
+	socketInfo->remotePort    = arg2;
+	socketInfo->localAddress  = 0;
+	socketInfo->localPort     = arg3;
+	socketInfo->timeout       = 0;
+
+	QString remoteIPAddress = AgentStream::Data::toIPAddress(socketInfo->remoteAddress);
+
+	logger.debug("    connect  %04d  %s:%d  localPort %d",
+			socketInfo->socketID, remoteIPAddress.toLocal8Bit().constData(), socketInfo->remotePort, socketInfo->localPort);
 	{
-		bool success = socketInfo->socket.bind(localPort);
+		bool success = socketInfo->socket.bind(socketInfo->localPort);
 		if (!success) {
 			logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
 			ERROR();
 		}
 	}
 
-	socketInfo->socket.connectToHost(remoteAddress, remotePort, 0);
+	socketInfo->socket.connectToHost(remoteIPAddress, socketInfo->remotePort, 0);
 	{
 		bool success = socketInfo->socket.waitForConnected();
 		if (!success) {
@@ -199,6 +222,84 @@ void StreamTCP::connect(CARD32 remote, CARD32 remotePort, CARD32 localPort) {
 	// Output response
 	putData32(Status::success);
 	putData32(socketInfo->socketID);
+}
 
-	logger.debug("    connect  %4d", socketInfo->socketID);
+
+//    PutCommand[stream, get];
+//    PutLongNumber[stream, socketInfo.socketID];
+//    PutLongNumber[stream, length];
+//    PutLongNumber[stream, LONG[0]];
+//    ----
+//    status _ GetStatusXX[stream, length, 10000];
+//    IF status = success THEN {
+//      dataLen: LONG CARDINAL _ GetLongNumber[stream];
+//    } else {
+//      reason _ GetReason[stream];
+//    }
+void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
+	// Sanity check
+	if (arg3 != 0) ERROR();
+
+	SocketInfo* socketInfo = getSocket(arg1);
+	const CARD32 length = arg2;
+
+	if (socketInfo->socket.waitForReadyRead()) {
+		QByteArray readData = socketInfo->socket.read(length);
+		const quint32 dataSize = (quint32)readData.size();
+		logger.debug("dataSize  %d", dataSize);
+
+		// Output response
+		putData32(Status::success);
+		putData32(dataSize);
+		putData(readData);
+	} else {
+		// Output response
+		putData32(Status::success);
+		putData32(0);
+	}
+}
+
+
+//    PutCommand[stream, shutDown];
+//    PutLongNumber[stream, socketInfo.socketID];
+//    PutLongNumber[stream, LONG[1]];
+//    PutLongNumber[stream, LONG[0]];
+//    ----
+//    status _ GetStatus[stream];
+//    IF status = failure THEN {
+//      reason _ GetReason[stream];
+//    }
+void StreamTCP::shutDown(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
+	// Sanity check
+	if (arg2 != 1) ERROR();
+	if (arg3 != 0) ERROR();
+
+	SocketInfo* socketInfo = getSocket(arg1);
+	socketInfo->socket.disconnectFromHost();
+
+	// Output response
+	putData32(Status::success);
+}
+
+
+//    PutCommand[stream, close];
+//    PutLongNumber[stream, socketInfo.socketID];
+//    PutLongNumber[stream, LONG[0]];
+//    PutLongNumber[stream, LONG[0]];
+//    ----
+//    status _ GetStatus[stream];
+//    IF status = failure THEN {
+//      reason _ GetReason[stream];
+//    }
+void StreamTCP::close(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
+	// Sanity check
+	if (arg2 != 0) ERROR();
+	if (arg3 != 0) ERROR();
+
+	SocketInfo* socketInfo = getSocket(arg1);
+	socketInfo->socket.close();
+	removeSocket(socketInfo);
+
+	// Output response
+	putData32(Status::success);
 }
