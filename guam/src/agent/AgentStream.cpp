@@ -426,12 +426,12 @@ void AgentStream::dump(log4cpp::Category& logger) {
 	logger.debug("AGENT %s  %08X  %s", name, fcb->iocbHead, Stream::getCommandString(fcb->headCommand));
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-		logger.debug("   %c%-10s  %c-%c  mesaGet[%04d%c%c%02X %X %3d %3d]  mesaPut[%04d%c%c%02X %X %3d %3d]",
+		logger.debug("   %c%-10s  %c-%c  mesaPut[%04d%c%c%02X %X %3d %3d]  mesaGet[%04d%c%c%02X %X %3d %3d]",
 				(iocb->mesaIsServer ? 'S' : ' '), Stream::getServerString(iocb->serverID),
 			Stream::getConnectionStateString(iocb->mesaConnectionState)[0],
 			Stream::getConnectionStateString(iocb->pcConnectionState)[0],
-			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.u2 & 0x0F), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten,
-			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.u2 & 0x0F), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten
+			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.u2 & 0x0F), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten,
+			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.u2 & 0x0F), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten
 			);
 
 		CARD32 serverID = iocb->serverID;
