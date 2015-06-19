@@ -254,13 +254,15 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	if (socketInfo->socket.waitForReadyRead()) {
 		QByteArray readData = socketInfo->socket.read(length);
 		const quint32 dataSize = (quint32)readData.size();
-		logger.debug("dataSize  %d", dataSize);
+		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, dataSize, length);
 
 		// Output response
 		putData32(Status::success);
 		putData32(dataSize);
 		putData(readData, true);
 	} else {
+		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, 0, length);
+
 		// Output response
 		putData32(Status::success);
 		putData32(0);
@@ -285,6 +287,8 @@ void StreamTCP::shutDown(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3
 	SocketInfo* socketInfo = getSocket(arg1);
 	socketInfo->socket.disconnectFromHost();
 
+	logger.debug("    shutDown %04d", socketInfo->socketID);
+
 	// Output response
 	putData32(Status::success);
 }
@@ -307,6 +311,8 @@ void StreamTCP::close(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	SocketInfo* socketInfo = getSocket(arg1);
 	socketInfo->socket.close();
 	removeSocket(socketInfo);
+
+	logger.debug("    close    %04d", socketInfo->socketID);
 
 	// Output response
 	putData32(Status::success);
@@ -337,9 +343,12 @@ void StreamTCP::put(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	SocketInfo* socketInfo = getSocket(arg1);
 	const CARD32 length = arg2;
 
-	CARD32 actualWrite = socketInfo->socket.write(data, length);
-
-	logger.debug("data.size() = %d  length = %d  actualWrite = %d", data.size(), length, actualWrite);
+	int actualWrite = socketInfo->socket.write(data, length);
+	if (actualWrite == -1) {
+		logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
+		ERROR();
+	}
+	logger.debug("    put      %04d  %3d / %3d / %3d", socketInfo->socketID, actualWrite, length, data.size());
 
 	// Output response
 	putData32(Status::success);
