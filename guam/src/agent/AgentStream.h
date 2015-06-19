@@ -49,13 +49,28 @@ public:
 		Task() : hTask(hTaskNext++) {};
 	};
 
+	class StreamData {
+	private:
+		QByteArray data;
+		bool       endRecord;
+
+	public:
+		StreamData(QByteArray data_, bool endRecord_ = false) : data(data_), endRecord(endRecord_) {}
+		QByteArray getData() const {
+			return data;
+		}
+		bool isEndRecord() {
+			return endRecord;
+		}
+	};
+
 	class Data {
 	private:
 		static const int WAIT_TIME_IN_MILLISECOND = 1000;
 
 		QMutex             mutex;
 		QWaitCondition     cv;
-		QQueue<QByteArray> queue;
+		QQueue<StreamData> queue;
 
 	public:
 		static QByteArray readMesa (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
@@ -73,13 +88,13 @@ public:
 
 			return cv.wait(&mutex, time);
 		}
-		void put(QByteArray data) {
+		void put(StreamData data) {
 			QMutexLocker locker(&mutex);
 			queue.enqueue(data);
 
 			cv.wakeAll();
 		}
-		QByteArray get() {
+		StreamData get() {
 			QMutexLocker locker(&mutex);
 			return queue.dequeue();
 		}
@@ -94,8 +109,10 @@ public:
 		}
 
 		// Take one QByteArray data from queue and append to iocb->mesaGet
-		void get(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-			writeMesa(iocb, get());
+		void getXX(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+			StreamData data = get();
+			writeMesa(iocb, data.getData());
+			if (data.isEndRecord()) iocb->mesaGet.endRecord = 1;
 			// Notify interrupt if necessary
 			if (iocb->mesaGet.interruptMesa) notifyInterrupt();
 		}
@@ -104,7 +121,7 @@ public:
 			put(toByteArray(data));
 		}
 		CARD32 get32() {
-			return toCARD32(get());
+			return toCARD32(get().getData());
 		}
 		QString toString();
 	};
@@ -152,7 +169,7 @@ public:
 		// get data from dataRead, wait until data is arrived. If stopThread is true, generate StotThreadException
 		QByteArray getData();
 		// put data to writeData
-		void       putData(QByteArray value);
+		void       putData(QByteArray value, bool endRecord = false);
 	protected:
 		// Wait interval in milliseconds for QWaitCondition::wait
 		static const int WAIT_INTERVAL = 1000;

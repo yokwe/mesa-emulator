@@ -102,11 +102,11 @@ QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 	CARD8* buffer = (CARD8*)Store(iocb->mesaPut.buffer);
 	const CARD32 bytesRead = iocb->mesaPut.bytesRead;
 	const CARD32 bytesWritten = iocb->mesaPut.bytesWritten;
-	LittleEndianByteBuffer bb(buffer, bytesWritten);
+	LittleEndianByteBuffer bb(buffer, ((bytesWritten + 1) & ~1));
 	bb.setPos(bytesRead);
 
 	QByteArray ret;
-	while(bb.remaining()) ret.append(bb.get8());
+	for(CARD32 i = bytesRead; i < bytesWritten; i++) ret.append(bb.get8(i));
 	iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
 
 	return ret;
@@ -187,7 +187,7 @@ QString AgentStream::Data::toString() {
 	ret.append("[");
 	for(int i = 0; i < queue.size(); i++) {
 		if (i) ret.append(" ");
-		ret.append(toEscapedString(queue.at(i)));
+		ret.append(toEscapedString(queue.at(i).getData()));
 	}
 	ret.append("]");
 	return ret;
@@ -330,13 +330,14 @@ void AgentStream::Call() {
 			// Check dataWrite and return if not empty
 			if (handler->dataWrite.size()) {
 				// There is data to return.
-				QByteArray data = handler->dataWrite.get();
-				Data::writeMesa(iocb, data);
+				StreamData data = handler->dataWrite.get();
+				Data::writeMesa(iocb, data.getData());
+				if (data.isEndRecord()) iocb->mesaGet.endRecord = 1;
 				if (iocb->mesaGet.interruptMesa) notifyInterrupt();
 				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 
 				if (DEBUG_SHOW_AGENT_STREAM) {
-					logger.debug("    write  %s", Data::toEscapedString(data).toLocal8Bit().constData());
+					logger.debug("    write  %s", Data::toEscapedString(data.getData()).toLocal8Bit().constData());
 				}
 			} else {
 				// There is no data to return
@@ -453,10 +454,11 @@ QByteArray AgentStream::Handler::getData() {
 		if (0 < dataRead.size()) break;
 		dataRead.waitData();
 	}
-	return dataRead.get();
+	return dataRead.get().getData();
 }
 
-void AgentStream::Handler::putData(QByteArray data) {
+void AgentStream::Handler::putData(QByteArray data_, bool endRecord_) {
 	if (stopThread) throw StopThreadException();
+	StreamData data(data_, endRecord_);
 	dataWrite.put(data);
 }

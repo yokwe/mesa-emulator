@@ -157,9 +157,11 @@ void StreamTCP::run() {
 			case MsgID::close:
 				close(arg1, arg2, arg3);
 				break;
+			case MsgID::put:
+				put(arg1, arg2, arg3);
+				break;
 
 			case MsgID::listen:
-			case MsgID::put:
 			case MsgID::setWaitTime:
 			case MsgID::endStream:
 			case MsgID::reset:
@@ -233,6 +235,12 @@ void StreamTCP::connect(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3)
 //    status _ GetStatusXX[stream, length, 10000];
 //    IF status = success THEN {
 //      dataLen: LONG CARDINAL _ GetLongNumber[stream];
+//      IF dataLen # 0 THEN {
+//        Stream.SetInputOptions[stream, [terminateOnEndRecord: TRUE]];
+//        -- block.stopIndexPlusOne _ Inline.LowHalf[dataLen];
+//        [byteCount, why, ] _ Stream.GetBlock[stream, block];
+//      }
+//      ...
 //    } else {
 //      reason _ GetReason[stream];
 //    }
@@ -251,7 +259,7 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 		// Output response
 		putData32(Status::success);
 		putData32(dataSize);
-		putData(readData);
+		putData(readData, true);
 	} else {
 		// Output response
 		putData32(Status::success);
@@ -302,4 +310,38 @@ void StreamTCP::close(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 
 	// Output response
 	putData32(Status::success);
+}
+
+
+//    DO
+//      PutCommand[stream, put];
+//      PutLongNumber[stream, socketInfo.socketID];
+//      PutLongNumber[stream, length];
+//      PutLongNumber[stream, LONG[0]];
+//      Stream.PutBlock[stream, block, FALSE];
+//      status _ GetStatusX[stream, 10000];
+//      IF status = success THEN {
+//	      putLen _ GetLongNumber[stream];
+//  	    -- IF putLen = 0 THEN TcpStream.Suspended[noRouteToDestination];
+//      } else {
+//        reason _ GetReason[stream];
+//        LOOP
+//      }
+//      ENDLOOP
+void StreamTCP::put(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
+	// Sanity check
+	if (arg3 != 0) ERROR();
+
+	QByteArray data = getData();
+
+	SocketInfo* socketInfo = getSocket(arg1);
+	const CARD32 length = arg2;
+
+	CARD32 actualWrite = socketInfo->socket.write(data, length);
+
+	logger.debug("data.size() = %d  length = %d  actualWrite = %d", data.size(), length, actualWrite);
+
+	// Output response
+	putData32(Status::success);
+	putData32(actualWrite);
 }
