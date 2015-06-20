@@ -69,8 +69,9 @@ public:
 	int  bind  (SockAddress localAddress);
 	int  listen(int backlog);
 	SocketStream accept(SockAddress& remote);
+	int  shutdown(int how);
 
-	int  select(int timeout);
+	int  select(int timeout_sec);
 	int  read  (char* buf, int count);
 	int  write (char* buf, int count);
 

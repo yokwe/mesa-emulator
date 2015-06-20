@@ -36,6 +36,7 @@ static log4cpp::Category& logger = Logger::getLogger("socket");
 
 #include "../mesa/Memory.h"
 
+#include "AgentStream.h"
 #include "SocketStream.h"
 
 #include <unistd.h>
@@ -45,6 +46,8 @@ static log4cpp::Category& logger = Logger::getLogger("socket");
 
 #include <QtCore>
 #include <arpa/inet.h>
+
+#define DEBUG_SHOW_SOCKET_STREAM 1
 
 SocketStream::SocketStream() {
 	fd = ::socket(AF_INET, SOCK_STREAM, 0);
@@ -57,6 +60,16 @@ SocketStream::SocketStream() {
 
 void SocketStream::connect(SockAddress remoteAddress) {
 	struct sockaddr_in remote;
+
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		CARD32 addr = remoteAddress.addr;
+		CARD32 a = (addr >> 24) & 0xFF;
+		CARD32 b = (addr >> 16) & 0xFF;
+		CARD32 c = (addr >>  8) & 0xFF;
+		CARD32 d = (addr >>  0) & 0xFF;
+
+		logger.debug("connect  %2d  %d.%d.%d.%d %d", fd, a, b, c, d, remoteAddress.port);
+	}
 
 	bzero((char *)&remote, sizeof(remote));
 	remote.sin_family      = AF_INET;
@@ -72,6 +85,10 @@ void SocketStream::connect(SockAddress remoteAddress) {
 }
 
 void SocketStream::close() {
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		logger.debug("close    %2d", fd);
+	}
+
 	int result = ::close(fd);
 	if (result == -1) {
 		lastErrno = errno;
@@ -81,6 +98,16 @@ void SocketStream::close() {
 }
 
 int  SocketStream::bind  (SockAddress localAddress) {
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		CARD32 addr = localAddress.addr;
+		CARD32 a = (addr >> 24) & 0xFF;
+		CARD32 b = (addr >> 16) & 0xFF;
+		CARD32 c = (addr >>  8) & 0xFF;
+		CARD32 d = (addr >>  0) & 0xFF;
+
+		logger.debug("bind     %2d  %d.%d.%d.%d %d", fd, a, b, c, d, localAddress.port);
+	}
+
 	struct sockaddr_in local;
 
 	bzero((char *)&local, sizeof(local));
@@ -97,6 +124,10 @@ int  SocketStream::bind  (SockAddress localAddress) {
 	return result;
 }
 int  SocketStream::listen(int backlog) {
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		logger.debug("listen   %2d  %d", fd, backlog);
+	}
+
 	int result = ::listen(fd, backlog);
 	if (result == -1) {
 		lastErrno = errno;
@@ -124,6 +155,16 @@ SocketStream SocketStream::accept(SockAddress& remote) {
 	remote.addr = qFromBigEndian((quint32)received.sin_addr.s_addr);
 	remote.port = qFromBigEndian((quint16)received.sin_port);
 
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		CARD32 addr = remote.addr;
+		CARD32 a = (addr >> 24) & 0xFF;
+		CARD32 b = (addr >> 16) & 0xFF;
+		CARD32 c = (addr >>  8) & 0xFF;
+		CARD32 d = (addr >>  0) & 0xFF;
+
+		logger.debug("accept   %2d  %d.%d.%d.%d %d", fd, a, b, c, d, remote.port);
+	}
+
 	return ret;
 }
 
@@ -134,6 +175,14 @@ int  SocketStream::read  (char* buf, int count) {
 		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));
 		ERROR();
 	}
+
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		QByteArray t;
+		for(int i = 0; i < result; i++) t.append(buf[i]);
+
+		logger.debug("read     %2d  %d  %s", fd, result, AgentStream::Data::toEscapedString(t).toLocal8Bit().constData());
+	}
+
 	return result;
 }
 int  SocketStream::write (char* buf, int count) {
@@ -143,20 +192,47 @@ int  SocketStream::write (char* buf, int count) {
 		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));
 		ERROR();
 	}
+
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		QByteArray t;
+		for(int i = 0; i < result; i++) t.append(buf[i]);
+
+		logger.debug("write    %2d  %d %s", fd, result, AgentStream::Data::toEscapedString(t).toLocal8Bit().constData());
+	}
+
 	return result;
 }
 
-int  SocketStream::select(int timeout) {
+int  SocketStream::select(int timeout_sec) {
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 
 	// 1 second
 	struct timeval t;
-	t.tv_sec  = timeout;
+	t.tv_sec  = timeout_sec;
 	t.tv_usec = 0;
 
 	int result = ::select(FD_SETSIZE, &fds, NULL, NULL, &t);
+	if (result == -1) {
+		lastErrno = errno;
+		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));
+		ERROR();
+	}
+
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		logger.debug("select   %2d  %d", fd, result);
+	}
+
+	return result;
+}
+
+int  SocketStream::shutdown (int how) {
+	if (DEBUG_SHOW_SOCKET_STREAM) {
+		logger.debug("shutdown %2d  %d", fd, how);
+	}
+
+	int result = ::shutdown(fd, how);
 	if (result == -1) {
 		lastErrno = errno;
 		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));

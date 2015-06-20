@@ -310,7 +310,7 @@ void AgentStream::Call() {
 			// add data in iocb->mesaPut to dataRead
 			QByteArray data = Data::readMesa(iocb);
 			if (DEBUG_SHOW_AGENT_STREAM) {
-				logger.debug("    read   %s", Data::toEscapedString(data).toLocal8Bit().constData());
+				logger.debug("    data read   %s", Data::toEscapedString(data).toLocal8Bit().constData());
 			}
 			handler->dataRead.put(data);
 			fcb->headResult = CoProcessorIOFaceGuam::R_completed;
@@ -337,7 +337,7 @@ void AgentStream::Call() {
 				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 
 				if (DEBUG_SHOW_AGENT_STREAM) {
-					logger.debug("    write  %s", Data::toEscapedString(data.getData()).toLocal8Bit().constData());
+					logger.debug("    data write  %s", Data::toEscapedString(data.getData()).toLocal8Bit().constData());
 				}
 			} else {
 				// There is no data to return

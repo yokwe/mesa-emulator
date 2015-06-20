@@ -193,12 +193,16 @@ void StreamTCP::run() {
 //    }
 //    socketID _ GetLongNumber[stream];
 void StreamTCP::connect(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
+	const CARD32 remote = arg1;
+	const CARD32 rPort  = arg2;
+	const CARD32 lPort  = arg3;
+
 	SocketInfo* socketInfo = new SocketInfo;
 	// Swap high low word for mesa byte order for long value
-	socketInfo->remoteAddress = ((arg1 >> 16) & 0x0000FFFF) | ((arg1 << 16) & 0xFFFF0000);
-	socketInfo->remotePort    = arg2;
+	socketInfo->remoteAddress = ((remote >> 16) & 0x0000FFFF) | ((remote << 16) & 0xFFFF0000);
+	socketInfo->remotePort    = rPort;
 	socketInfo->localAddress  = 0;
-	socketInfo->localPort     = arg3;
+	socketInfo->localPort     = lPort;
 	socketInfo->timeout       = 0;
 
 	logger.debug("    connect  %04d  %08X:%d  localPort %d",
@@ -236,10 +240,11 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	// Sanity check
 	if (arg3 != 0) ERROR();
 
-	SocketInfo* socketInfo = getSocket(arg1);
-	const CARD32 length = arg2;
+	const CARD32 socketID = arg1;
+	const CARD32 length   = arg2;
 
-	if (socketInfo->socket.select(WAIT_TIME)) {
+	SocketInfo* socketInfo = getSocket(socketID);
+	if (socketInfo->socket.select(WAIT_TIME_IN_SEC)) {
 		char buffer[2000];
 		if (sizeof(buffer) < length) ERROR();
 
@@ -278,10 +283,13 @@ void StreamTCP::shutDown(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3
 	if (arg2 != 1) ERROR();
 	if (arg3 != 0) ERROR();
 
-	SocketInfo* socketInfo = getSocket(arg1);
-	//socketInfo->socket.disconnectFromHost();
+	const CARD32 serverID = arg1;
+	const int    how      = (int)arg2;
 
-	logger.debug("    shutDown %04d", socketInfo->socketID);
+	SocketInfo* socketInfo = getSocket(serverID);
+	socketInfo->socket.shutdown(how);
+
+	logger.debug("    shutDown %04d  %d", socketInfo->socketID, how);
 
 	// Output response
 	putData32(Status::success);
@@ -302,11 +310,11 @@ void StreamTCP::close(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	if (arg2 != 0) ERROR();
 	if (arg3 != 0) ERROR();
 
-	SocketInfo* socketInfo = getSocket(arg1);
+	const CARD16 socketID = arg1;
+
+	SocketInfo* socketInfo = getSocket(socketID);
 	socketInfo->socket.close();
 	removeSocket(socketInfo);
-
-	logger.debug("    close    %04d", socketInfo->socketID);
 
 	// Output response
 	putData32(Status::success);
@@ -332,12 +340,11 @@ void StreamTCP::put(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	// Sanity check
 	if (arg3 != 0) ERROR();
 
+	const CARD16 socketID = arg1;
+	const CARD32 length   = arg2;
+
 	QByteArray data = getData();
-
-	SocketInfo* socketInfo = getSocket(arg1);
-	const CARD32 length = arg2;
-
-
+	SocketInfo* socketInfo = getSocket(socketID);
 	int actualWrite = socketInfo->socket.write(data.data(), data.size());
 	logger.debug("    put      %04d  %3d / %3d / %3d", socketInfo->socketID, actualWrite, length, data.size());
 
