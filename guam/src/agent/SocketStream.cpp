@@ -43,6 +43,8 @@ static log4cpp::Category& logger = Logger::getLogger("socket");
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <QtCore>
+#include <arpa/inet.h>
 
 SocketStream::SocketStream() {
 	fd = ::socket(AF_INET, SOCK_STREAM, 0);
@@ -119,8 +121,8 @@ SocketStream SocketStream::accept(SockAddress& remote) {
 	ret.fd        = result;
 	ret.lastErrno = 0;
 
-	remote.addr = qFromBigEndian(received.sin_addr.s_addr);
-	remote.port = qFromBigEndian(received.sin_port);
+	remote.addr = qFromBigEndian((quint32)received.sin_addr.s_addr);
+	remote.port = qFromBigEndian((quint16)received.sin_port);
 
 	return ret;
 }
@@ -136,6 +138,25 @@ int  SocketStream::read  (char* buf, int count) {
 }
 int  SocketStream::write (char* buf, int count) {
 	int result = ::write(fd, buf, count);
+	if (result == -1) {
+		lastErrno = errno;
+		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));
+		ERROR();
+	}
+	return result;
+}
+
+int  SocketStream::select(int timeout) {
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+
+	// 1 second
+	struct timeval t;
+	t.tv_sec  = timeout;
+	t.tv_usec = 0;
+
+	int result = ::select(FD_SETSIZE, &fds, NULL, NULL, &t);
 	if (result == -1) {
 		lastErrno = errno;
 		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));

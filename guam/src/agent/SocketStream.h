@@ -47,6 +47,8 @@ public:
 	public:
 		quint32 addr;
 		quint16 port;
+
+		SockAddress(quint32 addr_, quint16 port_) : addr(addr_), port(port_) {}
 	};
 
 	SocketStream();
@@ -68,6 +70,7 @@ public:
 	int  listen(int backlog);
 	SocketStream accept(SockAddress& remote);
 
+	int  select(int timeout);
 	int  read  (char* buf, int count);
 	int  write (char* buf, int count);
 

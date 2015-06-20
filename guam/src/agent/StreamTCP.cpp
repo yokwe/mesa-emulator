@@ -194,32 +194,20 @@ void StreamTCP::run() {
 //    socketID _ GetLongNumber[stream];
 void StreamTCP::connect(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	SocketInfo* socketInfo = new SocketInfo;
-	socketInfo->remoteAddress = arg1;
+	// Swap high low word for mesa byte order for long value
+	socketInfo->remoteAddress = ((arg1 >> 16) & 0x0000FFFF) | ((arg1 << 16) & 0xFFFF0000);
 	socketInfo->remotePort    = arg2;
 	socketInfo->localAddress  = 0;
 	socketInfo->localPort     = arg3;
 	socketInfo->timeout       = 0;
 
-	QString remoteIPAddress = AgentStream::Data::toIPAddress(socketInfo->remoteAddress);
+	logger.debug("    connect  %04d  %08X:%d  localPort %d",
+			socketInfo->socketID, socketInfo->remoteAddress, socketInfo->remotePort, socketInfo->localPort);
 
-	logger.debug("    connect  %04d  %s:%d  localPort %d",
-			socketInfo->socketID, remoteIPAddress.toLocal8Bit().constData(), socketInfo->remotePort, socketInfo->localPort);
-	{
-		bool success = socketInfo->socket.bind(socketInfo->localPort);
-		if (!success) {
-			logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
-			ERROR();
-		}
-	}
-
-	socketInfo->socket.connectToHost(remoteIPAddress, socketInfo->remotePort, 0);
-	{
-		bool success = socketInfo->socket.waitForConnected();
-		if (!success) {
-			logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
-			ERROR();
-		}
-	}
+	SocketStream::SockAddress localAddress(SocketStream::INADDR_ANY, socketInfo->localPort);
+	SocketStream::SockAddress remoteAddress(socketInfo->remoteAddress, socketInfo->remotePort);
+	socketInfo->socket.bind(localAddress);
+	socketInfo->socket.connect(remoteAddress);
 
 	// Output response
 	putData32(Status::success);
@@ -251,15 +239,21 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	SocketInfo* socketInfo = getSocket(arg1);
 	const CARD32 length = arg2;
 
-	if (socketInfo->socket.waitForReadyRead()) {
-		QByteArray readData = socketInfo->socket.read(length);
-		const quint32 dataSize = (quint32)readData.size();
+	if (socketInfo->socket.select(WAIT_TIME)) {
+		char buffer[2000];
+		if (sizeof(buffer) < length) ERROR();
+
+		int size = socketInfo->socket.read(buffer, length);
+
+		QByteArray data;
+		for(int i = 0; i < size; i++) data.append(buffer[i]);
+		const quint32 dataSize = (quint32)data.size();
 		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, dataSize, length);
 
 		// Output response
 		putData32(Status::success);
 		putData32(dataSize);
-		putData(readData, true);
+		putData(data, true);
 	} else {
 		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, 0, length);
 
@@ -285,7 +279,7 @@ void StreamTCP::shutDown(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3
 	if (arg3 != 0) ERROR();
 
 	SocketInfo* socketInfo = getSocket(arg1);
-	socketInfo->socket.disconnectFromHost();
+	//socketInfo->socket.disconnectFromHost();
 
 	logger.debug("    shutDown %04d", socketInfo->socketID);
 
@@ -343,11 +337,8 @@ void StreamTCP::put(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	SocketInfo* socketInfo = getSocket(arg1);
 	const CARD32 length = arg2;
 
-	int actualWrite = socketInfo->socket.write(data, length);
-	if (actualWrite == -1) {
-		logger.debug("error = %s", socketInfo->socket.errorString().toLocal8Bit().constData());
-		ERROR();
-	}
+
+	int actualWrite = socketInfo->socket.write(data.data(), data.size());
 	logger.debug("    put      %04d  %3d / %3d / %3d", socketInfo->socketID, actualWrite, length, data.size());
 
 	// Output response

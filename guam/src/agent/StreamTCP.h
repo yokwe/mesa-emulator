@@ -34,7 +34,7 @@ OF SUCH DAMAGE.
 
 #include "AgentStream.h"
 
-#include <QTcpSocket>
+#include "SocketStream.h"
 
 class StreamTCP : public AgentStream::Handler {
 public:
@@ -135,7 +135,7 @@ public:
 		CARD16 localPort;
 		CARD32 timeout;
 
-		QTcpSocket socket;
+		SocketStream socket;;
 
 		SocketInfo() : socketID(++socketIDNext) {
 			localAddress = remoteAddress = localPort = remotePort = 0;
@@ -196,6 +196,7 @@ public:
 	void reset      (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
 
 private:
+	static const int WAIT_TIME = 1000;
 	static QMap<CARD32, SocketInfo*> socketMap;
 };
 
