@@ -153,6 +153,10 @@ QString AgentStream::Data::toIPAddress(CARD32 data) {
 	return QString("%1.%2.%3.%4").arg(a).arg(b).arg(c).arg(d);
 }
 
+static int isVisible(int c) {
+	return isalpha(c) || (c == '\r') || (c == '\n');
+}
+
 QString AgentStream::Data::toEscapedString(QByteArray data) {
 	const int size = data.size();
 	// Special for 4 byte data
@@ -162,7 +166,7 @@ QString AgentStream::Data::toEscapedString(QByteArray data) {
 		const int a2 = (value >> 16) & 0xFF;
 		const int a3 = (value >>  8) & 0xFF;
 		const int a4 = (value >>  0) & 0xFF;
-		if (!(isalpha(a1) && isalpha(a2) && isalpha(a3) && isalpha(a4))) {
+		if (!(isVisible(a1) && isVisible(a2) && isVisible(a3) && isVisible(a4))) {
 			return QString::number(value);
 		}
 	}
