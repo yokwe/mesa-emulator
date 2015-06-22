@@ -196,7 +196,6 @@ public:
 	void reset      (const CARD32 arg1, const CARD32 arg2, const CARD32 arg3);
 
 private:
-	static const int WAIT_TIME_IN_SEC = 1;
 	static QMap<CARD32, SocketInfo*> socketMap;
 };
 

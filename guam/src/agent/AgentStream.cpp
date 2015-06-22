@@ -43,6 +43,8 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "Stream.h"
 #include "StreamTCP.h"
 
+#include <ctype.h>
+
 
 #define DEBUG_SHOW_AGENT_STREAM 1
 
@@ -156,7 +158,11 @@ QString AgentStream::Data::toEscapedString(QByteArray data) {
 	// Special for 4 byte data
 	if (size == 4) {
 		const CARD32 value = toCARD32(data);
-		if ((CARD8)value < 'A' || 'Z' < (CARD8)value) {
+		const int a1 = (value >> 24) & 0xFF;
+		const int a2 = (value >> 16) & 0xFF;
+		const int a3 = (value >>  8) & 0xFF;
+		const int a4 = (value >>  0) & 0xFF;
+		if (!(isalpha(a1) && isalpha(a2) && isalpha(a3) && isalpha(a4))) {
 			return QString::number(value);
 		}
 	}
@@ -187,7 +193,7 @@ QString AgentStream::Data::toString() {
 	ret.append("[");
 	for(int i = 0; i < queue.size(); i++) {
 		if (i) ret.append(" ");
-		ret.append(toEscapedString(queue.at(i).getData()));
+		ret.append(toEscapedString(queue.at(i).data));
 	}
 	ret.append("]");
 	return ret;
@@ -309,10 +315,13 @@ void AgentStream::Call() {
 
 			// add data in iocb->mesaPut to dataRead
 			QByteArray data = Data::readMesa(iocb);
+			StreamData streamData(data, iocb->mesaPut.subSequence, iocb->mesaPut.endSST, iocb->mesaPut.endRecord, iocb->mesaPut.endStream);
 			if (DEBUG_SHOW_AGENT_STREAM) {
-				logger.debug("    data read   %s", Data::toEscapedString(data).toLocal8Bit().constData());
+				logger.debug("    data read   %02X  %c%c%c  %s",
+					streamData.sst, (streamData.endSST ? 'S' : ' '), (streamData.endRecord ? 'R' : ' '), (streamData.endStream ? 'E' : ' '), Data::toEscapedString(streamData.data).toLocal8Bit().constData());
 			}
-			handler->dataRead.put(data);
+
+			handler->dataRead.put(streamData);
 			fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 		}
 			break;
@@ -330,14 +339,15 @@ void AgentStream::Call() {
 			// Check dataWrite and return if not empty
 			if (handler->dataWrite.size()) {
 				// There is data to return.
-				StreamData data = handler->dataWrite.get();
-				Data::writeMesa(iocb, data.getData());
-				if (data.isEndRecord()) iocb->mesaGet.endRecord = 1;
+				StreamData streamData = handler->dataWrite.get();
+				Data::writeMesa(iocb, streamData.data);
+				if (streamData.endRecord) iocb->mesaGet.endRecord = 1;
 				if (iocb->mesaGet.interruptMesa) notifyInterrupt();
 				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 
 				if (DEBUG_SHOW_AGENT_STREAM) {
-					logger.debug("    data write  %s", Data::toEscapedString(data.getData()).toLocal8Bit().constData());
+					logger.debug("    data write  %02X  %c%c%c  %s",
+						streamData.sst, (streamData.endSST ? 'S' : ' '), (streamData.endRecord ? 'R' : ' '), (streamData.endStream ? 'E' : ' '), Data::toEscapedString(streamData.data).toLocal8Bit().constData());
 				}
 			} else {
 				// There is no data to return
@@ -447,18 +457,35 @@ void AgentStream::notifyInterrupt() {
 }
 
 
-QByteArray AgentStream::Handler::getData() {
+AgentStream::StreamData AgentStream::Handler::getData() {
 	for(;;) {
 		if (stopThread) throw StopThreadException();
 
 		if (0 < dataRead.size()) break;
 		dataRead.waitData();
 	}
-	return dataRead.get().getData();
+	return dataRead.get();
 }
 
-void AgentStream::Handler::putData(QByteArray data_, bool endRecord_) {
+
+CARD32 AgentStream::Handler::getData32() {
+//	return AgentStream::Data::toCARD32(getData().data);
+	CARD32 ret = 0;
+
+	for(;;) {
+		StreamData streamData = getData();
+		if (streamData.data.size() == 0) {
+			logger.warn("getData32  ignore empty data");
+			continue;
+		}
+		ret = AgentStream::Data::toCARD32(streamData.data);
+		break;
+	}
+
+	return ret;
+}
+
+void AgentStream::Handler::putData(AgentStream::StreamData data) {
 	if (stopThread) throw StopThreadException();
-	StreamData data(data_, endRecord_);
 	dataWrite.put(data);
 }

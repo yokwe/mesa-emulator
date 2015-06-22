@@ -185,7 +185,7 @@ int  SocketStream::read  (char* buf, int count) {
 
 	return result;
 }
-int  SocketStream::write (char* buf, int count) {
+int  SocketStream::write (const char* buf, const int count) {
 	int result = ::write(fd, buf, count);
 	if (result == -1) {
 		lastErrno = errno;
@@ -203,15 +203,15 @@ int  SocketStream::write (char* buf, int count) {
 	return result;
 }
 
-int  SocketStream::select(int timeout_sec) {
+int  SocketStream::select(int timeout_milli) {
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 
 	// 1 second
 	struct timeval t;
-	t.tv_sec  = timeout_sec;
-	t.tv_usec = 0;
+	t.tv_sec  = timeout_milli / 1000;
+	t.tv_usec = timeout_milli % 1000;
 
 	int result = ::select(FD_SETSIZE, &fds, NULL, NULL, &t);
 	if (result == -1) {
@@ -232,7 +232,7 @@ int  SocketStream::shutdown (int how) {
 		logger.debug("shutdown %2d  %d", fd, how);
 	}
 
-	int result = ::shutdown(fd, how);
+	int result = ::shutdown(fd, SHUT_RDWR);
 	if (result == -1) {
 		lastErrno = errno;
 		logger.fatal("%d - %s", lastErrno, strerror(lastErrno));

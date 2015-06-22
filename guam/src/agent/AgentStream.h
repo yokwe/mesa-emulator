@@ -50,18 +50,17 @@ public:
 	};
 
 	class StreamData {
-	private:
-		QByteArray data;
-		bool       endRecord;
-
 	public:
-		StreamData(QByteArray data_, bool endRecord_ = false) : data(data_), endRecord(endRecord_) {}
-		QByteArray getData() const {
-			return data;
-		}
-		bool isEndRecord() {
-			return endRecord;
-		}
+		const QByteArray data;
+		const CARD8      sst;
+		const bool       endSST;
+		const bool       endRecord;
+		const bool       endStream;
+
+		StreamData(QByteArray data_, CARD8 sst_, bool endSST_, bool endRecord_, bool endStream_) :
+			data(data_), sst(sst_), endSST(endSST_), endRecord(endRecord_), endStream(endStream_) {}
+		StreamData(QByteArray data_) : data(data_), sst(0), endSST(false), endRecord(false), endStream(false) {}
+		StreamData(const StreamData& that) : data(that.data), sst(that.sst), endSST(that.endSST), endRecord(that.endRecord), endStream(that.endStream) {}
 	};
 
 	class Data {
@@ -103,11 +102,12 @@ public:
 			return queue.size();
 		}
 
-		void put32(CARD32 data) {
-			put(toByteArray(data));
+		void put32(CARD32 data_) {
+			StreamData data(toByteArray(data_));
+			put(data);
 		}
 		CARD32 get32() {
-			return toCARD32(get().getData());
+			return toCARD32(get().data);
 		}
 		QString toString();
 	};
@@ -145,17 +145,15 @@ public:
 			stopThread = true;
 		}
 
-		CARD32 getData32() {
-			return AgentStream::Data::toCARD32(getData());
-		}
+		CARD32 getData32();
 		void   putData32(CARD32 value) {
 			putData(AgentStream::Data::toByteArray(value));
 		}
 
 		// get data from dataRead, wait until data is arrived. If stopThread is true, generate StotThreadException
-		QByteArray getData();
+		StreamData getData();
 		// put data to writeData
-		void       putData(QByteArray value, bool endRecord = false);
+		void       putData(StreamData data_);
 	protected:
 		// Wait interval in milliseconds for QWaitCondition::wait
 		static const int WAIT_INTERVAL = 1000;

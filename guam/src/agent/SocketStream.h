@@ -72,8 +72,8 @@ public:
 	int  shutdown(int how);
 
 	int  select(int timeout_sec);
-	int  read  (char* buf, int count);
-	int  write (char* buf, int count);
+	int  read  (char*       buf,       int count);
+	int  write (const char* buf, const int count);
 
 private:
 	int        fd;

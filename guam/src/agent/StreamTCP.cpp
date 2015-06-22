@@ -236,6 +236,7 @@ void StreamTCP::connect(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3)
 //    } else {
 //      reason _ GetReason[stream];
 //    }
+static const int WAIT_TIME_IN_MILLI = 100;
 void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	// Sanity check
 	if (arg3 != 0) ERROR();
@@ -244,7 +245,7 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	const CARD32 length   = arg2;
 
 	SocketInfo* socketInfo = getSocket(socketID);
-	if (socketInfo->socket.select(WAIT_TIME_IN_SEC)) {
+	if (socketInfo->socket.select(WAIT_TIME_IN_MILLI)) {
 		char buffer[2000];
 		if (sizeof(buffer) < length) ERROR();
 
@@ -255,10 +256,12 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 		const quint32 dataSize = (quint32)data.size();
 		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, dataSize, length);
 
+		AgentStream::StreamData streamData(data, 0, false, true, false);
+
 		// Output response
 		putData32(Status::success);
 		putData32(dataSize);
-		putData(data, true);
+		putData(streamData);
 	} else {
 		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, 0, length);
 
@@ -343,9 +346,10 @@ void StreamTCP::put(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	const CARD16 socketID = arg1;
 	const CARD32 length   = arg2;
 
-	QByteArray data = getData();
-	SocketInfo* socketInfo = getSocket(socketID);
-	int actualWrite = socketInfo->socket.write(data.data(), data.size());
+	AgentStream::StreamData streamData  = getData();
+	const QByteArray&       data        = streamData.data;
+	SocketInfo*             socketInfo  = getSocket(socketID);
+	int                     actualWrite = socketInfo->socket.write(data.data(), data.size());
 	logger.debug("    put      %04d  %3d / %3d / %3d", socketInfo->socketID, actualWrite, length, data.size());
 
 	// Output response
