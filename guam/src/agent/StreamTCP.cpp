@@ -224,18 +224,31 @@ void StreamTCP::connect(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3)
 //    PutLongNumber[stream, length];
 //    PutLongNumber[stream, LONG[0]];
 //    ----
-//    status _ GetStatusXX[stream, length, 10000];
-//    IF status = success THEN {
-//      dataLen: LONG CARDINAL _ GetLongNumber[stream];
-//      IF dataLen # 0 THEN {
-//        Stream.SetInputOptions[stream, [terminateOnEndRecord: TRUE]];
-//        -- block.stopIndexPlusOne _ Inline.LowHalf[dataLen];
-//        [byteCount, why, ] _ Stream.GetBlock[stream, block];
-//      }
-//      ...
-//    } else {
-//      reason _ GetReason[stream];
-//    }
+//    status _ GetStatusXX[stream, length, 10000];'
+//	  IF status = success THEN {
+//  	  dataLen: LONG CARDINAL _ GetLongNumber[stream];
+//
+//  	  IF dataLen # 0 THEN {
+//  		Stream.SetInputOptions[stream, [terminateOnEndRecord: TRUE]];
+//  		-- block.stopIndexPlusOne _ Inline.LowHalf[dataLen];
+//  		[byteCount, why, ] _ Stream.GetBlock[stream, block];
+//  	  }
+//  	  ELSE {
+//  		RETURN[0, closing];
+//  	  }
+//  	}
+//  	ELSE {
+//  	  reason _ GetReason[stream];
+//  	  wsErr _ LOOPHOLE[reason - 10000];
+//  	  IF socketInfo.state = finWait THEN  -- for PC NFS
+//  		RETURN[0, closing];
+//  	  IF wsErr = WSAETIMEDOUT THEN
+//  		completionCode _ timeout
+//  	  ELSE {
+//  		ProcessReason[reason ! TcpStream.Failed => CONTINUE];
+//  	TcpStream.Suspended[reset];
+//  	  }
+//  	};
 static const int WAIT_TIME_IN_MILLI = 100;
 void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 	// Sanity check
@@ -256,18 +269,21 @@ void StreamTCP::get(const CARD32 arg1, const CARD32 arg2, const CARD32 arg3) {
 		const quint32 dataSize = (quint32)data.size();
 		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, dataSize, length);
 
+		// endRecord == TRUE
 		AgentStream::StreamData streamData(data, 0, false, true, false);
 
 		// Output response
 		putData32(Status::success);
-		putData32(dataSize);
+		putData32((quint32)streamData.data.size());
 		putData(streamData);
 	} else {
 		logger.debug("    get      %04d  %3d / %3d", socketInfo->socketID, 0, length);
 
+		// To indicate end of stream, return Status::success with zero length
+
 		// Output response
-		putData32(Status::success);
-		putData32(0);
+		putData32(Status::failure);
+		putData32(WSAETIMEDOUT);
 	}
 }
 
