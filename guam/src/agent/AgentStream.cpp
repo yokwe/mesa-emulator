@@ -42,6 +42,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 #include "Stream.h"
 #include "StreamTCP.h"
+#include "StreamFileAccess.h"
 
 #include <ctype.h>
 
@@ -221,6 +222,7 @@ void AgentStream::Initialize() {
 
 	setDefaultHandler(new DefaultHandler);
 	addHandler(new StreamTCP);
+	addHandler(new StreamFileAccess);
 }
 
 void AgentStream::Call() {
@@ -331,13 +333,15 @@ void AgentStream::Call() {
 			break;
 		case CoProcessorIOFaceGuam::C_write: {
 			// Sanity check
-			if (iocb->mesaPut.hTask == 0) {
-				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-				ERROR();
-			}
-			if (iocb->mesaGet.hTask == 0) {
-				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-				ERROR();
+			if (iocb->mesaConnectionState != CoProcessorIOFaceGuam::C_accept) {
+				if (iocb->mesaPut.hTask == 0) {
+					logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+					ERROR();
+				}
+				if (iocb->mesaGet.hTask == 0) {
+					logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+					ERROR();
+				}
 			}
 
 			// Check dataWrite and return if not empty
@@ -440,12 +444,12 @@ void AgentStream::dump(log4cpp::Category& logger) {
 	logger.debug("AGENT %s  %08X  %s", name, fcb->iocbHead, Stream::getCommandString(fcb->headCommand));
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-		logger.debug("   %c%-10s  %c-%c  mesaPut[%04d%c%c%02X %X %3d %3d]  mesaGet[%04d%c%c%02X %X %3d %3d]",
+		logger.debug("   %c%-10s  %c-%c  mesaPut[%04d%c%c%02X %c%c%c %3d %3d]  mesaGet[%04d%c%c%02X %c%c%c %3d %3d]",
 				(iocb->mesaIsServer ? 'S' : ' '), Stream::getServerString(iocb->serverID),
 			Stream::getConnectionStateString(iocb->mesaConnectionState)[0],
 			Stream::getConnectionStateString(iocb->pcConnectionState)[0],
-			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.u2 & 0x0F), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten,
-			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.u2 & 0x0F), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten
+			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.endSST ? 'S' : ' '), (iocb->mesaPut.endRecord ? 'R' : ' '), (iocb->mesaPut.endStream ? 'E' : ' '), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten,
+			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.endSST ? 'S' : ' '), (iocb->mesaGet.endRecord ? 'R' : ' '), (iocb->mesaGet.endStream ? 'E' : ' '), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten
 			);
 
 		CARD32 serverID = iocb->serverID;
