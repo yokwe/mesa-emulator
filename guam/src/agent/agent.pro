@@ -19,6 +19,9 @@ SOURCES += AgentMouse.cpp AgentNetwork.cpp AgentProcessor.cpp AgentStream.cpp Di
 HEADERS += Stream.h   StreamTCP.h   SocketStream.h
 SOURCES += Stream.cpp StreamTCP.cpp SocketStream.cpp
 
+HEADERS += StreamFileAccess.h
+SOURCES += StreamFileAccess.cpp
+
 unix {
 	SOURCES += NetworkPacket.cpp
 }
