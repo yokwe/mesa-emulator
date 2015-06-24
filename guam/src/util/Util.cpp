@@ -259,7 +259,7 @@ const char* Util::toString(const QByteArray& data) {
 		ret.append("\"");
 
 		if (countAlpha <= countOther) {
-			return QString("(%1)%2").arg(data.size()).arg(QString(data.toHex().toUpper())).toLocal8Bit().constData();
+			return QString("(%1)x%2").arg(data.size()).arg(QString(data.toHex().toUpper())).toLocal8Bit().constData();
 		}
 
 		return ret.toLocal8Bit().constData();
