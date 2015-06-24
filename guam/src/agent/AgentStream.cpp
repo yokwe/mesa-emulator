@@ -57,6 +57,45 @@ QMap<CARD32, AgentStream::Handler*>        AgentStream::handlerMap;
 QMap<CARD32, AgentStream::Task*>           AgentStream::taskMap;
 bool                                       AgentStream::Handler::stopThread = false;
 
+
+const char* AgentStream::toString(Command value) {
+	static QMap<Command, const char*> map = {
+			{Command::idle,    "idle"},
+			{Command::accept,  "accept"},
+			{Command::connect, "connect"},
+			{Command::destroy, "destroy"},
+			{Command::read,    "read"},
+			{Command::write,   "write"},
+	};
+	if (map.contains(value)) return map[value];
+	logger.fatal("Unknown value = %d", value);
+	ERROR();
+}
+
+const char* AgentStream::toString(State value) {
+	static QMap<State, const char*> map = {
+			{State::idle,      "idle"},
+			{State::accepting, "accepting"},
+			{State::connected, "connected"},
+			{State::deleted,   "deleted"},
+	};
+	if (map.contains(value)) return map[value];
+	logger.fatal("Unknown value = %d", value);
+	ERROR();
+}
+
+const char* AgentStream::toString(Result value) {
+	static QMap<Result, const char*> map = {
+			{Result::completed,  "completed"},
+			{Result::inProgress, "inProgress"},
+			{Result::error,      "error"},
+	};
+	if (map.contains(value)) return map[value];
+	logger.fatal("Unknown value = %d", value);
+	ERROR();
+}
+
+
 class DefaultHandler : public AgentStream::Handler {
 public:
 	DefaultHandler() : AgentStream::Handler(0, "default") {
@@ -68,14 +107,14 @@ public:
 	}
 	void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
 	}
-	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-		return CoProcessorIOFaceGuam::R_error;
+	AgentStream::Result accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+		return AgentStream::Result::error;
 	}
-	CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-		return CoProcessorIOFaceGuam::R_error;
+	AgentStream::Result connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+		return AgentStream::Result::error;
 	}
-	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-		return CoProcessorIOFaceGuam::R_error;
+	AgentStream::Result destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+		return AgentStream::Result::error;
 	}
 
 	void run() {
@@ -121,6 +160,8 @@ void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* io
 	LittleEndianByteBuffer bb(buffer, bufferSize);
 	bb.setPos(iocb->mesaGet.bytesWritten);
 
+	for(CARD32 i = 0; i < bufferSize; i++) buffer[i] = 0;
+
 	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
 	iocb->mesaGet.bytesWritten = bb.getPos();
 
@@ -161,42 +202,6 @@ QString AgentStream::Data::toIPAddress(CARD32 data) {
 	return QString("%1.%2.%3.%4").arg(a).arg(b).arg(c).arg(d);
 }
 
-static int isVisible(int c) {
-	return isalpha(c) || (c == '\r') || (c == '\n');
-}
-
-QString AgentStream::Data::toEscapedString(QByteArray data) {
-	const int size = data.size();
-	// Special for 4 byte data
-	if (size == 4) {
-		const CARD32 value = toCARD32(data);
-		const int a1 = (value >> 24) & 0xFF;
-		const int a2 = (value >> 16) & 0xFF;
-		const int a3 = (value >>  8) & 0xFF;
-		const int a4 = (value >>  0) & 0xFF;
-		if (!(isVisible(a1) && isVisible(a2) && isVisible(a3) && isVisible(a4))) {
-			return QString::number(value);
-		}
-	}
-	{
-		QString ret;
-		ret.append(QString("(%1)\"").arg(size));
-		for(int j = 0; j < size; j++) {
-			unsigned char c = data.at(j);
-			if (c == 0x0a) {
-				ret.append("\\n");
-			} else if (c == 0x0d) {
-				ret.append("\\r");
-			} else if (c < 0x20 || 0x7e < c) {
-				ret.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
-			} else {
-				ret.append(QChar(c));
-			}
-		}
-		ret.append("\"");
-		return ret;
-	}
-}
 
 QString AgentStream::Data::toString() {
 	QMutexLocker locker(&mutex);
@@ -205,7 +210,7 @@ QString AgentStream::Data::toString() {
 	ret.append("[");
 	for(int i = 0; i < queue.size(); i++) {
 		if (i) ret.append(" ");
-		ret.append(toEscapedString(queue.at(i).data));
+		ret.append(Util::toString(queue.at(i).data));
 	}
 	ret.append("]");
 	return ret;
@@ -233,7 +238,7 @@ void AgentStream::Initialize() {
 }
 
 void AgentStream::Call() {
-	fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+	fcb->headResult = static_cast<CARD16>(Result::completed);
 
 	if (fcb->stopAgent) {
 		if (!fcb->agentStopped) {
@@ -261,8 +266,8 @@ void AgentStream::Call() {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 		AgentStream::Handler* handler = getHandler(iocb->serverID);
 
-		switch(fcb->headCommand) {
-		case CoProcessorIOFaceGuam::C_accept: {
+		switch(static_cast<Command>(fcb->headCommand)) {
+		case Command::accept: {
 			// Sanity check
 			if (iocb->mesaPut.hTask == 0) {
 				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
@@ -274,10 +279,10 @@ void AgentStream::Call() {
 			}
 
 			Task* task = getTask(iocb->mesaPut.hTask);
-			fcb->headResult = handler->accept(iocb, task);
+			fcb->headResult = static_cast<CARD16>(handler->accept(iocb, task));
 		}
 			break;
-		case CoProcessorIOFaceGuam::C_connect: {
+		case Command::connect: {
 			// Sanity check
 			if (iocb->mesaPut.hTask) {
 				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
@@ -291,12 +296,12 @@ void AgentStream::Call() {
 			Task* task = handler->createTask();
 			addTask(task);
 			iocb->mesaPut.hTask = iocb->mesaGet.hTask = task->hTask;
-			iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
+			iocb->pcConnectionState = static_cast<CARD16>(State::connected);
 			//
-			fcb->headResult = handler->connect(iocb, task);
+			fcb->headResult = static_cast<CARD16>(handler->connect(iocb, task));
 		}
 			break;
-		case CoProcessorIOFaceGuam::C_delete: {
+		case Command::destroy: {
 			// Sanity check
 			if (iocb->mesaPut.hTask == 0) {
 				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
@@ -308,14 +313,14 @@ void AgentStream::Call() {
 			}
 
 			Task* task = getTask(iocb->mesaPut.hTask);
-			fcb->headResult = handler->destroy(iocb, task);
+			fcb->headResult = static_cast<CARD16>(handler->destroy(iocb, task));
 			//
-			iocb->pcConnectionState = CoProcessorIOFaceGuam::S_deleted;
+			iocb->pcConnectionState = static_cast<CARD16>(State::deleted);
 			iocb->mesaPut.hTask = iocb->mesaGet.hTask = 0;
 			removeTask(task);
 		}
 			break;
-		case CoProcessorIOFaceGuam::C_read: {
+		case Command::read: {
 			// Sanity check
 			if (iocb->mesaPut.hTask == 0) {
 				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
@@ -331,16 +336,16 @@ void AgentStream::Call() {
 			StreamData streamData(data, iocb->mesaPut.subSequence, iocb->mesaPut.endSST, iocb->mesaPut.endRecord, iocb->mesaPut.endStream);
 			if (DEBUG_SHOW_AGENT_STREAM) {
 				logger.debug("    data read   %02X  %c%c%c  %s",
-					streamData.sst, (streamData.endSST ? 'S' : ' '), (streamData.endRecord ? 'R' : ' '), (streamData.endStream ? 'E' : ' '), Data::toEscapedString(streamData.data).toLocal8Bit().constData());
+					streamData.sst, (streamData.endSST ? 'S' : ' '), (streamData.endRecord ? 'R' : ' '), (streamData.endStream ? 'E' : ' '), Util::toString(streamData.data));
 			}
 
 			handler->dataRead.put(streamData);
-			fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+			fcb->headResult = static_cast<CARD16>(Result::completed);
 		}
 			break;
-		case CoProcessorIOFaceGuam::C_write: {
+		case Command::write: {
 			// Sanity check
-			if (iocb->mesaConnectionState != CoProcessorIOFaceGuam::C_accept) {
+			if (iocb->mesaConnectionState != static_cast<CARD16>(State::accepting)) {
 				if (iocb->mesaPut.hTask == 0) {
 					logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
 					ERROR();
@@ -358,15 +363,15 @@ void AgentStream::Call() {
 				Data::writeMesa(iocb, streamData.data);
 				if (streamData.endRecord) iocb->mesaGet.endRecord = 1;
 				if (iocb->mesaGet.interruptMesa) notifyInterrupt();
-				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+				fcb->headResult = static_cast<CARD16>(Result::completed);
 
 				if (DEBUG_SHOW_AGENT_STREAM) {
 					logger.debug("    data write  %02X  %c%c%c  %s",
-						streamData.sst, (streamData.endSST ? 'S' : ' '), (streamData.endRecord ? 'R' : ' '), (streamData.endStream ? 'E' : ' '), Data::toEscapedString(streamData.data).toLocal8Bit().constData());
+						streamData.sst, (streamData.endSST ? 'S' : ' '), (streamData.endRecord ? 'R' : ' '), (streamData.endStream ? 'E' : ' '), Util::toString(streamData.data));
 				}
 			} else {
 				// There is no data to return
-				fcb->headResult = CoProcessorIOFaceGuam::R_inProgress;
+				fcb->headResult = static_cast<CARD16>(Result::inProgress);
 			}
 		}
 			break;
@@ -379,7 +384,7 @@ void AgentStream::Call() {
 		}
 	}
 
-	if (DEBUG_SHOW_AGENT_STREAM) logger.debug("    result %s", Stream::getResultString(fcb->headResult));
+	if (DEBUG_SHOW_AGENT_STREAM) logger.debug("    result %s", toString(static_cast<Result>(fcb->headResult)));
 }
 
 
@@ -448,13 +453,13 @@ void AgentStream::stopThread() {
 }
 
 void AgentStream::dump(log4cpp::Category& logger) {
-	logger.debug("AGENT %s  %08X  %s", name, fcb->iocbHead, Stream::getCommandString(fcb->headCommand));
+	logger.debug("AGENT %s  %08X  %s", name, fcb->iocbHead, toString(static_cast<Command>(fcb->headCommand)));
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 		logger.debug("   %c%-10s  %c-%c  mesaPut[%04d%c%c%02X %c%c%c %3d %3d]  mesaGet[%04d%c%c%02X %c%c%c %3d %3d]",
-				(iocb->mesaIsServer ? 'S' : ' '), Stream::getServerString(iocb->serverID),
-			Stream::getConnectionStateString(iocb->mesaConnectionState)[0],
-			Stream::getConnectionStateString(iocb->pcConnectionState)[0],
+			(iocb->mesaIsServer ? 'S' : ' '), Stream::getServerString(iocb->serverID),
+			toString(static_cast<State>(iocb->mesaConnectionState))[0],
+			toString(static_cast<State>(iocb->pcConnectionState))[0],
 			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.endSST ? 'S' : ' '), (iocb->mesaPut.endRecord ? 'R' : ' '), (iocb->mesaPut.endStream ? 'E' : ' '), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten,
 			iocb->mesaGet.hTask, (iocb->mesaGet.interruptMesa ? 'I' : ' '), (iocb->mesaGet.writeLockedByMesa ? 'L' : ' '), (iocb->mesaGet.subSequence & 0xFF), (iocb->mesaGet.endSST ? 'S' : ' '), (iocb->mesaGet.endRecord ? 'R' : ' '), (iocb->mesaGet.endStream ? 'E' : ' '), iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten
 			);

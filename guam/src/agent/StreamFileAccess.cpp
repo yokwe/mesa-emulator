@@ -90,14 +90,14 @@ AgentStream::Task* StreamFileAccess::createTask() {
 void StreamFileAccess::idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
 }
 
-CARD16 StreamFileAccess::accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-	return CoProcessorIOFaceGuam::R_error;
+AgentStream::Result StreamFileAccess::accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	return AgentStream::Result::completed;
 }
-CARD16 StreamFileAccess::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-	return CoProcessorIOFaceGuam::R_completed;
+AgentStream::Result StreamFileAccess::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	return AgentStream::Result::completed;
 }
-CARD16 StreamFileAccess::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-	return CoProcessorIOFaceGuam::R_error;
+AgentStream::Result StreamFileAccess::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	return AgentStream::Result::error;
 }
 
 void StreamFileAccess::run() {
@@ -122,10 +122,10 @@ void StreamFileAccess::run() {
 			}
 
 			Command cmd = static_cast<Command>(commandData.at(0));
-			logger.debug("Command  %s  (%d)%s", toString(cmd), commandData.size(), commandData.toHex().constData());
+			logger.debug("Command  %s  %s", toString(cmd), Util::toString(commandData));
 			switch(cmd) {
 			case Command::writeFileAttr:
-				writeFileAttr(commandData);
+				writeFileAttrProcess(commandData);
 				break;
 			default:
 				ERROR();
@@ -140,11 +140,14 @@ void StreamFileAccess::run() {
 	logger.info("StreamFileAccess::run STOP");
 }
 
-void StreamFileAccess::writeFileAttr(QByteArray& /*data_*/) {
+void StreamFileAccess::writeFileAttrProcess(const QByteArray& /*data_*/) {
 	{
-		QByteArray data;
-		data.append(static_cast<char>(Response::commandCompleted));
-		data.append(static_cast<char>(Response::directoryIsRoot));
+		QByteArray data(1, static_cast<char>(Response::directoryIsRoot));
+		AgentStream::StreamData streamData(data);
+		putData(streamData);
+	}
+	{
+		QByteArray data(1, static_cast<char>(Response::commandCompleted));
 		AgentStream::StreamData streamData(data);
 		putData(streamData);
 	}

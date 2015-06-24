@@ -79,15 +79,15 @@ public:
 
 	void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* fcb);
 
-	CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
-	CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
+	AgentStream::Result accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
+	AgentStream::Result connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
 	// To avoid conflict with keyword "delete", use "destroy" instead.
-	CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
+	AgentStream::Result destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
 
 	void run();
 
 
-	void writeFileAttr(QByteArray& data);
+	void writeFileAttrProcess(const QByteArray& data);
 };
 
 #endif

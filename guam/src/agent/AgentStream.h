@@ -40,6 +40,37 @@ OF SUCH DAMAGE.
 
 class AgentStream : public Agent {
 public:
+	//CommandType: TYPE = MACHINE DEPENDENT
+	//  {idle(0), accept(1), connect(2), delete(3), read(4), write(5)};
+	enum class Command : CARD16 {
+		idle    = CoProcessorIOFaceGuam::C_idle,
+		accept  = CoProcessorIOFaceGuam::C_accept,
+		connect = CoProcessorIOFaceGuam::C_connect,
+		destroy = CoProcessorIOFaceGuam::C_delete,
+		read    = CoProcessorIOFaceGuam::C_read,
+		write   = CoProcessorIOFaceGuam::C_write,
+	};
+	const char* toString(Command value);
+
+	//ConnectionStateType: TYPE = MACHINE DEPENDENT
+	//  {idle(0), accepting(1), connected(2), deleted(3)};
+	enum class State : CARD16 {
+		idle      = CoProcessorIOFaceGuam::S_idle,
+		accepting = CoProcessorIOFaceGuam::S_accepting,
+		connected = CoProcessorIOFaceGuam::S_connected,
+		deleted   = CoProcessorIOFaceGuam::S_deleted,
+	};
+	const char* toString(State value);
+
+	//ResultType: TYPE = MACHINE DEPENDENT
+	//  {completed(0), inProgress(1), error(2)};
+	enum class Result : CARD16 {
+		completed  = CoProcessorIOFaceGuam::R_completed,
+		inProgress = CoProcessorIOFaceGuam::R_inProgress,
+		error      = CoProcessorIOFaceGuam::R_error,
+	};
+	const char* toString(Result value);
+
 	class Task {
 	private:
 		static CARD16 hTaskNext;
@@ -78,7 +109,6 @@ public:
 		static QByteArray toByteArray(CARD32 data);
 		static CARD32     toCARD32(QByteArray data);
 		static QString    toIPAddress(CARD32 data);
-		static QString    toEscapedString(QByteArray data);
 
 		bool waitData(unsigned long time = WAIT_TIME_IN_MILLISECOND) {
 			QMutexLocker locker(&mutex);
@@ -129,16 +159,10 @@ public:
 
 		virtual void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* fcb) = 0;
 
-		// Return value of methods below is CoProcessorIOFaceGuam::R_*
-		//   R_completed, R_inProgress, R_error
-
-		virtual CARD16 accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-		virtual CARD16 connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual Result accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual Result connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
 		// To avoid conflict with keyword "delete", use "destroy" instead.
-		virtual CARD16 destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-
-//		virtual CARD16 read   (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-//		virtual CARD16 write  (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual Result destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
 
 		virtual void run() = 0;
 		static void stop() {

@@ -34,46 +34,6 @@ static log4cpp::Category& logger = Logger::getLogger("stream");
 
 #include "Stream.h"
 
-const char* Stream::getCommandString(CARD16 key) {
-	static QMap<CARD16, const char*> map = {
-			{CoProcessorIOFaceGuam::C_idle,    "idle"},
-			{CoProcessorIOFaceGuam::C_accept,  "accept"},
-			{CoProcessorIOFaceGuam::C_connect, "connect"},
-			{CoProcessorIOFaceGuam::C_delete,  "delete"},
-			{CoProcessorIOFaceGuam::C_read,    "read"},
-			{CoProcessorIOFaceGuam::C_write,   "write"},
-	};
-	if (map.contains(key)) return map[key];
-	logger.fatal("Unknown key = %d", key);
-	ERROR();
-	return 0;
-}
-
-const char* Stream::getConnectionStateString(CARD16 key) {
-	static QMap<CARD16, const char*> map = {
-			{CoProcessorIOFaceGuam::S_idle,      "idle"},
-			{CoProcessorIOFaceGuam::S_accepting, "accepting"},
-			{CoProcessorIOFaceGuam::S_connected, "connected"},
-			{CoProcessorIOFaceGuam::S_deleted,   "deleted"},
-	};
-	if (map.contains(key)) return map[key];
-	logger.fatal("Unknown key = %d", key);
-	ERROR();
-	return 0;
-}
-
-const char* Stream::getResultString(CARD16 key) {
-	static QMap<CARD16, const char*> map = {
-			{CoProcessorIOFaceGuam::R_completed,  "completed"},
-			{CoProcessorIOFaceGuam::R_inProgress, "inProgress"},
-			{CoProcessorIOFaceGuam::R_error,      "error"},
-	};
-	if (map.contains(key)) return map[key];
-	logger.fatal("Unknown key = %d", key);
-	ERROR();
-	return 0;
-}
-
 const char* Stream::getServerString(CARD32 key) {
 	static QMap<CARD32, const char*> map {
 		{CoProcessorServerIDs::fileAccess,                             "fileAccess"},

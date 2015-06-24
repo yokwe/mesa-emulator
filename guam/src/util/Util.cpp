@@ -31,6 +31,8 @@ OF SUCH DAMAGE.
 
 #include "Util.h"
 
+#include "ByteBuffer.h"
+
 #include <log4cpp/PropertyConfigurator.hh>
 
 #ifdef __linux__
@@ -198,5 +200,66 @@ void Util::toBigEndian(quint16* source, quint16* dest, int size) {
 void Util::fromBigEndian(quint16* source, quint16* dest, int size) {
 	for(int i = 0; i < size; i++) {
 		dest[i] = qFromBigEndian(source[i]);
+	}
+}
+
+
+static int isVisible(int c) {
+	return isalpha(c) || (c == '\r') || (c == '\n');
+}
+
+const char* Util::toString(const QByteArray& data) {
+	const int size = data.size();
+
+	if (size == 0) return "(0)";
+
+	if (size == 1) return QString::number((quint8)(data.at(0))).toLocal8Bit().constData();
+
+	if (size == 2) {
+		LittleEndianByteBuffer bb((quint8*)data.data(), data.size());
+		return QString::number(bb.get16()).toLocal8Bit().constData();
+	}
+
+	// Special for 4 byte data
+	if (size == 4) {
+		const int a0 = data.at(0) & 0xFF;
+		const int a1 = data.at(1) & 0xFF;
+		const int a2 = data.at(2) & 0xFF;
+		const int a3 = data.at(3) & 0xFF;
+
+		if (!(isVisible(a0) &&isVisible(a1) && isVisible(a2) && isVisible(a3))) {
+			LittleEndianByteBuffer bb((quint8*)data.data(), data.size());
+			return QString::number(bb.get32()).toLocal8Bit().constData();
+		}
+	}
+
+	{
+		int countAlpha = 0;
+		int countOther = 0;
+		QString ret;
+		ret.append(QString("(%1)\"").arg(size));
+		for(int j = 0; j < size; j++) {
+			unsigned char c = data.at(j);
+			if (c == 0x0a) {
+				ret.append("\\n");
+				countAlpha++;
+			} else if (c == 0x0d) {
+				ret.append("\\r");
+				countAlpha++;
+			} else if (c < 0x20 || 0x7e < c) {
+				ret.append(QString("\\x%1").arg((int)c, 2, 16, QChar('0')));
+				countOther++;
+			} else {
+				ret.append(QChar(c));
+				countAlpha++;
+			}
+		}
+		ret.append("\"");
+
+		if (countAlpha <= countOther) {
+			return QString("(%1)%2").arg(data.size()).arg(QString(data.toHex().toUpper())).toLocal8Bit().constData();
+		}
+
+		return ret.toLocal8Bit().constData();
 	}
 }

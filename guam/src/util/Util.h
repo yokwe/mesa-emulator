@@ -95,5 +95,7 @@ public:
 
 	static void    toBigEndian  (quint16* source, quint16* dest, int size);
 	static void    fromBigEndian(quint16* source, quint16* dest, int size);
+
+	static const char* toString(const QByteArray& data);
 };
 #endif

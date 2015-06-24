@@ -36,10 +36,6 @@ OF SUCH DAMAGE.
 
 class Stream {
 public:
-	static const char* getCommandString        (CARD16 key);
-	static const char* getConnectionStateString(CARD16 key);
-	static const char* getResultString         (CARD16 key);
-
 	static const char* getServerString         (CARD32 key);
 };
 #endif

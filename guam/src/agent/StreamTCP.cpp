@@ -116,14 +116,14 @@ StreamTCP::StreamTCP() : AgentStream::Handler(CoProcessorServerIDs::tcpService, 
 void StreamTCP::idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
 }
 
-CARD16 StreamTCP::accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-	return CoProcessorIOFaceGuam::R_error;
+AgentStream::Result StreamTCP::accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	return AgentStream::Result::error;
 }
-CARD16 StreamTCP::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-	return CoProcessorIOFaceGuam::R_completed;
+AgentStream::Result StreamTCP::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	return AgentStream::Result::completed;
 }
-CARD16 StreamTCP::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
-	return CoProcessorIOFaceGuam::R_error;
+AgentStream::Result StreamTCP::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	return AgentStream::Result::error;
 }
 
 void StreamTCP::run() {

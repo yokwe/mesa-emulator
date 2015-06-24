@@ -180,7 +180,7 @@ int  SocketStream::read  (char* buf, int count) {
 		QByteArray t;
 		for(int i = 0; i < result; i++) t.append(buf[i]);
 
-		logger.debug("read     %2d  %d  %s", fd, result, AgentStream::Data::toEscapedString(t).toLocal8Bit().constData());
+		logger.debug("read     %2d  %d  %s", fd, result, Util::toString(t));
 	}
 
 	return result;
@@ -197,7 +197,7 @@ int  SocketStream::write (const char* buf, const int count) {
 		QByteArray t;
 		for(int i = 0; i < result; i++) t.append(buf[i]);
 
-		logger.debug("write    %2d  %d %s", fd, result, AgentStream::Data::toEscapedString(t).toLocal8Bit().constData());
+		logger.debug("write    %2d  %d %s", fd, result, Util::toString(t));
 	}
 
 	return result;
