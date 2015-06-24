@@ -40,7 +40,6 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "Agent.h"
 #include "AgentStream.h"
 
-#include "Stream.h"
 #include "StreamTCP.h"
 #include "StreamFileAccess.h"
 
@@ -94,6 +93,22 @@ const char* AgentStream::toString(Result value) {
 	logger.fatal("Unknown value = %d", value);
 	ERROR();
 }
+
+const char* AgentStream::getServerName(CARD32 value) {
+	static QMap<CARD32, const char*> map {
+		{CoProcessorServerIDs::fileAccess,                             "fileAccess"},
+		{CoProcessorServerIDs::dragAndDropToGVService,                 "dragAndDrop"},
+		{CoProcessorServerIDs::workspaceWindowControlGVService,        "wwc-gv"},
+		{CoProcessorServerIDs::workspaceWindowControlMSWindowsService, "wwc-pc"},
+		{CoProcessorServerIDs::tcpService,                             "tcpService"},
+	};
+
+	if (map.contains(value)) return map[value];
+	static char buffer[20];
+	sprintf(buffer, "ID-%d", value);
+	return buffer;
+}
+
 
 
 class DefaultHandler : public AgentStream::Handler {
@@ -155,21 +170,21 @@ QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 }
 
 void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data) {
+	const CARD32 bytesWritten = iocb->mesaGet.bytesWritten;
 	CARD8* buffer = (CARD8*)Store(iocb->mesaGet.buffer);
 	const CARD32 bufferSize  = iocb->mesaGet.bufferSize * Environment::bitsPerWord;
 	LittleEndianByteBuffer bb(buffer, bufferSize);
-	bb.setPos(iocb->mesaGet.bytesWritten);
+	bb.setPos(bytesWritten);
 
-	for(CARD32 i = 0; i < bufferSize; i++) buffer[i] = 0;
-
-	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
+	//for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
+	for(int i = 0; i < data.size(); i++) buffer[bytesWritten + i] = data.at(i);
 	iocb->mesaGet.bytesWritten = bb.getPos();
 
 	// TODO debug dump
 	{
 		QByteArray t;
 		for(int i = 0; i < iocb->mesaGet.bytesWritten; i++) t.append(buffer[i]);
-		logger.debug("writeMesa  %3d  %3d  %s", iocb->mesaGet.bytesRead, iocb->mesaGet.bytesWritten, t.toHex().constData());
+		logger.debug("writeMesa  %3d  %3d - %3d  %3d  %s", iocb->mesaGet.bytesRead, bytesWritten, iocb->mesaGet.bytesWritten, data.size(), t.toHex().constData());
 	}
 
 }
@@ -344,16 +359,29 @@ void AgentStream::Call() {
 		}
 			break;
 		case Command::write: {
+			// TODO special for defaultHandler of mesaConnectionState equals accepting
+			if (handler == defaultHandler) {
+				if (iocb->mesaConnectionState == static_cast<CARD16>(State::accepting)) {
+					iocb->pcConnectionState = static_cast<CARD16>(State::connected);
+				} else if (iocb->pcConnectionState == static_cast<CARD16>(State::connected)) {
+					iocb->pcConnectionState = static_cast<CARD16>(State::deleted);
+					//
+					iocb->mesaGet.endRecord = 1;
+					iocb->mesaGet.endStream = 1;
+				}
+
+				fcb->headResult = static_cast<CARD16>(Result::error);
+				break;
+			}
+
 			// Sanity check
-			if (iocb->mesaConnectionState != static_cast<CARD16>(State::accepting)) {
-				if (iocb->mesaPut.hTask == 0) {
-					logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
-					ERROR();
-				}
-				if (iocb->mesaGet.hTask == 0) {
-					logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
-					ERROR();
-				}
+			if (iocb->mesaPut.hTask == 0) {
+				logger.fatal("mesaPut.hTask = %d", iocb->mesaPut.hTask);
+				ERROR();
+			}
+			if (iocb->mesaGet.hTask == 0) {
+				logger.fatal("mesaGet.hTask = %d", iocb->mesaGet.hTask);
+				ERROR();
 			}
 
 			// Check dataWrite and return if not empty
@@ -457,7 +485,7 @@ void AgentStream::dump(log4cpp::Category& logger) {
 	if (fcb->iocbHead) {
 		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
 		logger.debug("   %c%-10s  %c-%c  mesaPut[%04d%c%c%02X %c%c%c %3d %3d]  mesaGet[%04d%c%c%02X %c%c%c %3d %3d]",
-			(iocb->mesaIsServer ? 'S' : ' '), Stream::getServerString(iocb->serverID),
+			(iocb->mesaIsServer ? 'S' : ' '), getServerName(iocb->serverID),
 			toString(static_cast<State>(iocb->mesaConnectionState))[0],
 			toString(static_cast<State>(iocb->pcConnectionState))[0],
 			iocb->mesaPut.hTask, (iocb->mesaPut.interruptMesa ? 'I' : ' '), (iocb->mesaPut.writeLockedByMesa ? 'L' : ' '), (iocb->mesaPut.subSequence & 0xFF), (iocb->mesaPut.endSST ? 'S' : ' '), (iocb->mesaPut.endRecord ? 'R' : ' '), (iocb->mesaPut.endStream ? 'E' : ' '), iocb->mesaPut.bytesRead, iocb->mesaPut.bytesWritten,

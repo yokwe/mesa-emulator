@@ -50,7 +50,6 @@ public:
 		read    = CoProcessorIOFaceGuam::C_read,
 		write   = CoProcessorIOFaceGuam::C_write,
 	};
-	const char* toString(Command value);
 
 	//ConnectionStateType: TYPE = MACHINE DEPENDENT
 	//  {idle(0), accepting(1), connected(2), deleted(3)};
@@ -60,7 +59,6 @@ public:
 		connected = CoProcessorIOFaceGuam::S_connected,
 		deleted   = CoProcessorIOFaceGuam::S_deleted,
 	};
-	const char* toString(State value);
 
 	//ResultType: TYPE = MACHINE DEPENDENT
 	//  {completed(0), inProgress(1), error(2)};
@@ -69,7 +67,7 @@ public:
 		inProgress = CoProcessorIOFaceGuam::R_inProgress,
 		error      = CoProcessorIOFaceGuam::R_error,
 	};
-	const char* toString(Result value);
+
 
 	class Task {
 	private:
@@ -85,13 +83,17 @@ public:
 		const QByteArray data;
 		const CARD8      sst;
 		const bool       endSST;
-		const bool       endRecord;
+		      bool       endRecord;
 		const bool       endStream;
 
 		StreamData(QByteArray data_, CARD8 sst_, bool endSST_, bool endRecord_, bool endStream_) :
 			data(data_), sst(sst_), endSST(endSST_), endRecord(endRecord_), endStream(endStream_) {}
 		StreamData(QByteArray data_) : data(data_), sst(0), endSST(false), endRecord(false), endStream(false) {}
 		StreamData(const StreamData& that) : data(that.data), sst(that.sst), endSST(that.endSST), endRecord(that.endRecord), endStream(that.endStream) {}
+
+		void setEndRecord() {
+			endRecord = true;
+		}
 	};
 
 	class Data {
@@ -186,6 +188,18 @@ public:
 		static bool stopThread;
 	};
 
+
+	static const char* toString(Command value);
+	static const char* toString(State value);
+	static const char* toString(Result value);
+	
+	static const char* getServerName(CARD32 serverID);
+
+	static void startThread();
+	static void stopThread();
+
+	static void notifyInterrupt();
+
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
 		fcb = 0;
 	}
@@ -199,11 +213,6 @@ public:
 
 	void dump(log4cpp::Category& logger);
 
-	// Start and stop threads for AgentStream
-	static void startThread();
-	static void stopThread();
-
-	static void notifyInterrupt();
 private:
 	static CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
 	static Handler*                                   defaultHandler;
