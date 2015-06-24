@@ -213,11 +213,13 @@ const char* Util::toString(const QByteArray& data) {
 
 	if (size == 0) return "(0)";
 
-	if (size == 1) return QString::number((quint8)(data.at(0))).toLocal8Bit().constData();
+	if (size == 1) {
+		return QString("(1)%1").arg(QString::number((quint8)(data.at(0)))).toLocal8Bit().constData();
+	}
 
 	if (size == 2) {
 		LittleEndianByteBuffer bb((quint8*)data.data(), data.size());
-		return QString::number(bb.get16()).toLocal8Bit().constData();
+		return QString("(2)%1").arg(QString::number(bb.get16())).toLocal8Bit().constData();
 	}
 
 	// Special for 4 byte data
