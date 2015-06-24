@@ -141,14 +141,17 @@ void StreamFileAccess::run() {
 }
 
 void StreamFileAccess::writeFileAttrProcess(const QByteArray& /*data_*/) {
+	// TODO require 2 endOfRecord packet of any length to stop write from PCFA.
 	{
 		QByteArray data(1, static_cast<char>(Response::directoryIsRoot));
 		AgentStream::StreamData streamData(data);
+		streamData.setEndRecord();
 		putData(streamData);
 	}
 	{
 		QByteArray data(1, static_cast<char>(Response::commandCompleted));
 		AgentStream::StreamData streamData(data);
+		streamData.setEndRecord();
 		putData(streamData);
 	}
 }
