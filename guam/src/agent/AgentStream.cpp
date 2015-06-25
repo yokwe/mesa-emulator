@@ -171,14 +171,15 @@ QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 
 void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data) {
 	const CARD32 bytesWritten = iocb->mesaGet.bytesWritten;
-	CARD8* buffer = (CARD8*)Store(iocb->mesaGet.buffer);
-	const CARD32 bufferSize  = iocb->mesaGet.bufferSize * Environment::bitsPerWord;
+	const CARD32 bufferSize   = iocb->mesaGet.bufferSize * Environment::bitsPerWord;
+	CARD8*       buffer       = (CARD8*)Store(iocb->mesaGet.buffer);
 	LittleEndianByteBuffer bb(buffer, bufferSize);
 	bb.setPos(bytesWritten);
 
-	//for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
-	for(int i = 0; i < data.size(); i++) buffer[bytesWritten + i] = data.at(i);
-	iocb->mesaGet.bytesWritten = bb.getPos();
+	// append data from bytesWritten
+	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
+	// update mesaGet.bytesWritten
+	iocb->mesaGet.bytesWritten += data.size();
 
 	// TODO debug dump
 	{
@@ -186,7 +187,6 @@ void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* io
 		for(int i = 0; i < iocb->mesaGet.bytesWritten; i++) t.append(buffer[i]);
 		logger.debug("writeMesa  %3d  %3d - %3d  %3d  %s", iocb->mesaGet.bytesRead, bytesWritten, iocb->mesaGet.bytesWritten, data.size(), t.toHex().constData());
 	}
-
 }
 
 QByteArray AgentStream::Data::toByteArray(CARD32 data) {
