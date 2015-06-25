@@ -84,7 +84,7 @@ public:
 		const CARD8      sst;
 		const bool       endSST;
 		      bool       endRecord;
-		const bool       endStream;
+		      bool       endStream;
 
 		StreamData(QByteArray data_, CARD8 sst_, bool endSST_, bool endRecord_, bool endStream_) :
 			data(data_), sst(sst_), endSST(endSST_), endRecord(endRecord_), endStream(endStream_) {}
@@ -93,6 +93,9 @@ public:
 
 		void setEndRecord() {
 			endRecord = true;
+		}
+		void setEndStream() {
+			endStream = true;
 		}
 	};
 
