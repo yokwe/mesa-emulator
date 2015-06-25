@@ -156,37 +156,36 @@ public:
 
 
 QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
-	CARD8* buffer = (CARD8*)Store(iocb->mesaPut.buffer);
-	const CARD32 bytesRead = iocb->mesaPut.bytesRead;
+	const CARD32 bytesRead    = iocb->mesaPut.bytesRead;
 	const CARD32 bytesWritten = iocb->mesaPut.bytesWritten;
-	LittleEndianByteBuffer bb(buffer, ((bytesWritten + 1) & ~1));
-	bb.setPos(bytesRead);
+	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
+	CARD8*       buffer       = (CARD8*)Store(iocb->mesaPut.buffer);
 
+	LittleEndianByteBuffer bb(buffer, bufferSize);
 	QByteArray ret;
+	// append data from bytesRead
 	for(CARD32 i = bytesRead; i < bytesWritten; i++) ret.append(bb.get8(i));
-	iocb->mesaPut.bytesRead = iocb->mesaPut.bytesWritten;
+	// update mesaGet.bytesRead
+	iocb->mesaPut.bytesRead = bytesWritten;
 
 	return ret;
 }
 
 void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data) {
 	const CARD32 bytesWritten = iocb->mesaGet.bytesWritten;
-	const CARD32 bufferSize   = iocb->mesaGet.bufferSize * Environment::bitsPerWord;
+	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
 	CARD8*       buffer       = (CARD8*)Store(iocb->mesaGet.buffer);
+
 	LittleEndianByteBuffer bb(buffer, bufferSize);
-	bb.setPos(bytesWritten);
 
 	// append data from bytesWritten
-	for(int i = 0; i < data.size(); i++) bb.put8(data.at(i));
+	for(int i = 0; i < data.size(); i++) bb.set8(bytesWritten + i, data.at(i));
 	// update mesaGet.bytesWritten
 	iocb->mesaGet.bytesWritten += data.size();
 
-	// TODO debug dump
-	{
-		QByteArray t;
-		for(int i = 0; i < iocb->mesaGet.bytesWritten; i++) t.append(buffer[i]);
-		logger.debug("writeMesa  %3d  %3d - %3d  %3d  %s", iocb->mesaGet.bytesRead, bytesWritten, iocb->mesaGet.bytesWritten, data.size(), t.toHex().constData());
-	}
+	// fill zero with last byte if last position is odd
+	const CARD32 lastPos = bytesWritten + data.size();
+	if ((lastPos & 1) == 0) bb.set8(lastPos, 0);
 }
 
 QByteArray AgentStream::Data::toByteArray(CARD32 data) {
