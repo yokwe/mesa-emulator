@@ -131,6 +131,9 @@ void StreamFileAccess::run() {
 				ERROR();
 				break;
 			}
+
+			// clear commandData for next command
+			commandData.clear();
 		}
 	} catch(AgentStream::Handler::StopThreadException&) {
 		//
@@ -145,11 +148,15 @@ void StreamFileAccess::writeFileAttrProcess(const QByteArray& /*data_*/) {
 	{
 		QByteArray data(1, static_cast<char>(Response::directoryIsRoot));
 		AgentStream::StreamData streamData(data);
-		streamData.setEndRecord();
 		putData(streamData);
 	}
 	{
 		QByteArray data(1, static_cast<char>(Response::commandCompleted));
+		AgentStream::StreamData streamData(data);
+		putData(streamData);
+	}
+	{
+		QByteArray data;
 		AgentStream::StreamData streamData(data);
 		streamData.setEndRecord();
 		putData(streamData);
