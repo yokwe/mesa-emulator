@@ -231,7 +231,7 @@ const char* Util::toString(const QByteArray& data) {
 
 		if (!(isVisible(a0) &&isVisible(a1) && isVisible(a2) && isVisible(a3))) {
 			LittleEndianByteBuffer bb((quint8*)data.data(), data.size());
-			return QString::number(bb.get32()).toLocal8Bit().constData();
+			return QString("(4)%1").arg(QString::number(bb.get32())).toLocal8Bit().constData();
 		}
 	}
 
