@@ -58,7 +58,6 @@ const char* StreamFileAccess::toString(Command value) {
 	}
 	logger.fatal("value = %d", value);
 	ERROR();
-	return "UNKNONW";
 }
 const char* StreamFileAccess::toString(Response value) {
 	static QMap<Response, const char*> map {
@@ -77,7 +76,6 @@ const char* StreamFileAccess::toString(Response value) {
 	}
 	logger.fatal("value = %d", value);
 	ERROR();
-	return "UNKNONW";
 }
 
 
