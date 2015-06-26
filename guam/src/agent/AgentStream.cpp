@@ -161,9 +161,10 @@ QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
 	CARD8*       buffer       = (CARD8*)Store(iocb->mesaPut.buffer);
 
-	LittleEndianByteBuffer bb(buffer, bufferSize);
 	QByteArray ret;
 	// append data from bytesRead
+	LittleEndianByteBuffer bb(buffer, bufferSize);
+	
 	for(CARD32 i = bytesRead; i < bytesWritten; i++) ret.append(bb.get8(i));
 	// update mesaGet.bytesRead
 	iocb->mesaPut.bytesRead = bytesWritten;
@@ -176,16 +177,16 @@ void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* io
 	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
 	CARD8*       buffer       = (CARD8*)Store(iocb->mesaGet.buffer);
 
-	LittleEndianByteBuffer bb(buffer, bufferSize);
-
 	// append data from bytesWritten
+	LittleEndianByteBuffer bb(buffer, bufferSize);
 	for(int i = 0; i < data.size(); i++) bb.set8(bytesWritten + i, data.at(i));
+	
 	// update mesaGet.bytesWritten
 	iocb->mesaGet.bytesWritten += data.size();
 
 	// fill zero with last byte if last position is odd
 	const CARD32 lastPos = bytesWritten + data.size();
-	if ((lastPos & 1) == 0) bb.set8(lastPos, 0);
+	if (lastPos & 1) bb.set8(lastPos, 0);
 }
 
 QByteArray AgentStream::Data::toByteArray(CARD32 data) {
@@ -387,10 +388,17 @@ void AgentStream::Call() {
 			if (handler->dataWrite.size()) {
 				// There is data to return.
 				StreamData streamData = handler->dataWrite.get();
+
+				iocb->mesaGet.subSequence = streamData.sst;
+				iocb->mesaGet.endSST      = streamData.endSST    ? 1 : 0;
+				iocb->mesaGet.endRecord   = streamData.endRecord ? 1 : 0;
+				iocb->mesaGet.endStream   = streamData.endStream ? 1 : 0;
 				Data::writeMesa(iocb, streamData.data);
-				if (streamData.endRecord) iocb->mesaGet.endRecord = 1;
-				if (iocb->mesaGet.interruptMesa) notifyInterrupt();
+
 				fcb->headResult = static_cast<CARD16>(Result::completed);
+
+				// Notify if asked
+				if (iocb->mesaGet.interruptMesa) notifyInterrupt();
 
 				if (DEBUG_SHOW_AGENT_STREAM) {
 					logger.debug("    data write  %02X  %c%c%c  %s",
@@ -516,20 +524,7 @@ AgentStream::StreamData AgentStream::Handler::getData() {
 
 
 CARD32 AgentStream::Handler::getData32() {
-//	return AgentStream::Data::toCARD32(getData().data);
-	CARD32 ret = 0;
-
-	for(;;) {
-		StreamData streamData = getData();
-		if (streamData.data.size() == 0) {
-			logger.warn("getData32  ignore empty data");
-			continue;
-		}
-		ret = AgentStream::Data::toCARD32(streamData.data);
-		break;
-	}
-
-	return ret;
+	return AgentStream::Data::toCARD32(getData().data);
 }
 
 void AgentStream::Handler::putData(AgentStream::StreamData data) {
