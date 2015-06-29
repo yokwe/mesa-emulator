@@ -50,11 +50,11 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 CARD16 AgentStream::Task::hTaskNext = 1; // Start from one
 
-CoProcessorIOFaceGuam::CoProcessorFCBType* AgentStream::fcb = 0;
-AgentStream::Handler*                      AgentStream::defaultHandler = 0;
-QMap<CARD32, AgentStream::Handler*>        AgentStream::handlerMap;
-QMap<CARD32, AgentStream::Task*>           AgentStream::taskMap;
-bool                                       AgentStream::Handler::stopThread = false;
+AgentStream::FCB*                   AgentStream::fcb = 0;
+AgentStream::Handler*               AgentStream::defaultHandler = 0;
+QMap<CARD32, AgentStream::Handler*> AgentStream::handlerMap;
+QMap<CARD32, AgentStream::Task*>    AgentStream::taskMap;
+bool                                AgentStream::Handler::stopThread = false;
 
 
 const char* AgentStream::toString(Command value) {
@@ -120,15 +120,15 @@ public:
 	AgentStream::Task* createTask() {
 		return new AgentStream::Task();
 	}
-	void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
+	void idle   (AgentStream::FCB* /*fcb*/) {
 	}
-	AgentStream::Result accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	AgentStream::Result accept (AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 		return AgentStream::Result::error;
 	}
-	AgentStream::Result connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	AgentStream::Result connect(AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 		return AgentStream::Result::error;
 	}
-	AgentStream::Result destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+	AgentStream::Result destroy(AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 		return AgentStream::Result::error;
 	}
 
@@ -155,7 +155,7 @@ public:
 };
 
 
-QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb) {
+QByteArray AgentStream::Data::readMesa(AgentStream::IOCB* iocb) {
 	const CARD32 bytesRead    = iocb->mesaPut.bytesRead;
 	const CARD32 bytesWritten = iocb->mesaPut.bytesWritten;
 	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
@@ -172,7 +172,7 @@ QByteArray AgentStream::Data::readMesa(CoProcessorIOFaceGuam::CoProcessorIOCBTyp
 	return ret;
 }
 
-void AgentStream::Data::writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data) {
+void AgentStream::Data::writeMesa(AgentStream::IOCB* iocb, QByteArray data) {
 	const CARD32 bytesWritten = iocb->mesaGet.bytesWritten;
 	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
 	CARD8*       buffer       = (CARD8*)Store(iocb->mesaGet.buffer);
@@ -235,7 +235,7 @@ QString AgentStream::Data::toString() {
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
-	fcb = (CoProcessorIOFaceGuam::CoProcessorFCBType *)Store(fcbAddress);
+	fcb = (FCB *)Store(fcbAddress);
 	fcb->iocbHead          = 0;
 	fcb->iocbNext          = 0;
 	fcb->headCommand       = 0;
@@ -249,7 +249,7 @@ void AgentStream::Initialize() {
 
 	setDefaultHandler(new DefaultHandler);
 	addHandler(new StreamTCP);
-	addHandler(new StreamFileAccess);
+	//addHandler(new StreamFileAccess); // TODO StreamFileAccess is still unusable
 }
 
 void AgentStream::Call() {
@@ -278,8 +278,8 @@ void AgentStream::Call() {
 	}
 
 	if (fcb->iocbHead) {
-		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-		AgentStream::Handler* handler = getHandler(iocb->serverID);
+		IOCB* iocb = (IOCB*)Store(fcb->iocbHead);
+		Handler* handler = getHandler(iocb->serverID);
 
 		switch(static_cast<Command>(fcb->headCommand)) {
 		case Command::accept: {
@@ -490,7 +490,7 @@ void AgentStream::stopThread() {
 void AgentStream::dump(log4cpp::Category& logger) {
 	logger.debug("AGENT %s  %08X  %s", name, fcb->iocbHead, toString(static_cast<Command>(fcb->headCommand)));
 	if (fcb->iocbHead) {
-		CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
+		IOCB* iocb = (IOCB*)Store(fcb->iocbHead);
 		logger.debug("   %c%-10s  %c-%c  mesaPut[%04d%c%c%02X %c%c%c %3d %3d]  mesaGet[%04d%c%c%02X %c%c%c %3d %3d]",
 			(iocb->mesaIsServer ? 'S' : ' '), getServerName(iocb->serverID),
 			toString(static_cast<State>(iocb->mesaConnectionState))[0],

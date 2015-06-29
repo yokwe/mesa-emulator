@@ -40,6 +40,13 @@ OF SUCH DAMAGE.
 
 class AgentStream : public Agent {
 public:
+	//
+	// Alias of existing definitions
+	//
+
+	typedef CoProcessorIOFaceGuam::CoProcessorFCBType  FCB;
+	typedef CoProcessorIOFaceGuam::CoProcessorIOCBType IOCB;
+
 	//CommandType: TYPE = MACHINE DEPENDENT
 	//  {idle(0), accept(1), connect(2), delete(3), read(4), write(5)};
 	enum class Command : CARD16 {
@@ -108,8 +115,8 @@ public:
 		QQueue<StreamData> queue;
 
 	public:
-		static QByteArray readMesa (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb);
-		static void       writeMesa(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, QByteArray data);
+		static QByteArray readMesa (IOCB* iocb);
+		static void       writeMesa(IOCB* iocb, QByteArray data);
 
 		static QByteArray toByteArray(CARD32 data);
 		static CARD32     toCARD32(QByteArray data);
@@ -162,12 +169,11 @@ public:
 
 		virtual Task* createTask() = 0;
 
-		virtual void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* fcb) = 0;
+		virtual void idle   (FCB* fcb) = 0;
 
-		virtual Result accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-		virtual Result connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
-		// To avoid conflict with keyword "delete", use "destroy" instead.
-		virtual Result destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, Task* task) = 0;
+		virtual Result accept (IOCB* iocb, Task* task) = 0;
+		virtual Result connect(IOCB* iocb, Task* task) = 0;
+		virtual Result destroy(IOCB* iocb, Task* task) = 0;
 
 		virtual void run() = 0;
 		static void stop() {
@@ -217,10 +223,10 @@ public:
 	void dump(log4cpp::Category& logger);
 
 private:
-	static CoProcessorIOFaceGuam::CoProcessorFCBType* fcb;
-	static Handler*                                   defaultHandler;
-	static QMap<CARD32, Handler*>                     handlerMap;
-	static QMap<CARD32, Task*>                        taskMap;
+	static FCB*                   fcb;
+	static Handler*               defaultHandler;
+	static QMap<CARD32, Handler*> handlerMap;
+	static QMap<CARD32, Task*>    taskMap;
 
 	static void     setDefaultHandler(Handler* handler);
 	static void     addHandler       (Handler* handler);

@@ -85,16 +85,16 @@ AgentStream::Task* StreamFileAccess::createTask() {
 	return new FileAccessTask();
 }
 
-void StreamFileAccess::idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
+void StreamFileAccess::idle   (AgentStream::FCB* /*fcb*/) {
 }
 
-AgentStream::Result StreamFileAccess::accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+AgentStream::Result StreamFileAccess::accept (AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 	return AgentStream::Result::completed;
 }
-AgentStream::Result StreamFileAccess::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+AgentStream::Result StreamFileAccess::connect(AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 	return AgentStream::Result::completed;
 }
-AgentStream::Result StreamFileAccess::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+AgentStream::Result StreamFileAccess::destroy(AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 	return AgentStream::Result::error;
 }
 

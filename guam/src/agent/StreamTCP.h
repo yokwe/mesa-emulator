@@ -169,15 +169,15 @@ public:
 
 	StreamTCP();
 
-	void idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* fcb);
+	void idle   (AgentStream::FCB* fcb);
 
 	// Return value of methods below is CoProcessorIOFaceGuam::R_*
 	//   R_completed, R_inProgress, R_error
 
-	AgentStream::Result accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
-	AgentStream::Result connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
+	AgentStream::Result accept (AgentStream::IOCB* iocb, AgentStream::Task* task);
+	AgentStream::Result connect(AgentStream::IOCB* iocb, AgentStream::Task* task);
 	// To avoid conflict with keyword "delete", use "destroy" instead.
-	AgentStream::Result destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb, AgentStream::Task* task);
+	AgentStream::Result destroy(AgentStream::IOCB* iocb, AgentStream::Task* task);
 
 	void run();
 

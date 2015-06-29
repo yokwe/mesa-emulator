@@ -113,16 +113,16 @@ QMap<CARD32, StreamTCP::SocketInfo*> StreamTCP::socketMap;
 
 StreamTCP::StreamTCP() : AgentStream::Handler(CoProcessorServerIDs::tcpService, "tcp") {}
 
-void StreamTCP::idle   (CoProcessorIOFaceGuam::CoProcessorFCBType* /*fcb*/) {
+void StreamTCP::idle   (AgentStream::FCB* /*fcb*/) {
 }
 
-AgentStream::Result StreamTCP::accept (CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+AgentStream::Result StreamTCP::accept (AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 	return AgentStream::Result::error;
 }
-AgentStream::Result StreamTCP::connect(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+AgentStream::Result StreamTCP::connect(AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 	return AgentStream::Result::completed;
 }
-AgentStream::Result StreamTCP::destroy(CoProcessorIOFaceGuam::CoProcessorIOCBType* /*iocb*/, AgentStream::Task* /*task*/) {
+AgentStream::Result StreamTCP::destroy(AgentStream::IOCB* /*iocb*/, AgentStream::Task* /*task*/) {
 	return AgentStream::Result::error;
 }
 
