@@ -158,7 +158,7 @@ public:
 QByteArray AgentStream::Data::readMesa(AgentStream::IOCB* iocb) {
 	const CARD32 bytesRead    = iocb->mesaPut.bytesRead;
 	const CARD32 bytesWritten = iocb->mesaPut.bytesWritten;
-	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
+	const CARD32 bufferSize   = iocb->mesaPut.bufferSize;
 	CARD8*       buffer       = (CARD8*)Store(iocb->mesaPut.buffer);
 
 	QByteArray ret;
@@ -166,7 +166,7 @@ QByteArray AgentStream::Data::readMesa(AgentStream::IOCB* iocb) {
 	LittleEndianByteBuffer bb(buffer, bufferSize);
 	
 	for(CARD32 i = bytesRead; i < bytesWritten; i++) ret.append(bb.get8(i));
-	// update mesaGet.bytesRead
+	// update mesaPut.bytesRead
 	iocb->mesaPut.bytesRead = bytesWritten;
 
 	return ret;
@@ -174,7 +174,7 @@ QByteArray AgentStream::Data::readMesa(AgentStream::IOCB* iocb) {
 
 void AgentStream::Data::writeMesa(AgentStream::IOCB* iocb, QByteArray data) {
 	const CARD32 bytesWritten = iocb->mesaGet.bytesWritten;
-	const CARD32 bufferSize   = iocb->mesaPut.bufferSize * sizeof(CARD16);
+	const CARD32 bufferSize   = iocb->mesaGet.bufferSize;
 	CARD8*       buffer       = (CARD8*)Store(iocb->mesaGet.buffer);
 
 	// append data from bytesWritten
@@ -201,7 +201,7 @@ QByteArray AgentStream::Data::toByteArray(CARD32 data) {
 CARD32 AgentStream::Data::toCARD32(QByteArray data) {
 	// Sanity check
 	if (data.size() != sizeof(CARD32)) {
-		logger.fatal("data.size = (%d)%s", data.size(), data.toHex().constData());
+		logger.fatal("data = %s", Util::toString(data));
 		ERROR();
 	}
 	LittleEndianByteBuffer bb((quint8*)data.data(), data.size());
