@@ -248,7 +248,7 @@ void AgentStream::Initialize() {
 	fcb->streamWordSize    = 0;
 
 	setDefaultHandler(new DefaultHandler);
-	addHandler(new StreamTCP);
+	//addHandler(new StreamTCP);
 	//addHandler(new StreamFileAccess); // TODO StreamFileAccess is still unusable
 }
 
