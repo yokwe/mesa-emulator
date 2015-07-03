@@ -13,7 +13,7 @@ HEADERS += Interpreter.h   Opcode.h   Run.h
 SOURCES += Interpreter.cpp Opcode.cpp Run.cpp
 
 SOURCES += Opcode_bitblt.cpp Opcode_block.cpp Opcode_control.cpp Opcode_process.cpp
-SOURCES += Opcode_simple.cpp Opcode_special.cpp
+SOURCES += Opcode_simple.cpp Opcode_special.cpp Opcode_txtblt.cpp
 
 ###############################################
 
