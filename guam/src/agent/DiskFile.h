@@ -54,6 +54,15 @@ public:
 		numberOfHeads     = 0;
 		sectorsPerTrack   = 0;
 	}
+	DiskFile(const DiskFile& that) {
+		path              = that.path;
+		page              = that.page;
+		size              = that.size;
+		maxBlock          = that.maxBlock;
+		numberOfCylinders = that.numberOfCylinders;
+		numberOfHeads     = that.numberOfHeads;
+		sectorsPerTrack   = that.sectorsPerTrack;
+	}
 
 	void attach(const QString& path);
 	void detach();
