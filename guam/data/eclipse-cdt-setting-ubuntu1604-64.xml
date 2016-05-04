@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+<language name="holder for library settings">
+
+</language>
+<language name="Assembly">
+
+</language>
+<language name="GNU C++">
+<includepath>/usr/local/include</includepath>
+<includepath>/usr/include</includepath>
+<includepath workspace_path="true">/guam/src</includepath>
+<includepath>/usr/include/c++/5.3.1</includepath>
+<includepath>/usr/include/c++/5.3.1/backward</includepath>
+<includepath>/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++</includepath>
+<includepath>/usr/include/x86_64-linux-gnu</includepath>
+<includepath>/usr/include/x86_64-linux-gnu/qt5</includepath>
+<includepath>/usr/include/x86_64-linux-gnu/qt5/QtGui</includepath>
+<includepath>/usr/include/x86_64-linux-gnu/qt5/QtWidgets</includepath>
+<includepath>/usr/include/x86_64-linux-gnu/qt5/QtCore</includepath>
+<includepath>/usr/include/x86_64-linux-gnu/c++/5.3.1</includepath>
+<includepath>/usr/lib/gcc/x86_64-linux-gnu/5.3.1/include</includepath>
+<includepath>/usr/lib/gcc/x86_64-linux-gnu/5.3.1/include-fixed</includepath>
+
+</language>
+<language name="GNU C">
+
+</language>
+</section>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+<language name="holder for library settings">
+
+</language>
+<language name="Assembly">
+
+</language>
+<language name="GNU C++">
+<macro>
+<name>__linux__</name><value>1</value>
+</macro>
+
+</language>
+<language name="GNU C">
+
+</language>
+</section>
+</cdtprojectproperties>
