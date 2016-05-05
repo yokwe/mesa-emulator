@@ -1,5 +1,5 @@
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courier");
+//static log4cpp::Category& logger = Logger::getLogger("courier");
 
 #include "../util/Debug.h"
 
