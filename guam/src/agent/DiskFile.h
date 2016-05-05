@@ -46,6 +46,7 @@ public:
 
 	struct Page { CARD16 word[PageSize]; };
 
+	// default constructor
 	DiskFile() {
 		page              = 0;
 		size              = 0;
@@ -53,15 +54,6 @@ public:
 		numberOfCylinders = 0;
 		numberOfHeads     = 0;
 		sectorsPerTrack   = 0;
-	}
-	DiskFile(const DiskFile& that) {
-		path              = that.path;
-		page              = that.page;
-		size              = that.size;
-		maxBlock          = that.maxBlock;
-		numberOfCylinders = that.numberOfCylinders;
-		numberOfHeads     = that.numberOfHeads;
-		sectorsPerTrack   = that.sectorsPerTrack;
 	}
 
 	void attach(const QString& path);
