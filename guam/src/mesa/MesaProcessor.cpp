@@ -56,9 +56,17 @@ void MesaProcessor::initialize() {
 	Memory::reserveDisplayPage(displayWidth, displayHeight);
 
 	// AgentDisk use diskFile
-	logger.info("Disk  %s", diskPath.toLatin1().constData());
-	diskFile.attach(diskPath);
-	disk.addDiskFile(&diskFile);
+	for(int i = 1; i <= 999; i++) {
+		QString path = diskPath.arg(i, 3, 10, QLatin1Char('0'));
+		if (!QFile::exists(path)) break;
+
+		logger.info("Disk  %s", path.toLatin1().constData());
+
+		DiskFile* diskFile = new DiskFile;
+		diskFile->attach(path);
+		diskFileList.append(diskFile);
+		disk.addDiskFile(diskFile);
+	}
 
 	logger.info("Floppy %s", floppyPath.toLatin1().constData());
 	floppyFile.attach(floppyPath);
@@ -125,7 +133,9 @@ void MesaProcessor::wait() {
 	//
 	setRunning(0);
 	// Properly detach DiskFile
-	diskFile.detach();
+	for(DiskFile* diskFile: diskFileList) {
+		diskFile->detach();
+	}
 	floppyFile.detach();
 }
 

@@ -100,7 +100,7 @@ private:
 	QString        networkInterfaceName;
 
 	//
-	DiskFile       diskFile;
+	QList<DiskFile*> diskFileList;
 	DiskFile       floppyFile;
 	NetworkPacket  networkPacket;
 
