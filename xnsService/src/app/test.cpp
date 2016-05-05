@@ -46,7 +46,7 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	Network network;
 
-	network.attach("eth1");
+	network.attach("ens38");
 
 	quint64 address = network.getAddress();
 	logger.info("%012llX", address);
