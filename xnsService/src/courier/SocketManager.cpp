@@ -183,8 +183,19 @@ void SocketManager::SocketThread::run() {
 			// Build response
 			serialize(response, resEthernet);
 
-			// Build response
+			resDatagram.base                = reqDatagram.base;
+			resDatagram.checksum            = 0;
+			resDatagram.length              = 0;
 			resDatagram.flags               = (quint16)Courier::Datagram::PacketType::ERROR;
+			resDatagram.destination.base    = reqDatagram.destination.base;
+			resDatagram.destination.network = reqDatagram.source.network;
+			resDatagram.destination.host    = reqDatagram.source.host;
+			resDatagram.destination.socket  = reqDatagram.source.socket;
+			resDatagram.source.base         = reqDatagram.source.base;
+			resDatagram.source.network      = context.network;
+			resDatagram.source.host         = context.host;
+			resDatagram.source.socket       = reqDatagram.destination.socket;
+
 			serialize(response, resDatagram);
 
 			// Build response
