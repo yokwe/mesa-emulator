@@ -169,7 +169,9 @@ void SocketManager::SocketThread::run() {
 				listener->process(context, request, response);
 			} else {
 				// no one listen the socket
-				logger.warn("NO SOCKET LISTENER  %s (%d)", Courier::getSocketName(reqDatagram.destination.socket), reqDatagram.destination.socket);
+				quint16 socket = reqDatagram.destination.socket;
+				Courier::Datagram::PacketType packetType = Socket::getPacketType(reqDatagram);
+				logger.warn("NO SOCKET LISTENER  %s (%d) %s (%d)", Courier::getSocketName(socket), socket, Courier::getName(packetType), packetType);
 				throw PacketError(Courier::Error::ErrorNumber::NO_SOCKET);
 			}
 		} catch (PacketError& packetError) {
