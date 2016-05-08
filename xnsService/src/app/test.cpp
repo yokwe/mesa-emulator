@@ -37,6 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("test");
 #include "../courier/stub/StubDatagram.h"
 #include "../courier/socket/SocketRouting.h"
 #include "../courier/socket/SocketEcho.h"
+#include "../courier/socket/SocketBoot.h"
 #include "../courier/pex/PEXTime.h"
 
 int main(int /*argc*/, char** /*argv*/) {
@@ -46,7 +47,7 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	Network network;
 
-	network.attach("ens38");
+	network.attach("ens33");
 
 	quint64 address = network.getAddress();
 	logger.info("%012llX", address);
@@ -65,10 +66,14 @@ int main(int /*argc*/, char** /*argv*/) {
 	PEXTime   pexTime;
 	SocketPEX socketTime(Courier::PacketExchange::ClientType::TIME, &pexTime);
 
+	// Initialize SocketBoot
+	SocketBoot  socketBoot;
+
 	// Add SocketXXX with SocketManager
 	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::ROUTING, &socketRouting);
 	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::ECHO,    &socketEcho);
 	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::TIME,    &socketTime);
+	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::BOOT,    &socketBoot);
 
 	logger.info("START Socket");
 	socketManager.start();

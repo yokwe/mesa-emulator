@@ -7,12 +7,7 @@ export LOG4CPP_CONFIG
 
 
 .PHONY: all qt5-default clean distclean
-.PHONY: guam guam-headless test
-.PHONY: run-guam run-guam-headless run-test
-.PHONY: callgrind memecheck tar
-.PHONY: qmake
-.PHONY: qmake-raspi mount-raspi umount-raspi
-.pHONY: qmake-win32 run-guam.exe run-guam-headless.exe run-test.exe
+.pHONY: run-app
 
 
 all:
@@ -59,7 +54,7 @@ qmake:
 
 JARDIR		:= ../Externals/jar
 CLASSPATH	:= bin:$(JARDIR)/antlr-4.1-complete.jar:$(JARDIR)/hamcrest-core-1.3.jar:$(JARDIR)/junit-4.11.jar:$(JARDIR)/logback-classic-1.0.13.jar:$(JARDIR)/logback-core-1.0.13.jar:$(JARDIR)/slf4j-api-1.7.5.jar
-COURIER_TARGET	:= Time2 Ethernet Datagram Echo Error ExpeditedCourier PacketExchange Routing Protocol
+COURIER_TARGET	:= Time2 Ethernet Datagram Echo Error ExpeditedCourier PacketExchange Routing Protocol Boot SequencedPacket
 
 
 clean-antlr:
