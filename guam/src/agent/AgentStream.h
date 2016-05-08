@@ -34,8 +34,26 @@ OF SUCH DAMAGE.
 
 #include "Agent.h"
 
+#include <QtCore>
+
 class AgentStream : public Agent {
 public:
+	class Stream {
+	public:
+		const QString name;
+		const quint32 serverID;
+
+		Stream(const QString name_, const quint32 serverID_, const quint16) : name(name_) {}
+
+		// provide method for each headCommand that returns headResult
+		virtual quint16 idle   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
+		virtual quint16 accept (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
+		virtual quint16 connect(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
+		virtual quint16 destroy(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
+		virtual quint16 read   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
+		virtual quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
+	};
+
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
 		fcb = 0;
 	}
@@ -47,8 +65,12 @@ public:
 	void Initialize();
 	void Call();
 
+	void addStream(Stream* stream);
+
 private:
 	CoProcessorIOFaceGuam::CoProcessorFCBType *fcb;
+
+	QMap<quint32, Stream*> map;
 };
 
 #endif

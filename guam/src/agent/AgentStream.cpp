@@ -77,7 +77,7 @@ void AgentStream::Call() {
 		return; // Return if there is no IOCB
 	}
 
-	if (DEBUG_SHOW_AGENT_STREAM) {
+	//if (DEBUG_SHOW_AGENT_STREAM) {
 		logger.debug("AGENT %s  head = %08X  next = %08X  command = %2d  result = %2d", name, fcb->iocbHead, fcb->iocbNext, fcb->headCommand, fcb->headResult);
 		if (fcb->iocbHead) {
 			CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
@@ -89,7 +89,7 @@ void AgentStream::Call() {
 				iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
 			}
 		}
-	}
+	//}
 	// TODO implement AgentStream::Call
-	fcb->headResult = CoProcessorIOFaceGuam::R_error;
+	fcb->headResult = CoProcessorIOFaceGuam::R_completed;
 }
