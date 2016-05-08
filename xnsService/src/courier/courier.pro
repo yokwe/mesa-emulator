@@ -14,11 +14,14 @@ SOURCES += ByteBuffer.cpp Courier.cpp Network.cpp SocketManager.cpp
 HEADERS += socket/SocketBoot.h   socket/SocketEcho.h   socket/SocketPEX.h   socket/SocketRouting.h
 SOURCES += socket/SocketBoot.cpp socket/SocketEcho.cpp socket/SocketPEX.cpp socket/SocketRouting.cpp
 
-HEADERS += stub/StubBoot.h   stub/StubDatagram.h   stub/StubEcho.h   stub/StubError.h   stub/StubEthernet.h   stub/StubRouting.h
-SOURCES += stub/StubBoot.cpp stub/StubDatagram.cpp stub/StubEcho.cpp stub/StubError.cpp stub/StubEthernet.cpp stub/StubRouting.cpp
+HEADERS += stub/StubDatagram.h   stub/StubEcho.h   stub/StubError.h   stub/StubEthernet.h   stub/StubRouting.h
+SOURCES += stub/StubDatagram.cpp stub/StubEcho.cpp stub/StubError.cpp stub/StubEthernet.cpp stub/StubRouting.cpp
 
 HEADERS += stub/StubExpeditedCourier.h   stub/StubPacketExchange.h   stub/StubProtocol.h   stub/StubTime2.h
 SOURCES += stub/StubExpeditedCourier.cpp stub/StubPacketExchange.cpp stub/StubProtocol.cpp stub/StubTime2.cpp
+
+HEADERS += stub/StubSequencedPacket.h   stub/StubBoot.h
+SOURCES += stub/StubSequencedPacket.cpp stub/StubBoot.cpp
 
 HEADERS += pex/PEXTime.h
 SOURCES += pex/PEXTIme.cpp
