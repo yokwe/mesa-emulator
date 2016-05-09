@@ -43,7 +43,8 @@ public:
 		const QString name;
 		const quint32 serverID;
 
-		Stream(const QString name_, const quint32 serverID_, const quint16) : name(name_) {}
+		Stream(const QString name_, const quint32 serverID_) : name(name_), serverID(serverID_) {}
+		virtual ~Stream() {}
 
 		// provide method for each headCommand that returns headResult
 		virtual quint16 idle   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;

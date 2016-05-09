@@ -41,6 +41,46 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "Agent.h"
 #include "AgentStream.h"
 
+class BootStream : AgentStream::Stream {
+public:
+	BootStream() : AgentStream::Stream("BOOT", CoProcessorServerIDs::bootAgentID) {}
+
+	quint16 idle   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+		logger.info("%s idle %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+		return CoProcessorIOFaceGuam::R_error;
+	}
+	quint16 accept (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+		logger.info("%s accept %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+		return CoProcessorIOFaceGuam::R_error;
+	}
+	quint16 connect(CoProcessorIOFaceGuam::CoProcessorFCBType * /*fcb*/, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+		logger.info("%s connect  state mesa = %d  pc = %d", name.toLatin1().constData(), iocb->mesaConnectionState, iocb->pcConnectionState);
+		//iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
+		return CoProcessorIOFaceGuam::R_completed;
+	}
+	quint16 destroy(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+		logger.info("%s destroy %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+		return CoProcessorIOFaceGuam::R_error;
+	}
+	quint16 read   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+		logger.info("%s read %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+		return CoProcessorIOFaceGuam::R_error;
+	}
+	quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+		logger.info("%s write %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+		return CoProcessorIOFaceGuam::R_error;
+	}
+};
+
+void AgentStream::addStream(Stream* stream) {
+	if (map.contains(stream->serverID)) {
+		logger.error("Duplicate serverID = %d", stream->serverID);
+		ERROR();
+	}
+	map.insert(stream->serverID, stream);
+}
+
+
 void AgentStream::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
@@ -55,6 +95,9 @@ void AgentStream::Initialize() {
 	fcb->stopAgent         = 0;
 	fcb->agentStopped      = 1;
 	fcb->streamWordSize    = 0;
+
+	BootStream* bootStream = new BootStream;
+	addStream((Stream*)bootStream);
 }
 
 void AgentStream::Call() {
@@ -77,19 +120,53 @@ void AgentStream::Call() {
 		return; // Return if there is no IOCB
 	}
 
-	//if (DEBUG_SHOW_AGENT_STREAM) {
-		logger.debug("AGENT %s  head = %08X  next = %08X  command = %2d  result = %2d", name, fcb->iocbHead, fcb->iocbNext, fcb->headCommand, fcb->headResult);
-		if (fcb->iocbHead) {
-			CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
-			for(;;) {
-				logger.debug("    serverID = %3d  mesaIsServer = %d  mesaConnectionState = %d  pcConnectionState = %d  next = %8X",
-					iocb->serverID, iocb->mesaIsServer, iocb->mesaConnectionState, iocb->pcConnectionState, iocb->nextIOCB);
-				//
-				if (iocb->nextIOCB == 0) break;
-				iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(iocb->nextIOCB);
-			}
-		}
-	//}
-	// TODO implement AgentStream::Call
-	fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+	if (fcb->iocbHead != fcb->iocbNext) {
+		logger.error("fcb->iocbHead = %04X  fcb->iocbNext = %04X", fcb->iocbHead, fcb->iocbNext);
+		ERROR();
+	}
+
+	logger.debug("AGENT %s  head = %08X  next = %08X  command = %2d  result = %2d  interruptSelector = %04X", name, fcb->iocbHead, fcb->iocbNext, fcb->headCommand, fcb->headResult, fcb->interruptSelector);
+	CoProcessorIOFaceGuam::CoProcessorIOCBType* iocb = (CoProcessorIOFaceGuam::CoProcessorIOCBType*)Store(fcb->iocbHead);
+	logger.debug("    serverID = %3d  mesaIsServer = %d  mesaConnectionState = %d  pcConnectionState = %d  next = %8X",
+		iocb->serverID, iocb->mesaIsServer, iocb->mesaConnectionState, iocb->pcConnectionState, iocb->nextIOCB);
+
+	quint32 serverID = iocb->serverID;
+	quint16 command = fcb->headCommand;
+
+	if (!map.contains(serverID)) {
+		logger.warn("No Stream  serverID = %d", serverID);
+		fcb->headResult = CoProcessorIOFaceGuam::R_error;
+		return;
+	}
+	Stream* stream = map[serverID];
+	quint16 result = CoProcessorIOFaceGuam::R_error;
+
+	switch(command) {
+	case CoProcessorIOFaceGuam::C_idle:
+		result = stream->idle(fcb, iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_accept:
+		result = stream->accept(fcb, iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_connect:
+		result = stream->connect(fcb, iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_delete:
+		result = stream->destroy(fcb, iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_read:
+		result = stream->read(fcb, iocb);
+		break;
+	case CoProcessorIOFaceGuam::C_write:
+		result = stream->write(fcb, iocb);
+		break;
+	default:
+		logger.error("Unknown command = %d", command);
+		ERROR();
+	}
+
+	logger.debug("    serverID = %3d  mesaIsServer = %d  mesaConnectionState = %d  pcConnectionState = %d  next = %8X",
+		iocb->serverID, iocb->mesaIsServer, iocb->mesaConnectionState, iocb->pcConnectionState, iocb->nextIOCB);
+	logger.debug("    result = %d", result);
+	fcb->headResult = result;
 }
