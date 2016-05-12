@@ -228,7 +228,7 @@ void MesaProcessor::setBootRequestStream() {
 	}
 
 	request->requestBasicVersion    = Boot::currentRequestBasicVersion;
-	request->action                 = Boot::A_bootPhysicalVolume;
+	request->action                 = Boot::A_inLoad;
 	request->location.deviceType    = Device::T_simpleDataStream;
 	request->location.deviceOrdinal = 0;
 
