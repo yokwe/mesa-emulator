@@ -1435,6 +1435,14 @@ __attribute__((always_inline)) static inline void R_WRMP_(Run /*run*/) {
 		//  cGermAction: Code = 910;  -- Germ action running (e.g. inLoad, outLoad)
 		logger.info("MP  910 cGermAction");
 		break;
+	case 911:
+		// cGermBadPhysicalVolume: Code = 911;  -- Germ and physical volume have incompatible version numbers
+		logger.info("MP  911 cGermBadPhysicalVolume");
+		break;
+	case 912:
+		// cGermBadBootFileVersion: Code = 912;  -- Germ and boot file have incompatible version numbers
+		logger.info("MP  912 cGermBadBootFileVersion");
+		break;
 	case 917:
 		// cRespondingToEtherDebugger: Code = 917;  -- talking to ethernet debugger
 		logger.info("MP  917 cRespondingToEtherDebugger");
