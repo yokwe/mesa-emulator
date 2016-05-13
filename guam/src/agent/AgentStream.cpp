@@ -79,7 +79,7 @@ public:
 	}
 	quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
 		CoProcessorIOFaceGuam::TransferRec& tr = iocb->mesaGet;
-		if (DEBUG_SHOW_AGENT_STREAM) logger.info("%-8s write %8X+%X", name.toLatin1().constData(), pos, tr.bufferSize);
+		/*if (DEBUG_SHOW_AGENT_STREAM)*/ logger.info("%-8s write %8X+%X", name.toLatin1().constData(), pos, tr.bufferSize);
 		if (tr.buffer == 0) {
 			logger.fatal("tr.buffer = 0");
 			ERROR();
@@ -108,7 +108,7 @@ public:
 		for(;;) {
 			if (pos == mapSize) break;               // pos reach end
 			if (bytesWritten == bufferSize) break;   // bytesWritten reach end
-			buffer[bytesWritten++] = map[pos++  ^1]; // fix endianness (MESA use big endian)
+			buffer[bytesWritten++ ^ 1] = map[pos++]; // fix endianness (MESA use big endian)
 		}
 
 		tr.bytesWritten = bytesWritten;
@@ -116,10 +116,12 @@ public:
 			tr.endStream = 1;
 		}
 
-		// assume no interrupt
-		if (tr.interruptMesa && fcb->interruptSelector) {
-			logger.fatal("interruptMesa = %d  interruptSelector = %4X", tr.interruptMesa, fcb->interruptSelector);
-			ERROR();
+		// generate interrupt if needed
+		if (tr.interruptMesa) {
+			if (fcb->interruptSelector) {
+				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
+				InterruptThread::notifyInterrupt(fcb->interruptSelector);
+			}
 		}
 
 		return CoProcessorIOFaceGuam::R_completed;
