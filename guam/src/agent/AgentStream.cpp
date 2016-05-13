@@ -37,6 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 #include "../mesa/Pilot.h"
 #include "../mesa/Memory.h"
+#include "../mesa/MesaThread.h"
 
 #include "Agent.h"
 #include "AgentStream.h"
