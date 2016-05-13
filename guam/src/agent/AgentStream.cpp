@@ -45,7 +45,8 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 class BootStream : AgentStream::Stream {
 public:
 	BootStream() : AgentStream::Stream("BOOT", CoProcessorServerIDs::bootAgentID), path("data/GVWin/SCAVGUAM.BOO") {
-		map = (quint8*)Util::mapFile(path, mapSize);
+		map = (quint16*)Util::mapFile(path, mapSize);
+		mapSize /= Environment::bytesPerWord;
 		pos = 0;
 		logger.info("%3d %-8s %s", serverID, name.toLatin1().constData(), path.toLatin1().constData());
 	}
@@ -80,14 +81,14 @@ public:
 	}
 	quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
 		CoProcessorIOFaceGuam::TransferRec& tr = iocb->mesaGet;
-		/*if (DEBUG_SHOW_AGENT_STREAM)*/ logger.info("%-8s write %8X+%X", name.toLatin1().constData(), pos, tr.bufferSize);
-		if (tr.buffer == 0) {
-			logger.fatal("tr.buffer = 0");
-			ERROR();
-		}
+		/*if (DEBUG_SHOW_AGENT_STREAM)*/ logger.info("%-8s write %8X+%d", name.toLatin1().constData(), pos, tr.bufferSize);
 		if (tr.writeLockedByMesa) {
 			logger.warn("writeLockedByMesa");
 			return CoProcessorIOFaceGuam::R_inProgress;
+		}
+		if (tr.buffer == 0) {
+			logger.fatal("tr.buffer = 0");
+			ERROR();
 		}
 		if (tr.bytesRead != 0) {
 			logger.fatal("tr.bytesRead = %d", tr.bytesRead);
@@ -97,22 +98,19 @@ public:
 			logger.fatal("tr.bytesWritten = %d", tr.bytesWritten);
 			ERROR();
 		}
-		if ((tr.bufferSize & 1) != 0) {
+		if (tr.bufferSize != Environment::bytesPerPage) {
 			logger.fatal("tr.bufferSize = %d", tr.bufferSize);
 			ERROR();
 		}
 
-		quint8* buffer       = (quint8*)Store(tr.buffer);
-		quint32 bufferSize   = tr.bufferSize;
-		quint32 bytesWritten = tr.bytesWritten;
+		quint16* buffer = (quint16*)Store(tr.buffer);
+		quint32  size   = tr.bufferSize / Environment::bytesPerWord;
+		if (mapSize < (pos + size)) size = mapSize - pos;
 
-		for(;;) {
-			if (pos == mapSize) break;               // pos reach end
-			if (bytesWritten == bufferSize) break;   // bytesWritten reach end
-			buffer[bytesWritten++ ^ 1] = map[pos++]; // fix endianness (MESA use big endian)
-		}
+		Util::fromBigEndian(map + pos, buffer, size);
+		pos += size;
+		tr.bytesWritten = size * Environment::bytesPerWord;
 
-		tr.bytesWritten = bytesWritten;
 		if (pos == mapSize) {
 			tr.endStream = 1;
 		}
@@ -130,9 +128,9 @@ public:
 
 private:
 	const QString path;
-	quint8* map;
-	quint32 mapSize;
-	quint32 pos;
+	quint16* map;
+	quint32  mapSize;
+	quint32  pos;
 };
 
 //		{
