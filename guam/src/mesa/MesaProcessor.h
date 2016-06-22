@@ -64,6 +64,9 @@ public:
 	void setBootSwitch(const QString& bootSwitch_) {
 		bootSwitch = bootSwitch_;
 	}
+	void setBootDevice(const QString& bootDevice_) {
+		bootDevice = bootDevice_;
+	}
 	void setMemorySize(int vmBits_, int rmBits_) {
 		vmBits = vmBits_;
 		rmBits = rmBits_;
@@ -93,6 +96,7 @@ private:
 	QString        germPath;
 	QString        floppyPath;
 	QString        bootSwitch;
+	QString        bootDevice;
 	int            vmBits;
 	int            rmBits;
 	CARD16         displayWidth;

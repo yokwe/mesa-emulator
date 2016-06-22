@@ -94,9 +94,17 @@ void MesaProcessor::initialize() {
 	loadGerm(germPath);
 
 	// set boot request
-	setBootRequestPV();
-	//setBootRequestEther();
-	//setBootRequestStream();
+	logger.info("bootDevice %s", bootDevice.toLatin1().constData());
+	if (bootDevice == "DISK") {
+		setBootRequestPV();
+	} else if (bootDevice == "ETHER") {
+		setBootRequestEther();
+	} else if (bootDevice == "STREAM") {
+		setBootRequestStream();
+	} else {
+		logger.fatal("Unknown bootFrom");
+		exit(1);
+	}
 
 	// setAutoDelete(false) for interruptThread, timerThread and processorThread.
 	interruptThread.setAutoDelete(false);

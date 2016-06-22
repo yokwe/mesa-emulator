@@ -26,18 +26,27 @@
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.6102380" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.406979288" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/lib/i386-linux-gnu/qt5/mkspecs/linux-g++"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/guam/src}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/5.3.1"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/5.3.1/backward"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/qt5"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/qt5/QtGui"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/qt5/QtWidgets"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/qt5/QtCore"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/c++/5.3.1"/>
+									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/5.3.1/include"/>
+									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/5.3.1/include-fixed"/>
+									<listOptionValue builtIn="false" value="/usr/lib/i386-linux-gnu/qt5/mkspecs/linux-g++"/>
+									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu"/>
 									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5"/>
 									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5/QtGui"/>
 									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5/QtWidgets"/>
 									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5/QtCore"/>
-									<listOptionValue builtIn="false" value="/usr/include/c++/5.3.1"/>
 									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/c++/5.3.1"/>
-									<listOptionValue builtIn="false" value="/usr/include/c++/5.3.1/backward"/>
 									<listOptionValue builtIn="false" value="/usr/lib/gcc/i686-linux-gnu/5.3.1/include"/>
 									<listOptionValue builtIn="false" value="/usr/lib/gcc/i686-linux-gnu/5.3.1/include-fixed"/>
 								</option>
