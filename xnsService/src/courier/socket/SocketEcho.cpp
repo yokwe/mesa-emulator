@@ -39,7 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("sockEcho");
 #include "../Courier.h"
 #include "../stub/StubEcho.h"
 
-void SocketEcho::process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
+void SocketEcho::process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	// Sanity check of packetType

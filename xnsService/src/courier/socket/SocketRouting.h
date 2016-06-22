@@ -13,7 +13,7 @@ public:
 		addNetwork(localNetworkNumber, 0);
 	}
 	void addNetwork(quint32 networkNumber, quint16 hop);
-	void process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
+	void process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
 
 protected:
 	const quint32 localNetworkNumber;

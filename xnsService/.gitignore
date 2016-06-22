@@ -4,3 +4,4 @@
 bin/
 tmp/
 src/*/Makefile
+data/GVWin/

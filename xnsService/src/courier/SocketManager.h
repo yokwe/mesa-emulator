@@ -74,7 +74,7 @@ public:
 		Socket(const char* name_) : name(name_) {}
 		virtual ~Socket() {}
 
-		virtual void process(const Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
+		virtual void process(Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
 
 		static Courier::Datagram::PacketType getPacketType(Courier::Datagram::Header datagram) {
 			return (Courier::Datagram::PacketType)(datagram.flags & 0xff);

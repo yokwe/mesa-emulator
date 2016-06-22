@@ -54,7 +54,7 @@ static quint32 toUnixTime(quint32 mesaTime) {
 	return mesaTime - EPOCH_DIFF;
 }
 
-void PEXTime::process(const Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
+void PEXTime::process(Context& /*context*/, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	Time2::Packet reqPacket;

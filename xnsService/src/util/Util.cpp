@@ -95,3 +95,65 @@ static void signalHandler(int signum) {
 void setSignalHandler(int signum) {
 	signal(signum, signalHandler);
 }
+
+
+class MapInfo {
+public:
+	int     id;
+	QFile   file;
+	quint64 size;
+	void*   page;
+
+	MapInfo(QString path) : id(count++), file(path.toLatin1().constData()), size(0), page(0) {}
+
+	static int count;
+};
+static QMap<void*, MapInfo*>allMap;
+int MapInfo::count = 0;
+
+void* Util::mapFile  (const QString& path, quint32& mapSize) {
+	MapInfo* mapInfo = new MapInfo(path);
+
+	if (!mapInfo->file.exists()) {
+		logger.fatal("%s  file.exists returns false.  path = %s", __FUNCTION__, path.toLatin1().constData());
+		RUNTIME_ERROR();
+	}
+	mapInfo->size = mapInfo->file.size();
+	mapSize = (quint32)mapInfo->size;
+
+	bool ok = mapInfo->file.open(QIODevice::ReadWrite);
+	if (!ok) {
+		logger.fatal("file.open returns false.  error = %s", qPrintable(mapInfo->file.errorString()));
+		RUNTIME_ERROR();
+	}
+	mapInfo->page = (void*)mapInfo->file.map(0, mapInfo->size);
+	if (mapInfo->page == 0) {
+		logger.fatal("file.map returns 0.  error  = %s", qPrintable(mapInfo->file.errorString()));
+		RUNTIME_ERROR();
+	}
+
+	allMap[mapInfo->page] = mapInfo;
+	logger.info("mapFile    %d  size = %8X  path = %s", mapInfo->id, (quint32)mapInfo->size, qPrintable(mapInfo->file.fileName()));
+
+	return mapInfo->page;
+}
+void  Util::unmapFile(void* page) {
+	if (!allMap.contains(page)) {
+		logger.fatal("%s page = %p", __FUNCTION__, page);
+		RUNTIME_ERROR();
+	}
+	MapInfo* mapInfo = allMap[page];
+
+	logger.info("unmapFile  %d  size = %8X  path = %s", mapInfo->id, (quint32)mapInfo->size, qPrintable(mapInfo->file.fileName()));
+
+	if (!mapInfo->file.unmap((uchar*)(mapInfo->page))) {
+		logger.fatal("file.unmap returns false.  error = %s", qPrintable(mapInfo->file.errorString()));
+		RUNTIME_ERROR();
+	}
+
+	mapInfo->file.close();
+
+	delete mapInfo;
+
+	allMap.remove(page);
+}

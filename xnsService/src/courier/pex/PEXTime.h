@@ -12,7 +12,7 @@ class PEXTime : public SocketPEX::PEX {
 public:
 	PEXTime() : SocketPEX::PEX("Time") {}
 
-	void process(const Context& context, ByteBuffer& request, ByteBuffer& response);
+	void process(Context& context, ByteBuffer& request, ByteBuffer& response);
 };
 
 #endif

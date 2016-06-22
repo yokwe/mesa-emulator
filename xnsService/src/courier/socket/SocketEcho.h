@@ -10,7 +10,7 @@
 class SocketEcho : public SocketManager::Socket {
 public:
 	SocketEcho() : SocketManager::Socket("Echo") {}
-	void process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
+	void process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
 };
 
 #endif

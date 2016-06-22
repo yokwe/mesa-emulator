@@ -10,7 +10,7 @@
 class SocketBoot : public SocketManager::Socket {
 public:
 	SocketBoot() : SocketManager::Socket("Boot") {}
-	void process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
+	void process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
 };
 
 #endif

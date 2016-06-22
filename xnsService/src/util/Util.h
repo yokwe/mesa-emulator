@@ -62,4 +62,10 @@ public:
 	static void pushPriority(log4cpp::Priority::Value newValue);
 	static void popPriority();
 };
+
+class Util {
+public:
+	static void*   mapFile  (const QString& path, quint32& mapSize);
+	static void    unmapFile(void* page);
+};
 #endif

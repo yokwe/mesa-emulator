@@ -25,12 +25,12 @@ public:
 		PEX(const char* name_) : name(name_) {}
 		virtual ~PEX() {}
 
-		virtual void process(const Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
+		virtual void process(Context& context, ByteBuffer& request, ByteBuffer& response) = 0;
 	};
 
 	SocketPEX(Courier::PacketExchange::ClientType clientType_, PEX* pex_) :
 		SocketManager::Socket("PEX"), clientType(clientType_), pex(pex_) {}
-	void process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
+	void process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response);
 
 protected:
 	const Courier::PacketExchange::ClientType clientType;

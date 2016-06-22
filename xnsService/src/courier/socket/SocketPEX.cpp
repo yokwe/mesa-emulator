@@ -39,7 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("sockPEX");
 #include "../Courier.h"
 #include "../stub/StubPacketExchange.h"
 
-void SocketPEX::process(const Socket::Context& socketContext, ByteBuffer& request, ByteBuffer& response) {
+void SocketPEX::process(Socket::Context& socketContext, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	// Sanity check of packetType

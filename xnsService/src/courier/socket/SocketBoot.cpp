@@ -39,7 +39,28 @@ static log4cpp::Category& logger = Logger::getLogger("sockBoot");
 #include "../Courier.h"
 #include "../stub/StubBoot.h"
 
-void SocketBoot::process(const Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
+class SimpleNSIO {
+public:
+	void* map;
+	quint32 mapSize;
+	//
+	quint16 connID;
+	quint32 pos;
+
+	SimpleNSIO(QString path) {
+		map = Util::mapFile(path, mapSize);
+		connID = 0;
+		pos = 0;
+	}
+
+	~SimpleNSIO() {
+		Util::unmapFile(map);
+	}
+};
+
+static SimpleNSIO simple("data/GVWin/SCAVGUAM.BOO");
+
+void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
 	// Sanity check of packetType
@@ -49,6 +70,40 @@ void SocketBoot::process(const Socket::Context& context, ByteBuffer& request, By
 		Datagram::PacketType reqPacketType = getPacketType(context.reqDatagram);
 		switch(reqPacketType) {
 		case Datagram::PacketType::BOOT_SERVER_PACKET:
+			Boot::BootFileRequest bootFileRequest;
+			deserialize(request, bootFileRequest);
+
+			switch(bootFileRequest.tag) {
+			case Boot::EtherBootPacketType::SPP_REQUEST: {
+				logger.info("SPP_REQUEST %012X %04X", bootFileRequest.SPP_REQUEST.bootFileNumber, bootFileRequest.SPP_REQUEST.connectionID);
+				//RUNTIME_ERROR();
+
+				// See BootChannelSPP.mesa 250
+				// Need to return SPP packet
+				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
+
+				SequencedPacket::Header header;
+				header.base = response.getPos();
+				//
+				header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
+				header.source      = 123;
+				header.destination = bootFileRequest.SPP_REQUEST.connectionID;
+				header.sequence    = 1;
+				header.acknowledge = 0;
+				header.allocation  = 0;
+
+				Courier::serialize(response, header);
+
+				// end of building response
+				response.rewind();
+			}
+				break;
+			default:
+				logger.info("UNKNOWN %4X", bootFileRequest.tag);
+				RUNTIME_ERROR();
+			}
+			break;
+		case Datagram::PacketType::SEQUENCED_PACKET:
 			break;
 		case Datagram::PacketType::ERROR:
 			Courier::deserialize(request, reqError);
@@ -63,26 +118,4 @@ void SocketBoot::process(const Socket::Context& context, ByteBuffer& request, By
 		}
 	}
 
-	Boot::BootFileRequest bootFileRequest;
-	deserialize(request, bootFileRequest);
-
-	switch(bootFileRequest.tag) {
-	case Boot::EtherBootPacketType::SIMPLE_REQUEST: {
-		logger.info("SIMPLE_REQUEST %012X", bootFileRequest.SIMPLE_REQUEST.bootFileNumber);
-		RUNTIME_ERROR();
-	}
-		break;
-	case Boot::EtherBootPacketType::SPP_REQUEST: {
-		logger.info("SPP_REQUEST %012X %04X", bootFileRequest.SPP_REQUEST.bootFileNumber, bootFileRequest.SPP_REQUEST.connectionID);
-		RUNTIME_ERROR();
-	}
-		break;
-	case Boot::EtherBootPacketType::SIMPLE_DATA: {
-		logger.info("SIMPLE_DATA %012X %04X", bootFileRequest.SIMPLE_DATA.bootFileNumber, bootFileRequest.SIMPLE_DATA.packetNumber);
-		RUNTIME_ERROR();
-	}
-		break;
-	default:
-		RUNTIME_ERROR();
-	}
 }
