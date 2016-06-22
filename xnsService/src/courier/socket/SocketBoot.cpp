@@ -58,7 +58,7 @@ public:
 	}
 };
 
-static SimpleNSIO simple("data/GVWin/SCAVGUAM.BOO");
+//static SimpleNSIO simple("data/GVWin/SCAVGUAM.BOO");
 
 void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
@@ -69,7 +69,7 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 
 		Datagram::PacketType reqPacketType = getPacketType(context.reqDatagram);
 		switch(reqPacketType) {
-		case Datagram::PacketType::BOOT_SERVER_PACKET:
+		case Datagram::PacketType::BOOT_SERVER_PACKET: {
 			Boot::BootFileRequest bootFileRequest;
 			deserialize(request, bootFileRequest);
 
@@ -86,7 +86,8 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				header.base = response.getPos();
 				//
 				header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
-				header.source      = 123;
+//				header.control     = SequencedPacket::MASK_SYSTEM_PACKET;
+				header.source      = 0x1234;
 				header.destination = bootFileRequest.SPP_REQUEST.connectionID;
 				header.sequence    = 1;
 				header.acknowledge = 0;
@@ -102,16 +103,28 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				logger.info("UNKNOWN %4X", bootFileRequest.tag);
 				RUNTIME_ERROR();
 			}
+		}
 			break;
-		case Datagram::PacketType::SEQUENCED_PACKET:
+		case Datagram::PacketType::SEQUENCED_PACKET: {
+			SequencedPacket::Header reqHeader;
+			SequencedPacket::Header resHeader;
+
+			deserialize(request, reqHeader);
+
+			logger.info("SPP  %04X  %4X  %4X  %5d  %5d  %5d",
+					reqHeader.control, reqHeader.source, reqHeader.destination, reqHeader.sequence, reqHeader.acknowledge, reqHeader.allocation);
+
+			RUNTIME_ERROR();
+		}
 			break;
-		case Datagram::PacketType::ERROR:
+		case Datagram::PacketType::ERROR: {
 			Courier::deserialize(request, reqError);
 			logger.warn("packetType = ERROR");
 			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
 			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
 			response.clear();
 			return;
+		}
 		default:
 			logger.fatal("Unknown packetType = %d", (quint16)reqPacketType);
 			RUNTIME_ERROR();
