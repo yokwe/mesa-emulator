@@ -67,7 +67,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	SocketPEX socketTime(Courier::PacketExchange::ClientType::TIME, &pexTime);
 
 	// Initialize SocketBoot
-	SocketBoot  socketBoot;
+	SocketBoot  socketBoot("data/GVWin/SCAVGUAM.BOO");
 
 	// Add SocketXXX with SocketManager
 	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::ROUTING, &socketRouting);

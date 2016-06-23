@@ -60,6 +60,11 @@ public:
 
 //static SimpleNSIO simple("data/GVWin/SCAVGUAM.BOO");
 
+SocketBoot::SocketBoot(QString path) : SocketManager::Socket("Boot") {
+	map = Util::mapFile(path, mapSize);
+	nextLocalID = 1;
+}
+
 void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
@@ -82,18 +87,30 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				// Need to return SPP packet
 				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
 
-				SequencedPacket::Header header;
-				header.base = response.getPos();
-				//
-				header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
-//				header.control     = SequencedPacket::MASK_SYSTEM_PACKET;
-				header.source      = 0x1234;
-				header.destination = bootFileRequest.SPP_REQUEST.connectionID;
-				header.sequence    = 1;
-				header.acknowledge = 0;
-				header.allocation  = 0;
+				Connection *connection;
+				const quint48 remoteHost = context.reqDatagram.source.host;
+				if (connectionMap.contains(remoteHost)) {
+					// no need to allocate
+					connection = connectionMap[remoteHost];
+				} else {
+					connection = new Connection;
+					connectionMap[remoteHost] = connection;
+				}
 
-				Courier::serialize(response, header);
+				// set fields of connection
+				connection->pos    = 0;
+				connection->remote = context.reqDatagram.source;
+				//
+				connection->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
+				connection->header.source      = nextLocalID++;
+				connection->header.destination = bootFileRequest.SPP_REQUEST.connectionID;
+				connection->header.sequence    = 1;
+				connection->header.acknowledge = 0;
+				connection->header.allocation  = 0;
+
+				connection->header.base = response.getPos();
+
+				Courier::serialize(response, connection->header);
 
 				// end of building response
 				response.rewind();
@@ -107,12 +124,30 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			break;
 		case Datagram::PacketType::SEQUENCED_PACKET: {
 			SequencedPacket::Header reqHeader;
-			SequencedPacket::Header resHeader;
 
 			deserialize(request, reqHeader);
 
 			logger.info("SPP  %04X  %4X  %4X  %5d  %5d  %5d",
 					reqHeader.control, reqHeader.source, reqHeader.destination, reqHeader.sequence, reqHeader.acknowledge, reqHeader.allocation);
+
+			// find connection
+			Connection *connection;
+			const quint48 remoteHost = context.reqDatagram.source.host;
+			if (connectionMap.contains(remoteHost)) {
+				connection = connectionMap[remoteHost];
+				// sanity check
+				if (connection->header.destination != reqHeader.source) {
+					logger.error("dest  %04X => %04X", connection->header.destination, reqHeader.source);
+					RUNTIME_ERROR();
+				}
+				if (connection->header.source != reqHeader.destination) {
+					logger.error("source  %04X => %04X", connection->header.source, reqHeader.destination);
+					RUNTIME_ERROR();
+				}
+			} else {
+				logger.error("remoteHost  %012llX", remoteHost);
+				RUNTIME_ERROR();
+			}
 
 			RUNTIME_ERROR();
 		}
