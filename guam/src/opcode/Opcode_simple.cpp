@@ -1464,9 +1464,17 @@ __attribute__((always_inline)) static inline void R_WRMP_(Run /*run*/) {
 		//  cGermDeviceError: Code = 921;  -- hard error on device being booted
 		logger.info("MP  921 cGermDeviceError");
 		break;
+	case 922:
+		//  cGermTimeout: Code = 922;  -- operation on boot device no completed in expected time
+		logger.info("MP  922 cGermTimeout");
+		break;
 	case 927:
 		//  cGermShortBootFile: Code = 927;  -- boot file ends before it should (try reinstalling)
 		logger.info("MP  927 cGermShortBootFile");
+		break;
+	case 928:
+		//  cWaitingForBootServer: Code = 928;  -- waiting for any boot server to respond
+		logger.info("MP  928 cWaitingForBootServer");
 		break;
 	case 930:
 		//  cControl: Code = 930;  -- Pilot Control and MesaRuntime components being initialized
