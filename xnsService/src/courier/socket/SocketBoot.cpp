@@ -75,7 +75,7 @@ SocketBoot::BootFile* SocketBoot::BootFile::getInstance(quint48 bfn) {
 // Connection
 //
 QMap<quint48, SocketBoot::Connection*> SocketBoot::Connection::map;
-quint16 SocketBoot::Connection::nextLocalID = 1;
+quint16 SocketBoot::Connection::nextLocalID = 0x1000;
 
 SocketBoot::Connection::Connection(quint48 host_, quint48 bfn, quint16 connectionID) : host(host_) {
 	using namespace Courier;
@@ -87,7 +87,7 @@ SocketBoot::Connection::Connection(quint48 host_, quint48 bfn, quint16 connectio
 	this->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
 	this->header.source      = nextLocalID++;
 	this->header.destination = connectionID;
-	this->header.sequence    = 1;
+	this->header.sequence    = 0;
 	this->header.acknowledge = 0;
 	this->header.allocation  = 0;
 }
@@ -183,13 +183,13 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			if (connection->pos == connection->bootFile->size) {
 				// Already reached EOF
 				// Send EOF
-				connection->header.control = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_ATTENTION;
+				connection->header.control = Connection::CLOSE_SST;
 			} else {
 				// Send data
-				connection->header.control = 0;
-				connection->header.sequence++;
-				connection->header.acknowledge++;
-				connection->header.allocation++;
+				connection->header.control     = Connection::DATA_SST;
+				connection->header.sequence    = reqHeader.acknowledge;
+				connection->header.acknowledge = reqHeader.acknowledge;
+				connection->header.allocation  = reqHeader.acknowledge;
 			}
 			connection->header.base = response.getPos();
 			Courier::serialize(response, connection->header);

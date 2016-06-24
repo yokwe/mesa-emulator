@@ -42,6 +42,10 @@ private:
 
 	class Connection {
 	public:
+		static const quint16 DATA_SST        =   0;
+		static const quint16 CLOSE_SST       = 254;
+		static const quint16 CLOSE_REPLY_SST = 255;
+
 		static void add(quint48 host, quint48 bfn, quint16 connectionID);
 		static Connection* getInstance(quint48 host);
 
