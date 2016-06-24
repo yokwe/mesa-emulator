@@ -39,32 +39,82 @@ static log4cpp::Category& logger = Logger::getLogger("sockBoot");
 #include "../Courier.h"
 #include "../stub/StubBoot.h"
 
-class SimpleNSIO {
-public:
-	void* map;
-	quint32 mapSize;
-	//
-	quint16 connID;
-	quint32 pos;
+//
+// SocketBoot::BootFile
+//
+QMap<quint48, SocketBoot::BootFile*> SocketBoot::BootFile::map;
 
-	SimpleNSIO(QString path) {
-		map = Util::mapFile(path, mapSize);
-		connID = 0;
-		pos = 0;
+SocketBoot::BootFile::BootFile(quint48 bfn_, QString path_) : bfn(bfn_), path(path_) {
+	this->address = Util::mapFile(path_, this->size, true);
+}
+SocketBoot::BootFile::~BootFile() {
+	Util::unmapFile(this->address);
+}
+void SocketBoot::BootFile::add(quint48 bfn, QString path) {
+	if (map.contains(bfn)) {
+		BootFile* old = map[bfn];
+		logger.error("Duplicate OLD bfn = %012X  path = %s", old->bfn, old->path.toLatin1().constData());
+		logger.error("Duplicate NEW bfn = %012X  path = %s", bfn, path.toLatin1().constData());
+		RUNTIME_ERROR();
 	}
+	BootFile* entry = new BootFile(bfn, path);
+	map[bfn] = entry;
 
-	~SimpleNSIO() {
-		Util::unmapFile(map);
+	logger.info("BootFile::add bfn = %012X  path = %s", entry->bfn, entry->path.toLatin1().constData());
+}
+SocketBoot::BootFile* SocketBoot::BootFile::getInstance(quint48 bfn) {
+	if (!map.contains(bfn)) {
+		logger.error("Unknown bfn = %012X", bfn);
+		RUNTIME_ERROR();
 	}
-};
-
-//static SimpleNSIO simple("data/GVWin/SCAVGUAM.BOO");
-
-SocketBoot::SocketBoot(QString path) : SocketManager::Socket("Boot") {
-	map = Util::mapFile(path, mapSize);
-	nextLocalID = 1;
+	return map[bfn];
 }
 
+
+//
+// Connection
+//
+QMap<quint48, SocketBoot::Connection*> SocketBoot::Connection::map;
+quint16 SocketBoot::Connection::nextLocalID = 1;
+
+SocketBoot::Connection::Connection(quint48 host_, quint48 bfn, quint16 connectionID) : host(host_) {
+	using namespace Courier;
+
+	this->bootFile = BootFile::getInstance(bfn);
+
+	this->pos = 0;
+
+	this->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
+	this->header.source      = nextLocalID++;
+	this->header.destination = connectionID;
+	this->header.sequence    = 1;
+	this->header.acknowledge = 0;
+	this->header.allocation  = 0;
+}
+void SocketBoot::Connection::add(quint48 host, quint48 bfn, quint16 connectionID) {
+	if (map.contains(host)) {
+		Connection* old = map[bfn];
+		logger.warn("Connection::add delete old instance host = %012X", old->host);
+		delete old;
+	}
+
+	Connection* entry = new Connection(host, bfn, connectionID);
+	map[host] = entry;
+
+	logger.info("Connection::add host = %012X  bfn = %012X  connectionID = %04X", host, bfn, connectionID);
+}
+SocketBoot::Connection* SocketBoot::Connection::getInstance(quint48 host) {
+	if (!map.contains(host)) {
+		logger.error("Unknown host = %012X", host);
+		RUNTIME_ERROR();
+	}
+	return map[host];
+}
+
+
+//
+// SocketBoot
+//
 void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuffer& response) {
 	using namespace Courier;
 
@@ -87,29 +137,14 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				// Need to return SPP packet
 				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
 
-				Connection *connection;
-				const quint48 remoteHost = context.reqDatagram.source.host;
-				if (connectionMap.contains(remoteHost)) {
-					// no need to allocate
-					connection = connectionMap[remoteHost];
-				} else {
-					connection = new Connection;
-					connectionMap[remoteHost] = connection;
-				}
+				quint48 host         = context.reqDatagram.source.host;
+				quint48 bfn          = bootFileRequest.SPP_REQUEST.bootFileNumber;
+				quint16 connectionID = bootFileRequest.SPP_REQUEST.connectionID;
 
-				// set fields of connection
-				connection->pos    = 0;
-				connection->remote = context.reqDatagram.source;
-				//
-				connection->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
-				connection->header.source      = nextLocalID++;
-				connection->header.destination = bootFileRequest.SPP_REQUEST.connectionID;
-				connection->header.sequence    = 1;
-				connection->header.acknowledge = 0;
-				connection->header.allocation  = 0;
+				Connection::add(host, bfn, connectionID);
 
+				Connection *connection = Connection::getInstance(host);
 				connection->header.base = response.getPos();
-
 				Courier::serialize(response, connection->header);
 
 				// end of building response
@@ -131,25 +166,54 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 					reqHeader.control, reqHeader.source, reqHeader.destination, reqHeader.sequence, reqHeader.acknowledge, reqHeader.allocation);
 
 			// find connection
-			Connection *connection;
-			const quint48 remoteHost = context.reqDatagram.source.host;
-			if (connectionMap.contains(remoteHost)) {
-				connection = connectionMap[remoteHost];
-				// sanity check
-				if (connection->header.destination != reqHeader.source) {
-					logger.error("dest  %04X => %04X", connection->header.destination, reqHeader.source);
-					RUNTIME_ERROR();
-				}
-				if (connection->header.source != reqHeader.destination) {
-					logger.error("source  %04X => %04X", connection->header.source, reqHeader.destination);
-					RUNTIME_ERROR();
-				}
-			} else {
-				logger.error("remoteHost  %012llX", remoteHost);
+			quint48     host       = context.reqDatagram.source.host;
+			Connection *connection = Connection::getInstance(host);
+
+			// sanity check
+			if (connection->header.destination != reqHeader.source) {
+				logger.error("dest    %04X => %04X", connection->header.destination, reqHeader.source);
+				RUNTIME_ERROR();
+			}
+			if (connection->header.source != reqHeader.destination) {
+				logger.error("source  %04X => %04X", connection->header.source, reqHeader.destination);
 				RUNTIME_ERROR();
 			}
 
-			RUNTIME_ERROR();
+			// Set header
+			if (connection->pos == connection->bootFile->size) {
+				// Already reached EOF
+				// Send EOF
+				connection->header.control = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_ATTENTION;
+			} else {
+				// Send data
+				connection->header.control = 0;
+				connection->header.sequence++;
+				connection->header.acknowledge++;
+				connection->header.allocation++;
+			}
+			connection->header.base = response.getPos();
+			Courier::serialize(response, connection->header);
+
+			// Send data
+			if (connection->pos == connection->bootFile->size) {
+				// No data
+				logger.info("EOF");
+			} else {
+				quint32 nextPos = connection->pos + 512;
+				if (connection->bootFile->size < nextPos) {
+					nextPos = connection->bootFile->size;
+				}
+				// Send data [pos..nextPos)
+				quint8* base = (quint8*)connection->bootFile->address;
+				for(quint32 i = connection->pos; i < nextPos; i++) {
+					response.put8(base[i]);
+				}
+				logger.info("SEND %4X => %4X", connection->pos, nextPos);
+				connection->pos = nextPos;
+			}
+
+			// end of building response
+			response.rewind();
 		}
 			break;
 		case Datagram::PacketType::ERROR: {
