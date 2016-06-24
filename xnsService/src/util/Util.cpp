@@ -111,7 +111,8 @@ public:
 static QMap<void*, MapInfo*>allMap;
 int MapInfo::count = 0;
 
-void* Util::mapFile  (const QString& path, quint32& mapSize) {
+void* Util::mapFile  (const QString& path, quint32& mapSize, bool readOnly) {
+	QIODevice::OpenMode openMode = readOnly ? QIODevice::ReadOnly : QIODevice::ReadWrite;
 	MapInfo* mapInfo = new MapInfo(path);
 
 	if (!mapInfo->file.exists()) {
@@ -121,7 +122,7 @@ void* Util::mapFile  (const QString& path, quint32& mapSize) {
 	mapInfo->size = mapInfo->file.size();
 	mapSize = (quint32)mapInfo->size;
 
-	bool ok = mapInfo->file.open(QIODevice::ReadWrite);
+	bool ok = mapInfo->file.open(openMode);
 	if (!ok) {
 		logger.fatal("file.open returns false.  error = %s", qPrintable(mapInfo->file.errorString()));
 		RUNTIME_ERROR();

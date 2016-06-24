@@ -65,7 +65,7 @@ public:
 
 class Util {
 public:
-	static void*   mapFile  (const QString& path, quint32& mapSize);
+	static void*   mapFile  (const QString& path, quint32& mapSize, bool readOnly = false);
 	static void    unmapFile(void* page);
 };
 #endif
