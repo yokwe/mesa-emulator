@@ -1468,6 +1468,10 @@ __attribute__((always_inline)) static inline void R_WRMP_(Run /*run*/) {
 		//  cGermTimeout: Code = 922;  -- operation on boot device no completed in expected time
 		logger.info("MP  922 cGermTimeout");
 		break;
+	case 924:
+		//  cGermNoServer: Code = 924;  -- no response to Germ's request for ether boot file
+		logger.info("MP  924 cGermNoServer");
+		break;
 	case 927:
 		//  cGermShortBootFile: Code = 927;  -- boot file ends before it should (try reinstalling)
 		logger.info("MP  927 cGermShortBootFile");
