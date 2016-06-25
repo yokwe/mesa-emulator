@@ -1472,6 +1472,10 @@ __attribute__((always_inline)) static inline void R_WRMP_(Run /*run*/) {
 		//  cGermNoServer: Code = 924;  -- no response to Germ's request for ether boot file
 		logger.info("MP  924 cGermNoServer");
 		break;
+	case 925:
+		//  cGermFunnyPacket: Code = 925;  -- e.g. unexpected sequence number or size
+		logger.info("MP  925 cGermFunnyPacket");
+		break;
 	case 927:
 		//  cGermShortBootFile: Code = 927;  -- boot file ends before it should (try reinstalling)
 		logger.info("MP  927 cGermShortBootFile");
