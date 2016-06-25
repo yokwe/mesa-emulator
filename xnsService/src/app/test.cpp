@@ -43,6 +43,8 @@ static log4cpp::Category& logger = Logger::getLogger("test");
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
 
+	setSignalHandler();
+
 	quint32 localNetworkNumber = 0x11111111;
 
 	Network network;
