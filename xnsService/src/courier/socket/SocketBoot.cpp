@@ -227,7 +227,7 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				connection->pos = nextPos;
 			}
 
-			// end of building response
+			// end of building  response
 			response.rewind();
 		}
 			break;
