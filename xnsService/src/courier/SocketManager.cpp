@@ -259,7 +259,7 @@ void SocketManager::SocketThread::run() {
 	}
 }
 
-void SocketManager::dumpPacket(Courier::Ethernet::Header ethernet, Courier::Datagram::Header datagram) {
+void SocketManager::dumpPacket(Courier::Ethernet::Header& ethernet, Courier::Datagram::Header& datagram) {
 	Courier::Datagram::PacketType reqPacketType = (Courier::Datagram::PacketType)(datagram.flags & 0xff);
 	logger.debug("ETHER     %012llX  %012llX  %04X", ethernet.destination, ethernet.source, ethernet.type);
 	logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
@@ -268,3 +268,8 @@ void SocketManager::dumpPacket(Courier::Ethernet::Header ethernet, Courier::Data
 		datagram.source.network, datagram.source.host, Courier::getSocketName(datagram.source.socket));
 }
 
+void SocketManager::dumpPacket(Courier::SequencedPacket::Header& sequencedPacket) {
+	logger.debug("SPP       %04X  %04X  %04X  %5d  %5d  %5d",
+		sequencedPacket.control, sequencedPacket.source, sequencedPacket.destination,
+		sequencedPacket.sequence, sequencedPacket.acknowledge, sequencedPacket.allocation);
+}

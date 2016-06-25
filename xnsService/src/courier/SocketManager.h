@@ -37,6 +37,7 @@ OF SUCH DAMAGE.
 #include "stub/StubError.h"
 #include "stub/StubEthernet.h"
 #include "stub/StubDatagram.h"
+#include "stub/StubSequencedPacket.h"
 
 class SocketManager {
 public:
@@ -99,7 +100,8 @@ public:
 	void stop();
 	int  isRunning();
 	
-	static void dumpPacket(Courier::Ethernet::Header ethernet, Courier::Datagram::Header datagram);
+	static void dumpPacket(Courier::Ethernet::Header& ethernet, Courier::Datagram::Header& datagram);
+	static void dumpPacket(Courier::SequencedPacket::Header& sequencedPacket);
 private:
 	class SocketThread : public QThread {
 	public:
