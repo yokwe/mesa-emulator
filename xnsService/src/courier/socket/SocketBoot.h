@@ -46,8 +46,9 @@ private:
 		static const quint16 CLOSE_SST       = 254;
 		static const quint16 CLOSE_REPLY_SST = 255;
 
-		static void add(quint48 host, quint48 bfn, quint16 connectionID);
+		static void        add(quint48 host, quint48 bfn);
 		static Connection* getInstance(quint48 host);
+		static quint16     getLocalID();
 
 		const quint48   host;
 		BootFile*       bootFile;
@@ -58,7 +59,7 @@ private:
 		static QMap<quint48, Connection*> map; // key is host
 		static quint16 nextLocalID;
 
-		Connection(quint48 host, quint48 bfn, quint16 connectionID);
+		Connection(quint48 host, quint48 bfn);
 	};
 };
 

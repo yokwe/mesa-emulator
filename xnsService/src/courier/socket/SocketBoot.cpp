@@ -77,35 +77,35 @@ SocketBoot::BootFile* SocketBoot::BootFile::getInstance(quint48 bfn) {
 QMap<quint48, SocketBoot::Connection*> SocketBoot::Connection::map;
 quint16 SocketBoot::Connection::nextLocalID = 0x1000;
 
-SocketBoot::Connection::Connection(quint48 host_, quint48 bfn, quint16 connectionID) : host(host_) {
-	using namespace Courier;
-
+quint16 SocketBoot::Connection::getLocalID() {
+	return nextLocalID++;
+}
+SocketBoot::Connection::Connection(quint48 host_, quint48 bfn) : host(host_) {
 	this->bootFile = BootFile::getInstance(bfn);
 
 	this->pos = 0;
 
-	this->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
-	this->header.source      = nextLocalID++;
-	this->header.destination = connectionID;
+	this->header.control     = 0;
+	this->header.source      = 0;
+	this->header.destination = 0;
 	this->header.sequence    = 0;
 	this->header.acknowledge = 0;
 	this->header.allocation  = 0;
 }
-void SocketBoot::Connection::add(quint48 host, quint48 bfn, quint16 connectionID) {
+void SocketBoot::Connection::add(quint48 host, quint48 bfn) {
 	if (map.contains(host)) {
-		Connection* old = map[bfn];
-		logger.warn("Connection::add delete old instance host = %012X", old->host);
+		Connection* old = map[host];
+		logger.info("Connection::add delete old instance host = %012llX", old->host);
 		delete old;
 	}
-
-	Connection* entry = new Connection(host, bfn, connectionID);
+	Connection* entry = new Connection(host, bfn);
 	map[host] = entry;
 
-	logger.info("Connection::add host = %012X  bfn = %012X  connectionID = %04X", host, bfn, connectionID);
+	logger.info("Connection::add new host = %012llX  bfn = %012llX", host, bfn);
 }
 SocketBoot::Connection* SocketBoot::Connection::getInstance(quint48 host) {
 	if (!map.contains(host)) {
-		logger.error("Unknown host = %012X", host);
+		logger.error("Unknown host = %012llX", host);
 		RUNTIME_ERROR();
 	}
 	return map[host];
@@ -120,8 +120,6 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 
 	// Sanity check of packetType
 	{
-		Error::Header reqError;
-
 		Datagram::PacketType reqPacketType = getPacketType(context.reqDatagram);
 		switch(reqPacketType) {
 		case Datagram::PacketType::BOOT_SERVER_PACKET: {
@@ -131,24 +129,31 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			switch(bootFileRequest.tag) {
 			case Boot::EtherBootPacketType::SPP_REQUEST: {
 				logger.info("SPP_REQUEST %012X %04X", bootFileRequest.SPP_REQUEST.bootFileNumber, bootFileRequest.SPP_REQUEST.connectionID);
-				//RUNTIME_ERROR();
+
+				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
 
 				// See BootChannelSPP.mesa 250
 				// Need to return SPP packet
-				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
-
 				quint48 host         = context.reqDatagram.source.host;
 				quint48 bfn          = bootFileRequest.SPP_REQUEST.bootFileNumber;
 				quint16 connectionID = bootFileRequest.SPP_REQUEST.connectionID;
 
-				Connection::add(host, bfn, connectionID);
+				Connection::add(host, bfn);
+				Connection* connection = Connection::getInstance(host);
+				connection->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
+				connection->header.source      = Connection::getLocalID();
+				connection->header.destination = connectionID;
+				connection->header.sequence    = 1;
+				connection->header.acknowledge = 0;
+				connection->header.allocation  = 0;
 
-				Connection *connection = Connection::getInstance(host);
-				connection->header.base = response.getPos();
+				connection->header.base    = response.getPos();
 				Courier::serialize(response, connection->header);
 
 				// end of building response
 				response.rewind();
+
+				SocketManager::dumpPacket(connection->header);
 			}
 				break;
 			default:
@@ -159,11 +164,10 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			break;
 		case Datagram::PacketType::SEQUENCED_PACKET: {
 			SequencedPacket::Header reqHeader;
-
 			deserialize(request, reqHeader);
 
-			logger.info("SPP  %04X  %4X  %4X  %5d  %5d  %5d",
-					reqHeader.control, reqHeader.source, reqHeader.destination, reqHeader.sequence, reqHeader.acknowledge, reqHeader.allocation);
+			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
+			SocketManager::dumpPacket(reqHeader);
 
 			// find connection
 			quint48     host       = context.reqDatagram.source.host;
@@ -217,7 +221,9 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 		}
 			break;
 		case Datagram::PacketType::ERROR: {
+			Error::Header reqError;
 			Courier::deserialize(request, reqError);
+
 			logger.warn("packetType = ERROR");
 			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
 			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
