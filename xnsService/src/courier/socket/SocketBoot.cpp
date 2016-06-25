@@ -125,30 +125,40 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 		case Datagram::PacketType::BOOT_SERVER_PACKET: {
 			Boot::BootFileRequest bootFileRequest;
 			deserialize(request, bootFileRequest);
+			quint48 bfn = bootFileRequest.SPP_REQUEST.bootFileNumber;
 
 			switch(bootFileRequest.tag) {
 			case Boot::EtherBootPacketType::SPP_REQUEST: {
 				logger.info("SPP_REQUEST %012X %04X", bootFileRequest.SPP_REQUEST.bootFileNumber, bootFileRequest.SPP_REQUEST.connectionID);
 
 				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
+				//serialize(response, context.resDatagram);
 
 				// See BootChannelSPP.mesa 250
 				// Need to return SPP packet
 				quint48 host         = context.reqDatagram.source.host;
-				quint48 bfn          = bootFileRequest.SPP_REQUEST.bootFileNumber;
-				quint16 connectionID = bootFileRequest.SPP_REQUEST.connectionID;
+				//quint16 connectionID = bootFileRequest.SPP_REQUEST.connectionID;
 
 				Connection::add(host, bfn);
 				Connection* connection = Connection::getInstance(host);
-				connection->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
+				connection->header.control     = SequencedPacket::DATA_SST;
 				connection->header.source      = Connection::getLocalID();
-				connection->header.destination = connectionID;
-				connection->header.sequence    = 1;
+				connection->header.destination = bootFileRequest.SPP_REQUEST.connectionID;
+				connection->header.sequence    = 0;
 				connection->header.acknowledge = 0;
 				connection->header.allocation  = 0;
 
 				connection->header.base    = response.getPos();
-				Courier::serialize(response, connection->header);
+				serialize(response, connection->header);
+
+				quint32 nextPos = connection->pos + 512;
+				// Send data [pos..nextPos)
+				quint8* base = (quint8*)connection->bootFile->address;
+				for(quint32 i = connection->pos; i < nextPos; i++) {
+					response.put8(base[i]);
+				}
+				logger.info("SEND %4X => %4X", connection->pos, nextPos);
+				connection->pos = nextPos;
 
 				// end of building response
 				response.rewind();
@@ -166,7 +176,8 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			SequencedPacket::Header reqHeader;
 			deserialize(request, reqHeader);
 
-			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
+			SocketManager::dumpPacket(context.resEthernet);
+			SocketManager::dumpPacket(context.resDatagram);
 			SocketManager::dumpPacket(reqHeader);
 
 			// find connection
@@ -225,7 +236,8 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			Courier::deserialize(request, reqError);
 
 			logger.warn("packetType = ERROR");
-			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
+			SocketManager::dumpPacket(context.reqEthernet);
+			SocketManager::dumpPacket(context.reqDatagram);
 			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
 			response.clear();
 			return;

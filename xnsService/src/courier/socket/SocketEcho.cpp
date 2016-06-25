@@ -53,7 +53,9 @@ void SocketEcho::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 		case Datagram::PacketType::ERROR:
 			Courier::deserialize(request, reqError);
 			logger.warn("packetType = ERROR");
-			SocketManager::dumpPacket(context.reqEthernet, context.reqDatagram);
+			SocketManager::dumpPacket(context.reqEthernet);
+			SocketManager::dumpPacket(context.reqDatagram);
+
 			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
 			response.clear();
 			return;

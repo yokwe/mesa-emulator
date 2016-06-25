@@ -162,7 +162,8 @@ void SocketManager::SocketThread::run() {
 			SocketManager::Socket* listener = socketManager.map.value(reqDatagram.destination.socket, 0);
 			if (listener) {
 				logger.debug("====  >>>>");
-				dumpPacket(reqEthernet, reqDatagram);
+				SocketManager::dumpPacket(context.resEthernet);
+				SocketManager::dumpPacket(context.resDatagram);
 
 				// Call listener if exists.
 				QMutexLocker mutexLocker(&socketManager.mutex);
@@ -214,7 +215,8 @@ void SocketManager::SocketThread::run() {
 			}
 
 			logger.debug("====  <<<<  ERROR");
-			dumpPacket(resEthernet, resDatagram);
+			SocketManager::dumpPacket(context.resEthernet);
+			SocketManager::dumpPacket(context.resDatagram);
 			logger.debug("ERROR     %4d %d", resError.number, resError.parameter);
 		}
 
@@ -248,6 +250,10 @@ void SocketManager::SocketThread::run() {
 			// write resDatagram to response
 			serialize(response, resDatagram);
 
+			logger.debug("====  <<<<");
+			SocketManager::dumpPacket(context.resEthernet);
+			SocketManager::dumpPacket(context.resDatagram);
+
 			// finally output response packet using response buffer.
 			int opErrno = 0;
 			int ret = socketManager.network.transmit(response.getData(), response.getLimit(), opErrno);
@@ -259,9 +265,12 @@ void SocketManager::SocketThread::run() {
 	}
 }
 
-void SocketManager::dumpPacket(Courier::Ethernet::Header& ethernet, Courier::Datagram::Header& datagram) {
-	Courier::Datagram::PacketType reqPacketType = (Courier::Datagram::PacketType)(datagram.flags & 0xff);
+void SocketManager::dumpPacket(Courier::Ethernet::Header& ethernet) {
 	logger.debug("ETHER     %012llX  %012llX  %04X", ethernet.destination, ethernet.source, ethernet.type);
+}
+
+void SocketManager::dumpPacket(Courier::Datagram::Header& datagram) {
+	Courier::Datagram::PacketType reqPacketType = (Courier::Datagram::PacketType)(datagram.flags & 0xff);
 	logger.debug("DATAGRAM  %04X %4d %02X %s  %08X-%012llX-%s  %08X-%012llX-%s",
 		datagram.checksum, datagram.length, (datagram.flags >> 8), Courier::getName(reqPacketType),
 		datagram.destination.network, datagram.destination.host, Courier::getSocketName(datagram.destination.socket),

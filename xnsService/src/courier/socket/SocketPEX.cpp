@@ -52,7 +52,8 @@ void SocketPEX::process(Socket::Context& socketContext, ByteBuffer& request, Byt
 		case Datagram::PacketType::ERROR:
 			Courier::deserialize(request, reqError);
 			logger.warn("packetType = ERROR");
-			SocketManager::dumpPacket(socketContext.reqEthernet, socketContext.reqDatagram);
+			SocketManager::dumpPacket(socketContext.reqEthernet);
+			SocketManager::dumpPacket(socketContext.reqDatagram);
 			logger.debug("ERROR     %s (%d) %d", Courier::getName(reqError.number), reqError.number, reqError.parameter);
 			response.clear();
 			return;
