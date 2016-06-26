@@ -143,6 +143,7 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 
 				Connection::add(host, bfn);
 				Connection* connection = Connection::getInstance(host);
+
 				// To see SPP packet, you need to set MASK_SEND_ACKNOWLEDGEMENT flag.
 				connection->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
 				connection->header.source      = Connection::getLocalID();
@@ -170,8 +171,6 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			SequencedPacket::Header reqHeader;
 			deserialize(request, reqHeader);
 
-			SocketManager::dumpPacket(context.resEthernet);
-			SocketManager::dumpPacket(context.resDatagram);
 			SocketManager::dumpPacket(reqHeader);
 
 			// find connection
@@ -188,26 +187,36 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				RUNTIME_ERROR();
 			}
 
-			// Set header
-			if (connection->pos == connection->bootFile->size) {
-				// Already reached EOF
-				// Send EOF
-				connection->header.control = Connection::CLOSE_SST;
-			} else {
-				// Send data
-				connection->header.control     = Connection::DATA_SST | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;;
-				connection->header.sequence    = reqHeader.acknowledge;
-				connection->header.acknowledge = reqHeader.acknowledge;
-				connection->header.allocation  = reqHeader.acknowledge;
+			quint16 sst = reqHeader.control & SequencedPacket::MASK_DATASTREAM_TYPE;
+			switch(sst) {
+			case SequencedPacket::DATA_SST: {
+				if (connection->pos == connection->bootFile->size) {
+					// Already reached EOF
+					connection->header.control = SequencedPacket::CLOSE_SST;
+					logger.info("CLOSE_SST");
+				} else {
+					// Send data
+					connection->header.control = SequencedPacket::DATA_SST | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
+				}
+			}
+				break;
+			case SequencedPacket::CLOSE_REPLY_SST: {
+				connection->header.control = SequencedPacket::CLOSE_REPLY_SST;
+				logger.info("CLOSE_REPLY_SST");
+			}
+				break;
+			default:
+				logger.error("Unknown sst = %d", sst);
+				RUNTIME_ERROR();
+				break;
 			}
 			connection->header.base = response.getPos();
 			Courier::serialize(response, connection->header);
 
+			SocketManager::dumpPacket(connection->header);
+
 			// Send data
-			if (connection->pos == connection->bootFile->size) {
-				// No data
-				logger.info("EOF");
-			} else {
+			if (connection->pos < connection->bootFile->size) {
 				quint32 nextPos = connection->pos + 512;
 				if (connection->bootFile->size < nextPos) {
 					nextPos = connection->bootFile->size;
@@ -217,8 +226,12 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				for(quint32 i = connection->pos; i < nextPos; i++) {
 					response.put8(base[i]);
 				}
-				logger.info("SEND %4X => %4X", connection->pos, nextPos);
+				logger.info("DATA %4X => %4X", connection->pos, nextPos);
 				connection->pos = nextPos;
+
+				connection->header.sequence    = connection->header.sequence    + 1;
+				connection->header.acknowledge = connection->header.acknowledge + 1;
+				connection->header.allocation  = connection->header.allocation  + 1;
 			}
 
 			// end of building  response

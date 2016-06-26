@@ -42,19 +42,15 @@ private:
 
 	class Connection {
 	public:
-		static const quint16 DATA_SST        =   0;
-		static const quint16 CLOSE_SST       = 254;
-		static const quint16 CLOSE_REPLY_SST = 255;
-
 		static void        add(quint48 host, quint48 bfn);
 		static Connection* getInstance(quint48 host);
 		static quint16     getLocalID();
 
-		const quint48   host;
-		BootFile*       bootFile;
+		quint48   host;
+		BootFile* bootFile;
+		quint32   pos;
 
 		Courier::SequencedPacket::Header  header;
-		quint32 pos;
 	private:
 		static QMap<quint48, Connection*> map; // key is host
 		static quint16 nextLocalID;
