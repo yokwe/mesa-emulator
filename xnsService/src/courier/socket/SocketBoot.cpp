@@ -78,7 +78,9 @@ QMap<quint48, SocketBoot::Connection*> SocketBoot::Connection::map;
 quint16 SocketBoot::Connection::nextLocalID = 0x1000;
 
 quint16 SocketBoot::Connection::getLocalID() {
-	return nextLocalID++;
+	nextLocalID++;
+	if (nextLocalID == 0) nextLocalID++;
+	return nextLocalID;
 }
 SocketBoot::Connection::Connection(quint48 host_, quint48 bfn) : host(host_) {
 	this->bootFile = BootFile::getInstance(bfn);
@@ -132,7 +134,7 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				logger.info("SPP_REQUEST %012X %04X", bootFileRequest.SPP_REQUEST.bootFileNumber, bootFileRequest.SPP_REQUEST.connectionID);
 
 				context.resDatagram.flags = (quint16)Datagram::PacketType::SEQUENCED_PACKET;
-				//serialize(response, context.resDatagram);
+				//serialize(response, context.resDatagram); // no need to serialize in here
 
 				// See BootChannelSPP.mesa 250
 				// Need to return SPP packet
@@ -141,7 +143,8 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 
 				Connection::add(host, bfn);
 				Connection* connection = Connection::getInstance(host);
-				connection->header.control     = SequencedPacket::DATA_SST;
+				// To see SPP packet, you need to set MASK_SEND_ACKNOWLEDGEMENT flag.
+				connection->header.control     = SequencedPacket::MASK_SYSTEM_PACKET | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;
 				connection->header.source      = Connection::getLocalID();
 				connection->header.destination = bootFileRequest.SPP_REQUEST.connectionID;
 				connection->header.sequence    = 0;
@@ -150,15 +153,6 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 
 				connection->header.base    = response.getPos();
 				serialize(response, connection->header);
-
-				quint32 nextPos = connection->pos + 512;
-				// Send data [pos..nextPos)
-				quint8* base = (quint8*)connection->bootFile->address;
-				for(quint32 i = connection->pos; i < nextPos; i++) {
-					response.put8(base[i]);
-				}
-				logger.info("SEND %4X => %4X", connection->pos, nextPos);
-				connection->pos = nextPos;
 
 				// end of building response
 				response.rewind();
@@ -201,7 +195,7 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 				connection->header.control = Connection::CLOSE_SST;
 			} else {
 				// Send data
-				connection->header.control     = Connection::DATA_SST;
+				connection->header.control     = Connection::DATA_SST | SequencedPacket::MASK_SEND_ACKNOWLEDGEMENT;;
 				connection->header.sequence    = reqHeader.acknowledge;
 				connection->header.acknowledge = reqHeader.acknowledge;
 				connection->header.allocation  = reqHeader.acknowledge;
@@ -247,5 +241,4 @@ void SocketBoot::process(Socket::Context& context, ByteBuffer& request, ByteBuff
 			RUNTIME_ERROR();
 		}
 	}
-
 }
