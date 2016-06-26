@@ -34,5 +34,6 @@ OF SUCH DAMAGE.
 
 static const int DEBUG_SHOW_NETWORK  = 0;
 static const int DEBUG_TRACE_NETWORK = 0;
+static const int DEBUG_SHOW_PACKET   = 0;
 
 #endif
