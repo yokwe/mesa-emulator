@@ -161,9 +161,11 @@ void SocketManager::SocketThread::run() {
 
 			SocketManager::Socket* listener = socketManager.map.value(reqDatagram.destination.socket, 0);
 			if (listener) {
-				logger.debug("====  >>>>");
-				SocketManager::dumpPacket(context.reqEthernet);
-				SocketManager::dumpPacket(context.reqDatagram);
+				if (DEBUG_SHOW_PACKET) {
+					logger.debug("====  >>>>");
+					SocketManager::dumpPacket(context.reqEthernet);
+					SocketManager::dumpPacket(context.reqDatagram);
+				}
 
 				// Call listener if exists.
 				QMutexLocker mutexLocker(&socketManager.mutex);
@@ -250,9 +252,11 @@ void SocketManager::SocketThread::run() {
 			// write resDatagram to response
 			serialize(response, resDatagram);
 
-			logger.debug("====  <<<<");
-			SocketManager::dumpPacket(context.resEthernet);
-			SocketManager::dumpPacket(context.resDatagram);
+			if (DEBUG_SHOW_PACKET) {
+				logger.debug("====  <<<<");
+				SocketManager::dumpPacket(context.resEthernet);
+				SocketManager::dumpPacket(context.resDatagram);
+			}
 
 			// finally output response packet using response buffer.
 			int opErrno = 0;
