@@ -162,8 +162,8 @@ void SocketManager::SocketThread::run() {
 			SocketManager::Socket* listener = socketManager.map.value(reqDatagram.destination.socket, 0);
 			if (listener) {
 				logger.debug("====  >>>>");
-				SocketManager::dumpPacket(context.resEthernet);
-				SocketManager::dumpPacket(context.resDatagram);
+				SocketManager::dumpPacket(context.reqEthernet);
+				SocketManager::dumpPacket(context.reqDatagram);
 
 				// Call listener if exists.
 				QMutexLocker mutexLocker(&socketManager.mutex);
