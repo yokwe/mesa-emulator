@@ -58,6 +58,9 @@ public:
 	void setGermPath(const QString& germPath_) {
 		germPath = germPath_;
 	}
+	void setBootPath(const QString& bootPath_) {
+		bootPath = bootPath_;
+	}
 	void setFloppyPath(const QString& floppyPath_) {
 		floppyPath = floppyPath_;
 	}
@@ -94,6 +97,7 @@ public:
 private:
 	QString        diskPath;
 	QString        germPath;
+	QString        bootPath;
 	QString        floppyPath;
 	QString        bootSwitch;
 	QString        bootDevice;

@@ -37,6 +37,8 @@ static log4cpp::Category& logger = Logger::getLogger("mesaproc");
 
 #include "../opcode/Interpreter.h"
 
+#include "../agent/StreamBoot.h"
+
 #include "Memory.h"
 #include "Pilot.h"
 #include "MesaThread.h"
@@ -89,6 +91,11 @@ void MesaProcessor::initialize() {
 	// Initialization of Agent
 	Agent::InitializeAgent();
 	logger.info("Agent FCB  %04X %04X", Agent::ioRegionPage * PageSize, Agent::getIORegion());
+
+	logger.info("Boot  %s", bootPath.toLatin1().constData());
+	AgentStream* agentStream = (AgentStream*)Agent::getAgent(GuamInputOutput::stream);
+	StreamBoot* streamBoot = new StreamBoot(bootPath);
+	agentStream->addStream((AgentStream::Stream*)streamBoot);
 
 	// load germ file into vm
 	loadGerm(germPath);
