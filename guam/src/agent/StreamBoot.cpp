@@ -107,9 +107,11 @@ quint16 StreamBoot::write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoPr
 	quint16* buffer = (quint16*)Store(tr.buffer);
 	quint32  size   = tr.bufferSize / Environment::bytesPerWord;
 	if (mapSize < (pos + size)) size = mapSize - pos;
+	quint32  nextPos = pos + size;
+	logger.info("DATA %4X => %4X", pos * Environment::bytesPerWord, nextPos * Environment::bytesPerWord);
 
 	Util::fromBigEndian(map + pos, buffer, size);
-	pos += size;
+	pos = nextPos;
 	tr.bytesWritten = size * Environment::bytesPerWord;
 
 	if (pos == mapSize) {
