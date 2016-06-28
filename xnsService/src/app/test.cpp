@@ -70,7 +70,7 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	// Initialize SocketBoot
 	SocketBoot  socketBoot;
-	socketBoot.addBootFile(SocketBoot::BFN_GVWIN_NETBOOT, "data/GVWin/SCAVGUAM.BOO");
+	socketBoot.addBootFile(SocketBoot::BFN_GVWIN_NETBOOT, "data/GVWin/NSINSTLR.DAT");
 
 	// Add SocketXXX with SocketManager
 	socketManager.add((quint16)Courier::Datagram::WellKnownSocket::ROUTING, &socketRouting);
