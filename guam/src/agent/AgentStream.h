@@ -33,8 +33,8 @@ OF SUCH DAMAGE.
 #define AGENTSTREAM_H__
 
 #include "Agent.h"
-
 #include <QtCore>
+
 
 class AgentStream : public Agent {
 public:
@@ -55,6 +55,7 @@ public:
 		virtual quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) = 0;
 	};
 
+
 	AgentStream() : Agent(GuamInputOutput::stream, "Stream") {
 		fcb = 0;
 	}
@@ -70,7 +71,6 @@ public:
 
 private:
 	CoProcessorIOFaceGuam::CoProcessorFCBType *fcb;
-
 	QMap<quint32, Stream*> map;
 };
 

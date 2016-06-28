@@ -42,96 +42,6 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "Agent.h"
 #include "AgentStream.h"
 
-class BootStream : AgentStream::Stream {
-public:
-	BootStream() : AgentStream::Stream("BOOT", CoProcessorServerIDs::bootAgentID), path("data/GVWin/NSINSTLR.DAT") {
-		map = (quint16*)Util::mapFile(path, mapSize);
-		mapSize /= Environment::bytesPerWord;
-		pos = 0;
-		logger.info("%3d %-8s %s", serverID, name.toLatin1().constData(), path.toLatin1().constData());
-	}
-
-	quint16 idle   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-		logger.error("%-8s idle %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
-		ERROR();
-		return CoProcessorIOFaceGuam::R_error;
-	}
-	quint16 accept (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-		logger.error("%-8s accept %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
-		ERROR();
-		return CoProcessorIOFaceGuam::R_error;
-	}
-	quint16 connect(CoProcessorIOFaceGuam::CoProcessorFCBType * /*fcb*/, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-		logger.info("%-8s connect  state mesa = %d  pc = %d", name.toLatin1().constData(), iocb->mesaConnectionState, iocb->pcConnectionState);
-		iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
-		// Need to assign non-zero to mesaGet.hTaskactually. See CoProcessorFace.Get
-		iocb->mesaGet.hTask = 1;
-		// rewind position
-		pos = 0;
-		return CoProcessorIOFaceGuam::R_completed;
-	}
-	quint16 destroy(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-		logger.info("%-8s destroy %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
-		return CoProcessorIOFaceGuam::R_error;
-	}
-	quint16 read   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-		logger.error("%-8s read %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
-		ERROR();
-		return CoProcessorIOFaceGuam::R_error;
-	}
-	quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-		CoProcessorIOFaceGuam::TransferRec& tr = iocb->mesaGet;
-		/*if (DEBUG_SHOW_AGENT_STREAM)*/ logger.info("%-8s write %8X+%d", name.toLatin1().constData(), pos, tr.bufferSize);
-		if (tr.writeLockedByMesa) {
-			logger.warn("writeLockedByMesa");
-			return CoProcessorIOFaceGuam::R_inProgress;
-		}
-		if (tr.buffer == 0) {
-			logger.fatal("tr.buffer = 0");
-			ERROR();
-		}
-		if (tr.bytesRead != 0) {
-			logger.fatal("tr.bytesRead = %d", tr.bytesRead);
-			ERROR();
-		}
-		if (tr.bytesWritten != 0) {
-			logger.fatal("tr.bytesWritten = %d", tr.bytesWritten);
-			ERROR();
-		}
-		if (tr.bufferSize != Environment::bytesPerPage) {
-			logger.fatal("tr.bufferSize = %d", tr.bufferSize);
-			ERROR();
-		}
-
-		quint16* buffer = (quint16*)Store(tr.buffer);
-		quint32  size   = tr.bufferSize / Environment::bytesPerWord;
-		if (mapSize < (pos + size)) size = mapSize - pos;
-
-		Util::fromBigEndian(map + pos, buffer, size);
-		pos += size;
-		tr.bytesWritten = size * Environment::bytesPerWord;
-
-		if (pos == mapSize) {
-			tr.endStream = 1;
-		}
-
-		// generate interrupt if needed
-		if (tr.interruptMesa) {
-			if (fcb->interruptSelector) {
-				fcb->headResult = CoProcessorIOFaceGuam::R_completed;
-				InterruptThread::notifyInterrupt(fcb->interruptSelector);
-			}
-		}
-
-		return CoProcessorIOFaceGuam::R_completed;
-	}
-
-private:
-	const QString path;
-	quint16* map;
-	quint32  mapSize;
-	quint32  pos;
-};
 
 //		{
 //			logger.info("mesaGet  sst: %d  end [Stream: %d  Record: %d  SST: %d]  written: %3d  read: %3d  hTask: %d  int: %d  buffer: %4X  bufferSize: %3d  lock: %d",
@@ -146,11 +56,12 @@ private:
 //		}
 
 void AgentStream::addStream(Stream* stream) {
-	if (map.contains(stream->serverID)) {
+	quint32 serverID = stream->serverID;
+	if (map.contains(serverID)) {
 		logger.error("Duplicate serverID = %d", stream->serverID);
 		ERROR();
 	}
-	map.insert(stream->serverID, stream);
+	map[stream->serverID] = stream;
 }
 
 
@@ -168,9 +79,9 @@ void AgentStream::Initialize() {
 	fcb->stopAgent         = 0;
 	fcb->agentStopped      = 1;
 	fcb->streamWordSize    = 0;
-
-	BootStream* bootStream = new BootStream;
-	addStream((Stream*)bootStream);
+//
+//	BootStream* bootStream = new BootStream;
+//	addStream((Stream*)bootStream);
 }
 
 void AgentStream::Call() {
