@@ -60,6 +60,7 @@ int main() {
 
 	QString diskPath         = preference.getAsString(group, "DiskPath");
 	QString germPath         = preference.getAsString(group, "GermPath");
+	QString bootPath         = preference.getAsString(group, "BootPath");
 	QString floppyPath       = preference.getAsString(group, "FloppyPath");
 	QString bootSwitch       = preference.getAsString(group, "BootSwitch");
 	QString bootDevice       = preference.getAsString(group, "BootDevice");
@@ -75,6 +76,7 @@ int main() {
 
 	mesaProcessor.setDiskPath(diskPath);
 	mesaProcessor.setGermPath(germPath);
+	mesaProcessor.setBootPath(bootPath);
 	mesaProcessor.setFloppyPath(floppyPath);
 	mesaProcessor.setBootSwitch(bootSwitch);
 	mesaProcessor.setBootDevice(bootDevice);
