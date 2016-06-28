@@ -44,7 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 
 class BootStream : AgentStream::Stream {
 public:
-	BootStream() : AgentStream::Stream("BOOT", CoProcessorServerIDs::bootAgentID), path("data/GVWin/SCAVGUAM.BOO") {
+	BootStream() : AgentStream::Stream("BOOT", CoProcessorServerIDs::bootAgentID), path("data/GVWin/NSINSTLR.DAT") {
 		map = (quint16*)Util::mapFile(path, mapSize);
 		mapSize /= Environment::bytesPerWord;
 		pos = 0;
