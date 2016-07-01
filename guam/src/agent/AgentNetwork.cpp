@@ -252,11 +252,7 @@ void AgentNetwork::Call() {
 			if (packetType != EthernetIOFaceGuam::PT_receive) ERROR();
 
 			if (DEBUG_SHOW_AGENT_NETWORK) logger.debug("AGENT %s  receive  status = %04X  nextIOCB = %08X", name, iocb->status, iocb->nextIOCB);
-			if (fcb->receiveInterruptSelector) {
-				receiveThread.enqueue(iocb);
-			} else {
-				networkPacket->receive(iocb);
-			}
+			receiveThread.enqueue(iocb);
 			//
 			if (iocb->nextIOCB == 0) break;
 			iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Store(iocb->nextIOCB);
@@ -271,11 +267,7 @@ void AgentNetwork::Call() {
 			if (packetType != EthernetIOFaceGuam::PT_transmit) ERROR();
 
 			if (DEBUG_SHOW_AGENT_NETWORK) logger.debug("AGENT %s  transmit status = %04X  nextIOCB = %08X", name, iocb->status, iocb->nextIOCB);
-			if (fcb->transmitInterruptSelector) {
-				transmitThread.enqueue(iocb);
-			} else {
-				networkPacket->transmit(iocb);
-			}
+			transmitThread.enqueue(iocb);
 			//
 			if (iocb->nextIOCB == 0) break;
 			iocb = (EthernetIOFaceGuam::EthernetIOCBType*)Store(iocb->nextIOCB);
