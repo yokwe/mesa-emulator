@@ -54,6 +54,16 @@ public:
 	// packet type of Xerox IDP
 	static const int ETH_P_IDP = 0x0600;
 
+	class ReceivedPacket {
+	public:
+		quint64 timeStamp;             // unit is millisecond
+		int     dataLen;               // if there is no data, dataLen is 0
+		quint8  data[ETH_FRAME_LEN];
+
+		ReceivedPacket();
+		ReceivedPacket(const ReceivedPacket& that);
+	};
+
 	NetworkPacket() {
 		fd = 0;
 		for(int i = 0; i < ETH_ALEN; i++) address[i] = 0;
