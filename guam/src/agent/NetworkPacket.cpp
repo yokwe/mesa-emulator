@@ -117,6 +117,105 @@ void NetworkPacket::attach(const QString& name_) {
 	}
 }
 
+void NetworkPacket::select(Result& result, CARD32 timeout) {
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+
+	struct timeval t;
+	t.tv_sec  = timeout;
+	t.tv_usec = 0;
+
+	result.returnValue = ::select(FD_SETSIZE, &fds, NULL, NULL, &t);
+	result.errNo = errno;
+}
+
+void NetworkPacket::transmit(Result& result, Data& data) {
+	// Buffer for changing of byte order
+	quint8  buffer[ETH_FRAME_LEN];
+	{
+		quint16* src = (quint16*)data.data;
+		quint16* dst = (quint16*)buffer;
+
+		Util::toBigEndian(src, dst, sizeof(buffer) / 2);
+	}
+
+	if (DEBUG_TRACE_NETWORK_PACKET) {
+		logger.debug("TRANS    dataLen = %d", data.dataLen);
+		char buf[ETH_FRAME_LEN * 2 + 1];
+		char* q = buf;
+		for(int i = 0; i < data.dataLen; i++) {
+			int h = buffer[i];
+			int h1 = (h >> 4) & 0x0f;
+			int h2 = h & 0x0f;
+			*q++ = (h1 < 10) ? ('0' + h1) : ('A' + h1 - 10);
+			*q++ = (h2 < 10) ? ('0' + h2) : ('A' + h2 - 10);
+		}
+		*q = 0;
+		logger.debug("TRANS    %s", buf);
+	}
+
+	data.timeStamp = QDateTime::currentMSecsSinceEpoch();
+
+	result.returnValue = ::send(fd, buffer, data.dataLen, 0);
+	result.errNo       = errno;
+	if (DEBUG_SHOW_NETWORK_PACKET) logger.debug("%-8s data = %p  dataLen = %4d  errNo = %3d  ret = %4d", __FUNCTION__, data.data, data.dataLen, result.errNo, result.returnValue);
+
+	// Sanity check
+	if (result.returnValue == -1) {
+		logger.warn("%-8s returnValue = %d  errNo = %d  ", result.returnValue, result.errNo);
+	} else {
+		if (result.returnValue != data.dataLen) {
+			logger.warn("%-8s returnValue = %d  dataLen = %d  ", result.returnValue, data.dataLen);
+		}
+	}
+}
+
+void NetworkPacket::receive(Result& result, Data& data) {
+	data.timeStamp = QDateTime::currentMSecsSinceEpoch();
+
+	quint8  buffer[ETH_FRAME_LEN];
+	result.returnValue = ::recv(fd, buffer, sizeof(buffer), 0);
+	result.errNo       = errno;
+
+	if (0 < result.returnValue) {
+		data.dataLen = result.returnValue;
+
+		if (data.dataLen & 1) {
+			logger.fatal("dataLen = %d", data.dataLen);
+			ERROR();
+		}
+
+		CARD16* src = (CARD16*)buffer;
+		CARD16* dst = (CARD16*)data.data;
+
+		Util::toBigEndian(src, dst, data.dataLen / 2);
+
+		if (DEBUG_TRACE_NETWORK_PACKET) {
+			logger.debug("RECV     ret = %d", result.returnValue);
+			char buf[ETH_FRAME_LEN * 2 + 1];
+			char* q = buf;
+			for(int i = 0; i < data.dataLen; i++) {
+				int h = buffer[i];
+				int h1 = (h >> 4) & 0x0f;
+				int h2 = h & 0x0f;
+				*q++ = (h1 < 10) ? ('0' + h1) : ('A' + h1 - 10);
+				*q++ = (h2 < 10) ? ('0' + h2) : ('A' + h2 - 10);
+			}
+			*q = 0;
+			logger.debug("RECV     %s", buf);
+		}
+	} else {
+		data.dataLen = 0;
+	}
+
+	if (DEBUG_SHOW_NETWORK_PACKET) logger.debug("%-8s data = %p  dataLen = %4d  errNo = %3d  ret = %4d", __FUNCTION__, data.data, data.dataLen, result.errNo, result.returnValue);
+}
+
+
+
+
+
 void NetworkPacket::discardRecievedPacket() {
 	int count = 0;
 	for(;;) {

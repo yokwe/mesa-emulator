@@ -54,14 +54,22 @@ public:
 	// packet type of Xerox IDP
 	static const int ETH_P_IDP = 0x0600;
 
-	class ReceivedPacket {
+	class Result {
 	public:
-		quint64 timeStamp;             // unit is millisecond
-		int     dataLen;               // if there is no data, dataLen is 0
-		quint8  data[ETH_FRAME_LEN];
+		int     returnValue;		 // return value of read system call
+		int     errNo;				 // copy of errnos
 
-		ReceivedPacket();
-		ReceivedPacket(const ReceivedPacket& that);
+		Result() : returnValue(0), errNo(0) {}
+	};
+
+	class Data {
+	public:
+		quint64 timeStamp; // received time in millisecond
+		int     dataLen;   // number of valid data in byte
+		quint8* data;      // pointer to data (data is layout as mesa endian)
+
+		Data() : timeStamp(0), dataLen(0), data(0) {}
+		Data(const Data* that) : timeStamp(that->timeStamp), dataLen(that->dataLen), data(that->data) {}
 	};
 
 	NetworkPacket() {
@@ -81,6 +89,12 @@ public:
 
 	void attach(const QString& name_);
 	void detach();
+
+	void select  (Result& result, CARD32 timeout);
+	void transmit(Result& result, Data& data);
+	void receive (Result& result, Data& data);
+
+
 
 	// discard already received packet
 	void discardRecievedPacket();
