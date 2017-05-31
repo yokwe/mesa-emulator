@@ -68,6 +68,9 @@ void MesaProcessor::initialize() {
 		diskFile->attach(path);
 		diskFileList.append(diskFile);
 		disk.addDiskFile(diskFile);
+
+		// Handle Dawn.dsk properly
+		if (path == diskPath) break;
 	}
 
 	logger.info("Floppy %s", floppyPath.toLatin1().constData());
