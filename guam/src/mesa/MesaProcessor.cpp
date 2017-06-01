@@ -59,7 +59,12 @@ void MesaProcessor::initialize() {
 
 	// AgentDisk use diskFile
 	for(int i = 1; i <= 999; i++) {
-		QString path = diskPath.arg(i, 3, 10, QLatin1Char('0'));
+		QString path;
+		if (diskPath.contains("%1", Qt::CaseSensitivity::CaseSensitive)) {
+			path = diskPath.arg(i, 3, 10, QLatin1Char('0'));
+		} else {
+			path = diskPath;
+		}
 		if (!QFile::exists(path)) break;
 
 		logger.info("Disk  %s", path.toLatin1().constData());
