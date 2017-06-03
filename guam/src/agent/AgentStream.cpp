@@ -42,6 +42,62 @@ static log4cpp::Category& logger = Logger::getLogger("agentstream");
 #include "Agent.h"
 #include "AgentStream.h"
 
+class StreamDummy : public AgentStream::Stream {
+public:
+	StreamDummy(CARD32 serverID);
+
+	quint16 idle   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+	quint16 accept (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+	quint16 connect(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+	quint16 destroy(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+	quint16 read   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+	quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+
+private:
+};
+
+StreamDummy::StreamDummy(CARD32 serverID) : Stream(QString("DUMMY-%1").arg(serverID), serverID) {
+	//
+}
+
+quint16 StreamDummy::idle   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+	logger.error("%-8s idle %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+//	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+quint16 StreamDummy::accept (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+	logger.error("%-8s accept %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+//	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+quint16 StreamDummy::connect(CoProcessorIOFaceGuam::CoProcessorFCBType * /*fcb*/, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+	logger.info("%-8s connect  state mesa = %d  pc = %d", name.toLatin1().constData(), iocb->mesaConnectionState, iocb->pcConnectionState);
+//	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+quint16 StreamDummy::destroy(CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+	logger.info("%-8s destroy %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+	//	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+quint16 StreamDummy::read   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+	logger.error("%-8s read %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+	CoProcessorIOFaceGuam::TransferRec& tr = iocb->mesaPut;
+	logger.info("mesaPut  sst: %d  end [Stream: %d  Record: %d  SST: %d]  written: %3d  read: %3d  hTask: %d  int: %d  buffer: %4X  bufferSize: %3d  lock: %d",
+		tr.subSequence, tr.endStream, tr.endRecord, tr.endSST,
+		tr.bytesWritten, tr.bytesRead, tr.hTask, tr.interruptMesa, tr.buffer, tr.bufferSize, tr.writeLockedByMesa);
+	//	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
+quint16 StreamDummy::write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
+	logger.error("%-8s write %d %d", name.toLatin1().constData(), fcb->headCommand, iocb->serverID);
+	CoProcessorIOFaceGuam::TransferRec& tr = iocb->mesaGet;
+	logger.info("mesaGet  sst: %d  end [Stream: %d  Record: %d  SST: %d]  written: %3d  read: %3d  hTask: %d  int: %d  buffer: %4X  bufferSize: %3d  lock: %d",
+		tr.subSequence, tr.endStream, tr.endRecord, tr.endSST,
+		tr.bytesWritten, tr.bytesRead, tr.hTask, tr.interruptMesa, tr.buffer, tr.bufferSize, tr.writeLockedByMesa);
+//	ERROR();
+	return CoProcessorIOFaceGuam::R_error;
+}
 
 //		{
 //			logger.info("mesaGet  sst: %d  end [Stream: %d  Record: %d  SST: %d]  written: %3d  read: %3d  hTask: %d  int: %d  buffer: %4X  bufferSize: %3d  lock: %d",
@@ -121,9 +177,9 @@ void AgentStream::Call() {
 	quint16 command = fcb->headCommand;
 
 	if (!map.contains(serverID)) {
-		logger.warn("No Stream  serverID = %d", serverID);
-		fcb->headResult = CoProcessorIOFaceGuam::R_error;
-		return;
+		Stream* dummy = new StreamDummy(serverID);
+		logger.warn("Add dummy %s", dummy->name.toLatin1().constData());
+		map[serverID] = dummy;
 	}
 	Stream* stream = map[serverID];
 	quint16 result = CoProcessorIOFaceGuam::R_error;
