@@ -640,7 +640,12 @@ private:
 	int bumpDst;
 
 	MonoBlt_bit(ColorBlt::ColorBltTable& arg) : MonoBlt(arg) {
-		if (arg.srcPpl == 0 || arg.dstPpl == 0 || 32767 < arg.width || 32767 < arg.height) ERROR();
+//		if (arg.srcPpl == 0 || arg.dstPpl == 0 || 32767 < arg.width || 32767 < arg.height) ERROR();
+//		if (arg.srcPpl == 0) ERROR();
+//		if (arg.dstPpl == 0) ERROR();
+		if (32767 < arg.width) ERROR();
+		if (32767 < arg.height) ERROR();
+
 		if (arg.flags.direction == DI_forward  && (arg.srcPpl < 0 || arg.dstPpl < 0)) ERROR();
 		if (arg.flags.direction == DI_backward && (arg.srcPpl < 0 || arg.dstPpl < 0)) ERROR();
 
