@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014, 2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -544,6 +544,6 @@ void Interpreter::initTable() {
 	// ColorBlt.mesa
 	/* 0300 */ ASSIGN_ESC(a, COLORBLT)
 	/* 0301 */ //ASSIGN_ESC(a, WRITEPIXEL)
-	/* 0304 */ ASSIGN_ESC(a, 305)
+	/* 0305 */ ASSIGN_ESC(a, 305)
 	/* 0306 */ ASSIGN_ESC(a, 306)
 }
