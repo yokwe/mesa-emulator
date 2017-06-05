@@ -56,30 +56,35 @@ void AgentDisk::IOThread::run() {
 	int processCount = 0;
 	QThread::currentThread()->setPriority(PRIORITY);
 
-	for(;;) {
-		if (stopThread) break;
+	try {
+		for(;;) {
+			if (stopThread) break;
 
-		DiskIOFaceGuam::DiskIOCBType* iocb     = 0;
-		DiskFile*                     diskFile = 0;
-		{
-			QMutexLocker locker(&ioMutex);
-			if (ioQueue.isEmpty()) {
-				for(;;) {
-					bool ret = ioCV.wait(&ioMutex, WAIT_INTERVAL);
-					if (ret) break;
-					if (stopThread) goto exitLoop;
+			DiskIOFaceGuam::DiskIOCBType* iocb     = 0;
+			DiskFile*                     diskFile = 0;
+			{
+				QMutexLocker locker(&ioMutex);
+				if (ioQueue.isEmpty()) {
+					for(;;) {
+						bool ret = ioCV.wait(&ioMutex, WAIT_INTERVAL);
+						if (ret) break;
+						if (stopThread) goto exitLoop;
+					}
 				}
+
+				Item item = ioQueue.first();
+				iocb      = item.iocb;
+				diskFile  = item.diskFile;
+				ioQueue.removeFirst();
 			}
 
-			Item item = ioQueue.first();
-			iocb      = item.iocb;
-			diskFile  = item.diskFile;
-			ioQueue.removeFirst();
+			process(iocb, diskFile);
+			InterruptThread::notifyInterrupt(interruptSelector);
+			processCount++;
 		}
-
-		process(iocb, diskFile);
-		InterruptThread::notifyInterrupt(interruptSelector);
-		processCount++;
+	} catch(Abort& e) {
+		logger.fatal("Unexpected Abort %s %d %s", e.file, e.line, e.func);
+		ProcessorThread::stop();
 	}
 exitLoop:
 	logger.info("processCount           = %8u", processCount);

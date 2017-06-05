@@ -62,29 +62,34 @@ void AgentNetwork::TransmitThread::run() {
 	stopThread = 0;
 	QThread::currentThread()->setPriority(PRIORITY);
 
-	for(;;) {
-		if (stopThread) break;
+	try {
+		for(;;) {
+			if (stopThread) break;
 
-		EthernetIOFaceGuam::EthernetIOCBType* iocb = 0;
+			EthernetIOFaceGuam::EthernetIOCBType* iocb = 0;
 
-		// minimize critical section
-		{
-			QMutexLocker locker(&transmitMutex);
-			if (transmitQueue.isEmpty()) {
-				for(;;) {
-					bool ret = transmitCV.wait(&transmitMutex, WAIT_INTERVAL);
-					if (ret) break;
-					if (stopThread) goto exitLoop;
+			// minimize critical section
+			{
+				QMutexLocker locker(&transmitMutex);
+				if (transmitQueue.isEmpty()) {
+					for(;;) {
+						bool ret = transmitCV.wait(&transmitMutex, WAIT_INTERVAL);
+						if (ret) break;
+						if (stopThread) goto exitLoop;
+					}
 				}
+				Item item = transmitQueue.first();
+				iocb = item.iocb;
+				transmitQueue.removeFirst();
 			}
-			Item item = transmitQueue.first();
-			iocb = item.iocb;
-			transmitQueue.removeFirst();
-		}
 
-		networkPacket->transmit(iocb);
-		InterruptThread::notifyInterrupt(interruptSelector);
-		transmitCount++;
+			networkPacket->transmit(iocb);
+			InterruptThread::notifyInterrupt(interruptSelector);
+			transmitCount++;
+		}
+	} catch(Abort& e) {
+		logger.fatal("Unexpected Abort %s %d %s", e.file, e.line, e.func);
+		ProcessorThread::stop();
 	}
 exitLoop:
 	logger.info("transmitCount          = %8u", transmitCount);
