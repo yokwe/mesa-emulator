@@ -14,8 +14,8 @@ SOURCES += Agent.cpp AgentBeep.cpp AgentDisk.cpp AgentDisplay.cpp AgentFloppy.cp
 HEADERS += AgentMouse.h   AgentNetwork.h   AgentProcessor.h   AgentStream.h   DiskFile.h   NetworkPacket.h
 SOURCES += AgentMouse.cpp AgentNetwork.cpp AgentProcessor.cpp AgentStream.cpp DiskFile.cpp
 
-HEADRES += StreamBoot.h
-SOURCES += StreamBoot.cpp
+HEADRES += StreamBoot.h   StreamWWC.h
+SOURCES += StreamBoot.cpp StreamWWC.cpp
 
 unix {
 	SOURCES += NetworkPacket.cpp
