@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014, 2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -246,7 +246,7 @@ void NetworkPacket::transmit(EthernetIOFaceGuam::EthernetIOCBType* iocb) {
 	if (iocb->bufferAddress == 0) ERROR();
 
 	CARD32 dataLen = iocb->bufferLength;
-	CARD8* data    = (CARD8*)Fetch(iocb->bufferAddress);
+	CARD8* data    = (CARD8*)Memory::getAddress(iocb->bufferAddress);
 	int    opErrno = 0;
 
 	int ret = transmit(data, dataLen, opErrno);
@@ -319,7 +319,7 @@ void NetworkPacket::receive(EthernetIOFaceGuam::EthernetIOCBType* iocb) {
 	if (iocb->bufferLength == 0) ERROR();
 	if (iocb->bufferAddress == 0) ERROR();
 
-	CARD8* data    = (CARD8*)Store(iocb->bufferAddress);
+	CARD8* data    = (CARD8*)Memory::getAddress(iocb->bufferAddress);
 	CARD32 dataLen = iocb->bufferLength;
 	int    opErrno = 0;
 

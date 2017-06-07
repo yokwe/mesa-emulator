@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014, 2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -121,7 +121,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 
 		CARD32 dataPtr = iocb->dataPtr;
 		for(int i = 0; i < iocb->pageCount; i++) {
-			CARD16 *buffer = Store(dataPtr);
+			CARD16 *buffer = Memory::getAddress(dataPtr);
 			diskFile->readPage(block++, buffer);
 			dataPtr += PageSize;
 		}
@@ -137,7 +137,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 
 		CARD32 dataPtr = iocb->dataPtr;
 		for(int i = 0; i < iocb->pageCount; i++) {
-			CARD16 *buffer = Fetch(dataPtr);
+			CARD16 *buffer = Memory::getAddress(dataPtr);
 			diskFile->writePage(block++, buffer);
 			dataPtr += PageSize;
 		}
@@ -154,7 +154,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 		int ret = 0;
 		CARD32 dataPtr = iocb->dataPtr;
 		for(int i = 0; i < iocb->pageCount; i++) {
-			CARD16 *buffer = Fetch(dataPtr);
+			CARD16 *buffer = Memory::getAddress(dataPtr);
 			ret |= diskFile->verifyPage(block++, buffer);
 			dataPtr += PageSize;
 		}
@@ -166,6 +166,7 @@ void AgentDisk::IOThread::process(DiskIOFaceGuam::DiskIOCBType* iocb, DiskFile* 
 	}
 		break;
 	default:
+		logger.fatal("command = %d", command);
 		ERROR();
 		break;
 	}
