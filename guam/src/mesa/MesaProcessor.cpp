@@ -38,6 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("mesaproc");
 #include "../opcode/Interpreter.h"
 
 #include "../agent/StreamBoot.h"
+#include "../agent/StreamWWC.h"
 
 #include "Memory.h"
 #include "Pilot.h"
@@ -101,9 +102,15 @@ void MesaProcessor::initialize() {
 	logger.info("Agent FCB  %04X %04X", Agent::ioRegionPage * PageSize, Agent::getIORegion());
 
 	logger.info("Boot  %s", bootPath.toLatin1().constData());
+
+	// Initialization of Stream handler
 	AgentStream* agentStream = (AgentStream*)Agent::getAgent(GuamInputOutput::stream);
+	// 110 BOOT
 	StreamBoot* streamBoot = new StreamBoot(bootPath);
-	agentStream->addStream((AgentStream::Stream*)streamBoot);
+	agentStream->addStream(streamBoot);
+	// 108 WWC - experimental
+	StreamWWC* streamWWC = new StreamWWC;
+	agentStream->addStream(streamWWC);
 
 	// load germ file into vm
 	loadGerm(germPath);
