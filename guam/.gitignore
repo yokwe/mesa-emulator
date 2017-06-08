@@ -4,5 +4,5 @@
 
 tmp/
 data/Dawn/
-data/GVWin/
+data/GVWin*/
 src/*/Makefile
