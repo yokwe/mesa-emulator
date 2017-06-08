@@ -346,9 +346,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	const char* floppyImagePath   = "tmp/floppy/image/floppy144";
 	const char* floppyDiskDirPath = "tmp/floppy/disk";
 
-	QDir floppyDiskDir(floppyDiskDirPath);
 	logger.info("floppyDiskDirPath = %s", floppyDiskDirPath);
-	if (!floppyDiskDir.exists()) ERROR();
 
 	logger.info("floppyImagePath   = %s", floppyImagePath);
 	FloppyDisk floppyDisk(floppyImagePath);
@@ -360,12 +358,22 @@ int main(int /*argc*/, char** /*argv*/) {
 	FileList fileList(floppyDisk, sectorNine.fileList, sectorNine.fileListSize);
 	//fileList.dump();
 
+	// get floppy name from sectorNine
 	QString floppyName(sectorNine.label.constData());
-	QDir floppyDir(floppyDiskDir);
+
+	// prepare floppyDiskDirPath
+	QDir floppyDir(floppyDiskDirPath);
+	if (!floppyDir.exists()) floppyDir.mkpath(".");
+
+	// remove existing files in floppyNam directory
+	if (floppyDir.exists(floppyName)) floppyDir.rmdir(floppyName);
+
+	// create empty floppyName directory
+	floppyDir.mkdir(floppyName);
 	floppyDir.cd(floppyName);
-	if (floppyDir.exists()) floppyDir.removeRecursively();
-	floppyDiskDir.mkdir(floppyName);
-	QDir::setCurrent(floppyDir.path());
+
+	// set current directory as
+	logger.info("floppyDir = %s", floppyDir.path().toLocal8Bit().constData());
 
 	for(int i = 0; i < fileList.count; i++) {
 		const FileList::Entry* entry = fileList.files.at(i);
@@ -374,8 +382,9 @@ int main(int /*argc*/, char** /*argv*/) {
 		logger.info("  file %8d  %s  %s", leaderPage.totalSizeInBytes, leaderPage.createData.toString("yyyy-MM-dd HH:mm:ss").toLocal8Bit().constData(), leaderPage.name.constData());
 		//leaderPage.dump();
 
-		QString fileName(leaderPage.name.constData());
-		QFile file(fileName);
+		// create file in floppyDir
+		QFile file(floppyDir.filePath(leaderPage.name));
+
 		file.open(QIODevice::WriteOnly);
 		file.write(leaderPage.contents);
 		file.close();
