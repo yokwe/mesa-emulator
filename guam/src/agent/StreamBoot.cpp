@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014, 2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,7 +30,7 @@ OF SUCH DAMAGE.
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("streamboot");
+static log4cpp::Category& logger = Logger::getLogger("boot");
 
 
 #include "../util/Debug.h"
@@ -82,7 +82,7 @@ quint16 StreamBoot::read   (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoPr
 }
 quint16 StreamBoot::write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
 	CoProcessorIOFaceGuam::TransferRec& tr = iocb->mesaGet;
-	/*if (DEBUG_SHOW_AGENT_STREAM)*/ logger.info("%-8s write %8X+%d", name.toLatin1().constData(), pos, tr.bufferSize);
+	if (DEBUG_SHOW_STREAM_BOOT) logger.info("%-8s write %8X+%d", name.toLatin1().constData(), pos, tr.bufferSize);
 	if (tr.writeLockedByMesa) {
 		logger.warn("writeLockedByMesa");
 		return CoProcessorIOFaceGuam::R_inProgress;
@@ -108,7 +108,7 @@ quint16 StreamBoot::write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoPr
 	quint32  size   = tr.bufferSize / Environment::bytesPerWord;
 	if (mapSize < (pos + size)) size = mapSize - pos;
 	quint32  nextPos = pos + size;
-	logger.info("DATA %4X => %4X", pos * Environment::bytesPerWord, nextPos * Environment::bytesPerWord);
+	if (DEBUG_SHOW_STREAM_BOOT) logger.info("DATA %4X => %4X", pos * Environment::bytesPerWord, nextPos * Environment::bytesPerWord);
 
 	Util::fromBigEndian(map + pos, buffer, size);
 	pos = nextPos;
