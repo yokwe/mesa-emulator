@@ -58,7 +58,7 @@ quint16 StreamWWC::accept (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoPro
 	return CoProcessorIOFaceGuam::R_error;
 }
 quint16 StreamWWC::connect(CoProcessorIOFaceGuam::CoProcessorFCBType * /*fcb*/, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb) {
-	logger.info("%-8s connect  state mesa = %d  pc = %d", name.toLatin1().constData(), iocb->mesaConnectionState, iocb->pcConnectionState);
+	logger.info("%-8s connect  mesaIsServer = %d  state mesa = %d  pc = %d", name.toLatin1().constData(), iocb->mesaIsServer, iocb->mesaConnectionState, iocb->pcConnectionState);
 
 	iocb->pcConnectionState = CoProcessorIOFaceGuam::S_connected;
 	// Need to assign non-zero to mesaGet.hTaskactually. See CoProcessorFace.Get
