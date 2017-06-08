@@ -75,6 +75,13 @@ static const int DEBUG_SHOW_AGENT_STREAM    = 0;
 static const int DEBUG_SHOW_NETWORK_PACKET  = 0;
 static const int DEBUG_TRACE_NETWORK_PACKET = 0;
 
+// Stream
+static const int DEBUG_SHOW_STREAM_BOOT     = 1;
+static const int DEBUG_SHOW_STREAM_COPYPASTE= 0;
+static const int DEBUG_SHOW_STREAM_PCFA     = 0;
+static const int DEBUG_SHOW_STREAM_TCP      = 0;
+static const int DEBUG_SHOW_STREAM_WWC      = 0;
+
 
 static const int DEBUG_TRACE_XFER           = 0;
 
