@@ -48,6 +48,71 @@ public:
 	quint16 write  (CoProcessorIOFaceGuam::CoProcessorFCBType *fcb, CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
 
 private:
+	// MsgId: TYPE = MACHINE DEPENDENT {
+	//  nop(0), invalidCmdAck(1), getProtocolVer(2), getProtocolVerAck(3), getData(4),
+	//  getDataAck(5), putData(6), putDataAck(7), endStream(8), endStreamAck(9), lastCpMsgid(10), maxCpMsgid(11)};
+	static const CARD32 M_nop               = 0;
+	static const CARD32 M_invalidCmdAck     = 1;
+	static const CARD32 M_getProtocolVer    = 2;
+	static const CARD32 M_getProtocolVerAck = 3;
+	static const CARD32 M_getData           = 4;
+	static const CARD32 M_getDataAck        = 5;
+	static const CARD32 M_putData           = 6;
+	static const CARD32 M_putDataAck        = 7;
+	static const CARD32 M_endStream         = 8;
+	static const CARD32 M_endStreamAck      = 9;
+	static const CARD32 M_lastCpMsgid       = 10;
+	static const CARD32 M_maxCpMsgid        = 11;
+
+	// Status: TYPE = MACHINE DEPENDENT{
+	//   success(0), generalFailure(1), invalidCmd(2), outOfMemory(3), dataExceedRequest(4),
+	//   dataUnknownFormat(5), dataNone(6), cbInUse(7), lastMsg(8)};
+	static const CARD32 S_success           = 0;
+	static const CARD32 S_generalFailure    = 1;
+	static const CARD32 S_invalidCmd        = 2;
+	static const CARD32 S_outOfMemory       = 3;
+	static const CARD32 S_dataExceedRequest = 4;
+	static const CARD32 S_dataUnknownFormat = 5;
+	static const CARD32 S_dataNone          = 6;
+	static const CARD32 S_cbInUse           = 7;
+	static const CARD32 S_lastMsg           = 8;
+
+	// Format: TYPE = MACHINE DEPENDENT{none(0), text(1), bitmap(2)};
+	static const CARD32 F_none   = 0;
+	static const CARD32 F_text   = 1;
+	static const CARD32 F_bitmap = 2;
+
+	class GetBuffer {
+	public:
+		GetBuffer(CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+
+		CARD8  get8();
+		CARD16 get16();
+		CARD32 get32();
+
+		CARD32 remain() {
+			return transferRec.bytesWritten - transferRec.bytesRead;
+		}
+
+	private:
+		CoProcessorIOFaceGuam::TransferRec& transferRec;
+		CARD8* data;
+	};
+
+	class PutBuffer {
+	public:
+		PutBuffer(CoProcessorIOFaceGuam::CoProcessorIOCBType *iocb);
+
+		void put8 (CARD8  value);
+		void put16(CARD16 value);
+		void put32(CARD32 value);
+
+		CARD32 remain();
+
+	private:
+		CoProcessorIOFaceGuam::TransferRec& transferRec;
+		CARD8* data;
+	};
 };
 
 #endif
