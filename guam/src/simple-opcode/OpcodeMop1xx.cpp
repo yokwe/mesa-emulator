@@ -171,6 +171,161 @@ __attribute__((always_inline)) static inline void E_PSD_(CARD16 arg) {
 }
 
 
+__attribute__((always_inline)) static inline void E_WDL_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WDL %3d", savedPC, arg);
+	LONG_POINTER ptr = PopLong() + arg;
+	CARD16 *p0 = Store(ptr + 0);
+	CARD16 *p1 = Store(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	*p1 = Pop();
+	*p0 = Pop();
+}
+
+
+__attribute__((always_inline)) static inline void E_PSDL_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PSDL %3d", savedPC, arg);
+	UNSPEC v = Pop();
+	UNSPEC u = Pop();
+	LONG_POINTER ptr = PopLong() + arg;
+	CARD16 *p0 = Store(ptr + 0);
+	CARD16 *p1 = Store(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	*p1 = v;
+	*p0 = u;
+	SP++; //Recover();
+	SP++; //Recover();
+}
+
+
+__attribute__((always_inline)) static inline void E_RLI_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLI %3d %3d", savedPC, arg0, arg1);
+	POINTER ptr = *FetchLF(arg0);
+	CARD16* p = FetchMds(ptr + arg1);
+	// NO PAGE FAULT AFTER HERE
+	Push(*p);
+}
+
+
+__attribute__((always_inline)) static inline void E_RLIL_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLIL %3d %3d", savedPC, arg0, arg1);
+	LONG_POINTER ptr = ReadDblLF(arg0) + arg1;
+	CARD16 *p = Fetch(ptr);
+	// NO PAGE FAULT AFTER HERE
+	Push(*p);
+}
+
+
+__attribute__((always_inline)) static inline void E_RLDI_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLDI %3d %3d", savedPC, arg0, arg1);
+	POINTER ptr = *FetchLF(arg0) + arg1;
+	CARD16 *p0 = FetchMds(ptr + 0);
+	CARD16 *p1 = FetchMds(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	UNSPEC u = *p0;
+	UNSPEC v = *p1;
+	Push(u);
+	Push(v);
+}
+
+
+__attribute__((always_inline)) static inline void E_RLDIL_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLDIL %3d %3d", savedPC, arg0, arg1);
+	LONG_POINTER ptr = ReadDblLF(arg0) + arg1;
+	CARD16 *p0 = Fetch(ptr + 0);
+	CARD16 *p1 = Fetch(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	UNSPEC u = *p0;
+	UNSPEC v = *p1;
+	Push(u);
+	Push(v);
+}
+
+
+__attribute__((always_inline)) static inline void E_RGI_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RGI %3d %3d", savedPC, arg0, arg1);
+	CARD16* p = Fetch(GF + arg0) + arg1;
+	CARD16* q = FetchMds(*p);
+	// NO PAGE FAULT AFTER HERE
+	Push(*q);
+}
+
+
+__attribute__((always_inline)) static inline void E_RGIL_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RGIL %3d %3d", savedPC, arg0, arg1);
+	LONG_POINTER ptr = ReadDbl(GF + arg0) + arg1;
+	CARD16* p = Fetch(ptr);
+	// NO PAGE FAULT AFTER HERE
+	Push(*p);
+}
+
+
+__attribute__((always_inline)) static inline void E_WLI_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WLI %3d %3d", savedPC, arg0, arg1);
+	POINTER ptr = *FetchLF(arg0) + arg1;
+	CARD16* p = StoreMds(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = Pop();
+}
+
+
+__attribute__((always_inline)) static inline void E_WLIL_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WLIL %3d %3d", savedPC, arg0, arg1);
+	LONG_POINTER ptr = ReadDblLF(arg0) + arg1;
+	CARD16* p = Store(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = Pop();
+}
+
+
+__attribute__((always_inline)) static inline void E_WLDIL_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WLDIL %3d %3d", savedPC, arg0, arg1);
+	LONG_POINTER ptr = ReadDblLF(arg0) + arg1;
+	CARD16* p0 = Store(ptr + 0);
+	CARD16* p1 = Store(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	*p1 = Pop();
+	*p0 = Pop();
+}
+
+
+__attribute__((always_inline)) static inline void E_RS_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  zRS %3d", savedPC, arg);
+	CARDINAL index = Pop();
+	LONG_POINTER ptr = LengthenPointer(Pop());
+	CARD16 t = FetchByte(ptr, arg + index);
+	// NO PAGE FAULT AFTER HERE
+	Push(t);
+}
+
+
+__attribute__((always_inline)) static inline void E_RLS_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  zRLS %3d", savedPC, arg);
+	CARDINAL index = Pop();
+	LONG_POINTER ptr = PopLong();
+	CARD16 t = FetchByte(ptr, arg + index);
+	// NO PAGE FAULT AFTER HERE
+	Push(t);
+}
+
+
+__attribute__((always_inline)) static inline void E_WS_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  zWS %3d", savedPC, arg);
+	CARDINAL index = Pop();
+	LONG_POINTER ptr = LengthenPointer(Pop());
+	BYTE data = LowByte(Pop());
+	StoreByte(ptr, arg + index, data);
+}
+
+
+__attribute__((always_inline)) static inline void E_WLS_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  zWLS %3d", savedPC, arg);
+	CARDINAL index = Pop();
+	LONG_POINTER ptr = PopLong();
+	BYTE data = LowByte(Pop());
+	StoreByte(ptr, arg + index, data);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -235,27 +390,99 @@ void E_PSDB (Opcode*) {
 	E_PSD_(GetCodeByte());
 }
 // 0121  ASSIGN_MOP(z, WDLB)
+void E_WDLB (Opcode*) {
+	E_WDL_(GetCodeByte());
+}
 // 0122  ASSIGN_MOP(z, PSDLB)
+void E_PSDLB (Opcode*) {
+	E_PSDL_(GetCodeByte());
+}
 // 0123  ASSIGN_MOP(z, RLI00)
+void E_RLI00 (Opcode*) {
+	E_RLI_(0, 0);
+}
 // 0124  ASSIGN_MOP(z, RLI01)
+void E_RLI01 (Opcode*) {
+	E_RLI_(0, 1);
+}
 // 0125  ASSIGN_MOP(z, RLI02)
+void E_RLI02 (Opcode*) {
+	E_RLI_(0, 2);
+}
 // 0126  ASSIGN_MOP(z, RLI03)
+void E_RLI03 (Opcode*) {
+	E_RLI_(0, 3);
+}
 // 0127  ASSIGN_MOP(z, RLIP)
+void E_RLIP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_RLI_(pair.left, pair.right);
+}
+
 
 // 0130  ASSIGN_MOP(z, RLILP)
+void E_RLILP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_RLIL_(pair.left, pair.right);
+}
 // 0131  ASSIGN_MOP(z, RLDI00)
+void E_RLDI00 (Opcode*) {
+	E_RLDI_(0, 0);
+}
 // 0132  ASSIGN_MOP(z, RLDIP)
+void E_RLDIP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_RLDI_(pair.left, pair.right);
+}
 // 0133  ASSIGN_MOP(z, RLDILP)
+void E_RLDILP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_RLDIL_(pair.left, pair.right);
+}
 // 0134  ASSIGN_MOP(z, RGIP)
+void E_RGIP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_RGI_(pair.left, pair.right);
+}
 // 0135  ASSIGN_MOP(z, RGILP)
+void E_RGILP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_RGIL_(pair.left, pair.right);
+}
 // 0136  ASSIGN_MOP(z, WLIP)
+void E_WLIP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_WLI_(pair.left, pair.right);
+}
 // 0137  ASSIGN_MOP(z, WLILP)
+void E_WLILP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_WLIL_(pair.left, pair.right);
+}
+
+
 
 // 0140  ASSIGN_MOP(z, WLDILP)
+void E_WLDILP (Opcode*) {
+	NibblePair pair = {GetCodeByte()};
+	E_WLDIL_(pair.left, pair.right);
+}
 // 0141  ASSIGN_MOP(z, RS)
+void E_RS (Opcode*) {
+	E_RS_(GetCodeByte());
+}
 // 0142  ASSIGN_MOP(z, RLS)
+void E_RLS (Opcode*) {
+	E_RLS_(GetCodeByte());
+}
 // 0143  ASSIGN_MOP(z, WS)
+void E_WS (Opcode*) {
+	E_WS_(GetCodeByte());
+}
 // 0144  ASSIGN_MOP(z, WLS)
+void E_WLS (Opcode*) {
+	E_WLS_(GetCodeByte());
+}
 // 0145  ASSIGN_MOP(z, R0F)
 // 0146  ASSIGN_MOP(z, RF)
 // 0147  ASSIGN_MOP(z, RL0F)

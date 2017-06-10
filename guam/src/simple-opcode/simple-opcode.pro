@@ -13,7 +13,8 @@ HEADERS += Interpreter.h   Opcode.h
 SOURCES += Interpreter.cpp 
 
 SOURCES += Opcode_control.cpp Opcode_process.cpp
-SOURCES += OpcodeMop0xx.cpp OpcodeMop1xx.cpp
+SOURCES += OpcodeMop0xx.cpp OpcodeMop1xx.cpp OpcodeMop2xx.cpp OpcodeMop3xx.cpp
+SOURCES += OpcodeEsc.cpp
 
 ###############################################
 
