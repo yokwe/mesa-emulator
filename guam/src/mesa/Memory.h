@@ -445,13 +445,14 @@ static inline CARD16 FetchWord(LONG_POINTER ptr, LONG_CARDINAL offset) {
 static inline void StoreByte(LONG_POINTER ptr, LONG_CARDINAL offset, BYTE data) {
 	if (PERF_ENABLE) perf_StoreByte++;
 	ptr += offset / 2;
-	BytePair word = {*Fetch(ptr)};
+	CARD16* p = Store(ptr);
+	BytePair word = {*p};
 	if ((offset % 2) == 0) {
 		word.left = data;
 	} else {
 		word.right = data;
 	}
-	*Store(ptr) = word.u;
+	*p = word.u;
 }
 
 // 7.5 Field Instruction
