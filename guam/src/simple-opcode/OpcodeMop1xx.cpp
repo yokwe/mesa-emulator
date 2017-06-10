@@ -326,6 +326,133 @@ __attribute__((always_inline)) static inline void E_WLS_(CARD16 arg) {
 }
 
 
+__attribute__((always_inline)) static inline void E_RF_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RF %3d %3d", savedPC, arg0, arg1);
+	POINTER ptr = Pop();
+	CARD16* p = FetchMds(ptr + arg0);
+	// NO PAGE FAULT AFTER HERE
+	Push(ReadField(*p, arg1));
+}
+
+
+__attribute__((always_inline)) static inline void E_RLF_(CARD8 offset, CARD8 field) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLF %3d %3d", savedPC, offset, field);
+	LONG_POINTER ptr = PopLong();
+	CARD16* p = Fetch(ptr + offset);
+	// NO PAGE FAULT AFTER HERE
+	Push(ReadField(*p, field));
+}
+
+
+__attribute__((always_inline)) static inline void E_RLIPF_(CARD16 arg0, CARD16 arg1) {
+	NibblePair pair = {(CARD8)arg0};
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLIPF %2d %2d %3d", savedPC, pair.left, pair.right, arg1);
+	POINTER ptr = *FetchLF(pair.left);
+	CARD16* p = FetchMds(ptr + pair.right);
+	// NO PAGE FAULT AFTER HERE
+	Push(ReadField(*p, arg1));
+}
+
+
+__attribute__((always_inline)) static inline void E_RLILPF_(CARD16 arg0, CARD16 arg1) {
+	NibblePair pair = {(CARD8)arg0};
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RLILPF %2d %2d %3d", savedPC, pair.left, pair.right, arg1);
+	LONG_POINTER ptr = ReadDblLF(pair.left);
+	CARD16* p = Fetch(ptr + pair.right);
+	// NO PAGE FAULT AFTER HERE
+	Push(ReadField(*p, arg1));
+}
+
+
+__attribute__((always_inline)) static inline void E_WF_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WF %3d %3d", savedPC, arg0, arg1);
+	POINTER ptr = Pop() + arg0;
+	UNSPEC data = Pop();
+	CARD16 *p = StoreMds(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = WriteField(*p, arg1, data);
+}
+
+
+__attribute__((always_inline)) static inline void E_PSF_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PSF %3d %3d", savedPC, arg0, arg1);
+	UNSPEC data = Pop();
+	POINTER ptr = Pop() + arg0;
+	CARD16 *p = StoreMds(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = WriteField(*p, (CARD8)arg1, data);
+	SP++; //Recover();
+}
+
+
+__attribute__((always_inline)) static inline void E_WSF_(CARD16 arg0, CARD16 arg1) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WSF %3d %3d", savedPC, arg0, arg1);
+	UNSPEC data = Pop();
+	POINTER ptr = Pop() + arg0;
+	CARD16 *p = StoreMds(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = WriteField(*p, (CARD8)arg1, data);
+}
+
+
+__attribute__((always_inline)) static inline void E_WLF_(CARD16 offset, CARD16 field) {
+	LONG_POINTER ptr = PopLong() + offset;
+	UNSPEC data = Pop();
+	CARD16 *p = Store(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = WriteField(*p, (CARD8)field, data);
+}
+
+
+__attribute__((always_inline)) static inline void E_PSLF_(CARD16 offset, CARD16 field) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PSLF %3d %3d", savedPC, offset, field);
+	UNSPEC data = Pop();
+	LONG_POINTER ptr = PopLong() + offset;
+	CARD16 *p = Store(ptr);
+	// NO PAGE FAULT AFTER HERE
+	*p = WriteField(*p, (CARD8)field, data);
+	SP++; //Recover();
+	SP++; //Recover();
+}
+
+
+__attribute__((always_inline)) static inline void E_WLFS_() {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WLFS", savedPC);
+	FieldDesc desc = {Pop()};
+	E_WLF_(desc.offset, desc.field);
+}
+
+
+__attribute__((always_inline)) static inline void E_SLD_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SLD %3d", savedPC, arg);
+	POINTER ptr = arg;
+	CARD16 *p0 = StoreLF(ptr + 0);
+	CARD16 *p1 = StoreLF(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	*p1 = Pop();
+	*p0 = Pop();
+}
+
+
+__attribute__((always_inline)) static inline void E_SGD_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SGD %3d", savedPC, arg);
+	LONG_POINTER ptr = GF + arg;
+	CARD16 *p0 = Fetch(ptr + 0);
+	CARD16 *p1 = Fetch(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	*p1 = Pop();
+	*p0 = Pop();
+}
+
+
+__attribute__((always_inline)) static inline void E_LLK_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LLK %3d", savedPC, arg);
+	CARD32 t = FetchLink(arg);
+	// NO PAGE FAULT AFTER HERE
+	PushLong(t);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -484,26 +611,98 @@ void E_WLS (Opcode*) {
 	E_WLS_(GetCodeByte());
 }
 // 0145  ASSIGN_MOP(z, R0F)
+void E_R0F (Opcode*) {
+	E_RF_(0, GetCodeByte());
+}
 // 0146  ASSIGN_MOP(z, RF)
+void E_RF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_RF_((CARD8)desc.offset, (CARD8)desc.field);
+}
 // 0147  ASSIGN_MOP(z, RL0F)
+void E_RL0F (Opcode*) {
+	E_RLF_(0, GetCodeByte());
+}
+
+
 
 // 0150  ASSIGN_MOP(z, RLF)
+void E_RLF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_RLF_((CARD8)desc.offset, (CARD8)desc.field);
+}
 // 0151  ASSIGN_MOP(z, RLFS)
+void E_RLFS(Opcode*) {
+	FieldDesc desc = {Pop()};
+	E_RLF_((CARD8)desc.offset, (CARD8)desc.field);
+}
 // 0152  ASSIGN_MOP(z, RLIPF)
+void E_RLIPF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_RLIPF_((CARD8)desc.offset, (CARD8)desc.field);
+}
 // 0153  ASSIGN_MOP(z, RLILPF)
+void E_RLILPF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_RLILPF_((CARD8)desc.offset, (CARD8)desc.field);
+}
 // 0154  ASSIGN_MOP(z, W0F)
+void E_W0F(Opcode*) {
+	E_WF_(0, GetCodeByte());
+}
 // 0155  ASSIGN_MOP(z, WF)
+void E_WF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_WF_(desc.offset, desc.field);
+}
 // 0156  ASSIGN_MOP(z, PSF)
+void E_PSF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_PSF_((CARD8)desc.offset, (CARD8)desc.field);
+}
 // 0157  ASSIGN_MOP(z, PS0F)
+void E_PS0F(Opcode*) {
+	E_PSF_(0, GetCodeByte());
+}
+
+
 
 // 0160  ASSIGN_MOP(z, WS0F)
+void E_WS0F(Opcode*) {
+	E_WSF_(0, GetCodeByte());
+}
 // 0161  ASSIGN_MOP(z, WL0F)
+void E_WL0F(Opcode*) {
+	E_WLF_(0, GetCodeByte());
+}
 // 0162  ASSIGN_MOP(z, WLF)
+void E_WLF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_WLF_(desc.offset, desc.field);
+}
 // 0163  ASSIGN_MOP(z, PSLF)
+void E_PSLF(Opcode*) {
+	FieldDesc desc = {GetCodeWord()};
+	E_PSLF_(desc.offset, desc.field);
+}
 // 0164  ASSIGN_MOP(z, WLFS)
+void E_WLFS(Opcode*) {
+	E_WLFS_();
+}
 // 0165  ASSIGN_MOP(z, SLDB)
+void E_SLDB(Opcode*) {
+	E_SLD_(GetCodeByte());
+}
 // 0166  ASSIGN_MOP(z, SGDB)
+void E_SGB(Opcode*) {
+	E_SGD_(GetCodeByte());
+}
 // 0167  ASSIGN_MOP(z, LLKB)
+void E_LLKB(Opcode*) {
+	E_LLK_(GetCodeByte());
+}
+
+
 
 // 0170  ASSIGN_MOP(z, RKIB)
 // 0171  ASSIGN_MOP(z, RKDIB)
