@@ -29,6 +29,7 @@ RASPI_DEPLOY_ROOT := $(RASPI_ROOT)/home/pi/gaum
 all: src/opcode/Run_decl.h
 	(cd src/mesa;          make all)
 	(cd src/opcode;        make all)
+	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
 	(cd src/test;          make all)
@@ -48,6 +49,7 @@ clean:
 	mkdir  -p tmp/build
 	mkdir  tmp/build/mesa
 	mkdir  tmp/build/opcode
+	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
 	mkdir  tmp/build/util
 	mkdir  tmp/build/test
@@ -78,7 +80,7 @@ guam-headless: src/opcode/Run_decl.h
 
 test: src/opcode/Run_decl.h
 	(cd src/mesa;          make all)
-	(cd src/opcode;        make all)
+	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
 	(cd src/test;          make all)
@@ -145,6 +147,7 @@ tar:
 qmake:
 	(cd src/mesa;          qmake)
 	(cd src/opcode;        qmake)
+	(cd src/simple-opcode; qmake)
 	(cd src/agent;         qmake)
 	(cd src/util;          qmake)
 	(cd src/test;          qmake)

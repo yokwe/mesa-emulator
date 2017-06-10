@@ -42,7 +42,7 @@ OF SUCH DAMAGE.
 
 #include "../mesa/Pilot.h"
 
-#include "../opcode/Interpreter.h"
+#include "../simple-opcode/Interpreter.h"
 
 
 class testBase : public CppUnit::TestFixture {

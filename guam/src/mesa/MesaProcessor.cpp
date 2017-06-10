@@ -35,7 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("mesaproc");
 
 #include "../util/Debug.h"
 
-#include "../opcode/Interpreter.h"
+#include "../simple-opcode/Interpreter.h"
 
 #include "../agent/StreamBoot.h"
 #include "../agent/StreamCopyPaste.h"
