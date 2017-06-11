@@ -730,7 +730,7 @@ void E_SLDB(Opcode*) {
 	E_SLD_(GetCodeByte());
 }
 // 0166  ASSIGN_MOP(z, SGDB)
-void E_SGB(Opcode*) {
+void E_SGDB(Opcode*) {
 	E_SGD_(GetCodeByte());
 }
 // 0167  ASSIGN_MOP(z, LLKB)
