@@ -453,6 +453,42 @@ __attribute__((always_inline)) static inline void E_LLK_(CARD16 arg) {
 }
 
 
+__attribute__((always_inline)) static inline void E_RKI_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RKI %02X", savedPC, arg);
+	LONG_POINTER ptr = FetchLink(arg);
+	CARD16* p = Fetch(ptr);
+	// NO PAGE FAULT AFTER HERE
+	Push(*p);
+}
+
+
+__attribute__((always_inline)) static inline void E_RKDI_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RKDI %02X", savedPC, arg);
+	LONG_POINTER ptr = FetchLink(arg);
+	CARD16 *p0 = Fetch(ptr + 0);
+	CARD16 *p1 = Fetch(ptr + 1);
+	// NO PAGE FAULT AFTER HERE
+	Push(*p0);
+	Push(*p1);
+}
+
+
+__attribute__((always_inline)) static inline void E_LK_(CARD16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LK %02X", savedPC, arg);
+	Recover();
+	ShortControlLink link = Pop();
+	CARD16* p = StoreLF(0);
+	// NO PAGE FAULT AFTER HERE
+	*p = link - arg;
+}
+
+
+__attribute__((always_inline)) static inline void E_SHIFT_(INT16 arg) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SHIFT %3d", savedPC, arg);
+	UNSPEC u = Pop();
+	Push(Shift(u, arg));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -705,10 +741,25 @@ void E_LLKB(Opcode*) {
 
 
 // 0170  ASSIGN_MOP(z, RKIB)
+void E_RKIB(Opcode*) {
+	E_RKI_(GetCodeByte());
+}
 // 0171  ASSIGN_MOP(z, RKDIB)
+void E_RKDIB(Opcode*) {
+	E_RKDI_(GetCodeByte());
+}
 // 0172  ASSIGN_MOP(z, LKB)
+void E_LKB(Opcode*) {
+	E_LK_(GetCodeByte());
+}
 // 0173  ASSIGN_MOP(z, SHIFT)
+void E_SHIFT(Opcode*) {
+	E_SHIFT_((INT16)Pop());
+}
 // 0174  ASSIGN_MOP(z, SHIFTSB)
+void E_SHIFTSB(Opcode*) {
+	E_SHIFT_(SignExtend(GetCodeByte()));
+}
 // 0175  //ASSIGN_MOP(z, MBP)
 // 0176  //ASSIGN_MOP(z, RBP)
 // 0177  //ASSIGN_MOP(z, WBP)
