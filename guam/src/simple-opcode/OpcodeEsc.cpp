@@ -53,9 +53,40 @@ static log4cpp::Category& logger = Logger::getLogger("esc");
 // 05  ASSIGN_ESC(a, BC)
 // 06  ASSIGN_ESC(a, REQ)
 // 07  ASSIGN_ESC(a, SM)
+void E_SM_(Opcode*) {
+	Memory::Map map;
+	map.mf.u = Pop();
+	map.rp = PopLong();
+	CARD32 vp = PopLong();
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SM   vp = %08X  mf = %04X  rp = %08X", savedPC, vp, map.mf.u, map.rp);
+	if (Vacant(map.mf)) map.rp = 0;
+	Memory::WriteMap(vp, map);
+}
 
 // 010  ASSIGN_ESC(a, SMF)
+void E_SMF_(Opcode*) {
+	MapFlags newMF = {Pop()};
+	CARD32 vp = PopLong();
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SMF  vp = %08X  mf = %04X", savedPC, vp, newMF.u);
+	Memory::Map map = Memory::ReadMap(vp);
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SMF  rp = %08X  mf = %04X", savedPC, map.rp, map.mf.u);
+	Push(map.mf.u);
+	PushLong(map.rp);
+	if (!Vacant(map.mf)) {
+		map.mf = newMF;
+		Memory::WriteMap(vp, map);
+	}
+}
 // 011  ASSIGN_ESC(a, GMF)
+void E_GMF_(Opcode*) {
+	CARD32 vp = PopLong();
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  GMF  vp = %08X", savedPC, vp);
+	Memory::Map map = Memory::ReadMap(vp);
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  GMF  rp = %08X  mf = %04X", savedPC, map.rp, map.mf.u);
+	if (Vacant(map.mf)) map.rp = 0;
+	Push(map.mf.u);
+	PushLong(map.rp);
+}
 // 012  ASSIGN_ESC(a, AF)
 // 013  ASSIGN_ESC(a, FF)
 // 014  ASSIGN_ESC(a, PI)
@@ -64,17 +95,81 @@ static log4cpp::Category& logger = Logger::getLogger("esc");
 // 017  ASSIGN_ESC(a, SPP)
 
 // 020  ASSIGN_ESC(a, DI)
+void E_DI_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DI  %3d", savedPC, InterruptThread::getWDC());
+	if (InterruptThread::getWDC() == cWDC) InterruptError();
+	InterruptThread::disable();
+}
 // 021  ASSIGN_ESC(a, EI)
+void R_EI_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  EI  %3d", savedPC, InterruptThread::getWDC());
+	if (InterruptThread::getWDC() == 0) InterruptError();
+	InterruptThread::enable();
+	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
+	ProcessorThread::checkRequestReschedule();
+}
 // 022  ASSIGN_ESC(a, XOR)
+void E_XOR_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  XOR", savedPC);
+	UNSPEC v = Pop();
+	UNSPEC u = Pop();
+	Push(u ^ v);
+}
 // 023  ASSIGN_ESC(a, DAND)
+void E_DAND_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DAND", savedPC);
+	LONG_UNSPEC v = PopLong();
+	LONG_UNSPEC u = PopLong();
+	PushLong(u & v);
+}
 // 024  ASSIGN_ESC(a, DIOR)
+void E_DIOR_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DIOR", savedPC);
+	LONG_UNSPEC v = PopLong();
+	LONG_UNSPEC u = PopLong();
+	PushLong(u | v);
+}
 // 025  ASSIGN_ESC(a, DXOR)
+void E_DXOR_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DXOR", savedPC);
+	LONG_UNSPEC v = PopLong();
+	LONG_UNSPEC u = PopLong();
+	PushLong(u ^ v);
+}
 // 026  ASSIGN_ESC(a, ROTATE)
+void E_ROTATE_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ROTATE", savedPC);
+	INT16 rotate = Pop();
+	UNSPEC u = Pop();
+	Push(Rotate(u, rotate));
+}
 // 027  ASSIGN_ESC(a, DSHIFT)
-
+void E_DSHIFT_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DSHIFT", savedPC);
+	INT16 rotate = Pop();
+	LONG_UNSPEC u = PopLong();
+	PushLong(LongShift(u, rotate));
+}
 // 030  ASSIGN_ESC(a, LINT)
+void E_LINT_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LINT", savedPC);
+	INT16 i = Pop();
+	Push(i);
+	Push((i < 0) ? (CARD16)0xffff : 0);
+}
 // 031  ASSIGN_ESC(a, JS)
+void E_JS_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JS", savedPC);
+	PC = Pop();
+}
 // 032  ASSIGN_ESC(a, RCFS)
+void E_RCFS_(Opcode*) {
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RCFS", savedPC);
+	FieldDesc desc = {Pop()};
+	CARDINAL offset = Pop();
+	CARD8 spec = desc.field;
+	Push(ReadField(ReadCode(offset + desc.offset), spec));
+}
 // 033  ASSIGN_ESC(b, RC)
 // 034  ASSIGN_ESC(a, UDIV)
 // 035  ASSIGN_ESC(a, LUDIV)
