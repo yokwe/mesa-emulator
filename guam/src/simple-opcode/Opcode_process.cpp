@@ -440,25 +440,6 @@ int TimeoutScan() {
 
 ///////////////////////////////////////////////////////////////////////
 
-#define DEF_CI_RESCHEDULE(name) \
-Run C_##name(Opcode* opcode_) { \
-	return C_##name##_(opcode_); \
-} \
-void I_##name(Opcode* opcode) { \
-	Run run = C_##name##_(opcode); \
-	PC = savedPC + L_##name; \
-	R_##name##_(run); \
-}
-
-#define DEF_C_0_RESCHEDULE(name) \
-__attribute__((always_inline)) static inline Run C_##name##_(Opcode *opcode) { \
-	Run ret(r##name, L_##name); \
-	if (DEBUG_TRACE_COMPILE) logger.debug("TRACE %6o  %s", savedPC, opcode->getName()); \
-	return ret; \
-} \
-DEF_CI_RESCHEDULE(name)
-
-
 // zME - 0361
 void E_ME(Opcode*) {
 	LONG_POINTER m = PopLong();
