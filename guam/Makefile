@@ -26,9 +26,8 @@ RASPI_DEPLOY_ROOT := $(RASPI_ROOT)/home/pi/gaum
 .pHONY: qmake-win32 run-guam.exe run-guam-headless.exe run-test.exe
 
 
-all: src/opcode/Run_decl.h
+all:
 	(cd src/mesa;          make all)
-	(cd src/opcode;        make all)
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
@@ -48,7 +47,6 @@ clean:
 	rm -rf tmp/build
 	mkdir  -p tmp/build
 	mkdir  tmp/build/mesa
-	mkdir  tmp/build/opcode
 	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
 	mkdir  tmp/build/util
@@ -64,21 +62,21 @@ distclean: clean
 	rm -f  src/*/object_script.*.Debug
 	rm -f  src/*/object_script.*.Release
 
-guam: src/opcode/Run_decl.h
+guam:
 	(cd src/mesa;          make all)
-	(cd src/opcode;        make all)
+	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
 	(cd src/guam;          make all)
 
-guam-headless: src/opcode/Run_decl.h
+guam-headless:
 	(cd src/mesa;          make all)
-	(cd src/opcode;        make all)
+	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
 	(cd src/guam-headless; make all)
 
-test: src/opcode/Run_decl.h
+test:
 	(cd src/mesa;          make all)
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
@@ -89,9 +87,6 @@ floppy:
 	(cd src/util;          make all)
 	(cd src/agent;         make all)
 	(cd src/floppy;        make all)
-
-src/opcode/Run_decl.h: data/Run_decl.h
-	awk -f bin/gen_Run_decl.awk data/Run_decl.h >src/opcode/Run_decl.h
 
 run-guam: guam
 	echo -n >tmp/debug.log
@@ -146,7 +141,6 @@ tar:
 #
 qmake:
 	(cd src/mesa;          qmake)
-	(cd src/opcode;        qmake)
 	(cd src/simple-opcode; qmake)
 	(cd src/agent;         qmake)
 	(cd src/util;          qmake)
@@ -162,7 +156,7 @@ qmake:
 #
 qmake-raspi-qt4:
 	(cd src/mesa;          qmake -spec ../../data/raspi/qt4/raspi)
-	(cd src/opcode;        qmake -spec ../../data/raspi/qt4/raspi)
+	(cd src/simple-opcode; qmake -spec ../../data/raspi/qt4/raspi)
 	(cd src/agent;         qmake -spec ../../data/raspi/qt4/raspi)
 	(cd src/util;          qmake -spec ../../data/raspi/qt4/raspi)
 	(cd src/test;          qmake -spec ../../data/raspi/qt4/raspi)
@@ -185,7 +179,7 @@ tar-raspi: tar
 #
 qmake-win32:
 	(cd src/mesa;          $(MXE_QMAKE))
-	(cd src/opcode;        $(MXE_QMAKE))
+	(cd src/simple-opcode; $(MXE_QMAKE))
 	(cd src/agent;         $(MXE_QMAKE))
 	(cd src/util;          $(MXE_QMAKE))
 	(cd src/test;          $(MXE_QMAKE))
