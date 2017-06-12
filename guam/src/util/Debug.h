@@ -98,8 +98,4 @@ static const int DEBUG_STOP_MESSAGE_UNTIL_MP = 0;
 static const int DEBUG_SHOW_STATS_OPCODE    = 0;
 static const int DEBUG_SHOW_STATS_RUN       = 0;
 
-static const int DEBUG_TRACE_COMPILE        = 0;
-static const int DEBUG_TRACE_RUN            = 0;
-static const int DEBUG_USE_COMPILE_RUN      = 0;
-
 #endif
