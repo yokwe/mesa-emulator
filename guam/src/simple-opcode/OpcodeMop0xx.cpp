@@ -49,7 +49,7 @@ void E_NOOP(Opcode* /*opcode*/) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LL_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LL %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LL %3d", savedPC, arg);
 	CARD16 *p = FetchLF(arg);
 	// NO PAGE FAULT AFTER HERE
 	Push(*p);
@@ -89,7 +89,7 @@ void E_LLB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LLD_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LLD %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LLD %3d", savedPC, arg);
 	POINTER ptr = arg;
 	CARD16 *p0 = FetchLF(ptr + 0);
 	CARD16 *p1 = FetchLF(ptr + 1);
@@ -128,7 +128,7 @@ void E_LLDB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_SL_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SL %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SL %3d", savedPC, arg);
 	CARD16 *p = StoreLF(arg);
 	// NO PAGE FAULT AFTER HERE
 	*p = Pop();
@@ -166,7 +166,7 @@ void E_SLB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_SLD_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SLD %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SLD %3d", savedPC, arg);
 	POINTER ptr = arg;
 	CARD16 *p0 = StoreLF(ptr + 0);
 	CARD16 *p1 = StoreLF(ptr + 1);
@@ -197,7 +197,7 @@ SLDn(8)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_PL_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PL %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  PL %3d", savedPC, arg);
 	CARD16 *p = StoreLF(arg);
 	// NO PAGE FAULT AFTER HERE
 	*p = Pop();
@@ -222,7 +222,7 @@ void E_PLB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_PLD_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PLD %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  PLD %3d", savedPC, arg);
 	POINTER ptr = arg;
 	CARD16 *p0 = StoreLF(ptr + 0);
 	CARD16 *p1 = StoreLF(ptr + 1);
@@ -243,7 +243,7 @@ void E_PLDB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LG_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LG %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LG %3d", savedPC, arg);
 	CARD16 *p = Fetch(GF + arg);
 	// NO PAGE FAULT AFTER HERE
 	Push(*p);
@@ -265,7 +265,7 @@ void E_LGB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LGD_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LGD %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LGD %3d", savedPC, arg);
 	LONG_POINTER ptr = GF + arg;
 	CARD16 *p0 = Fetch(ptr + 0);
 	CARD16 *p1 = Fetch(ptr + 1);
@@ -289,7 +289,7 @@ void E_LGDB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 // 073  ASSIGN_MOP(z, SGB)
 __attribute__((always_inline)) static inline void E_SG_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SG %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SG %3d", savedPC, arg);
 	CARD16 *p = Store(GF + arg);
 	// NO PAGE FAULT AFTER HERE
 	*p = Pop();
@@ -301,7 +301,7 @@ void E_SGB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 // 074  ASSIGN_MOP(z, BNDCK)
 void E_BNDCK(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  BNDCK", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BNDCK", savedPC);
 	CARDINAL range = Pop();
 	CARDINAL index = Pop();
 	SP++; // Push(index);
@@ -309,7 +309,7 @@ void E_BNDCK(Opcode*) {
 }
 // 075  ASSIGN_MOP(z, BRK)
 void E_BRK(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  BRK", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BRK", savedPC);
 	if (breakByte == 0) BreakTrap();
 	Interpreter::dispatchMop(breakByte);
 	breakByte = 0;

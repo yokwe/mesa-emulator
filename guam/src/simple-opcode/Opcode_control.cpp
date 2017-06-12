@@ -312,7 +312,7 @@ static inline void Call(ControlLink dst) {
 ///////////////////////////////////////////////////////////////////////
 
 __attribute__((always_inline)) static inline void E_EFC_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  EFC %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EFC %5d", savedPC, arg);
 	Call(FetchLink(arg));
 }
 #define EFCn(n) \
@@ -356,7 +356,7 @@ void E_EFCB(Opcode*) {
 // zLFC - 0355
 void  E_LFC(Opcode*) {
 	CARDINAL nPC = GetCodeWord();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  zLFC %04X", savedPC, nPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  zLFC %04X", savedPC, nPC);
 	if (DEBUG_TRACE_XFER) logger.debug("LFC   nPC = %6o", nPC);
 	*StoreLF(LO_OFFSET(0, pc)) = PC;
 	if (nPC == 0) UnboundTrap(0);
@@ -378,37 +378,37 @@ void  E_LFC(Opcode*) {
 }
 // zSFC - 0356
 void E_SFC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SFC", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SFC", savedPC);
 	ControlLink link = PopLong();
 	Call(link);
 }
 // zRET - 0357
 void E_RET(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RET", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RET", savedPC);
 	ControlLink dst = {*FetchLF(LO_OFFSET(0, returnlink))};
 	XFER(dst, 0, XT_return, 1);
 }
 // zKFCB - 0360
 void E_KFCB(Opcode*) {
 	SDIndex alpha = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  KFCB %02X", savedPC, alpha);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  KFCB %02X", savedPC, alpha);
 	Call(ReadDblMds(SD_OFFSET(alpha)));
 }
 // aAF - 012
 void E_AF(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  AF", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  AF", savedPC);
 	FSIndex fsi = Pop();
 	Push(Alloc(fsi));
 }
 // aFF - 013
 void E_FF(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  FF", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  FF", savedPC);
 	LocalFrameHandle frame = Pop();
 	Free(frame);
 }
 // aPI - 014
 void E_PI(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PI", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  PI", savedPC);
 	Recover();
 	Recover();
 	ShortControlLink src = Pop();
@@ -418,7 +418,7 @@ void E_PI(Opcode*) {
 }
 // aPO - 015
 void E_PO(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  PO", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  PO", savedPC);
 	/* UNSPEC reserved = */ Pop();
 	PortLink port = Pop();
 	*StoreLF(LO_OFFSET(0, pc)) = PC;
@@ -427,7 +427,7 @@ void E_PO(Opcode*) {
 }
 // aPOR - 016
 void E_POR(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  POR", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  POR", savedPC);
 	/* UNSPEC reserved = */ Pop();
 	PortLink port = Pop();
 	*StoreLF(LO_OFFSET(0, pc)) = PC;
@@ -440,7 +440,7 @@ void E_POR(Opcode*) {
 void E_XE(Opcode*) {
 	try {
 		POINTER ptr = GetCodeByte();
-		if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  XE %02X", savedPC, ptr);
+		if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  XE %02X", savedPC, ptr);
 
 		*StoreLF(LO_OFFSET(0, pc)) = PC; // Store location of next instruction
 		ControlLink      dst = ReadDblLF(ptr + OFFSET(TransferDescriptor, dst));
@@ -456,7 +456,7 @@ void E_XE(Opcode*) {
 // bXF - 042
 void E_XF(Opcode*) {
 	POINTER ptr = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  XF %02X", savedPC, ptr);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  XF %02X", savedPC, ptr);
 
 	*StoreLF(LO_OFFSET(0, pc)) = PC;  // Store location of next instruction
 	ControlLink      dst = ReadDblLF(ptr + OFFSET(TransferDescriptor, dst));

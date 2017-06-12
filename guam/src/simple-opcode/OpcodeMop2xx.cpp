@@ -44,7 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("2xx");
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_CATCH_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  CATCH %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  CATCH %3d", savedPC, arg);
 }
 // 0200  ASSIGN_MOP(z, CATCH)
 void E_CATCH(Opcode*) {
@@ -53,7 +53,7 @@ void E_CATCH(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_J_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  J %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  J %5d", savedPC, arg);
 	PC = savedPC + arg;
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
@@ -87,7 +87,7 @@ void E_JW(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JUE_(CARD16 arg0, INT16 arg1) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JUE %3d %3d", savedPC, arg0, arg1);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JUE %3d %3d", savedPC, arg0, arg1);
 	UNSPEC data = Pop();
 	if (data == arg0) PC = savedPC + arg1;
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
@@ -101,7 +101,7 @@ void E_JEP(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JEB_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JEB %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JEB %3d", savedPC, arg);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	if (u == v) PC = savedPC + arg;
@@ -121,7 +121,7 @@ void E_JEBB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JUNE_(CARD16 arg0, INT16 arg1) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JUNE %3d %3d", savedPC, arg0, arg1);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JUNE %3d %3d", savedPC, arg0, arg1);
 	UNSPEC data = Pop();
 	if (data != arg0) PC = savedPC + arg1;
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
@@ -135,7 +135,7 @@ void E_JNEP(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JNE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JNE %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JNE %3d", savedPC, arg);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	if (u != v) PC = savedPC + arg;
@@ -156,7 +156,7 @@ void E_JNEBB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 // 0220  ASSIGN_MOP(z, JLB)
 __attribute__((always_inline)) static inline void E_JL_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JL %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JL %3d", savedPC, arg);
 	INT16 k = Pop();
 	INT16 j = Pop();
 	if (j < k) PC = savedPC + arg;
@@ -170,7 +170,7 @@ void E_JLB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 // 0221  ASSIGN_MOP(z, JGEB)
 __attribute__((always_inline)) static inline void E_JGE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JGE %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JGE %3d", savedPC, arg);
 	INT16 k = Pop();
 	INT16 j = Pop();
 	if (j >= k) PC = savedPC + arg;
@@ -183,7 +183,7 @@ void E_JGEB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JG_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JG %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JG %3d", savedPC, arg);
 	INT16 k = Pop();
 	INT16 j = Pop();
 	if (j > k) PC = savedPC + arg;
@@ -197,7 +197,7 @@ void E_JGB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JLE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JLE %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JLE %3d", savedPC, arg);
 	INT16 k = Pop();
 	INT16 j = Pop();
 	if (j <= k) PC = savedPC + arg;
@@ -211,7 +211,7 @@ void E_JLEB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JUL_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JUL %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JUL %3d", savedPC, arg);
 	CARDINAL v = Pop();
 	CARDINAL u = Pop();
 	if (u < v) PC = savedPC + arg;
@@ -225,7 +225,7 @@ void E_JULB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JUGE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JUGE %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JUGE %3d", savedPC, arg);
 	CARDINAL v = Pop();
 	CARDINAL u = Pop();
 	if (u >= v) PC = savedPC + arg;
@@ -239,7 +239,7 @@ void E_JUGEB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JUG_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JUG %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JUG %3d", savedPC, arg);
 	CARDINAL v = Pop();
 	CARDINAL u = Pop();
 	if (u > v) PC = savedPC + arg;
@@ -253,7 +253,7 @@ void E_JUGB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JULE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JULE %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JULE %3d", savedPC, arg);
 	CARDINAL v = Pop();
 	CARDINAL u = Pop();
 	if (u <= v) PC = savedPC + arg;
@@ -267,7 +267,7 @@ void E_JULEB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JZ_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JZ %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JZ %3d", savedPC, arg);
 	UNSPEC u = Pop();
 	if (u == 0) PC = savedPC + arg;
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
@@ -288,7 +288,7 @@ void E_JZB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JNZ_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JNZ %3d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JNZ %3d", savedPC, arg);
 	UNSPEC u = Pop();
 	if (u != 0) PC = savedPC + arg;
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
@@ -309,7 +309,7 @@ void E_JNZB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JDE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JDE %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JDE %5d", savedPC, arg);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	if (u == v) PC = savedPC + arg;
@@ -323,7 +323,7 @@ void E_JDEB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JDNE_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JDNE %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JDNE %5d", savedPC, arg);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	if (u != v) PC = savedPC + arg;
@@ -337,7 +337,7 @@ void E_JDNEB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JIB_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JIB %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JIB %5d", savedPC, arg);
 	CARDINAL limit = Pop();
 	CARDINAL index = Pop();
 	if (index < limit) {
@@ -354,7 +354,7 @@ void E_JIB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_JIW_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JIW %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JIW %5d", savedPC, arg);
 	CARDINAL limit = Pop();
 	CARDINAL index = Pop();
 	if (index < limit) {
@@ -372,29 +372,29 @@ void E_JIW(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 // 0242  ASSIGN_MOP(z, REC)
 void E_REC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  REC", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  REC", savedPC);
 	Recover();
 }
 // 0243  ASSIGN_MOP(z, REC2)
 void E_REC2(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  REC2", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  REC2", savedPC);
 	Recover();
 	Recover();
 }
 // 0244  ASSIGN_MOP(z, DIS)
 void E_DIS(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DIS", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DIS", savedPC);
 	Discard();
 }
 // 0245  ASSIGN_MOP(z, DIS2)
 void E_DIS2(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DIS2", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DIS2", savedPC);
 	Discard();
 	Discard();
 }
 // 0246  ASSIGN_MOP(z, EXCH)
 void E_EXCH(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  EXCH", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EXCH", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	Push(v);
@@ -402,7 +402,7 @@ void E_EXCH(Opcode*) {
 }
 // 0247  ASSIGN_MOP(z, DEXCH)
 void E_DEXCH(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DEXCH", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DEXCH", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(v);
@@ -410,28 +410,28 @@ void E_DEXCH(Opcode*) {
 }
 // 0250  ASSIGN_MOP(z, DUP)
 void E_DUP(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DUP", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DUP", savedPC);
 	UNSPEC u = Pop();
 	Push(u);
 	Push(u);
 }
 // 0251  ASSIGN_MOP(z, DDUP)
 void E_DDUP(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DDUP", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DDUP", savedPC);
 	LONG_UNSPEC u = PopLong();
 	PushLong(u);
 	PushLong(u);
 }
 // 0252  ASSIGN_MOP(z, EXDIS)
 void E_EXDIS(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  EXDIS", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EXDIS", savedPC);
 	UNSPEC u = Pop();
 	/*UNSPEC v = */ Pop();
 	Push(u);
 }
 // 0253  ASSIGN_MOP(z, NEG)
 void E_NEG(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  NEG", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NEG", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1] = -stack[SP - 1];
 	//INT16 i = Pop();
@@ -439,7 +439,7 @@ void E_NEG(Opcode*) {
 }
 // 0254  ASSIGN_MOP(z, INC)
 void E_INC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  INC", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  INC", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1]++;
 	//CARDINAL s = Pop();
@@ -447,7 +447,7 @@ void E_INC(Opcode*) {
 }
 // 0255  ASSIGN_MOP(z, DEC)
 void E_DEC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DEC", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DEC", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1]--;
 	//CARDINAL s = Pop();
@@ -455,7 +455,7 @@ void E_DEC(Opcode*) {
 }
 // 0256  ASSIGN_MOP(z, DINC)
 void E_DINC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DINC", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DINC", savedPC);
 	if (SP < 2) STACK_ERROR();
 	stack[SP - 2] += 1;
 	if (stack[SP - 2] == 0) stack[SP - 1] += 1;
@@ -464,7 +464,7 @@ void E_DINC(Opcode*) {
 }
 // 0257  ASSIGN_MOP(z, DBL)
 void E_DBL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DBL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DBL", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1] *= 2;
 	//UNSPEC u = Pop();
@@ -472,13 +472,13 @@ void E_DBL(Opcode*) {
 }
 // 0260  ASSIGN_MOP(z, DDBL)
 void E_DDBL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DDBL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DDBL", savedPC);
 	LONG_UNSPEC u = PopLong();
 	PushLong(u << 1);
 }
 // 0261  ASSIGN_MOP(z, TRPL)
 void E_TRPL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  TRPL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  TRPL", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1] *= 3;
 	//CARDINAL s = Pop();
@@ -486,21 +486,21 @@ void E_TRPL(Opcode*) {
 }
 // 0262  ASSIGN_MOP(z, AND)
 void E_AND(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  AND", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  AND", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	Push(u & v);
 }
 // 0263  ASSIGN_MOP(z, IOR)
 void E_IOR(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  IOR", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  IOR", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	Push(u | v);
 }
 // 0264  ASSIGN_MOP(z, ADDSB)
 __attribute__((always_inline)) static inline void E_ADDS_(INT16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ADDS %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ADDS %02X", savedPC, arg);
 	CARD16 i = Pop();
 	Push(i + arg);
 }
@@ -509,49 +509,49 @@ void E_ADDSB(Opcode*) {
 }
 // 0265  ASSIGN_MOP(z, ADD)
 void E_ADD(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ADD", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ADD", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
 	Push(s + t);
 }
 // 0266  ASSIGN_MOP(z, SUB)
 void E_SUB(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SUB", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SUB", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
 	Push(s - t);
 }
 // 0267  ASSIGN_MOP(z, DADD)
 void E_DADD(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DADD", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DADD", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	PushLong(s + t);
 }
 // 0270  ASSIGN_MOP(z, DSUB)
 void E_DSUB(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DSUB", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DSUB", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	PushLong(s - t);
 }
 // 0271  ASSIGN_MOP(z, ADC)
 void E_ADC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ADC", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ADC", savedPC);
 	CARDINAL t = Pop();
 	LONG_CARDINAL s = PopLong();
 	PushLong(s + t);
 }
 // 0272  ASSIGN_MOP(z, ACD)
 void E_ACD(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ACD", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ACD", savedPC);
 	LONG_CARDINAL t = PopLong();
 	CARDINAL s = Pop();
 	PushLong(s + t);
 }
 // 0273  ASSIGN_MOP(z, AL0IB)
 __attribute__((always_inline)) static inline void E_AL0I_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  AL0I %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  AL0I %02X", savedPC, arg);
 	CARD16* p = FetchLF(0);
 	// NO PAGE FAULT AFTER HERE
 	Push(*p + arg);
@@ -561,7 +561,7 @@ void E_AL0IB(Opcode*) {
 }
 // 0274  ASSIGN_MOP(z, MUL)
 void E_MUL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  MUL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  MUL", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
 	PushLong((LONG_CARDINAL)s * t);
@@ -570,14 +570,14 @@ void E_MUL(Opcode*) {
 }
 // 0275  ASSIGN_MOP(z, DCMP)
 void E_DCMP(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DCMP", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DCMP", savedPC);
 	INT32 k = PopLong();
 	INT32 j = PopLong();
 	Push((k == j) ? 0 : ((j > k) ? 1 : -1));
 }
 // 0276  ASSIGN_MOP(z, UDCMP)
 void E_UDCMP(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  UDCMP", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  UDCMP", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	Push((s == t) ? 0 : ((s > t) ? 1 : -1));
@@ -591,7 +591,7 @@ void E_VMFIND(Opcode*) {
 	CARD16 pRunTop = Pop();
 	CARD32 rBase   = PopLong();
 	CARD32 page    = PopLong();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  VMFIND  %06X  %08X  %04X", savedPC, page, rBase, pRunTop);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  VMFIND  %06X  %08X  %04X", savedPC, page, rBase, pRunTop);
 
 	CARD16 found = 0;
 	CARD16 pRun  = 0;

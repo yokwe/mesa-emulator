@@ -45,7 +45,7 @@ static log4cpp::Category& logger = Logger::getLogger("3xx");
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LI_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LI %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LI %5d", savedPC, arg);
 	Push(arg);
 }
 #define LIn(n) \
@@ -101,7 +101,7 @@ void E_LIHB(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LID_(CARD32 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LID %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LID %5d", savedPC, arg);
 	PushLong(arg);
 }
 // 0321  ASSIGN_MOP(z, LID0)
@@ -111,7 +111,7 @@ void E_LID0(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LA_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LA %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LA %5d", savedPC, arg);
 	Push(LFCache::LF() + arg);
 }
 #define LAn(n) \
@@ -141,7 +141,7 @@ void E_LAW(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_GA_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LA %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LA %5d", savedPC, arg);
 	Push((CARD16)(GF + arg));
 }
 #define GAn(n) \
@@ -190,7 +190,7 @@ void E_GAW(Opcode*) {
 // 0366  ASSIGN_MOP(z, BLTCL)
 // 0367  ASSIGN_MOP(z, LP)
 void E_LP(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LP", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LP", savedPC);
 	POINTER ptr = Pop();
 	PushLong((ptr == 0) ? 0 : LengthenPointer(ptr));
 }
@@ -205,7 +205,7 @@ void E_ESCL(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LGA_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LGA %5d", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LGA %5d", savedPC, arg);
 	PushLong(GF + arg);
 }
 // 0372  ASSIGN_MOP(z, LGA0)
@@ -223,7 +223,7 @@ void E_LGAW(Opcode*) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_DESC_(CARD16 arg) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DESC %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DESC %02X", savedPC, arg);
 	Push(GFI | 0x0003);
 	Push(arg);
 }

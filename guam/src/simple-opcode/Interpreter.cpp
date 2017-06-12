@@ -100,7 +100,7 @@ void Interpreter::fillOpcodeTrap() {
 
 
 void Interpreter::stats() {
-	if (DEBUG_SHOW_STATS_OPCODE) {
+	if (DEBUG_SHOW_OPCODE_STATS) {
 		long long total = 0;
 		logger.info("==== Interpreter stats  START");
 		for(int i = 0; i < TABLE_SIZE; i++) {

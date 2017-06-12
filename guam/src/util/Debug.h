@@ -32,19 +32,27 @@ OF SUCH DAMAGE.
 #ifndef DEBUG_H__
 #define DEBUG_H__
 
+// Keyboard and Mouse
 static const int DEBUG_SHOW_EVENT_KEY       = 0;
 static const int DEBUG_SHOW_EVENT_MOUSE     = 0;
-static const int DEBUG_SHOW_RUNNING         = 0;
 
-// Show opcode that has dummy implementation
+// Network
+static const int DEBUG_SHOW_NETWORK_PACKET  = 0;
+static const int DEBUG_TRACE_NETWORK_PACKET = 0;
+
+// Debug emulator
 static const int DEBUG_SHOW_DUMMY_IMPL_OPCODE = 0;
+static const int DEBUG_SHOW_RUNNING           = 0;
+static const int DEBUG_TRACE_OPCODE           = 0;
+static const int DEBUG_SHOW_OPCODE_STATS      = 0;
+static const int DEBUG_TRACE_XFER             = 0;
 
-// Fault
+// Show Fault
 static const int DEBUG_SHOW_FRAME_FAULT         = 0;
 static const int DEBUG_SHOW_PAGE_FAULT          = 0;
 static const int DEBUG_SHOW_WRITE_PROTECT_FAULT = 1;
 
-// Trap
+// Show Trap
 static const int DEBUG_SHOW_BOUNDS_TRAP     = 0;
 static const int DEBUG_SHOW_BREAK_TRAP      = 0;
 static const int DEBUG_SHOW_CODE_TRAP       = 0;
@@ -62,7 +70,7 @@ static const int DEBUG_SHOW_UNBOUND_TRAP    = 1;
 static const int DEBUG_SHOW_HARDWARE_ERROR  = 1;
 static const int DEBUG_SHOW_XFER_TRAP       = 1;
 
-// Agent
+// Show Agent
 static const int DEBUG_SHOW_AGENT_BEEP      = 0;
 static const int DEBUG_SHOW_AGENT_DISK      = 0;
 static const int DEBUG_SHOW_AGENT_DISPLAY   = 0;
@@ -72,9 +80,6 @@ static const int DEBUG_SHOW_AGENT_NETWORK   = 0;
 static const int DEBUG_SHOW_AGENT_PROCESSOR = 0;
 static const int DEBUG_SHOW_AGENT_STREAM    = 0;
 
-static const int DEBUG_SHOW_NETWORK_PACKET  = 0;
-static const int DEBUG_TRACE_NETWORK_PACKET = 0;
-
 // Stream
 static const int DEBUG_SHOW_STREAM_BOOT     = 1;
 static const int DEBUG_SHOW_STREAM_COPYPASTE= 0;
@@ -82,9 +87,7 @@ static const int DEBUG_SHOW_STREAM_PCFA     = 0;
 static const int DEBUG_SHOW_STREAM_TCP      = 0;
 static const int DEBUG_SHOW_STREAM_WWC      = 0;
 
-
-static const int DEBUG_TRACE_XFER           = 0;
-
+// Stop emulator at
 static const int DEBUG_STOP_AT_CONTROL_TRAP = 1;
 static const int DEBUG_STOP_AT_UNBOUND_TRAP = 0;
 static const int DEBUG_STOP_AT_OPCODE_TRAP  = 0;
@@ -94,8 +97,5 @@ static const int DEBUG_STOP_AT_STACK_ERROR  = 1;
 static const int DEBUG_STOP_AT_NOT_RUNNING  = 0;
 
 static const int DEBUG_STOP_MESSAGE_UNTIL_MP = 0;
-
-static const int DEBUG_SHOW_STATS_OPCODE    = 0;
-static const int DEBUG_SHOW_STATS_RUN       = 0;
 
 #endif

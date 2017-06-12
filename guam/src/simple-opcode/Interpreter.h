@@ -43,14 +43,14 @@ public:
 		//logger.debug("dispatch ESC  %04X opcode = %03o", savedPC, opcode);
 		tableEsc[opcode].execute();
 		// increment stat counter after execution. We don't count ABORTED instruction.
-		if (DEBUG_SHOW_STATS_OPCODE) statEsc[opcode]++;
+		if (DEBUG_SHOW_OPCODE_STATS) statEsc[opcode]++;
 	}
 
 	__attribute__((always_inline)) static inline void dispatchMop(CARD32 opcode) {
 		if (PERF_ENABLE) perf_Dispatch++;
 		tableMop[opcode].execute();
 		// increment stat counter after execution. We don't count ABORTED instruction.
-		if (DEBUG_SHOW_STATS_OPCODE) statMop[opcode]++;
+		if (DEBUG_SHOW_OPCODE_STATS) statMop[opcode]++;
 	}
 
 	static inline void execute() {

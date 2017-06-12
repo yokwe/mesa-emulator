@@ -59,7 +59,7 @@ void E_SM(Opcode*) {
 	map.mf.u = Pop();
 	map.rp = PopLong();
 	CARD32 vp = PopLong();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SM   vp = %08X  mf = %04X  rp = %08X", savedPC, vp, map.mf.u, map.rp);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SM   vp = %08X  mf = %04X  rp = %08X", savedPC, vp, map.mf.u, map.rp);
 	if (Vacant(map.mf)) map.rp = 0;
 	Memory::WriteMap(vp, map);
 }
@@ -67,9 +67,9 @@ void E_SM(Opcode*) {
 void E_SMF(Opcode*) {
 	MapFlags newMF = {Pop()};
 	CARD32 vp = PopLong();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SMF  vp = %08X  mf = %04X", savedPC, vp, newMF.u);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SMF  vp = %08X  mf = %04X", savedPC, vp, newMF.u);
 	Memory::Map map = Memory::ReadMap(vp);
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SMF  rp = %08X  mf = %04X", savedPC, map.rp, map.mf.u);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SMF  rp = %08X  mf = %04X", savedPC, map.rp, map.mf.u);
 	Push(map.mf.u);
 	PushLong(map.rp);
 	if (!Vacant(map.mf)) {
@@ -80,9 +80,9 @@ void E_SMF(Opcode*) {
 // 011  ASSIGN_ESC(a, GMF)
 void E_GMF(Opcode*) {
 	CARD32 vp = PopLong();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  GMF  vp = %08X", savedPC, vp);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  GMF  vp = %08X", savedPC, vp);
 	Memory::Map map = Memory::ReadMap(vp);
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  GMF  rp = %08X  mf = %04X", savedPC, map.rp, map.mf.u);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  GMF  rp = %08X  mf = %04X", savedPC, map.rp, map.mf.u);
 	if (Vacant(map.mf)) map.rp = 0;
 	Push(map.mf.u);
 	PushLong(map.rp);
@@ -95,13 +95,13 @@ void E_GMF(Opcode*) {
 // 017  ASSIGN_ESC(a, SPP)
 // 020  ASSIGN_ESC(a, DI)
 void E_DI(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DI  %3d", savedPC, InterruptThread::getWDC());
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DI  %3d", savedPC, InterruptThread::getWDC());
 	if (InterruptThread::getWDC() == cWDC) InterruptError();
 	InterruptThread::disable();
 }
 // 021  ASSIGN_ESC(a, EI)
 void E_EI(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  EI  %3d", savedPC, InterruptThread::getWDC());
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EI  %3d", savedPC, InterruptThread::getWDC());
 	if (InterruptThread::getWDC() == 0) InterruptError();
 	InterruptThread::enable();
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
@@ -109,63 +109,63 @@ void E_EI(Opcode*) {
 }
 // 022  ASSIGN_ESC(a, XOR)
 void E_XOR(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  XOR", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  XOR", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	Push(u ^ v);
 }
 // 023  ASSIGN_ESC(a, DAND)
 void E_DAND(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DAND", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DAND", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(u & v);
 }
 // 024  ASSIGN_ESC(a, DIOR)
 void E_DIOR(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DIOR", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DIOR", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(u | v);
 }
 // 025  ASSIGN_ESC(a, DXOR)
 void E_DXOR(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DXOR", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DXOR", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(u ^ v);
 }
 // 026  ASSIGN_ESC(a, ROTATE)
 void E_ROTATE(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ROTATE", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ROTATE", savedPC);
 	INT16 rotate = Pop();
 	UNSPEC u = Pop();
 	Push(Rotate(u, rotate));
 }
 // 027  ASSIGN_ESC(a, DSHIFT)
 void E_DSHIFT(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DSHIFT", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DSHIFT", savedPC);
 	INT16 rotate = Pop();
 	LONG_UNSPEC u = PopLong();
 	PushLong(LongShift(u, rotate));
 }
 // 030  ASSIGN_ESC(a, LINT)
 void E_LINT(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LINT", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LINT", savedPC);
 	INT16 i = Pop();
 	Push(i);
 	Push((i < 0) ? (CARD16)0xffff : 0);
 }
 // 031  ASSIGN_ESC(a, JS)
 void E_JS(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  JS", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JS", savedPC);
 	PC = Pop();
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
 // 032  ASSIGN_ESC(a, RCFS)
 void E_RCFS(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RCFS", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RCFS", savedPC);
 	FieldDesc desc = {Pop()};
 	CARDINAL offset = Pop();
 	CARD8 spec = desc.field;
@@ -174,7 +174,7 @@ void E_RCFS(Opcode*) {
 // 033  ASSIGN_ESC(b, RC)
 void E_RC(Opcode*) {
 	CARD16 arg = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RC %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RC %02X", savedPC, arg);
 	CARDINAL offset = Pop();
 	CARD16 t = ReadCode(offset + arg);
 	// NO PAGE FAULT AFTER HERE
@@ -182,7 +182,7 @@ void E_RC(Opcode*) {
 }
 // 034  ASSIGN_ESC(a, UDIV)
 void E_UDIV(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  UDIV", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  UDIV", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
 	if (t == 0) DivZeroTrap();
@@ -192,7 +192,7 @@ void E_UDIV(Opcode*) {
 }
 // 035  ASSIGN_ESC(a, LUDIV)
 void E_LUDIV(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LUDIV", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LUDIV", savedPC);
 	CARDINAL t = Pop();
 	LONG_CARDINAL s = PopLong();
 	if (t == 0) DivZeroTrap();
@@ -204,7 +204,7 @@ void E_LUDIV(Opcode*) {
 // 036  ASSIGN_ESC(b, ROB)
 void E_ROB(Opcode*) {
 	CARD16 arg = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  ROB %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ROB %02X", savedPC, arg);
 	POINTER ptr = Pop();
 	CARD16* p = FetchMds(ptr - arg);
 	// NO PAGE FAULT AFTER HERE
@@ -213,7 +213,7 @@ void E_ROB(Opcode*) {
 // 037  ASSIGN_ESC(b, WOB)
 void E_WOB(Opcode*) {
 	CARD16 arg = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WOB %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WOB %02X", savedPC, arg);
 	POINTER ptr = Pop();
 	CARD16* p = FetchMds(ptr - arg);
 	// NO PAGE FAULT AFTER HERE
@@ -222,7 +222,7 @@ void E_WOB(Opcode*) {
 // 040  ASSIGN_ESC(b, DSK)
 void E_DSK(Opcode*) {
 	CARD16 arg = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DSK %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DSK %02X", savedPC, arg);
 	POINTER state = LFCache::LF() + arg;
 	SaveStack(LengthenPointer(state));
 }
@@ -231,13 +231,13 @@ void E_DSK(Opcode*) {
 // 043  ASSIGN_ESC(b, LSK)
 void E_LSK(Opcode*) {
 	CARD16 arg = GetCodeByte();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  LSK %02X", savedPC, arg);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LSK %02X", savedPC, arg);
 	POINTER state = LFCache::LF() + arg;
 	LoadStack(LengthenPointer(state));
 }
 // 044  ASSIGN_ESC(a, BNDCKL)
 void E_BNDCKL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  BNDCKL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BNDCKL", savedPC);
 	LONG_CARDINAL range = PopLong();
 	LONG_CARDINAL index = PopLong();
 	SP += 2; // PushLong(index);
@@ -245,14 +245,14 @@ void E_BNDCKL(Opcode*) {
 }
 // 045  ASSIGN_ESC(a, NILCK)
 void E_NILCK(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  NILCK", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NILCK", savedPC);
 	POINTER ptr = Pop();
 	SP++; // Push(ptr);
 	if (ptr == 0) PointerTrap();
 }
 // 046  ASSIGN_ESC(a, NILCKL)
 void E_NILCKL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  NILCKL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NILCKL", savedPC);
 	LONG_POINTER ptr = PopLong();
 	SP += 2; // PushLong(ptr);
 	if (ptr == 0) PointerTrap();
@@ -268,14 +268,14 @@ void E_NILCKL(Opcode*) {
 // 057  ASSIGN_ESC(a, VERSION)
 // 060  ASSIGN_ESC(a, DMUL)
 void E_DMUL(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  DMUL", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DMUL", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	PushLong((LONG_CARDINAL)(s * t));
 }
 // 061  ASSIGN_ESC(a, SDIV)
 void E_SDIV(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SDIV", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SDIV", savedPC);
 	INT16 k = Pop();
 	INT16 j = Pop();
 	if (k == 0) DivZeroTrap();
@@ -285,7 +285,7 @@ void E_SDIV(Opcode*) {
 }
 // 062  ASSIGN_ESC(a, SDDIV)
 void E_SDDIV(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  SDDIV", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SDDIV", savedPC);
 	INT32 k = PopLong();
 	INT32 j = PopLong();
 	if (k == 0) DivZeroTrap();
@@ -296,7 +296,7 @@ void E_SDDIV(Opcode*) {
 }
 // 063  ASSIGN_ESC(a, UDDIV)
 void E_UDDIV(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  UDDIV", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  UDDIV", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	if (t == 0) DivZeroTrap();
@@ -342,46 +342,46 @@ void E_UDDIV(Opcode*) {
 // 0160  ASSIGN_ESC(a, WRPSB)
 void E_WRPSB(Opcode*) {
 	PSB = Index(Pop());
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRPSB  %4d", savedPC, PSB);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRPSB  %4d", savedPC, PSB);
 }
 // 0161  ASSIGN_ESC(a, WRMDS)
 void E_WRMDS(Opcode*) {
 	CARD32 mds = Pop() << WordSize;
 	Memory::setMDS(mds);
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
 }
 // 0162  ASSIGN_ESC(a, WRWP)
 void E_WRWP(Opcode*) {
 	CARD16 newValue = Pop();
 	InterruptThread::setWP(newValue);
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRWP   %04X", savedPC, newValue);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRWP   %04X", savedPC, newValue);
 }
 // 0163  ASSIGN_ESC(a, WRWDC)
 void E_WRWDC(Opcode*) {
 	InterruptThread::setWDC(Pop());
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRWDC  %04X", savedPC, InterruptThread::getWDC());
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRWDC  %04X", savedPC, InterruptThread::getWDC());
 }
 // 0164  ASSIGN_ESC(a, WRPTC)
 void E_WRPTC(Opcode*) {
 	CARD16 newValue = Pop();
 	TimerThread::setPTC(newValue);
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRPTC  %04X", savedPC, newValue);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRPTC  %04X", savedPC, newValue);
 //	lastTimeoutTime = Util::getMicroTime();
 }
 // 0165  ASSIGN_ESC(a, WRIT)
 void E_WRIT(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRIT", savedPC);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRIT", savedPC);
 	ERROR();
 }
 // 0166  ASSIGN_ESC(a, WRXTS)
 void E_WRXTS(Opcode*) {
 	XTS = Pop();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRXTS  %04X", savedPC, XTS);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRXTS  %04X", savedPC, XTS);
 }
 // 0167  ASSIGN_ESC(a, WRMP)
 void E_WRMP(Opcode*) {
 	MP = Pop();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  WRMP   %4d", savedPC, MP);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRMP   %4d", savedPC, MP);
 	GuiOp::setMP(MP);
 
 	if (DEBUG_STOP_MESSAGE_UNTIL_MP == MP) {
@@ -489,40 +489,40 @@ void E_WRMP(Opcode*) {
 }
 // 0170  ASSIGN_ESC(a, RRPSB)
 void E_RRPSB(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRPSB  %4d", savedPC, PSB);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRPSB  %4d", savedPC, PSB);
 	Push(Handle(PSB));
 }
 // 0171  ASSIGN_ESC(a, RRMDS)
 void E_RRMDS(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
 	Push((CARD16)(Memory::MDS() >> WordSize));
 }
 // 0172  ASSIGN_ESC(a, RRWP)
 void E_RRWP(Opcode*) {
 	CARD16 value = InterruptThread::getWP();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRWP   %04X", savedPC, value);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRWP   %04X", savedPC, value);
 	Push(value);
 }
 // 0173  ASSIGN_ESC(a, RRWDC)
 void E_RRWDC(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRWDC  %04X", savedPC, InterruptThread::getWDC());
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRWDC  %04X", savedPC, InterruptThread::getWDC());
 	Push(InterruptThread::getWDC());
 }
 // 0174  ASSIGN_ESC(a, RRPTC)
 void E_RRPTC(Opcode*) {
 	CARD16 value = TimerThread::getPTC();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRPTC  %04X", savedPC, value);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRPTC  %04X", savedPC, value);
 	Push(value);
 }
 // 0175  ASSIGN_ESC(a, RRIT)
 void E_RRIT(Opcode*) {
 	CARD32 time = Util::getMicroTime();
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRIT   %08X", savedPC, time);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRIT   %08X", savedPC, time);
 	PushLong(time);
 }
 // 0176  ASSIGN_ESC(a, RRXTS)
 void E_RRXTS(Opcode*) {
-	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  RRXTS  %04X", savedPC, XTS);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRXTS  %04X", savedPC, XTS);
 	Push(XTS);
 }
 // 0177  //ASSIGN_ESC(a, 177)
