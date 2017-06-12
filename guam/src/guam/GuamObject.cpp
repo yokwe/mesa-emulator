@@ -35,7 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("guamobject");
 #include "GuamObject.h"
 
 #include "../mesa/Memory.h"
-#include "../opcode/Interpreter.h"
+#include "../simple-opcode/Interpreter.h"
 
 GuamObject::GuamObject() {
 	preference = new Preference();
@@ -94,7 +94,6 @@ void GuamObject::startEmulator() {
 	emulatorIsRunning = 0;
 
 	Interpreter::stats();
-	Run::stats();
 	Perf_log();
 	PageCache::stats();
 	CodeCache::stats();

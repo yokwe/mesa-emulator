@@ -41,7 +41,7 @@ static log4cpp::Category& logger = Logger::getLogger("LoadGerm");
 #include "../mesa/MesaProcessor.h"
 #include "../mesa/Memory.h"
 
-#include "../opcode/Interpreter.h"
+#include "../simple-opcode/Interpreter.h"
 
 #include <QtCore>
 
@@ -95,8 +95,6 @@ int main() {
 	quint64 elapsedTime = elapsedTimer.nsecsElapsed();
 
 	Interpreter::stats();
-	Run::stats();
-	Perf_log();
 	PageCache::stats();
 
 	CodeCache::stats();

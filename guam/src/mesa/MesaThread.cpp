@@ -37,7 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("mesathread");
 #include "../agent/AgentNetwork.h"
 #include "../agent/AgentDisk.h"
 
-#include "../opcode/Interpreter.h"
+#include "../simple-opcode/Interpreter.h"
 
 #include "MesaThread.h"
 #include "Type.h"
