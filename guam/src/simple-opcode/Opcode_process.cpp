@@ -457,7 +457,7 @@ void E_ME(Opcode*) {
 
 
 // zMX - 0362
-void E_MX_(Opcode*) {
+void E_MX(Opcode*) {
 	LONG_POINTER m = PopLong();
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  MX  %08X", savedPC, m);
 	MINIMAL_STACK();
@@ -495,7 +495,7 @@ void E_MW(Opcode*) {
 }
 
 // aMR - 03
-inline void E_MR(Opcode*) {
+void E_MR(Opcode*) {
 	LONG_POINTER c = PopLong();
 	LONG_POINTER m = PopLong();
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  MR  %08X  %08X", savedPC, m, c);
@@ -534,7 +534,7 @@ void E_NC(Opcode*) {
 }
 
 // aBC - 05
-void E_BCE(Opcode*) {
+void E_BC(Opcode*) {
 	LONG_POINTER c = PopLong();
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  BC  %08X", savedPC, c);
 	MINIMAL_STACK();

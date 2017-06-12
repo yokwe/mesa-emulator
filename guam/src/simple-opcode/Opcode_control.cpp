@@ -344,13 +344,13 @@ EFCn(8)
 // zEFC9 - 0350
 EFCn(9)
 // zEFC10 - 0351
-EFCn(19)
+EFCn(10)
 // zEFC11 - 0352
 EFCn(11)
 // zEFC12 - 0353
 EFCn(12)
 // zEFCB - 0354
-void E_EFCB (Opcode*) {
+void E_EFCB(Opcode*) {
 	E_EFC_(GetCodeByte());
 }
 // zLFC - 0355
@@ -389,7 +389,7 @@ void E_RET(Opcode*) {
 	XFER(dst, 0, XT_return, 1);
 }
 // zKFCB - 0360
-void E_KFC(Opcode*) {
+void E_KFCB(Opcode*) {
 	SDIndex alpha = GetCodeByte();
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  KFCB %02X", savedPC, alpha);
 	Call(ReadDblMds(SD_OFFSET(alpha)));

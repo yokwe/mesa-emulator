@@ -83,7 +83,7 @@ LLn(10)
 // 014  ASSIGN_MOP(z, LL11)
 LLn(11)
 // 015  ASSIGN_MOP(z, LLB)
-void E_LLB (Opcode*) {
+void E_LLB(Opcode*) {
 	E_LL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ LLDn(8)
 // 027  ASSIGN_MOP(z, LLD10)
 LLDn(10)
 // 030  ASSIGN_MOP(z, LLDB)
-void E_LLDB (Opcode*) {
+void E_LLDB(Opcode*) {
 	E_LLD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ SLn(9)
 // 043  ASSIGN_MOP(z, SL10)
 SLn(10)
 // 044  ASSIGN_MOP(z, SLB)
-void E_SLB (Opcode*) {
+void E_SLB(Opcode*) {
 	E_SL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ PLn(2)
 // 060  ASSIGN_MOP(z, PL3)
 PLn(3)
 // 061  ASSIGN_MOP(z, PLB)
-void E_PLB (Opcode*) {
+void E_PLB(Opcode*) {
 	E_PL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,11 +233,11 @@ __attribute__((always_inline)) static inline void E_PLD_(CARD16 arg) {
 	SP++; //Recover();
 }
 // 062  ASSIGN_MOP(z, PLD0)
-void E_PLD0 (Opcode*) {
+void E_PLD0(Opcode*) {
 	E_PLD_(0);
 }
 // 063  ASSIGN_MOP(z, PLDB)
-void E_PLDB (Opcode*) {
+void E_PLDB(Opcode*) {
 	E_PLD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -259,7 +259,9 @@ LGn(1)
 // 066  ASSIGN_MOP(z, LG2)
 LGn(2)
 // 067  ASSIGN_MOP(z, LGB)
-LGn(3)
+void E_LGB(Opcode*) {
+	E_LG_(GetCodeByte());
+}
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 __attribute__((always_inline)) static inline void E_LGD_(CARD16 arg) {
@@ -280,7 +282,7 @@ LGDn(0)
 // 071  ASSIGN_MOP(z, LGD2)
 LGDn(2)
 // 072  ASSIGN_MOP(z, LGDB)
-void E_LGDB (Opcode*) {
+void E_LGDB(Opcode*) {
 	E_LGD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -292,7 +294,7 @@ __attribute__((always_inline)) static inline void E_SG_(CARD16 arg) {
 	// NO PAGE FAULT AFTER HERE
 	*p = Pop();
 }
-void E_SGB (Opcode*) {
+void E_SGB(Opcode*) {
 	E_SG_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,7 +304,7 @@ void E_BNDCK(Opcode*) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  BNDCK", savedPC);
 	CARDINAL range = Pop();
 	CARDINAL index = Pop();
-	Push(index);
+	SP++; // Push(index);
 	if (range <= index) BoundsTrap();
 }
 // 075  ASSIGN_MOP(z, BRK)

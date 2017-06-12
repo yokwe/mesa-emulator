@@ -47,7 +47,7 @@ __attribute__((always_inline)) static inline void E_CATCH_(CARD16 arg) {
 	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  CATCH %3d", savedPC, arg);
 }
 // 0200  ASSIGN_MOP(z, CATCH)
-void E_CATCH (Opcode*) {
+void E_CATCH(Opcode*) {
 	E_CATCH_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,11 +77,11 @@ Jn(7)
 // 0207  ASSIGN_MOP(z, J8)
 Jn(8)
 // 0210  ASSIGN_MOP(z, JB)
-void E_JB (Opcode*) {
+void E_JB(Opcode*) {
 	E_J_(SignExtend(GetCodeByte()));
 }
 // 0211  ASSIGN_MOP(z, JW)
-void E_JW (Opcode*) {
+void E_JW(Opcode*) {
 	E_J_((INT16)GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ __attribute__((always_inline)) static inline void E_JUE_(CARD16 arg0, INT16 arg1
 	ProcessorThread::checkRequestReschedule();
 }
 // 0212  ASSIGN_MOP(z, JEP)
-void E_JEP (Opcode*) {
+void E_JEP(Opcode*) {
 	NibblePair pair = {GetCodeByte()};
 	E_JUE_(pair.left, SignExtend(pair.right + 4));
 }
@@ -109,11 +109,11 @@ __attribute__((always_inline)) static inline void E_JEB_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0213  ASSIGN_MOP(z, JEB)
-void E_JEB (Opcode*) {
+void E_JEB(Opcode*) {
 	E_JEB_(SignExtend(GetCodeByte()));
 }
 // 0214  ASSIGN_MOP(z, JEBB)
-void E_JEBB (Opcode*) {
+void E_JEBB(Opcode*) {
 	CARD8 arg0 = GetCodeByte();
 	CARD8 arg1 = GetCodeByte();
 	E_JUE_(arg0, SignExtend(arg1));
@@ -128,7 +128,7 @@ __attribute__((always_inline)) static inline void E_JUNE_(CARD16 arg0, INT16 arg
 	ProcessorThread::checkRequestReschedule();
 }
 // 0215  ASSIGN_MOP(z, JNEP)
-void E_JNEP (Opcode*) {
+void E_JNEP(Opcode*) {
 	NibblePair pair = {GetCodeByte()};
 	E_JUNE_(pair.left, SignExtend(pair.right + 4));
 }
@@ -143,11 +143,11 @@ __attribute__((always_inline)) static inline void E_JNE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0216  ASSIGN_MOP(z, JNEB)
-void E_JNEB (Opcode*) {
+void E_JNEB(Opcode*) {
 	E_JNE_(SignExtend(GetCodeByte()));
 }
 // 0217  ASSIGN_MOP(z, JNEBB)
-void E_JNEBB (Opcode*) {
+void E_JNEBB(Opcode*) {
 	CARD8 arg0 = GetCodeByte();
 	CARD8 arg1 = GetCodeByte();
 	E_JUNE_(arg0, SignExtend(arg1));
@@ -163,7 +163,7 @@ __attribute__((always_inline)) static inline void E_JL_(INT16 arg) {
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
-void E_JLB (Opcode*) {
+void E_JLB(Opcode*) {
 	E_JL_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ __attribute__((always_inline)) static inline void E_JGE_(INT16 arg) {
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
-void E_JGEB (Opcode*) {
+void E_JGEB(Opcode*) {
 	E_JGE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ __attribute__((always_inline)) static inline void E_JG_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0222  ASSIGN_MOP(z, JGB)
-void E_JGB (Opcode*) {
+void E_JGB(Opcode*) {
 	E_JG_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ __attribute__((always_inline)) static inline void E_JLE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0223  ASSIGN_MOP(z, JLEB)
-void E_JLEB (Opcode*) {
+void E_JLEB(Opcode*) {
 	E_JLE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -219,7 +219,7 @@ __attribute__((always_inline)) static inline void E_JUL_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0224  ASSIGN_MOP(z, JULB)
-void E_JULB (Opcode*) {
+void E_JULB(Opcode*) {
 	E_JUL_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ __attribute__((always_inline)) static inline void E_JUGE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0225  ASSIGN_MOP(z, JUGEB)
-void E_JUGEB (Opcode*) {
+void E_JUGEB(Opcode*) {
 	E_JUGE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,7 +247,7 @@ __attribute__((always_inline)) static inline void E_JUG_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0226  ASSIGN_MOP(z, JUGB)
-void E_JUGB (Opcode*) {
+void E_JUGB(Opcode*) {
 	E_JUG_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -261,7 +261,7 @@ __attribute__((always_inline)) static inline void E_JULE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0227  ASSIGN_MOP(z, JULEB)
-void E_JULEB (Opcode*) {
+void E_JULEB(Opcode*) {
 	E_JULE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ JZn(3)
 // 0231  ASSIGN_MOP(z, JZ4)
 JZn(4)
 // 0232  ASSIGN_MOP(z, JZB)
-void E_JZB (Opcode*) {
+void E_JZB(Opcode*) {
 	E_JZ_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -303,7 +303,7 @@ JNZn(3)
 // 0234  ASSIGN_MOP(z, JNZ4)
 JNZn(4)
 // 0235  ASSIGN_MOP(z, JNZB)
-void E_JNZB (Opcode*) {
+void E_JNZB(Opcode*) {
 	E_JNZ_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -317,7 +317,7 @@ __attribute__((always_inline)) static inline void E_JDE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0236  ASSIGN_MOP(z, JDEB)
-void E_JDEB (Opcode*) {
+void E_JDEB(Opcode*) {
 	E_JDE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ __attribute__((always_inline)) static inline void E_JDNE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0237  ASSIGN_MOP(z, JDNEB)
-void E_JMDEB (Opcode*) {
+void E_JDNEB(Opcode*) {
 	E_JDNE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,7 +348,7 @@ __attribute__((always_inline)) static inline void E_JIB_(CARD16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0240  ASSIGN_MOP(z, JIB)
-void E_JIB (Opcode*) {
+void E_JIB(Opcode*) {
 	E_JIB_(GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -365,7 +365,7 @@ __attribute__((always_inline)) static inline void E_JIW_(CARD16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0241  ASSIGN_MOP(z, JIW)
-void E_JIW (Opcode*) {
+void E_JIW(Opcode*) {
 	E_JIW_(GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -504,7 +504,7 @@ __attribute__((always_inline)) static inline void E_ADDS_(INT16 arg) {
 	CARD16 i = Pop();
 	Push(i + arg);
 }
-void E_ADDSB (Opcode*) {
+void E_ADDSB(Opcode*) {
 	E_ADDS_(SignExtend(GetCodeByte()));
 }
 // 0265  ASSIGN_MOP(z, ADD)
@@ -556,7 +556,7 @@ __attribute__((always_inline)) static inline void E_AL0I_(CARD16 arg) {
 	// NO PAGE FAULT AFTER HERE
 	Push(*p + arg);
 }
-void E_AL0I(Opcode*) {
+void E_AL0IB(Opcode*) {
 	E_AL0I_(GetCodeByte());
 }
 // 0274  ASSIGN_MOP(z, MUL)
@@ -583,4 +583,129 @@ void E_UDCMP(Opcode*) {
 	Push((s == t) ? 0 : ((s > t) ? 1 : -1));
 }
 // 0277  ASSIGN_MOP(z, VMFIND)
+//RunBase: TYPE = LONG BASE POINTER TO ARRAY IndexRun OF Run;
+//PRun: TYPE = RunBase RELATIVE ORDERED POINTER [0..LAST[CARDINAL]] TO Run;
+//Find: PROCEDURE [page: VM.PageNumber, rBase: RunBase, pRunTop: PRun]
+//  RETURNS [found: BOOLEAN, pRun: PRun] = MACHINE CODE {MopcodesExtras2.zVMFIND};
+void E_VMFIND(Opcode*) {
+	CARD16 pRunTop = Pop();
+	CARD32 rBase   = PopLong();
+	CARD32 page    = PopLong();
+	if (DEBUG_TRACE_RUN) logger.debug("TRACE %6o  VMFIND  %06X  %08X  %04X", savedPC, page, rBase, pRunTop);
+
+	CARD16 found = 0;
+	CARD16 pRun  = 0;
+
+//	{
+//		logger.debug("%s  zVMFIND  %06X  %08X  %04X", __FUNCTION__, page, rBase, pRunTop);
+//		for(CARD32 p = VMDataInternal::pRunFirst; p <= pRunTop; p += SIZE(VMDataInternal::Run)) {
+//			CARD32 pPage  = ReadDbl(rBase + p + OFFSET(VMDataInternal::Run, interval.page));
+//			CARD32 pCount = ReadDbl(rBase + p + OFFSET(VMDataInternal::Run, interval.count));
+//			logger.debug("%s  pRun %08X  %08X %5d", __FUNCTION__, p, pPage, pCount);
+//		}
+//	}
+
+	//pageTop: VM.PageNumber = FIRST[VM.PageNumber] + StoragePrograms.countVM;  --end of VM
+	CARD32 pageTop = 0 + Memory::getVPSize();
+	//CARD32 pageTop = ReadDbl(rBase + pRunTop + OFFSET(VMDataInternal::Run, interval.page));
+
+	//indexRunFirst: CARDINAL = (pRunFirst - FIRST[PRun])/SIZE[Run];
+	const CARD16 indexRunFirst = (VMDataInternal::pRunFirst - 0) / SIZE(VMDataInternal::Run);
+
+	//IF page >= pageTop THEN Bug[beyondVM];
+	if (pageTop <= page) ERROR();
+
+	{
+		//vmDatabaseFullSearches = vmDatabaseFullSearches.SUCC;
+		//indexRunLow = indexRunFirst;
+		CARD16 indexRunLow = indexRunFirst;
+//		logger.debug("%s  indexRunLow  = %d", __FUNCTION__, indexRunLow);
+
+		//indexRunHigh = (pRunTop - FIRST[PRun])/SIZE[Run];
+		CARD16 indexRunHigh = (pRunTop - 0) / SIZE(VMDataInternal::Run);
+//		logger.debug("%s  indexRunHigh = %d", __FUNCTION__, indexRunHigh);
+
+		//DO  --UNTIL search terminates--
+		for(;;) {
+			//  indexRun = (indexRunLow + indexRunHigh)/2;
+			CARD16 indexRun = (indexRunLow + indexRunHigh) / 2;
+//			logger.debug("%s  indexRun = %d", __FUNCTION__, indexRun);
+
+			//pageComp = rBase[FIRST[PRun] + indexRun*SIZE[Run]].interval.page;
+			CARD32 pageComp  = ReadDbl(rBase + 0 + (indexRun * SIZE(VMDataInternal::Run)) + OFFSET(VMDataInternal::Run, interval.page));
+//			CARD32 countComp = ReadDbl(rBase + 0 + (indexRun * SIZE(VMDataInternal::Run)) + OFFSET(VMDataInternal::Run, interval.count));
+//			logger.debug("%s  pageComp  = %08X", __FUNCTION__, pageComp);
+//			logger.debug("%s  countComp = %d",   __FUNCTION__, countComp);
+
+			//IF pageComp > page
+			//  THEN indexRunHigh = indexRun - 1
+			//    -- note that indexRunHigh, a CARDINAL, might be indexDescLow-1 here.
+			//  ELSE
+			//    IF page > pageComp
+			//      THEN indexRunLow = indexRun + 1
+			//      ELSE GO TO Exact;
+			if (page < pageComp)
+				indexRunHigh = indexRun - 1;
+			else
+				if (pageComp < page) indexRunLow = indexRun + 1;
+				else {
+					// Exact => {pRun = FIRST[PRun] + indexRun*SIZE[Run]; found = TRUE};
+//					logger.debug("%s  Exact", __FUNCTION__);
+					pRun = 0 + indexRun * SIZE(VMDataInternal::Run);
+					found = 1;
+					break;
+				}
+
+//			logger.debug("%s  indexRunHigh = %d", __FUNCTION__, indexRunHigh);
+//			logger.debug("%s  indexRunLow  = %d", __FUNCTION__, indexRunLow);
+			//  IF indexRunHigh < indexRunLow THEN GO TO NotExact;
+			if (indexRunHigh < indexRunLow) {
+				//  NotExact =>
+				//    -- Assert: page>"indexRunHigh".page AND page<"indexRunHigh+1".page AND indexRunHigh+1 = indexRunLow.
+				//    IF indexRunLow = indexRunFirst THEN {pRun = pRunFirst; found = FALSE}
+				//    ELSE
+				//      BEGIN
+				//      pRun = FIRST[PRun] + indexRunHigh*SIZE[Run];
+				//      IF page < rBase[pRun].interval.page + rBase[pRun].interval.count THEN
+				//        found = TRUE
+				//      ELSE {pRun = pRun + SIZE[Run]; found = FALSE};
+				//      END;
+				if (indexRunLow == indexRunFirst) {
+					pRun = VMDataInternal::pRunFirst;
+					found = 0;
+				} else {
+					pRun = 0 + indexRunHigh * SIZE(VMDataInternal::Run);
+					const CARD32 intervalPage  = ReadDbl(rBase + pRun + OFFSET(VMDataInternal::Run, interval.page));
+					const CARD32 intervalCount = ReadDbl(rBase + pRun + OFFSET(VMDataInternal::Run, interval.count));
+//					logger.debug("%s  inervalPage = %08X  intervalCount = %d", __FUNCTION__, intervalPage, intervalCount);
+					if (page < (intervalPage + intervalCount)) {
+						found = 1;
+					} else {
+						pRun = pRun + SIZE(VMDataInternal::Run);
+						found = 0;
+					}
+				}
+				break;
+			}
+		}
+	}
+	//ENDLOOP;  --DO UNTIL search terminates--
+	//EXITS
+	//  Exact => {pRun = FIRST[PRun] + indexRun*SIZE[Run]; found = TRUE};
+	//  NotExact =>
+	//    -- Assert: page>"indexRunHigh".page AND page<"indexRunHigh+1".page AND indexRunHigh+1 = indexRunLow.
+	//    IF indexRunLow = indexRunFirst THEN {pRun = pRunFirst; found = FALSE}
+	//    ELSE
+	//      BEGIN
+	//      pRun = FIRST[PRun] + indexRunHigh*SIZE[Run];
+	//      IF page < rBase[pRun].interval.page + rBase[pRun].interval.count THEN
+	//        found = TRUE
+	//      ELSE {pRun = pRun + SIZE[Run]; found = FALSE};
+	//      END;
+	//END;  --scope of SameAsLastTime--
+
+	Push(found);
+	Push(pRun);
+//	logger.debug("%s  found %d  pRun %04X", __FUNCTION__, found, pRun);
+}
 
