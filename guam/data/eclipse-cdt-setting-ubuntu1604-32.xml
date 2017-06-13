@@ -17,11 +17,11 @@
 <includepath>/usr/include/i386-linux-gnu/qt5/QtGui</includepath>
 <includepath>/usr/include/i386-linux-gnu/qt5/QtWidgets</includepath>
 <includepath>/usr/include/i386-linux-gnu/qt5/QtCore</includepath>
-<includepath>/usr/include/c++/5.3.1</includepath>
-<includepath>/usr/include/i386-linux-gnu/c++/5.3.1</includepath>
-<includepath>/usr/include/c++/5.3.1/backward</includepath>
-<includepath>/usr/lib/gcc/i686-linux-gnu/5.3.1/include</includepath>
-<includepath>/usr/lib/gcc/i686-linux-gnu/5.3.1/include-fixed</includepath>
+<includepath>/usr/include/c++/5</includepath>
+<includepath>/usr/include/i386-linux-gnu/c++/5</includepath>
+<includepath>/usr/include/c++/5/backward</includepath>
+<includepath>/usr/lib/gcc/i686-linux-gnu/5/include</includepath>
+<includepath>/usr/lib/gcc/i686-linux-gnu/5/include-fixed</includepath>
 
 </language>
 <language name="GNU C">
