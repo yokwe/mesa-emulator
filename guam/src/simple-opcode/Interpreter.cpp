@@ -45,7 +45,7 @@ long long Interpreter::statMop [Interpreter::TABLE_SIZE];
 long long Interpreter::statEsc [Interpreter::TABLE_SIZE];
 
 
-void Interpreter::assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_) {
+void Interpreter::assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 size_) {
 	if (exec_ == 0) {
 		logger.fatal("assignMop exec_ == 0  code = %d", code_);
 		ERROR();
@@ -60,10 +60,10 @@ void Interpreter::assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_)
 		ERROR();
 	}
 
-	Opcode opcode (exec_, name_, code_);
+	Opcode opcode (exec_, name_, code_, size_);
 	tableMop[code_] = opcode;
 }
-void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_) {
+void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 size_) {
 	if (exec_ == 0) {
 		logger.fatal("assignEsc exec_ == 0  code = %d", code_);
 		ERROR();
@@ -78,7 +78,7 @@ void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_)
 		ERROR();
 	}
 
-	Opcode opcode (exec_, name_, code_);
+	Opcode opcode (exec_, name_, code_, size_);
 	tableEsc[code_] = opcode;
 }
 
@@ -93,8 +93,8 @@ static void escOpcodeTrap(Opcode* opcode) {
 
 void Interpreter::fillOpcodeTrap() {
 	for(CARD32 i = 0; i < TABLE_SIZE; i++) {
-		if (tableMop[i].isEmpty()) assignMop(mopOpcodeTrap, "__MOP_OPCODE_TRAP__", i);
-		if (tableEsc[i].isEmpty()) assignEsc(escOpcodeTrap, "__ESC_OPCODE_TRAP__", i);
+		if (tableMop[i].isEmpty()) assignMop(mopOpcodeTrap, "__MOP_OPCODE_TRAP__", i, 1); // can be 1, 2 or 3
+		if (tableEsc[i].isEmpty()) assignEsc(escOpcodeTrap, "__ESC_OPCODE_TRAP__", i, 2); // can bw 2 or 3
 	}
 }
 
@@ -165,8 +165,8 @@ void Interpreter::initRegisters() {
     //lastTimeoutTime = 0;
 }
 
-#define ASSIGN_MOP(prefix, name) Interpreter::assignMop(E_##name, #name, prefix##name);
-#define ASSIGN_ESC(prefix, name) Interpreter::assignEsc(E_##name, #name, prefix##name);
+#define ASSIGN_MOP(prefix, name) Interpreter::assignMop(E_##name, #name, prefix##name, L_##name);
+#define ASSIGN_ESC(prefix, name) Interpreter::assignEsc(E_##name, #name, prefix##name, L_##name);
 
 //#define ASSIGN_MOP(prefix, name) Interpreter::assignMop(Opcode(prefix##name, L_##name, #name, C_##name, I_##name));
 //#define ASSIGN_ESC(prefix, name) Interpreter::assignEsc(Opcode(prefix##name, L_##name, #name, C_##name, I_##name));

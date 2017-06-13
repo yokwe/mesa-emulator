@@ -87,8 +87,8 @@ private:
 	static void initTable();
 	static void fillOpcodeTrap();
 
-	static void assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 len_);
-	static void assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 len_);
+	static void assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 size_);
+	static void assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 size_);
 };
 
 #endif
