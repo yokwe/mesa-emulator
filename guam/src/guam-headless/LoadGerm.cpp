@@ -95,8 +95,8 @@ int main() {
 	quint64 elapsedTime = elapsedTimer.nsecsElapsed();
 
 	Interpreter::stats();
+	Perf_log();
 	PageCache::stats();
-
 	CodeCache::stats();
 	LFCache::stats();
 
