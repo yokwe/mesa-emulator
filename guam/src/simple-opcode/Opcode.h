@@ -44,8 +44,8 @@ public:
 	Opcode() : exec(0), name(0), flag(0) {}
 	Opcode(const Opcode& that) :
 		exec(that.exec), name(that.name), flag(that.flag) {}
-	Opcode(EXEC exec_, const char* name_, CARD32 code_) :
-		exec(exec_), name(name_), code(code_) {}
+	Opcode(EXEC exec_, const char* name_, CARD32 code_, CARD32 size_) :
+		exec(exec_), name(name_), code(code_), size(size_) {}
 
 	Opcode& operator=(const Opcode& that) {
 		exec = that.exec;
@@ -58,7 +58,7 @@ public:
 	void empty() {
 		exec = 0;
 		name = 0;
-		code = 0;
+		flag = 0;
 	}
 	int isEmpty() {
 		return exec == 0;
@@ -73,6 +73,9 @@ public:
 	CARD32 getCode() const {
 		return code;
 	}
+	CARD32 getSize() const {
+		return size;
+	}
 
 	void execute() {
 		exec(this);
@@ -84,7 +87,8 @@ protected:
 	union {
 		CARD32 flag;
 		struct {
-			CARD32 code :  8;
+			CARD32 code : 16;
+			CARD32 size : 16;
 		};
 	};
 };
