@@ -40,15 +40,6 @@
 									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/c++/5"/>
 									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
 									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
-									<listOptionValue builtIn="false" value="/usr/lib/i386-linux-gnu/qt5/mkspecs/linux-g++"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5/QtGui"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5/QtWidgets"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/qt5/QtCore"/>
-									<listOptionValue builtIn="false" value="/usr/include/i386-linux-gnu/c++/5"/>
-									<listOptionValue builtIn="false" value="/usr/lib/gcc/i686-linux-gnu/5/include"/>
-									<listOptionValue builtIn="false" value="/usr/lib/gcc/i686-linux-gnu/5/include-fixed"/>
 								</option>
 								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.1155109045" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__linux__=1"/>
