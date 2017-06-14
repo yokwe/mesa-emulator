@@ -78,10 +78,18 @@ public:
 	}
 
 	void execute() {
+		last = this;
 		exec(this);
+		last = 0;
+	}
+
+	static Opcode* getLast() {
+		return last;
 	}
 
 protected:
+	static Opcode* last;
+
 	EXEC        exec;
 	const char* name;
 	union {
