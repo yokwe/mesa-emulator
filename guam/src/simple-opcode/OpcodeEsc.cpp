@@ -54,7 +54,7 @@ static log4cpp::Category& logger = Logger::getLogger("esc");
 // 05  ASSIGN_ESC(a, BC)
 // 06  ASSIGN_ESC(a, REQ)
 // 07  ASSIGN_ESC(a, SM)
-void E_SM(Opcode*) {
+void E_SM() {
 	Memory::Map map;
 	map.mf.u = Pop();
 	map.rp = PopLong();
@@ -64,7 +64,7 @@ void E_SM(Opcode*) {
 	Memory::WriteMap(vp, map);
 }
 // 010  ASSIGN_ESC(a, SMF)
-void E_SMF(Opcode*) {
+void E_SMF() {
 	MapFlags newMF = {Pop()};
 	CARD32 vp = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SMF  vp = %08X  mf = %04X", savedPC, vp, newMF.u);
@@ -78,7 +78,7 @@ void E_SMF(Opcode*) {
 	}
 }
 // 011  ASSIGN_ESC(a, GMF)
-void E_GMF(Opcode*) {
+void E_GMF() {
 	CARD32 vp = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  GMF  vp = %08X", savedPC, vp);
 	Memory::Map map = Memory::ReadMap(vp);
@@ -94,13 +94,13 @@ void E_GMF(Opcode*) {
 // 016  ASSIGN_ESC(a, POR)
 // 017  ASSIGN_ESC(a, SPP)
 // 020  ASSIGN_ESC(a, DI)
-void E_DI(Opcode*) {
+void E_DI() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DI  %3d", savedPC, InterruptThread::getWDC());
 	if (InterruptThread::getWDC() == cWDC) InterruptError();
 	InterruptThread::disable();
 }
 // 021  ASSIGN_ESC(a, EI)
-void E_EI(Opcode*) {
+void E_EI() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EI  %3d", savedPC, InterruptThread::getWDC());
 	if (InterruptThread::getWDC() == 0) InterruptError();
 	InterruptThread::enable();
@@ -108,63 +108,63 @@ void E_EI(Opcode*) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 022  ASSIGN_ESC(a, XOR)
-void E_XOR(Opcode*) {
+void E_XOR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  XOR", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	Push(u ^ v);
 }
 // 023  ASSIGN_ESC(a, DAND)
-void E_DAND(Opcode*) {
+void E_DAND() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DAND", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(u & v);
 }
 // 024  ASSIGN_ESC(a, DIOR)
-void E_DIOR(Opcode*) {
+void E_DIOR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DIOR", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(u | v);
 }
 // 025  ASSIGN_ESC(a, DXOR)
-void E_DXOR(Opcode*) {
+void E_DXOR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DXOR", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
 	PushLong(u ^ v);
 }
 // 026  ASSIGN_ESC(a, ROTATE)
-void E_ROTATE(Opcode*) {
+void E_ROTATE() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ROTATE", savedPC);
 	INT16 rotate = Pop();
 	UNSPEC u = Pop();
 	Push(Rotate(u, rotate));
 }
 // 027  ASSIGN_ESC(a, DSHIFT)
-void E_DSHIFT(Opcode*) {
+void E_DSHIFT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DSHIFT", savedPC);
 	INT16 rotate = Pop();
 	LONG_UNSPEC u = PopLong();
 	PushLong(LongShift(u, rotate));
 }
 // 030  ASSIGN_ESC(a, LINT)
-void E_LINT(Opcode*) {
+void E_LINT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LINT", savedPC);
 	INT16 i = Pop();
 	Push(i);
 	Push((i < 0) ? (CARD16)0xffff : 0);
 }
 // 031  ASSIGN_ESC(a, JS)
-void E_JS(Opcode*) {
+void E_JS() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  JS", savedPC);
 	PC = Pop();
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
 // 032  ASSIGN_ESC(a, RCFS)
-void E_RCFS(Opcode*) {
+void E_RCFS() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RCFS", savedPC);
 	FieldDesc desc = {Pop()};
 	CARDINAL offset = Pop();
@@ -172,7 +172,7 @@ void E_RCFS(Opcode*) {
 	Push(ReadField(ReadCode(offset + desc.offset), spec));
 }
 // 033  ASSIGN_ESC(b, RC)
-void E_RC(Opcode*) {
+void E_RC() {
 	CARD16 arg = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RC %02X", savedPC, arg);
 	CARDINAL offset = Pop();
@@ -181,7 +181,7 @@ void E_RC(Opcode*) {
 	Push(t);
 }
 // 034  ASSIGN_ESC(a, UDIV)
-void E_UDIV(Opcode*) {
+void E_UDIV() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  UDIV", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
@@ -191,7 +191,7 @@ void E_UDIV(Opcode*) {
 	Discard();
 }
 // 035  ASSIGN_ESC(a, LUDIV)
-void E_LUDIV(Opcode*) {
+void E_LUDIV() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LUDIV", savedPC);
 	CARDINAL t = Pop();
 	LONG_CARDINAL s = PopLong();
@@ -202,7 +202,7 @@ void E_LUDIV(Opcode*) {
 	Discard();
 }
 // 036  ASSIGN_ESC(b, ROB)
-void E_ROB(Opcode*) {
+void E_ROB() {
 	CARD16 arg = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ROB %02X", savedPC, arg);
 	POINTER ptr = Pop();
@@ -211,7 +211,7 @@ void E_ROB(Opcode*) {
 	Push(*p);
 }
 // 037  ASSIGN_ESC(b, WOB)
-void E_WOB(Opcode*) {
+void E_WOB() {
 	CARD16 arg = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WOB %02X", savedPC, arg);
 	POINTER ptr = Pop();
@@ -220,7 +220,7 @@ void E_WOB(Opcode*) {
 	*p = Pop();
 }
 // 040  ASSIGN_ESC(b, DSK)
-void E_DSK(Opcode*) {
+void E_DSK() {
 	CARD16 arg = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DSK %02X", savedPC, arg);
 	POINTER state = LFCache::LF() + arg;
@@ -229,14 +229,14 @@ void E_DSK(Opcode*) {
 // 041  ASSIGN_ESC(b, XE)
 // 042  ASSIGN_ESC(b, XF)
 // 043  ASSIGN_ESC(b, LSK)
-void E_LSK(Opcode*) {
+void E_LSK() {
 	CARD16 arg = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LSK %02X", savedPC, arg);
 	POINTER state = LFCache::LF() + arg;
 	LoadStack(LengthenPointer(state));
 }
 // 044  ASSIGN_ESC(a, BNDCKL)
-void E_BNDCKL(Opcode*) {
+void E_BNDCKL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BNDCKL", savedPC);
 	LONG_CARDINAL range = PopLong();
 	LONG_CARDINAL index = PopLong();
@@ -244,14 +244,14 @@ void E_BNDCKL(Opcode*) {
 	if (range <= index) BoundsTrap();
 }
 // 045  ASSIGN_ESC(a, NILCK)
-void E_NILCK(Opcode*) {
+void E_NILCK() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NILCK", savedPC);
 	POINTER ptr = Pop();
 	SP++; // Push(ptr);
 	if (ptr == 0) PointerTrap();
 }
 // 046  ASSIGN_ESC(a, NILCKL)
-void E_NILCKL(Opcode*) {
+void E_NILCKL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NILCKL", savedPC);
 	LONG_POINTER ptr = PopLong();
 	SP += 2; // PushLong(ptr);
@@ -267,14 +267,14 @@ void E_NILCKL(Opcode*) {
 // 056  ASSIGN_ESC(a, BYTBLTR)
 // 057  ASSIGN_ESC(a, VERSION)
 // 060  ASSIGN_ESC(a, DMUL)
-void E_DMUL(Opcode*) {
+void E_DMUL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DMUL", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	PushLong((LONG_CARDINAL)(s * t));
 }
 // 061  ASSIGN_ESC(a, SDIV)
-void E_SDIV(Opcode*) {
+void E_SDIV() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SDIV", savedPC);
 	INT16 k = Pop();
 	INT16 j = Pop();
@@ -284,7 +284,7 @@ void E_SDIV(Opcode*) {
 	Discard();
 }
 // 062  ASSIGN_ESC(a, SDDIV)
-void E_SDDIV(Opcode*) {
+void E_SDDIV() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SDDIV", savedPC);
 	INT32 k = PopLong();
 	INT32 j = PopLong();
@@ -295,7 +295,7 @@ void E_SDDIV(Opcode*) {
 	Discard();
 }
 // 063  ASSIGN_ESC(a, UDDIV)
-void E_UDDIV(Opcode*) {
+void E_UDDIV() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  UDDIV", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
@@ -340,46 +340,46 @@ void E_UDDIV(Opcode*) {
 
 //  Read / Write Registers
 // 0160  ASSIGN_ESC(a, WRPSB)
-void E_WRPSB(Opcode*) {
+void E_WRPSB() {
 	PSB = Index(Pop());
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRPSB  %4d", savedPC, PSB);
 }
 // 0161  ASSIGN_ESC(a, WRMDS)
-void E_WRMDS(Opcode*) {
+void E_WRMDS() {
 	CARD32 mds = Pop() << WordSize;
 	Memory::setMDS(mds);
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
 }
 // 0162  ASSIGN_ESC(a, WRWP)
-void E_WRWP(Opcode*) {
+void E_WRWP() {
 	CARD16 newValue = Pop();
 	InterruptThread::setWP(newValue);
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRWP   %04X", savedPC, newValue);
 }
 // 0163  ASSIGN_ESC(a, WRWDC)
-void E_WRWDC(Opcode*) {
+void E_WRWDC() {
 	InterruptThread::setWDC(Pop());
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRWDC  %04X", savedPC, InterruptThread::getWDC());
 }
 // 0164  ASSIGN_ESC(a, WRPTC)
-void E_WRPTC(Opcode*) {
+void E_WRPTC() {
 	CARD16 newValue = Pop();
 	TimerThread::setPTC(newValue);
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRPTC  %04X", savedPC, newValue);
 //	lastTimeoutTime = Util::getMicroTime();
 }
 // 0165  ASSIGN_ESC(a, WRIT)
-void E_WRIT(Opcode*) {
+void E_WRIT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRIT", savedPC);
 	ERROR();
 }
 // 0166  ASSIGN_ESC(a, WRXTS)
-void E_WRXTS(Opcode*) {
+void E_WRXTS() {
 	XTS = Pop();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRXTS  %04X", savedPC, XTS);
 }
 // 0167  ASSIGN_ESC(a, WRMP)
-void E_WRMP(Opcode*) {
+void E_WRMP() {
 	MP = Pop();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRMP   %4d", savedPC, MP);
 	GuiOp::setMP(MP);
@@ -488,40 +488,40 @@ void E_WRMP(Opcode*) {
 	}
 }
 // 0170  ASSIGN_ESC(a, RRPSB)
-void E_RRPSB(Opcode*) {
+void E_RRPSB() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRPSB  %4d", savedPC, PSB);
 	Push(Handle(PSB));
 }
 // 0171  ASSIGN_ESC(a, RRMDS)
-void E_RRMDS(Opcode*) {
+void E_RRMDS() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRMDS  %04X", savedPC, (Memory::MDS() >> WordSize));
 	Push((CARD16)(Memory::MDS() >> WordSize));
 }
 // 0172  ASSIGN_ESC(a, RRWP)
-void E_RRWP(Opcode*) {
+void E_RRWP() {
 	CARD16 value = InterruptThread::getWP();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRWP   %04X", savedPC, value);
 	Push(value);
 }
 // 0173  ASSIGN_ESC(a, RRWDC)
-void E_RRWDC(Opcode*) {
+void E_RRWDC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRWDC  %04X", savedPC, InterruptThread::getWDC());
 	Push(InterruptThread::getWDC());
 }
 // 0174  ASSIGN_ESC(a, RRPTC)
-void E_RRPTC(Opcode*) {
+void E_RRPTC() {
 	CARD16 value = TimerThread::getPTC();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRPTC  %04X", savedPC, value);
 	Push(value);
 }
 // 0175  ASSIGN_ESC(a, RRIT)
-void E_RRIT(Opcode*) {
+void E_RRIT() {
 	CARD32 time = Util::getMicroTime();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRIT   %08X", savedPC, time);
 	PushLong(time);
 }
 // 0176  ASSIGN_ESC(a, RRXTS)
-void E_RRXTS(Opcode*) {
+void E_RRXTS() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RRXTS  %04X", savedPC, XTS);
 	Push(XTS);
 }

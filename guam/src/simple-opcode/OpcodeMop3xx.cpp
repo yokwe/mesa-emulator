@@ -49,7 +49,7 @@ __attribute__((always_inline)) static inline void E_LI_(CARD16 arg) {
 	Push(arg);
 }
 #define LIn(n) \
-void E_LI##n (Opcode*) { \
+void E_LI##n () { \
 	E_LI_(n); \
 }
 // 0300  ASSIGN_MOP(z, LI0)
@@ -75,27 +75,27 @@ LIn(9)
 // 0312  ASSIGN_MOP(z, LI10)
 LIn(10)
 // 0313  ASSIGN_MOP(z, LIN1)
-void E_LIN1(Opcode*) {
+void E_LIN1() {
 	E_LI_((CARD16)0xffff);
 }
 // 0314  ASSIGN_MOP(z, LINI)
-void E_LINI(Opcode*) {
+void E_LINI() {
 	E_LI_((CARD16)0x8000);
 }
 // 0315  ASSIGN_MOP(z, LIB)
-void E_LIB(Opcode*) {
+void E_LIB() {
 	E_LI_(GetCodeByte());
 }
 // 0316  ASSIGN_MOP(z, LIW)
-void E_LIW(Opcode*) {
+void E_LIW() {
 	E_LI_(GetCodeWord());
 }
 // 0317  ASSIGN_MOP(z, LINB)
-void E_LINB(Opcode*) {
+void E_LINB() {
 	E_LI_((CARD16)(0xff00 | GetCodeByte()));
 }
 // 0320  ASSIGN_MOP(z, LIHB)
-void E_LIHB(Opcode*) {
+void E_LIHB() {
 	E_LI_((CARD16)(GetCodeByte() << 8));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ __attribute__((always_inline)) static inline void E_LID_(CARD32 arg) {
 	PushLong(arg);
 }
 // 0321  ASSIGN_MOP(z, LID0)
-void E_LID0(Opcode*) {
+void E_LID0() {
 	E_LID_(0);
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ __attribute__((always_inline)) static inline void E_LA_(CARD16 arg) {
 	Push(LFCache::LF() + arg);
 }
 #define LAn(n) \
-void E_LA##n (Opcode*) { \
+void E_LA##n () { \
 	E_LA_(n); \
 }
 // 0322  ASSIGN_MOP(z, LA0)
@@ -131,11 +131,11 @@ LAn(6)
 // 0327  ASSIGN_MOP(z, LA8)
 LAn(8)
 // 0330  ASSIGN_MOP(z, LAB)
-void E_LAB(Opcode*) {
+void E_LAB() {
 	E_LA_(GetCodeByte());
 }
 // 0331  ASSIGN_MOP(z, LAW)
-void E_LAW(Opcode*) {
+void E_LAW() {
 	E_LA_(GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ __attribute__((always_inline)) static inline void E_GA_(CARD16 arg) {
 	Push((CARD16)(GF + arg));
 }
 #define GAn(n) \
-void E_GA##n (Opcode*) { \
+void E_GA##n () { \
 	E_GA_(n); \
 }
 // 0332  ASSIGN_MOP(z, GA0)
@@ -153,11 +153,11 @@ GAn(0)
 // 0333  ASSIGN_MOP(z, GA1)
 GAn(1)
 // 0334  ASSIGN_MOP(z, GAB)
-void E_GAB(Opcode*) {
+void E_GAB() {
 	E_GA_(GetCodeByte());
 }
 // 0335  ASSIGN_MOP(z, GAW)
-void E_GAW(Opcode*) {
+void E_GAW() {
 	E_GA_(GetCodeWord());
 }
 // 0336  //ASSIGN_MOP(z, CAW)
@@ -189,17 +189,17 @@ void E_GAW(Opcode*) {
 // 0365  ASSIGN_MOP(z, BLTC)
 // 0366  ASSIGN_MOP(z, BLTCL)
 // 0367  ASSIGN_MOP(z, LP)
-void E_LP(Opcode*) {
+void E_LP() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  LP", savedPC);
 	POINTER ptr = Pop();
 	PushLong((ptr == 0) ? 0 : LengthenPointer(ptr));
 }
 // 0370  ASSIGN_MOP(z, ESC)
-void E_ESC(Opcode*) {
+void E_ESC() {
 	Interpreter::dispatchEsc(GetCodeByte());
 }
 // 0371  ASSIGN_MOP(z, ESCL)
-void E_ESCL(Opcode*) {
+void E_ESCL() {
 	Interpreter::dispatchEsc(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,15 +209,15 @@ __attribute__((always_inline)) static inline void E_LGA_(CARD16 arg) {
 	PushLong(GF + arg);
 }
 // 0372  ASSIGN_MOP(z, LGA0)
-void E_LGA0(Opcode*) {
+void E_LGA0() {
 	E_LGA_(0);
 }
 // 0373  ASSIGN_MOP(z, LGAB)
-void E_LGAB(Opcode*) {
+void E_LGAB() {
 	E_LGA_(GetCodeByte());
 }
 // 0374  ASSIGN_MOP(z, LGAW)
-void E_LGAW(Opcode*) {
+void E_LGAW() {
 	E_LGA_(GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -228,12 +228,12 @@ __attribute__((always_inline)) static inline void E_DESC_(CARD16 arg) {
 	Push(arg);
 }
 // 0375  ASSIGN_MOP(z, DESC)
-void E_DESC(Opcode*) {
+void E_DESC() {
 	E_DESC_(GetCodeWord());
 }
 // 0376
 // 0377  ASSIGN_MOP(z, RESRVD)
-void E_RESRVD(Opcode*) {
+void E_RESRVD() {
 	logger.fatal("TRACE %6o  RESRVD", savedPC);
 	ERROR();
 }

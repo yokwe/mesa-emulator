@@ -39,7 +39,7 @@ OF SUCH DAMAGE.
 
 class Opcode {
 public:
-	typedef void (*EXEC)(Opcode* opcode);
+	typedef void (*EXEC)();
 
 	Opcode() : exec(0), name(0), flag(0) {}
 	Opcode(const Opcode& that) :
@@ -79,7 +79,7 @@ public:
 
 	void execute() {
 		last = this;
-		exec(this);
+		exec();
 		last = 0;
 	}
 
@@ -102,7 +102,7 @@ protected:
 };
 
 #define DECL_E(len, name) \
-extern void E_##name(Opcode* opcode); \
+extern void E_##name(); \
 static const CARD32 L_##name = (len);
 
 // MOP

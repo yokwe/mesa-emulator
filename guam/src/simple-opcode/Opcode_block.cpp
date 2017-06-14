@@ -75,7 +75,7 @@ static inline void OP_BLT_FAST(POINTER source, POINTER dest, CARDINAL count) {
 		}
 	}
 }
-void E_BLT(Opcode*) {
+void E_BLT() {
 	POINTER  dest   = Pop();
 	CARDINAL count  = Pop();
 	POINTER  source = Pop();
@@ -95,7 +95,7 @@ void E_BLT(Opcode*) {
 	}
 }
 #else
-void E_BLT(Opcode*) {
+void E_BLT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLT", savedPC);
 	for(;;) {
 		POINTER dest = Pop();
@@ -147,7 +147,7 @@ static void OP_BLTL_FAST(LONG_POINTER source, LONG_POINTER dest, CARDINAL count)
 		}
 	}
 }
-void E_BLTL(Opcode*) {
+void E_BLTL() {
 	LONG_POINTER dest = PopLong();
 	CARDINAL count  = Pop();
 	LONG_POINTER source = PopLong();
@@ -167,7 +167,7 @@ void E_BLTL(Opcode*) {
 	}
 }
 #else
-void E_BLTL(Opcode*) {
+void E_BLTL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTL", savedPC);
 	for(;;) {
 		LONG_POINTER dest = PopLong();
@@ -219,7 +219,7 @@ static inline void OP_BLTC_FAST(POINTER source, POINTER dest, CARDINAL count) {
 		}
 	}
 }
-void E_BLTC(Opcode*) {
+void E_BLTC() {
 	POINTER  dest   = Pop();
 	CARDINAL count  = Pop();
 	POINTER  source = Pop();
@@ -239,7 +239,7 @@ void E_BLTC(Opcode*) {
 	}
 }
 #else
-void E_BLTC(Opcode*) {
+void E_BLTC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTC", savedPC);
 	for(;;) {
 		POINTER dest = Pop();
@@ -291,7 +291,7 @@ static inline void OP_BLTCL_FAST(POINTER source, LONG_POINTER dest, CARDINAL cou
 		}
 	}
 }
-void E_BLTCL(Opcode*) {
+void E_BLTCL() {
 	LONG_POINTER  dest   = PopLong();
 	CARDINAL      count  = Pop();
 	POINTER       source = Pop();
@@ -311,7 +311,7 @@ void E_BLTCL(Opcode*) {
 	}
 }
 #else
-void E_BLTCL(Opcode*) {
+void E_BLTCL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTCL", savedPC);
 	for(;;) {
 		LONG_POINTER dest = PopLong();
@@ -367,7 +367,7 @@ static inline void OP_BLTLR_FAST(LONG_POINTER source, LONG_POINTER dest, CARDINA
 		}
 	}
 }
-void E_BLTLR(Opcode*) {
+void E_BLTLR() {
 	LONG_POINTER dest = PopLong();
 	CARDINAL count  = Pop();
 	LONG_POINTER source = PopLong();
@@ -387,7 +387,7 @@ void E_BLTLR(Opcode*) {
 	}
 }
 #else
-void E_BLTLR(Opcode*) {
+void E_BLTLR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTLR", savedPC);
 	for(;;) {
 		LONG_POINTER dest = PopLong();
@@ -457,7 +457,7 @@ static inline void OP_BLEL_FAST(LONG_POINTER ptr1, LONG_POINTER ptr2, CARDINAL c
 		}
 	}
 }
-void E_BLEL(Opcode*) {
+void E_BLEL() {
 	LONG_POINTER ptr1 = PopLong();
 	CARDINAL count = Pop();
 	LONG_POINTER ptr2 = PopLong();
@@ -481,7 +481,7 @@ void E_BLEL(Opcode*) {
 	}
 }
 #else
-void E_BLEL(Opcode*) {
+void E_BLEL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLEL", savedPC);
 	for(;;) {
 		LONG_POINTER ptr1 = PopLong();
@@ -556,7 +556,7 @@ static inline void OP_BLECL_FAST(LONG_POINTER ptr, CARDINAL offset, CARDINAL cou
 		}
 	}
 }
-void E_BLECL(Opcode*) {
+void E_BLECL() {
 	LONG_POINTER ptr    = PopLong();
 	CARDINAL     count  = Pop();
 	CARDINAL     offset = Pop();
@@ -580,7 +580,7 @@ void E_BLECL(Opcode*) {
 	}
 }
 #else
-void E_BLECL(Opcode*) {
+void E_BLECL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLECL", savedPC);
 	for(;;) {
 		LONG_POINTER ptr = PopLong();
@@ -617,7 +617,7 @@ static CARDINAL Checksum(CARDINAL chksum, CARDINAL data) {
 	}
 	return temp;
 }
-void E_CKSUM(Opcode*) {
+void E_CKSUM() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  CKSUM", savedPC);
 	CARDINAL cksum;
 	for(;;) {
@@ -639,7 +639,7 @@ void E_CKSUM(Opcode*) {
 
 
 // aBYTBLT - 055
-void E_BYTBLT(Opcode*) {
+void E_BYTBLT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BYTBLT", savedPC);
 	for(;;) {
 		CARDINAL     sourceOffset = Pop();
@@ -681,7 +681,7 @@ void E_BYTBLT(Opcode*) {
 
 
 // aBYTBLTR - 056
-void E_BYTBLTR(Opcode*) {
+void E_BYTBLTR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BYTBLTR", savedPC);
 	for(;;) {
 		CARDINAL     sourceOffset = Pop();

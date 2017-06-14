@@ -51,7 +51,7 @@ __attribute__((always_inline)) static inline void E_R_(CARD16 arg) {
 	Push(*p);
 }
 #define Rn(n) \
-void E_R##n (Opcode*) { \
+void E_R##n () { \
 	E_R_(n); \
 }
 // 0100  ASSIGN_MOP(z, R0)
@@ -59,7 +59,7 @@ Rn(0)
 // 0101  ASSIGN_MOP(z, R1)
 Rn(1)
 // 0102  ASSIGN_MOP(z, RB)
-void E_RB(Opcode*) {
+void E_RB() {
 	E_R_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,11 +72,11 @@ __attribute__((always_inline)) static inline void E_RL_(CARD16 arg) {
 	Push(*p);
 }
 // 0103  ASSIGN_MOP(z, RL0)
-void E_RL0(Opcode*) {
+void E_RL0() {
 	E_RL_(0);
 }
 // 0104  ASSIGN_MOP(z, RLB)
-void E_RLB(Opcode*) {
+void E_RLB() {
 	E_RL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,11 +93,11 @@ __attribute__((always_inline)) static inline void E_RD_(CARD16 arg) {
 	Push(v);
 }
 // 0105  ASSIGN_MOP(z, RD0)
-void E_RD0(Opcode*) {
+void E_RD0() {
 	E_RD_(0);
 }
 // 0106  ASSIGN_MOP(z, RDB)
-void E_RDB(Opcode*) {
+void E_RDB() {
 	E_RD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,11 +114,11 @@ __attribute__((always_inline)) static inline void E_RDL_(CARD16 arg) {
 	Push(v);
 }
 // 0107  ASSIGN_MOP(z, RDL0)
-void E_RDL0(Opcode*) {
+void E_RDL0() {
 	E_RDL_(0);
 }
 // 0110  ASSIGN_MOP(z, RDLB)
-void E_RDLB(Opcode*) {
+void E_RDLB() {
 	E_RDL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -131,11 +131,11 @@ __attribute__((always_inline)) static inline void E_W_(CARD16 arg) {
 	*p = Pop();
 }
 // 0111  ASSIGN_MOP(z, W0)
-void E_W0(Opcode*) {
+void E_W0() {
 	E_W_(0);
 }
 // 0112  ASSIGN_MOP(z, WB)
-void E_WB(Opcode*) {
+void E_WB() {
 	E_W_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ __attribute__((always_inline)) static inline void E_PS_(CARD16 arg) {
 	SP++; //Recover();
 }
 // 0113  ASSIGN_MOP(z, PSB)
-void E_PSB(Opcode*) {
+void E_PSB() {
 	E_PS_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ __attribute__((always_inline)) static inline void E_WL_(CARD16 arg) {
 	*p = Pop();
 }
 // 0114  ASSIGN_MOP(z, WLB)
-void E_WLB(Opcode*) {
+void E_WLB() {
 	E_WL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ __attribute__((always_inline)) static inline void E_PSL_(CARD16 arg) {
 	SP++; //Recover();
 }
 // 0115  ASSIGN_MOP(z, PSLB)
-void E_PSLB(Opcode*) {
+void E_PSLB() {
 	E_PSL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -194,7 +194,7 @@ __attribute__((always_inline)) static inline void E_WD_(CARD16 arg) {
 	*p0 = Pop();
 }
 // 0116  ASSIGN_MOP(z, WDB)
-void E_WDB(Opcode*) {
+void E_WDB() {
 	E_WD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,11 +212,11 @@ __attribute__((always_inline)) static inline void E_PSD_(CARD16 arg) {
 	SP++; //Recover();
 }
 // 0117  ASSIGN_MOP(z, PSD0)
-void E_PSD0(Opcode*) {
+void E_PSD0() {
 	E_PSD_(0);
 }
 // 0120  ASSIGN_MOP(z, PSDB)
-void E_PSDB(Opcode*) {
+void E_PSDB() {
 	E_PSD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,7 +231,7 @@ __attribute__((always_inline)) static inline void E_WDL_(CARD16 arg) {
 	*p0 = Pop();
 }
 // 0121  ASSIGN_MOP(z, WDLB)
-void E_WDLB(Opcode*) {
+void E_WDLB() {
 	E_WDL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ __attribute__((always_inline)) static inline void E_PSDL_(CARD16 arg) {
 	SP++; //Recover();
 }
 // 0122  ASSIGN_MOP(z, PSDLB)
-void E_PSDLB(Opcode*) {
+void E_PSDLB() {
 	E_PSDL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -263,23 +263,23 @@ __attribute__((always_inline)) static inline void E_RLI_(CARD16 arg0, CARD16 arg
 	Push(*p);
 }
 // 0123  ASSIGN_MOP(z, RLI00)
-void E_RLI00(Opcode*) {
+void E_RLI00() {
 	E_RLI_(0, 0);
 }
 // 0124  ASSIGN_MOP(z, RLI01)
-void E_RLI01(Opcode*) {
+void E_RLI01() {
 	E_RLI_(0, 1);
 }
 // 0125  ASSIGN_MOP(z, RLI02)
-void E_RLI02(Opcode*) {
+void E_RLI02() {
 	E_RLI_(0, 2);
 }
 // 0126  ASSIGN_MOP(z, RLI03)
-void E_RLI03(Opcode*) {
+void E_RLI03() {
 	E_RLI_(0, 3);
 }
 // 0127  ASSIGN_MOP(z, RLIP)
-void E_RLIP(Opcode*) {
+void E_RLIP() {
 	NibblePair pair = {GetCodeByte()};
 	E_RLI_(pair.left, pair.right);
 }
@@ -293,7 +293,7 @@ __attribute__((always_inline)) static inline void E_RLIL_(CARD16 arg0, CARD16 ar
 	Push(*p);
 }
 // 0130  ASSIGN_MOP(z, RLILP)
-void E_RLILP(Opcode*) {
+void E_RLILP() {
 	NibblePair pair = {GetCodeByte()};
 	E_RLIL_(pair.left, pair.right);
 }
@@ -311,11 +311,11 @@ __attribute__((always_inline)) static inline void E_RLDI_(CARD16 arg0, CARD16 ar
 	Push(v);
 }
 // 0131  ASSIGN_MOP(z, RLDI00)
-void E_RLDI00(Opcode*) {
+void E_RLDI00() {
 	E_RLDI_(0, 0);
 }
 // 0132  ASSIGN_MOP(z, RLDIP)
-void E_RLDIP(Opcode*) {
+void E_RLDIP() {
 	NibblePair pair = {GetCodeByte()};
 	E_RLDI_(pair.left, pair.right);
 }
@@ -333,7 +333,7 @@ __attribute__((always_inline)) static inline void E_RLDIL_(CARD16 arg0, CARD16 a
 	Push(v);
 }
 // 0133  ASSIGN_MOP(z, RLDILP)
-void E_RLDILP(Opcode*) {
+void E_RLDILP() {
 	NibblePair pair = {GetCodeByte()};
 	E_RLDIL_(pair.left, pair.right);
 }
@@ -348,7 +348,7 @@ __attribute__((always_inline)) static inline void E_RGI_(CARD16 arg0, CARD16 arg
 }
 
 // 0134  ASSIGN_MOP(z, RGIP)
-void E_RGIP(Opcode*) {
+void E_RGIP() {
 	NibblePair pair = {GetCodeByte()};
 	E_RGI_((CARD8)pair.left, (CARD8)pair.right);
 }
@@ -362,7 +362,7 @@ __attribute__((always_inline)) static inline void E_RGIL_(CARD16 arg0, CARD16 ar
 	Push(*p);
 }
 // 0135  ASSIGN_MOP(z, RGILP)
-void E_RGILP(Opcode*) {
+void E_RGILP() {
 	NibblePair pair = {GetCodeByte()};
 	E_RGIL_(pair.left, pair.right);
 }
@@ -376,7 +376,7 @@ __attribute__((always_inline)) static inline void E_WLI_(CARD16 arg0, CARD16 arg
 	*p = Pop();
 }
 // 0136  ASSIGN_MOP(z, WLIP)
-void E_WLIP(Opcode*) {
+void E_WLIP() {
 	NibblePair pair = {GetCodeByte()};
 	E_WLI_(pair.left, pair.right);
 }
@@ -390,7 +390,7 @@ __attribute__((always_inline)) static inline void E_WLIL_(CARD16 arg0, CARD16 ar
 	*p = Pop();
 }
 // 0137  ASSIGN_MOP(z, WLILP)
-void E_WLILP(Opcode*) {
+void E_WLILP() {
 	NibblePair pair = {GetCodeByte()};
 	E_WLIL_(pair.left, pair.right);
 }
@@ -406,7 +406,7 @@ __attribute__((always_inline)) static inline void E_WLDIL_(CARD16 arg0, CARD16 a
 	*p0 = Pop();
 }
 // 0140  ASSIGN_MOP(z, WLDILP)
-void E_WLDILP(Opcode*) {
+void E_WLDILP() {
 	NibblePair pair = {GetCodeByte()};
 	E_WLDIL_(pair.left, pair.right);
 }
@@ -421,7 +421,7 @@ __attribute__((always_inline)) static inline void E_RS_(CARD16 arg) {
 	Push(t);
 }
 // 0141  ASSIGN_MOP(z, RS)
-void E_RS(Opcode*) {
+void E_RS() {
 	E_RS_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -435,7 +435,7 @@ __attribute__((always_inline)) static inline void E_RLS_(CARD16 arg) {
 	Push(t);
 }
 // 0142  ASSIGN_MOP(z, RLS)
-void E_RLS(Opcode*) {
+void E_RLS() {
 	E_RLS_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -448,7 +448,7 @@ __attribute__((always_inline)) static inline void E_WS_(CARD16 arg) {
 	StoreByte(ptr, arg + index, data);
 }
 // 0143  ASSIGN_MOP(z, WS)
-void E_WS(Opcode*) {
+void E_WS() {
 	E_WS_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -461,7 +461,7 @@ __attribute__((always_inline)) static inline void E_WLS_(CARD16 arg) {
 	StoreByte(ptr, arg + index, data);
 }
 // 0144  ASSIGN_MOP(z, WLS)
-void E_WLS(Opcode*) {
+void E_WLS() {
 	E_WLS_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -474,11 +474,11 @@ __attribute__((always_inline)) static inline void E_RF_(CARD16 arg0, CARD16 arg1
 	Push(ReadField(*p, arg1));
 }
 // 0145  ASSIGN_MOP(z, R0F)
-void E_R0F(Opcode*) {
+void E_R0F() {
 	E_RF_(0, GetCodeByte());
 }
 // 0146  ASSIGN_MOP(z, RF)
-void E_RF(Opcode*) {
+void E_RF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_RF_((CARD8)desc.offset, (CARD8)desc.field);
 }
@@ -492,16 +492,16 @@ __attribute__((always_inline)) static inline void E_RLF_(CARD8 offset, CARD8 fie
 	Push(ReadField(*p, field));
 }
 // 0147  ASSIGN_MOP(z, RL0F)
-void E_RL0F(Opcode*) {
+void E_RL0F() {
 	E_RLF_(0, GetCodeByte());
 }
 // 0150  ASSIGN_MOP(z, RLF)
-void E_RLF(Opcode*) {
+void E_RLF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_RLF_((CARD8)desc.offset, (CARD8)desc.field);
 }
 // 0151  ASSIGN_MOP(z, RLFS)
-void E_RLFS(Opcode*) {
+void E_RLFS() {
 	FieldDesc desc = {Pop()};
 	E_RLF_((CARD8)desc.offset, (CARD8)desc.field);
 }
@@ -516,7 +516,7 @@ __attribute__((always_inline)) static inline void E_RLIPF_(CARD16 arg0, CARD16 a
 	Push(ReadField(*p, arg1));
 }
 // 0152  ASSIGN_MOP(z, RLIPF)
-void E_RLIPF(Opcode*) {
+void E_RLIPF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_RLIPF_((CARD8)desc.offset, (CARD8)desc.field);
 }
@@ -531,7 +531,7 @@ __attribute__((always_inline)) static inline void E_RLILPF_(CARD16 arg0, CARD16 
 	Push(ReadField(*p, arg1));
 }
 // 0153  ASSIGN_MOP(z, RLILPF)
-void E_RLILPF(Opcode*) {
+void E_RLILPF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_RLILPF_((CARD8)desc.offset, (CARD8)desc.field);
 }
@@ -546,11 +546,11 @@ __attribute__((always_inline)) static inline void E_WF_(CARD16 arg0, CARD16 arg1
 	*p = WriteField(*p, arg1, data);
 }
 // 0154  ASSIGN_MOP(z, W0F)
-void E_W0F(Opcode*) {
+void E_W0F() {
 	E_WF_(0, GetCodeByte());
 }
 // 0155  ASSIGN_MOP(z, WF)
-void E_WF(Opcode*) {
+void E_WF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_WF_(desc.offset, desc.field);
 }
@@ -566,12 +566,12 @@ __attribute__((always_inline)) static inline void E_PSF_(CARD16 arg0, CARD16 arg
 	SP++; //Recover();
 }
 // 0156  ASSIGN_MOP(z, PSF)
-void E_PSF(Opcode*) {
+void E_PSF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_PSF_((CARD8)desc.offset, (CARD8)desc.field);
 }
 // 0157  ASSIGN_MOP(z, PS0F)
-void E_PS0F(Opcode*) {
+void E_PS0F() {
 	E_PSF_(0, GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -585,7 +585,7 @@ __attribute__((always_inline)) static inline void E_WSF_(CARD16 arg0, CARD16 arg
 	*p = WriteField(*p, (CARD8)arg1, data);
 }
 // 0160  ASSIGN_MOP(z, WS0F)
-void E_WS0F(Opcode*) {
+void E_WS0F() {
 	E_WSF_(0, GetCodeByte());
 }
 __attribute__((always_inline)) static inline void E_WLF_(CARD16 offset, CARD16 field) {
@@ -596,11 +596,11 @@ __attribute__((always_inline)) static inline void E_WLF_(CARD16 offset, CARD16 f
 	*p = WriteField(*p, (CARD8)field, data);
 }
 // 0161  ASSIGN_MOP(z, WL0F)
-void E_WL0F(Opcode*) {
+void E_WL0F() {
 	E_WLF_(0, GetCodeByte());
 }
 // 0162  ASSIGN_MOP(z, WLF)
-void E_WLF(Opcode*) {
+void E_WLF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_WLF_(desc.offset, desc.field);
 }
@@ -617,14 +617,14 @@ __attribute__((always_inline)) static inline void E_PSLF_(CARD16 offset, CARD16 
 	SP++; //Recover();
 }
 // 0163  ASSIGN_MOP(z, PSLF)
-void E_PSLF(Opcode*) {
+void E_PSLF() {
 	FieldDesc desc = {GetCodeWord()};
 	E_PSLF_(desc.offset, desc.field);
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // 0164  ASSIGN_MOP(z, WLFS)
-void E_WLFS(Opcode*) {
+void E_WLFS() {
 	FieldDesc desc = {Pop()};
 	E_WLF_(desc.offset, desc.field);
 }
@@ -640,7 +640,7 @@ __attribute__((always_inline)) static inline void E_SLD_(CARD16 arg) {
 	*p0 = Pop();
 }
 // 0165  ASSIGN_MOP(z, SLDB)
-void E_SLDB(Opcode*) {
+void E_SLDB() {
 	E_SLD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -655,7 +655,7 @@ __attribute__((always_inline)) static inline void E_SGD_(CARD16 arg) {
 	*p0 = Pop();
 }
 // 0166  ASSIGN_MOP(z, SGDB)
-void E_SGDB(Opcode*) {
+void E_SGDB() {
 	E_SGD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -667,7 +667,7 @@ __attribute__((always_inline)) static inline void E_LLK_(CARD16 arg) {
 	PushLong(t);
 }
 // 0167  ASSIGN_MOP(z, LLKB)
-void E_LLKB(Opcode*) {
+void E_LLKB() {
 	E_LLK_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -680,7 +680,7 @@ __attribute__((always_inline)) static inline void E_RKI_(CARD16 arg) {
 	Push(*p);
 }
 // 0170  ASSIGN_MOP(z, RKIB)
-void E_RKIB(Opcode*) {
+void E_RKIB() {
 	E_RKI_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -695,7 +695,7 @@ __attribute__((always_inline)) static inline void E_RKDI_(CARD16 arg) {
 	Push(*p1);
 }
 // 0171  ASSIGN_MOP(z, RKDIB)
-void E_RKDIB(Opcode*) {
+void E_RKDIB() {
 	E_RKDI_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -709,7 +709,7 @@ __attribute__((always_inline)) static inline void E_LK_(CARD16 arg) {
 	*p = link - arg;
 }
 // 0172  ASSIGN_MOP(z, LKB)
-void E_LKB(Opcode*) {
+void E_LKB() {
 	E_LK_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -720,11 +720,11 @@ __attribute__((always_inline)) static inline void E_SHIFT_(INT16 arg) {
 	Push(Shift(u, arg));
 }
 // 0173  ASSIGN_MOP(z, SHIFT)
-void E_SHIFT(Opcode*) {
+void E_SHIFT() {
 	E_SHIFT_((INT16)Pop());
 }
 // 0174  ASSIGN_MOP(z, SHIFTSB)
-void E_SHIFTSB(Opcode*) {
+void E_SHIFTSB() {
 	E_SHIFT_(SignExtend(GetCodeByte()));
 }
 // 0175  //ASSIGN_MOP(z, MBP)

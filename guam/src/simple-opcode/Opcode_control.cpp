@@ -321,7 +321,7 @@ __attribute__((always_inline)) static inline void E_EFC_(CARD16 arg) {
 	Call(FetchLink(arg));
 }
 #define EFCn(n) \
-void E_EFC##n (Opcode*) { \
+void E_EFC##n () { \
 	E_EFC_(n); \
 }
 
@@ -355,11 +355,11 @@ EFCn(11)
 // zEFC12 - 0353
 EFCn(12)
 // zEFCB - 0354
-void E_EFCB(Opcode*) {
+void E_EFCB() {
 	E_EFC_(GetCodeByte());
 }
 // zLFC - 0355
-void  E_LFC(Opcode*) {
+void  E_LFC() {
 	CARDINAL nPC = GetCodeWord();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  zLFC %04X", savedPC, nPC);
 	if (DEBUG_TRACE_XFER) logger.debug("LFC   nPC = %6o", nPC);
@@ -382,37 +382,37 @@ void  E_LFC(Opcode*) {
 	CheckForXferTraps(dst.u, XT_localCall);
 }
 // zSFC - 0356
-void E_SFC(Opcode*) {
+void E_SFC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SFC", savedPC);
 	ControlLink link = PopLong();
 	Call(link);
 }
 // zRET - 0357
-void E_RET(Opcode*) {
+void E_RET() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  RET", savedPC);
 	ControlLink dst = {*FetchLF(LO_OFFSET(0, returnlink))};
 	XFER(dst, 0, XT_return, 1);
 }
 // zKFCB - 0360
-void E_KFCB(Opcode*) {
+void E_KFCB() {
 	SDIndex alpha = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  KFCB %02X", savedPC, alpha);
 	Call(ReadDblMds(SD_OFFSET(alpha)));
 }
 // aAF - 012
-void E_AF(Opcode*) {
+void E_AF() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  AF", savedPC);
 	FSIndex fsi = Pop();
 	Push(Alloc(fsi));
 }
 // aFF - 013
-void E_FF(Opcode*) {
+void E_FF() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  FF", savedPC);
 	LocalFrameHandle frame = Pop();
 	Free(frame);
 }
 // aPI - 014
-void E_PI(Opcode*) {
+void E_PI() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  PI", savedPC);
 	Recover();
 	Recover();
@@ -422,7 +422,7 @@ void E_PI(Opcode*) {
 	if (src) *StoreMds(PORT_OFFSET(port, outport)) = src;
 }
 // aPO - 015
-void E_PO(Opcode*) {
+void E_PO() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  PO", savedPC);
 	/* UNSPEC reserved = */ Pop();
 	PortLink port = Pop();
@@ -431,7 +431,7 @@ void E_PO(Opcode*) {
 	XFER(ReadDblMds(PORT_OFFSET(port, outport)), port, XT_port, 0);
 }
 // aPOR - 016
-void E_POR(Opcode*) {
+void E_POR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  POR", savedPC);
 	/* UNSPEC reserved = */ Pop();
 	PortLink port = Pop();
@@ -442,7 +442,7 @@ void E_POR(Opcode*) {
 
 
 // bXE - 041
-void E_XE(Opcode*) {
+void E_XE() {
 	try {
 		POINTER ptr = GetCodeByte();
 		if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  XE %02X", savedPC, ptr);
@@ -459,7 +459,7 @@ void E_XE(Opcode*) {
 	}
 }
 // bXF - 042
-void E_XF(Opcode*) {
+void E_XF() {
 	POINTER ptr = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  XF %02X", savedPC, ptr);
 

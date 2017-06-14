@@ -666,7 +666,7 @@ MonoBlt* MonoBlt::getInstance(ColorBlt::ColorBltTable& arg) {
 }
 
 
-void E_COLORBLT(Opcode*) {
+void E_COLORBLT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  COLORBLT  %d", savedPC, SP);
 	if (SP == 1) {
 		ColorBlt::ColorBltTable arg;
@@ -719,7 +719,7 @@ void E_COLORBLT(Opcode*) {
 }
 
 
-void E_BITBLT(Opcode*) {
+void E_BITBLT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BITBLT  %d", savedPC, SP);
 	if (SP == 1) {
 		ColorBlt::ColorBltTable arg;

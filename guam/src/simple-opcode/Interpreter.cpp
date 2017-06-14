@@ -82,17 +82,22 @@ void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_,
 	tableEsc[code_] = opcode;
 }
 
-static void mopOpcodeTrap(Opcode* opcode) {
-	OpcodeTrap((CARD8)opcode->getCode());
+// TODO use Opcode::getLast() to get opcode
+static void mopOpcodeTrap() {
+	Opcode* last = Opcode::getLast();
+	if (last == 0) ERROR();
+	OpcodeTrap((CARD8)last->getCode());
 }
-static void escOpcodeTrap(Opcode* opcode) {
-	EscOpcodeTrap((CARD8)opcode->getCode());
+static void escOpcodeTrap() {
+	Opcode* last = Opcode::getLast();
+	if (last == 0) ERROR();
+	EscOpcodeTrap((CARD8)last->getCode());
 }
 
 void Interpreter::fillOpcodeTrap() {
 	for(CARD32 i = 0; i < TABLE_SIZE; i++) {
-		if (tableMop[i].isEmpty()) assignMop(mopOpcodeTrap, "__MOP_OPCODE_TRAP__", i, 1); // can be 1, 2 or 3
-		if (tableEsc[i].isEmpty()) assignEsc(escOpcodeTrap, "__ESC_OPCODE_TRAP__", i, 2); // can bw 2 or 3
+		if (tableMop[i].isEmpty()) assignMop(mopOpcodeTrap, "##MOP_TRAP##", i, 1); // can be 1, 2 or 3
+		if (tableEsc[i].isEmpty()) assignEsc(escOpcodeTrap, "##ESC_TRAP##", i, 2); // can bw 2 or 3
 	}
 }
 

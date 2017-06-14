@@ -456,7 +456,7 @@ int TimeoutScan() {
 ///////////////////////////////////////////////////////////////////////
 
 // zME - 0361
-void E_ME(Opcode*) {
+void E_ME() {
 	LONG_POINTER m = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ME  %08X", savedPC, m);
 	MINIMAL_STACK();
@@ -472,7 +472,7 @@ void E_ME(Opcode*) {
 
 
 // zMX - 0362
-void E_MX(Opcode*) {
+void E_MX() {
 	LONG_POINTER m = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  MX  %08X", savedPC, m);
 	MINIMAL_STACK();
@@ -482,7 +482,7 @@ void E_MX(Opcode*) {
 
 
 // aMW - 02
-void E_MW(Opcode*) {
+void E_MW() {
 	Ticks t = Pop();
 	LONG_POINTER c = PopLong();
 	LONG_POINTER m = PopLong();
@@ -510,7 +510,7 @@ void E_MW(Opcode*) {
 }
 
 // aMR - 03
-void E_MR(Opcode*) {
+void E_MR() {
 	LONG_POINTER c = PopLong();
 	LONG_POINTER m = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  MR  %08X  %08X", savedPC, m, c);
@@ -535,7 +535,7 @@ void E_MR(Opcode*) {
 
 
 // aNC - 04
-void E_NC(Opcode*) {
+void E_NC() {
 	LONG_POINTER c = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NC  %08X", savedPC, c);
 	MINIMAL_STACK();
@@ -549,7 +549,7 @@ void E_NC(Opcode*) {
 }
 
 // aBC - 05
-void E_BC(Opcode*) {
+void E_BC() {
 	LONG_POINTER c = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BC  %08X", savedPC, c);
 	MINIMAL_STACK();
@@ -563,7 +563,7 @@ void E_BC(Opcode*) {
 	if (requeue) Reschedule();
 }
 // aREQ - 06
-void E_REQ(Opcode*) {
+void E_REQ() {
 	PsbHandle psb = Pop();
 	QueueHandle dstque = PopLong();
 	QueueHandle srcque = PopLong();
@@ -574,7 +574,7 @@ void E_REQ(Opcode*) {
 	Reschedule();
 }
 // aSPP - 017
-void E_SPP(Opcode*) {
+void E_SPP() {
 	CARD16 priority = Pop();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SPP  %d", savedPC, priority);
 	MINIMAL_STACK();

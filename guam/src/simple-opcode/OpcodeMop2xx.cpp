@@ -47,7 +47,7 @@ __attribute__((always_inline)) static inline void E_CATCH_(CARD16 arg) {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  CATCH %3d", savedPC, arg);
 }
 // 0200  ASSIGN_MOP(z, CATCH)
-void E_CATCH(Opcode*) {
+void E_CATCH() {
 	E_CATCH_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ __attribute__((always_inline)) static inline void E_J_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 #define Jn(n) \
-void E_J##n (Opcode*) { \
+void E_J##n () { \
 	E_J_(n); \
 }
 // 0201  ASSIGN_MOP(z, J2)
@@ -77,11 +77,11 @@ Jn(7)
 // 0207  ASSIGN_MOP(z, J8)
 Jn(8)
 // 0210  ASSIGN_MOP(z, JB)
-void E_JB(Opcode*) {
+void E_JB() {
 	E_J_(SignExtend(GetCodeByte()));
 }
 // 0211  ASSIGN_MOP(z, JW)
-void E_JW(Opcode*) {
+void E_JW() {
 	E_J_((INT16)GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ __attribute__((always_inline)) static inline void E_JUE_(CARD16 arg0, INT16 arg1
 	ProcessorThread::checkRequestReschedule();
 }
 // 0212  ASSIGN_MOP(z, JEP)
-void E_JEP(Opcode*) {
+void E_JEP() {
 	NibblePair pair = {GetCodeByte()};
 	E_JUE_(pair.left, SignExtend(pair.right + 4));
 }
@@ -109,11 +109,11 @@ __attribute__((always_inline)) static inline void E_JEB_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0213  ASSIGN_MOP(z, JEB)
-void E_JEB(Opcode*) {
+void E_JEB() {
 	E_JEB_(SignExtend(GetCodeByte()));
 }
 // 0214  ASSIGN_MOP(z, JEBB)
-void E_JEBB(Opcode*) {
+void E_JEBB() {
 	CARD8 arg0 = GetCodeByte();
 	CARD8 arg1 = GetCodeByte();
 	E_JUE_(arg0, SignExtend(arg1));
@@ -128,7 +128,7 @@ __attribute__((always_inline)) static inline void E_JUNE_(CARD16 arg0, INT16 arg
 	ProcessorThread::checkRequestReschedule();
 }
 // 0215  ASSIGN_MOP(z, JNEP)
-void E_JNEP(Opcode*) {
+void E_JNEP() {
 	NibblePair pair = {GetCodeByte()};
 	E_JUNE_(pair.left, SignExtend(pair.right + 4));
 }
@@ -143,11 +143,11 @@ __attribute__((always_inline)) static inline void E_JNE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0216  ASSIGN_MOP(z, JNEB)
-void E_JNEB(Opcode*) {
+void E_JNEB() {
 	E_JNE_(SignExtend(GetCodeByte()));
 }
 // 0217  ASSIGN_MOP(z, JNEBB)
-void E_JNEBB(Opcode*) {
+void E_JNEBB() {
 	CARD8 arg0 = GetCodeByte();
 	CARD8 arg1 = GetCodeByte();
 	E_JUNE_(arg0, SignExtend(arg1));
@@ -163,7 +163,7 @@ __attribute__((always_inline)) static inline void E_JL_(INT16 arg) {
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
-void E_JLB(Opcode*) {
+void E_JLB() {
 	E_JL_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ __attribute__((always_inline)) static inline void E_JGE_(INT16 arg) {
 	// ProcessorThread::checkRequestReschedule must be placed at very end of implementation of opcode.
 	ProcessorThread::checkRequestReschedule();
 }
-void E_JGEB(Opcode*) {
+void E_JGEB() {
 	E_JGE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ __attribute__((always_inline)) static inline void E_JG_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0222  ASSIGN_MOP(z, JGB)
-void E_JGB(Opcode*) {
+void E_JGB() {
 	E_JG_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ __attribute__((always_inline)) static inline void E_JLE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0223  ASSIGN_MOP(z, JLEB)
-void E_JLEB(Opcode*) {
+void E_JLEB() {
 	E_JLE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -219,7 +219,7 @@ __attribute__((always_inline)) static inline void E_JUL_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0224  ASSIGN_MOP(z, JULB)
-void E_JULB(Opcode*) {
+void E_JULB() {
 	E_JUL_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ __attribute__((always_inline)) static inline void E_JUGE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0225  ASSIGN_MOP(z, JUGEB)
-void E_JUGEB(Opcode*) {
+void E_JUGEB() {
 	E_JUGE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,7 +247,7 @@ __attribute__((always_inline)) static inline void E_JUG_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0226  ASSIGN_MOP(z, JUGB)
-void E_JUGB(Opcode*) {
+void E_JUGB() {
 	E_JUG_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -261,7 +261,7 @@ __attribute__((always_inline)) static inline void E_JULE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0227  ASSIGN_MOP(z, JULEB)
-void E_JULEB(Opcode*) {
+void E_JULEB() {
 	E_JULE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ __attribute__((always_inline)) static inline void E_JZ_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 #define JZn(n) \
-void E_JZ##n (Opcode*) { \
+void E_JZ##n () { \
 	E_JZ_(n); \
 }
 // 0230  ASSIGN_MOP(z, JZ3)
@@ -282,7 +282,7 @@ JZn(3)
 // 0231  ASSIGN_MOP(z, JZ4)
 JZn(4)
 // 0232  ASSIGN_MOP(z, JZB)
-void E_JZB(Opcode*) {
+void E_JZB() {
 	E_JZ_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -295,7 +295,7 @@ __attribute__((always_inline)) static inline void E_JNZ_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 #define JNZn(n) \
-void E_JNZ##n (Opcode*) { \
+void E_JNZ##n () { \
 	E_JNZ_(n); \
 }
 // 0233  ASSIGN_MOP(z, JNZ3)
@@ -303,7 +303,7 @@ JNZn(3)
 // 0234  ASSIGN_MOP(z, JNZ4)
 JNZn(4)
 // 0235  ASSIGN_MOP(z, JNZB)
-void E_JNZB(Opcode*) {
+void E_JNZB() {
 	E_JNZ_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -317,7 +317,7 @@ __attribute__((always_inline)) static inline void E_JDE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0236  ASSIGN_MOP(z, JDEB)
-void E_JDEB(Opcode*) {
+void E_JDEB() {
 	E_JDE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ __attribute__((always_inline)) static inline void E_JDNE_(INT16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0237  ASSIGN_MOP(z, JDNEB)
-void E_JDNEB(Opcode*) {
+void E_JDNEB() {
 	E_JDNE_(SignExtend(GetCodeByte()));
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,7 +348,7 @@ __attribute__((always_inline)) static inline void E_JIB_(CARD16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0240  ASSIGN_MOP(z, JIB)
-void E_JIB(Opcode*) {
+void E_JIB() {
 	E_JIB_(GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -365,35 +365,35 @@ __attribute__((always_inline)) static inline void E_JIW_(CARD16 arg) {
 	ProcessorThread::checkRequestReschedule();
 }
 // 0241  ASSIGN_MOP(z, JIW)
-void E_JIW(Opcode*) {
+void E_JIW() {
 	E_JIW_(GetCodeWord());
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // 0242  ASSIGN_MOP(z, REC)
-void E_REC(Opcode*) {
+void E_REC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  REC", savedPC);
 	Recover();
 }
 // 0243  ASSIGN_MOP(z, REC2)
-void E_REC2(Opcode*) {
+void E_REC2() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  REC2", savedPC);
 	Recover();
 	Recover();
 }
 // 0244  ASSIGN_MOP(z, DIS)
-void E_DIS(Opcode*) {
+void E_DIS() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DIS", savedPC);
 	Discard();
 }
 // 0245  ASSIGN_MOP(z, DIS2)
-void E_DIS2(Opcode*) {
+void E_DIS2() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DIS2", savedPC);
 	Discard();
 	Discard();
 }
 // 0246  ASSIGN_MOP(z, EXCH)
-void E_EXCH(Opcode*) {
+void E_EXCH() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EXCH", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
@@ -401,7 +401,7 @@ void E_EXCH(Opcode*) {
 	Push(u);
 }
 // 0247  ASSIGN_MOP(z, DEXCH)
-void E_DEXCH(Opcode*) {
+void E_DEXCH() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DEXCH", savedPC);
 	LONG_UNSPEC v = PopLong();
 	LONG_UNSPEC u = PopLong();
@@ -409,28 +409,28 @@ void E_DEXCH(Opcode*) {
 	PushLong(u);
 }
 // 0250  ASSIGN_MOP(z, DUP)
-void E_DUP(Opcode*) {
+void E_DUP() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DUP", savedPC);
 	UNSPEC u = Pop();
 	Push(u);
 	Push(u);
 }
 // 0251  ASSIGN_MOP(z, DDUP)
-void E_DDUP(Opcode*) {
+void E_DDUP() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DDUP", savedPC);
 	LONG_UNSPEC u = PopLong();
 	PushLong(u);
 	PushLong(u);
 }
 // 0252  ASSIGN_MOP(z, EXDIS)
-void E_EXDIS(Opcode*) {
+void E_EXDIS() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  EXDIS", savedPC);
 	UNSPEC u = Pop();
 	/*UNSPEC v = */ Pop();
 	Push(u);
 }
 // 0253  ASSIGN_MOP(z, NEG)
-void E_NEG(Opcode*) {
+void E_NEG() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  NEG", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1] = -stack[SP - 1];
@@ -438,7 +438,7 @@ void E_NEG(Opcode*) {
 	//Push(-i);
 }
 // 0254  ASSIGN_MOP(z, INC)
-void E_INC(Opcode*) {
+void E_INC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  INC", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1]++;
@@ -446,7 +446,7 @@ void E_INC(Opcode*) {
 	//Push(s + 1);
 }
 // 0255  ASSIGN_MOP(z, DEC)
-void E_DEC(Opcode*) {
+void E_DEC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DEC", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1]--;
@@ -454,7 +454,7 @@ void E_DEC(Opcode*) {
 	//Push(s - 1);
 }
 // 0256  ASSIGN_MOP(z, DINC)
-void E_DINC(Opcode*) {
+void E_DINC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DINC", savedPC);
 	if (SP < 2) STACK_ERROR();
 	stack[SP - 2] += 1;
@@ -463,7 +463,7 @@ void E_DINC(Opcode*) {
 	//PushLong(s + 1);
 }
 // 0257  ASSIGN_MOP(z, DBL)
-void E_DBL(Opcode*) {
+void E_DBL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DBL", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1] *= 2;
@@ -471,13 +471,13 @@ void E_DBL(Opcode*) {
 	//Push(u << 1);
 }
 // 0260  ASSIGN_MOP(z, DDBL)
-void E_DDBL(Opcode*) {
+void E_DDBL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DDBL", savedPC);
 	LONG_UNSPEC u = PopLong();
 	PushLong(u << 1);
 }
 // 0261  ASSIGN_MOP(z, TRPL)
-void E_TRPL(Opcode*) {
+void E_TRPL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  TRPL", savedPC);
 	if (SP == 0) STACK_ERROR();
 	stack[SP - 1] *= 3;
@@ -485,14 +485,14 @@ void E_TRPL(Opcode*) {
 	//Push(s * 3);
 }
 // 0262  ASSIGN_MOP(z, AND)
-void E_AND(Opcode*) {
+void E_AND() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  AND", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
 	Push(u & v);
 }
 // 0263  ASSIGN_MOP(z, IOR)
-void E_IOR(Opcode*) {
+void E_IOR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  IOR", savedPC);
 	UNSPEC v = Pop();
 	UNSPEC u = Pop();
@@ -504,46 +504,46 @@ __attribute__((always_inline)) static inline void E_ADDS_(INT16 arg) {
 	CARD16 i = Pop();
 	Push(i + arg);
 }
-void E_ADDSB(Opcode*) {
+void E_ADDSB() {
 	E_ADDS_(SignExtend(GetCodeByte()));
 }
 // 0265  ASSIGN_MOP(z, ADD)
-void E_ADD(Opcode*) {
+void E_ADD() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ADD", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
 	Push(s + t);
 }
 // 0266  ASSIGN_MOP(z, SUB)
-void E_SUB(Opcode*) {
+void E_SUB() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SUB", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
 	Push(s - t);
 }
 // 0267  ASSIGN_MOP(z, DADD)
-void E_DADD(Opcode*) {
+void E_DADD() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DADD", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	PushLong(s + t);
 }
 // 0270  ASSIGN_MOP(z, DSUB)
-void E_DSUB(Opcode*) {
+void E_DSUB() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DSUB", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
 	PushLong(s - t);
 }
 // 0271  ASSIGN_MOP(z, ADC)
-void E_ADC(Opcode*) {
+void E_ADC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ADC", savedPC);
 	CARDINAL t = Pop();
 	LONG_CARDINAL s = PopLong();
 	PushLong(s + t);
 }
 // 0272  ASSIGN_MOP(z, ACD)
-void E_ACD(Opcode*) {
+void E_ACD() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  ACD", savedPC);
 	LONG_CARDINAL t = PopLong();
 	CARDINAL s = Pop();
@@ -556,11 +556,11 @@ __attribute__((always_inline)) static inline void E_AL0I_(CARD16 arg) {
 	// NO PAGE FAULT AFTER HERE
 	Push(*p + arg);
 }
-void E_AL0IB(Opcode*) {
+void E_AL0IB() {
 	E_AL0I_(GetCodeByte());
 }
 // 0274  ASSIGN_MOP(z, MUL)
-void E_MUL(Opcode*) {
+void E_MUL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  MUL", savedPC);
 	CARDINAL t = Pop();
 	CARDINAL s = Pop();
@@ -569,14 +569,14 @@ void E_MUL(Opcode*) {
 	SP--;
 }
 // 0275  ASSIGN_MOP(z, DCMP)
-void E_DCMP(Opcode*) {
+void E_DCMP() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  DCMP", savedPC);
 	INT32 k = PopLong();
 	INT32 j = PopLong();
 	Push((k == j) ? 0 : ((j > k) ? 1 : -1));
 }
 // 0276  ASSIGN_MOP(z, UDCMP)
-void E_UDCMP(Opcode*) {
+void E_UDCMP() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  UDCMP", savedPC);
 	LONG_CARDINAL t = PopLong();
 	LONG_CARDINAL s = PopLong();
@@ -587,7 +587,7 @@ void E_UDCMP(Opcode*) {
 //PRun: TYPE = RunBase RELATIVE ORDERED POINTER [0..LAST[CARDINAL]] TO Run;
 //Find: PROCEDURE [page: VM.PageNumber, rBase: RunBase, pRunTop: PRun]
 //  RETURNS [found: BOOLEAN, pRun: PRun] = MACHINE CODE {MopcodesExtras2.zVMFIND};
-void E_VMFIND(Opcode*) {
+void E_VMFIND() {
 	CARD16 pRunTop = Pop();
 	CARD32 rBase   = PopLong();
 	CARD32 page    = PopLong();

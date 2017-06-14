@@ -42,7 +42,7 @@ static log4cpp::Category& logger = Logger::getLogger("0xx");
 
 
 // 00  ASSIGN_MOP(z, NOOP)
-void E_NOOP(Opcode* /*opcode*/) {
+void E_NOOP() {
 	logger.fatal("TRACE %6o  NOOP", savedPC);
 	ERROR();
 }
@@ -55,7 +55,7 @@ __attribute__((always_inline)) static inline void E_LL_(CARD16 arg) {
 	Push(*p);
 }
 #define LLn(n) \
-void E_LL##n (Opcode*) { \
+void E_LL##n () { \
 	E_LL_(n); \
 }
 // 01  ASSIGN_MOP(z, LL0)
@@ -83,7 +83,7 @@ LLn(10)
 // 014  ASSIGN_MOP(z, LL11)
 LLn(11)
 // 015  ASSIGN_MOP(z, LLB)
-void E_LLB(Opcode*) {
+void E_LLB() {
 	E_LL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ __attribute__((always_inline)) static inline void E_LLD_(CARD16 arg) {
 	Push(*p1);
 }
 #define LLDn(n) \
-void E_LLD##n (Opcode*) { \
+void E_LLD##n () { \
 	E_LLD_(n); \
 }
 // 016  ASSIGN_MOP(z, LLD0)
@@ -122,7 +122,7 @@ LLDn(8)
 // 027  ASSIGN_MOP(z, LLD10)
 LLDn(10)
 // 030  ASSIGN_MOP(z, LLDB)
-void E_LLDB(Opcode*) {
+void E_LLDB() {
 	E_LLD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ __attribute__((always_inline)) static inline void E_SL_(CARD16 arg) {
 	*p = Pop();
 }
 #define SLn(n) \
-void E_SL##n (Opcode*) { \
+void E_SL##n () { \
 	E_SL_(n); \
 }
 // 031  ASSIGN_MOP(z, SL0)
@@ -160,7 +160,7 @@ SLn(9)
 // 043  ASSIGN_MOP(z, SL10)
 SLn(10)
 // 044  ASSIGN_MOP(z, SLB)
-void E_SLB(Opcode*) {
+void E_SLB() {
 	E_SL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -175,7 +175,7 @@ __attribute__((always_inline)) static inline void E_SLD_(CARD16 arg) {
 	*p0 = Pop();
 }
 #define SLDn(n) \
-void E_SLD##n (Opcode*) { \
+void E_SLD##n () { \
 	E_SLD_(n); \
 }
 // 045  ASSIGN_MOP(z, SLD0)
@@ -204,7 +204,7 @@ __attribute__((always_inline)) static inline void E_PL_(CARD16 arg) {
 	SP++; //Recover();
 }
 #define PLn(n) \
-void E_PL##n (Opcode*) { \
+void E_PL##n () { \
 	E_PL_(n); \
 }
 // 055  ASSIGN_MOP(z, PL0)
@@ -216,7 +216,7 @@ PLn(2)
 // 060  ASSIGN_MOP(z, PL3)
 PLn(3)
 // 061  ASSIGN_MOP(z, PLB)
-void E_PLB(Opcode*) {
+void E_PLB() {
 	E_PL_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,11 +233,11 @@ __attribute__((always_inline)) static inline void E_PLD_(CARD16 arg) {
 	SP++; //Recover();
 }
 // 062  ASSIGN_MOP(z, PLD0)
-void E_PLD0(Opcode*) {
+void E_PLD0() {
 	E_PLD_(0);
 }
 // 063  ASSIGN_MOP(z, PLDB)
-void E_PLDB(Opcode*) {
+void E_PLDB() {
 	E_PLD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -249,7 +249,7 @@ __attribute__((always_inline)) static inline void E_LG_(CARD16 arg) {
 	Push(*p);
 }
 #define LGn(n) \
-void E_LG##n (Opcode*) { \
+void E_LG##n () { \
 	E_LG_(n); \
 }
 // 064  ASSIGN_MOP(z, LG0)
@@ -259,7 +259,7 @@ LGn(1)
 // 066  ASSIGN_MOP(z, LG2)
 LGn(2)
 // 067  ASSIGN_MOP(z, LGB)
-void E_LGB(Opcode*) {
+void E_LGB() {
 	E_LG_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ __attribute__((always_inline)) static inline void E_LGD_(CARD16 arg) {
 	Push(*p1);
 }
 #define LGDn(n) \
-void E_LGD##n (Opcode*) { \
+void E_LGD##n () { \
 	E_LGD_(n); \
 }
 // 070  ASSIGN_MOP(z, LGD0)
@@ -282,7 +282,7 @@ LGDn(0)
 // 071  ASSIGN_MOP(z, LGD2)
 LGDn(2)
 // 072  ASSIGN_MOP(z, LGDB)
-void E_LGDB(Opcode*) {
+void E_LGDB() {
 	E_LGD_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -294,13 +294,13 @@ __attribute__((always_inline)) static inline void E_SG_(CARD16 arg) {
 	// NO PAGE FAULT AFTER HERE
 	*p = Pop();
 }
-void E_SGB(Opcode*) {
+void E_SGB() {
 	E_SG_(GetCodeByte());
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // 074  ASSIGN_MOP(z, BNDCK)
-void E_BNDCK(Opcode*) {
+void E_BNDCK() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BNDCK", savedPC);
 	CARDINAL range = Pop();
 	CARDINAL index = Pop();
@@ -308,7 +308,7 @@ void E_BNDCK(Opcode*) {
 	if (range <= index) BoundsTrap();
 }
 // 075  ASSIGN_MOP(z, BRK)
-void E_BRK(Opcode*) {
+void E_BRK() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BRK", savedPC);
 	if (breakByte == 0) BreakTrap();
 	Interpreter::dispatchMop(breakByte);
