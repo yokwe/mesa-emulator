@@ -387,14 +387,26 @@ static void FaultTwo(FaultIndex fi, LONG_UNSPEC parameter) {
 // FrameFault: PROC[fsi: FSIndex]
 void FrameFault(FSIndex fsi) {
 	if (PERF_ENABLE) perf_FrameFault++;
-	if (DEBUG_SHOW_FRAME_FAULT) logger.debug("%s %d", __FUNCTION__, fsi);
+	if (DEBUG_SHOW_FRAME_FAULT) {
+		if (Opcode::getLast()) {
+			logger.debug("%s %3d  %8s  %8X+%4X  %8X", __FUNCTION__, fsi, Opcode::getLast()->getName(), CodeCache::CB(), savedPC, (CodeCache::CB() + savedPC));
+		} else {
+			logger.debug("%s %3d", __FUNCTION__, fsi);
+		}
+	}
 	FaultOne(qFrameFault, fsi);
 }
 
 // PageFault: PROC[ptr: LONG POINTER]
 void PageFault(LONG_POINTER ptr) {
 	if (PERF_ENABLE) perf_PageFault++;
-	if (DEBUG_SHOW_PAGE_FAULT) logger.debug("%s %08X", __FUNCTION__, ptr);
+	if (DEBUG_SHOW_PAGE_FAULT) {
+		if (Opcode::getLast()) {
+			logger.debug("%s %08X  %8s  %8X+%4X  %8X", __FUNCTION__, ptr, Opcode::getLast()->getName(), CodeCache::CB(), savedPC, (CodeCache::CB() + savedPC));
+		} else {
+			logger.debug("%s %08X", __FUNCTION__, ptr);
+		}
+	}
 	if (DEBUG_STOP_AT_PAGE_FAULT) ERROR();
 	FaultTwo(qPageFault, ptr);
 }
