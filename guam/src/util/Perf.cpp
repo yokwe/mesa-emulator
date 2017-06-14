@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014, 2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -34,8 +34,6 @@ OF SUCH DAMAGE.
 int perf_stop_at_mp_8000 = 0;
 
 long long perf_Dispatch = 0;
-long long perf_EscOpcodeTrap = 0;
-long long perf_OpcodeTrap = 0;
 long long perf_Fetch = 0;
 long long perf_Store = 0;
 long long perf_ReadDbl = 0;
@@ -58,3 +56,12 @@ long long perf_FetchPda = 0;
 long long perf_StorePda = 0;
 long long perf_MemoryFetch = 0;
 long long perf_MemoryStore = 0;
+
+// Fault
+long long perf_FrameFault = 0;
+long long perf_PageFault = 0;
+// Trap
+long long perf_CodeTrap = 0;
+long long perf_EscOpcodeTrap = 0;
+long long perf_OpcodeTrap = 0;
+long long perf_UnboundTrap = 0;

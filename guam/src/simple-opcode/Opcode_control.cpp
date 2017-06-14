@@ -33,6 +33,7 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("control");
 
 #include "../util/Debug.h"
+#include "../util/Perf.h"
 
 #include "../mesa/Constant.h"
 #include "../mesa/Type.h"
@@ -83,6 +84,7 @@ void BreakTrap() {
 	TrapZero(SD_OFFSET(sBreakTrap));
 }
 void CodeTrap(GFTHandle gfi) {
+	if (PERF_ENABLE) perf_CodeTrap++;
 	if (DEBUG_SHOW_CODE_TRAP) logger.debug("%s %04X", __FUNCTION__, gfi);
 	TrapOne(SD_OFFSET(sCodeTrap), gfi);
 }
@@ -100,6 +102,7 @@ void DivZeroTrap() {
 	TrapZero(SD_OFFSET(sDivZeroTrap));
 }
 void EscOpcodeTrap(BYTE opcode) {
+	if (PERF_ENABLE) perf_EscOpcodeTrap++;
 	if (DEBUG_SHOW_ESC_OPCODE_TRAP) logger.debug("%s %03o", __FUNCTION__, opcode);
 	if (DEBUG_STOP_AT_OPCODE_TRAP) ERROR();
 	TrapOne(ETT_OFFSET(opcode), opcode);
@@ -109,6 +112,7 @@ void InterruptError() {
 	TrapZero(SD_OFFSET(sInterruptError));
 }
 void OpcodeTrap(BYTE opcode) {
+	if (PERF_ENABLE) perf_OpcodeTrap++;
 	if (DEBUG_SHOW_OPCODE_TRAP) logger.debug("%s %03o", __FUNCTION__, opcode);
 	if (DEBUG_STOP_AT_OPCODE_TRAP) ERROR();
 	TrapOne(SD_OFFSET(sOpcodeTrap), opcode);
@@ -135,6 +139,7 @@ void StackError() {
 	TrapZero(SD_OFFSET(sStackError));
 }
 void UnboundTrap(ControlLink dst) {
+	if (PERF_ENABLE) perf_UnboundTrap++;
 	if (DEBUG_SHOW_UNBOUND_TRAP) logger.debug("%s %08X", __FUNCTION__, dst);
 	if (DEBUG_STOP_AT_UNBOUND_TRAP) ERROR();
 	TrapTwo(SD_OFFSET(sUnboundTrap), dst);

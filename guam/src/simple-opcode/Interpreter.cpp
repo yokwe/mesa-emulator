@@ -83,11 +83,9 @@ void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_,
 }
 
 static void mopOpcodeTrap(Opcode* opcode) {
-	if (PERF_ENABLE) perf_OpcodeTrap++;
 	OpcodeTrap((CARD8)opcode->getCode());
 }
 static void escOpcodeTrap(Opcode* opcode) {
-	if (PERF_ENABLE) perf_EscOpcodeTrap++;
 	EscOpcodeTrap((CARD8)opcode->getCode());
 }
 

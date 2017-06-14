@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014, 2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -37,8 +37,6 @@ static const int PERF_ENABLE    = 1;
 extern int perf_stop_at_mp_8000;
 
 extern long long perf_Dispatch;
-extern long long perf_EscOpcodeTrap;
-extern long long perf_OpcodeTrap;
 extern long long perf_Fetch;
 extern long long perf_Store;
 extern long long perf_ReadDbl;
@@ -61,11 +59,18 @@ extern long long perf_FetchPda;
 extern long long perf_StorePda;
 extern long long perf_MemoryFetch;
 extern long long perf_MemoryStore;
+// Fault
+extern long long perf_FrameFault;
+extern long long perf_PageFault;
+// Trap
+extern long long perf_CodeTrap;
+extern long long perf_EscOpcodeTrap;
+extern long long perf_OpcodeTrap;
+extern long long perf_UnboundTrap;
+
 
 #define Perf_log() if (PERF_ENABLE) { \
 		logger.info("perf_Dispatch      = %10llu", perf_Dispatch); \
-		logger.info("perf_EscOpcodeTrap = %10llu", perf_EscOpcodeTrap); \
-		logger.info("perf_OpcodeTrap    = %10llu", perf_OpcodeTrap); \
 		logger.info("perf_Fetch         = %10llu", perf_Fetch); \
 		logger.info("perf_Store         = %10llu", perf_Store); \
 		logger.info("perf_ReadDbl       = %10llu", perf_ReadDbl); \
@@ -88,6 +93,12 @@ extern long long perf_MemoryStore;
 		logger.info("perf_StorePda      = %10llu", perf_StorePda); \
 		logger.info("perf_MemoryFetch   = %10llu", perf_MemoryFetch); \
 		logger.info("perf_MemoryStore   = %10llu", perf_MemoryStore); \
+		logger.info("perf_FrameFault    = %10llu", perf_FrameFault); \
+		logger.info("perf_PageFault     = %10llu", perf_PageFault); \
+		logger.info("perf_CodeTrap      = %10llu", perf_CodeTrap); \
+		logger.info("perf_EscOpcodeTrap = %10llu", perf_EscOpcodeTrap); \
+		logger.info("perf_OpcodeTrap    = %10llu", perf_OpcodeTrap); \
+		logger.info("perf_UnboundTrap   = %10llu", perf_UnboundTrap); \
 }
 
 #endif
