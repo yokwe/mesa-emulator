@@ -41,10 +41,10 @@ class Opcode {
 public:
 	typedef void (*EXEC)();
 
-	Opcode() : exec(0), name(0), flag(0) {}
+	Opcode() : exec(0), name(""), flag(0) {}
 	Opcode(const Opcode& that) :
 		exec(that.exec), name(that.name), flag(that.flag) {}
-	Opcode(EXEC exec_, const char* name_, CARD32 code_, CARD32 size_) :
+	Opcode(EXEC exec_, const QString& name_, CARD32 code_, CARD32 size_) :
 		exec(exec_), name(name_), code(code_), size(size_) {}
 
 	Opcode& operator=(const Opcode& that) {
@@ -57,8 +57,6 @@ public:
 
 	void empty() {
 		exec = 0;
-		name = 0;
-		flag = 0;
 	}
 	int isEmpty() {
 		return exec == 0;
@@ -68,7 +66,7 @@ public:
 	}
 
 	const char* getName() const {
-		return name;
+		return name.toLocal8Bit().constData();
 	}
 	CARD32 getCode() const {
 		return code;
@@ -91,7 +89,7 @@ protected:
 	static Opcode* last;
 
 	EXEC        exec;
-	const char* name;
+	QString     name;
 	union {
 		CARD32 flag;
 		struct {
