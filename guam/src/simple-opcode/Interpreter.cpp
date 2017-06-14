@@ -45,7 +45,7 @@ long long Interpreter::statMop [Interpreter::TABLE_SIZE];
 long long Interpreter::statEsc [Interpreter::TABLE_SIZE];
 
 
-void Interpreter::assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 size_) {
+void Interpreter::assignMop(Opcode::EXEC exec_, const QString& name_, CARD32 code_, CARD32 size_) {
 	if (exec_ == 0) {
 		logger.fatal("assignMop exec_ == 0  code = %d", code_);
 		ERROR();
@@ -63,7 +63,7 @@ void Interpreter::assignMop(Opcode::EXEC exec_, const char* name_, CARD32 code_,
 	Opcode opcode (exec_, name_, code_, size_);
 	tableMop[code_] = opcode;
 }
-void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_, CARD32 size_) {
+void Interpreter::assignEsc(Opcode::EXEC exec_, const QString& name_, CARD32 code_, CARD32 size_) {
 	if (exec_ == 0) {
 		logger.fatal("assignEsc exec_ == 0  code = %d", code_);
 		ERROR();
@@ -82,7 +82,6 @@ void Interpreter::assignEsc(Opcode::EXEC exec_, const char* name_, CARD32 code_,
 	tableEsc[code_] = opcode;
 }
 
-// TODO use Opcode::getLast() to get opcode
 static void mopOpcodeTrap() {
 	Opcode* last = Opcode::getLast();
 	if (last == 0) ERROR();
@@ -96,8 +95,8 @@ static void escOpcodeTrap() {
 
 void Interpreter::fillOpcodeTrap() {
 	for(CARD32 i = 0; i < TABLE_SIZE; i++) {
-		if (tableMop[i].isEmpty()) assignMop(mopOpcodeTrap, "##MOP_TRAP##", i, 1); // can be 1, 2 or 3
-		if (tableEsc[i].isEmpty()) assignEsc(escOpcodeTrap, "##ESC_TRAP##", i, 2); // can bw 2 or 3
+		if (tableMop[i].isEmpty()) assignMop(mopOpcodeTrap, QString::asprintf("MOP_%03o", i), i, 1); // can be 1, 2 or 3
+		if (tableEsc[i].isEmpty()) assignEsc(escOpcodeTrap, QString::asprintf("ESC_%03o", i), i, 2); // can bw 2 or 3
 	}
 }
 
@@ -170,9 +169,6 @@ void Interpreter::initRegisters() {
 
 #define ASSIGN_MOP(prefix, name) Interpreter::assignMop(E_##name, #name, prefix##name, L_##name);
 #define ASSIGN_ESC(prefix, name) Interpreter::assignEsc(E_##name, #name, prefix##name, L_##name);
-
-//#define ASSIGN_MOP(prefix, name) Interpreter::assignMop(Opcode(prefix##name, L_##name, #name, C_##name, I_##name));
-//#define ASSIGN_ESC(prefix, name) Interpreter::assignEsc(Opcode(prefix##name, L_##name, #name, C_##name, I_##name));
 
 void Interpreter::initTable() {
 	/* 00 */ ASSIGN_MOP(z, NOOP)
