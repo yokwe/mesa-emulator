@@ -25,6 +25,11 @@ OF SUCH DAMAGE.
 */
 
 
+// TODO Don't call InterruptThread::isPending(). Like we did in Opcode_bitblt.cpp
+//      PC = savedPC and return doesn't make sense.
+// TODO Check correctness of each implementation. Especially *R() methods.
+//      *R() need copy data backward in [0..count).
+
 //
 // Opcode_block.cpp
 //
