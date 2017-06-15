@@ -94,7 +94,7 @@ public:
 	static inline int isEnabled() {
 		return WDC == 0;
 	}
-	static int  isPending();
+//	static int  isPending();
 	static void notifyInterrupt(CARD16 interruptSelector);
 	static void stop();
 

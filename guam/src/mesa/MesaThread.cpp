@@ -301,9 +301,9 @@ void InterruptThread::notifyInterrupt(CARD16 interruptSelector) {
 		notifyWakeupCount++;
 	}
 }
-int InterruptThread::isPending() {
-	return WP && isEnabled();
-}
+//int InterruptThread::isPending() {
+//	return WP && isEnabled();
+//}
 
 void InterruptThread::run() {
 	logger.info("InterruptThread::run START");
