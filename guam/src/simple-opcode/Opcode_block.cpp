@@ -71,13 +71,13 @@ static inline void OP_BLT_FAST(POINTER source, POINTER dest, CARDINAL count) {
 		dest   += run;
 		if (count == 0) break;
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			Push(source);
-			Push(count);
-			Push(dest);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			Push(source);
+//			Push(count);
+//			Push(dest);
+//			break;
+//		}
 	}
 }
 void E_BLT() {
@@ -90,7 +90,7 @@ void E_BLT() {
 
 	CARDINAL dStartPage = dest                 / PageSize;
 	CARDINAL sStartPage = source               / PageSize;
-	CARDINAL dEndPage   = (dest + count - 1)   / PageSize;
+	CARDINAL dEndPage   = (dest   + count - 1) / PageSize;
 	CARDINAL sEndPage   = (source + count - 1) / PageSize;
 	if (dStartPage == dEndPage && sStartPage == sEndPage) {
 		// Most of BLT is this case.
@@ -111,10 +111,10 @@ void E_BLT() {
 		Push(source + 1);
 		Push(count - 1);
 		Push(dest + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -143,13 +143,13 @@ static void OP_BLTL_FAST(LONG_POINTER source, LONG_POINTER dest, CARDINAL count)
 		dest   += run;
 		if (count == 0) break;
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			PushLong(source);
-			Push(count);
-			PushLong(dest);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			PushLong(source);
+//			Push(count);
+//			PushLong(dest);
+//			break;
+//		}
 	}
 }
 void E_BLTL() {
@@ -162,7 +162,7 @@ void E_BLTL() {
 
 	CARD32 dStartPage = dest                 / PageSize;
 	CARD32 sStartPage = source               / PageSize;
-	CARD32 dEndPage   = (dest + count - 1)   / PageSize;
+	CARD32 dEndPage   = (dest   + count - 1) / PageSize;
 	CARD32 sEndPage   = (source + count - 1) / PageSize;
 	if (dStartPage == dEndPage && sStartPage == sEndPage) {
 		// Most of BLTL is this case.
@@ -183,10 +183,10 @@ void E_BLTL() {
 		PushLong(source + 1);
 		Push(count - 1);
 		PushLong(dest + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -204,7 +204,7 @@ static inline void OP_BLTC_QUICK(POINTER source, POINTER dest, CARDINAL count) {
 static inline void OP_BLTC_FAST(POINTER source, POINTER dest, CARDINAL count) {
 	for(;;) {
 		CARD16 sRun = PageSize - ((CodeCache::CB() + source) % PageSize);
-		CARD16 dRun = PageSize - (dest          % PageSize);
+		CARD16 dRun = PageSize - (dest                       % PageSize);
 		CARD16 run = (sRun < dRun) ? sRun : dRun;
 		if (count < run) run = count;
 
@@ -215,13 +215,13 @@ static inline void OP_BLTC_FAST(POINTER source, POINTER dest, CARDINAL count) {
 		dest   += run;
 		if (count == 0) break;
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			Push(source);
-			Push(count);
-			Push(dest);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			Push(source);
+//			Push(count);
+//			Push(dest);
+//			break;
+//		}
 	}
 }
 void E_BLTC() {
@@ -234,7 +234,7 @@ void E_BLTC() {
 
 	CARD32 dStartPage = dest                                   / PageSize;
 	CARD32 sStartPage = (CodeCache::CB() + source)             / PageSize;
-	CARD32 dEndPage   = (dest + count - 1)                     / PageSize;
+	CARD32 dEndPage   = (dest                     + count - 1) / PageSize;
 	CARD32 sEndPage   = (CodeCache::CB() + source + count - 1) / PageSize;
 	if (dStartPage == dEndPage && sStartPage == sEndPage) {
 		// Most of BLTC is this case.
@@ -255,10 +255,10 @@ void E_BLTC() {
 		Push(source + 1);
 		Push(count - 1);
 		Push(dest + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -276,7 +276,7 @@ static inline void OP_BLTCL_QUICK(POINTER source, LONG_POINTER dest, CARDINAL co
 static inline void OP_BLTCL_FAST(POINTER source, LONG_POINTER dest, CARDINAL count) {
 	for(;;) {
 		CARD16 sRun = PageSize - ((CodeCache::CB() + source) % PageSize);
-		CARD16 dRun = PageSize - (dest          % PageSize);
+		CARD16 dRun = PageSize - (dest                       % PageSize);
 		CARD16 run = (sRun < dRun) ? sRun : dRun;
 		if (count < run) run = count;
 
@@ -287,13 +287,13 @@ static inline void OP_BLTCL_FAST(POINTER source, LONG_POINTER dest, CARDINAL cou
 		dest   += run;
 		if (count == 0) break;
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			Push(source);
-			Push(count);
-			PushLong(dest);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			Push(source);
+//			Push(count);
+//			PushLong(dest);
+//			break;
+//		}
 	}
 }
 void E_BLTCL() {
@@ -306,7 +306,7 @@ void E_BLTCL() {
 
 	CARD32 dStartPage = dest                                   / PageSize;
 	CARD32 sStartPage = (CodeCache::CB() + source)             / PageSize;
-	CARD32 dEndPage   = (dest + count - 1)                     / PageSize;
+	CARD32 dEndPage   = (dest                     + count - 1) / PageSize;
 	CARD32 sEndPage   = (CodeCache::CB() + source + count - 1) / PageSize;
 	if (dStartPage == dEndPage && sStartPage == sEndPage) {
 		// Most of BLTCL is this case.
@@ -327,10 +327,10 @@ void E_BLTCL() {
 		Push(source + 1);
 		Push(count - 1);
 		PushLong(dest + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -363,13 +363,13 @@ static inline void OP_BLTLR_FAST(LONG_POINTER source, LONG_POINTER dest, CARDINA
 		count  -= run;
 		if (count == 0) break;
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			PushLong(source);
-			Push(count);
-			PushLong(dest);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			PushLong(source);
+//			Push(count);
+//			PushLong(dest);
+//			break;
+//		}
 	}
 }
 void E_BLTLR() {
@@ -382,7 +382,7 @@ void E_BLTLR() {
 
 	CARD32 dStartPage = dest                 / PageSize;
 	CARD32 sStartPage = source               / PageSize;
-	CARD32 dEndPage   = (dest + count - 1)   / PageSize;
+	CARD32 dEndPage   = (dest   + count - 1) / PageSize;
 	CARD32 sEndPage   = (source + count - 1) / PageSize;
 	if (dStartPage == dEndPage && sStartPage == sEndPage) {
 		// Most of BLTLR is this case.
@@ -404,10 +404,10 @@ void E_BLTLR() {
 		PushLong(source);
 		Push(count);
 		PushLong(dest);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -453,13 +453,13 @@ static inline void OP_BLEL_FAST(LONG_POINTER ptr1, LONG_POINTER ptr2, CARDINAL c
 			break;
 		}
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			PushLong(ptr2);
-			Push(count);
-			PushLong(ptr1);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			PushLong(ptr2);
+//			Push(count);
+//			PushLong(ptr1);
+//			break;
+//		}
 	}
 }
 void E_BLEL() {
@@ -503,10 +503,10 @@ void E_BLEL() {
 		PushLong(ptr2 + 1);
 		Push(count - 1);
 		PushLong(ptr1 + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -552,13 +552,13 @@ static inline void OP_BLECL_FAST(LONG_POINTER ptr, CARDINAL offset, CARDINAL cou
 			return;
 		}
 
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			Push(offset);
-			Push(count);
-			PushLong(ptr);
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			Push(offset);
+//			Push(count);
+//			PushLong(ptr);
+//			break;
+//		}
 	}
 }
 void E_BLECL() {
@@ -602,10 +602,10 @@ void E_BLECL() {
 		Push(offset + 1);
 		Push(count - 1);
 		PushLong(ptr + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 #endif
@@ -633,10 +633,10 @@ void E_CKSUM() {
 		Push(Checksum(cksum, *Fetch(source)));
 		Push(count - 1);
 		PushLong(source + 1);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			return;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			return;
+//		}
 	}
 	if (cksum == (CARDINAL)0xffff) cksum = 0;
 	Push(cksum);
@@ -677,10 +677,10 @@ void E_BYTBLT() {
 		Push(count - 1);
 		PushLong(sourceBase);
 		Push(sourceOffset);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 
@@ -705,10 +705,10 @@ void E_BYTBLTR() {
 		Push(count - 1);
 		PushLong(sourceBase);
 		Push(sourceOffset);
-		if (InterruptThread::isPending()) {
-			PC = savedPC;
-			break;
-		}
+//		if (InterruptThread::isPending()) {
+//			PC = savedPC;
+//			break;
+//		}
 	}
 }
 
