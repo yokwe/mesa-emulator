@@ -348,10 +348,10 @@ int ProcessInterrupt() {
 }
 
 // CheckForInterrupts: PROC RETURNS[BOOLEAN]
-int CheckForInterrupt() {
-	int ret = InterruptThread::isPending() ? ProcessInterrupt() : 0;
-	return ret;
-}
+//int CheckForInterrupt() {
+//	int ret = InterruptThread::isPending() ? ProcessInterrupt() : 0;
+//	return ret;
+//}
 
 // 10.4.3 Faults
 // Fault: PROC[fi: FaultIndex] RETURNS[PsbIndex]
