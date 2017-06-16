@@ -29,6 +29,8 @@ OF SUCH DAMAGE.
 //      PC = savedPC and return doesn't make sense.
 // TODO Check correctness of each implementation. Especially *R() methods.
 //      *R() need copy data backward in [0..count).
+// TODO Use LONG_POINTER & OP_BLTL_QUICK as many as possible
+//      Use LONG_POINTER & OP_BLTL_QUICK in BLT and BLTC
 
 //
 // Opcode_block.cpp
