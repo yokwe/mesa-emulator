@@ -48,57 +48,65 @@ static log4cpp::Category& logger = Logger::getLogger("block");
 
 #include "Opcode.h"
 
+static const CARD32 MASK_OFFSET = PageSize - 1;
+static const CARD32 MASK_PAGE   = ~MASK_OFFSET;
+
+static inline void BlockTransfer(CARD32 source, CARD32 dest, CARD32 count) {
+//	logger.debug("BlockTransfer  %8X  %8X  %5d", source, dest, count);
+	// Assume source region stay within one page
+	// Assume dest region stay within one page
+	CARD16 *s = Fetch(source);
+	CARD16 *d = Store(dest);
+	while(count--) *d++ = *s++;
+}
+
 #define USE_FAST_BLT
 
 // zBLT - 0363
 #ifdef USE_FAST_BLT
-static inline void OP_BLT_QUICK(POINTER source, POINTER dest, CARDINAL count) {
-	// Assume source region stay within one page
-	// Assume dest region stay within one page
-	CARD16 *s = FetchMds(source);
-	CARD16 *d = StoreMds(dest);
-	while(count--) *d++ = *s++;
-}
-static inline void OP_BLT_FAST(POINTER source, POINTER dest, CARDINAL count) {
-	for(;;) {
-		CARD16 sRun = PageSize - (source % PageSize);
-		CARD16 dRun = PageSize - (dest   % PageSize);
-		CARD16 run = (sRun < dRun) ? sRun : dRun;
-		if (count < run) run = count;
-
-		OP_BLT_QUICK(source, dest, run);
-
-		source += run;
-		count  -= run;
-		dest   += run;
-		if (count == 0) break;
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			Push(source);
-//			Push(count);
-//			Push(dest);
-//			break;
-//		}
-	}
-}
 void E_BLT() {
 	POINTER  dest   = Pop();
 	CARDINAL count  = Pop();
 	POINTER  source = Pop();
-	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLT       %4X     %4X %5d", savedPC, source, dest, count);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLT       %8X %8X %5d", savedPC, source, dest, count);
+
 
 	if (count == 0) return;
 
-	CARDINAL dStartPage = dest                 / PageSize;
-	CARDINAL sStartPage = source               / PageSize;
-	CARDINAL dEndPage   = (dest   + count - 1) / PageSize;
-	CARDINAL sEndPage   = (source + count - 1) / PageSize;
-	if (dStartPage == dEndPage && sStartPage == sEndPage) {
-		// Most of BLT is this case.
-		OP_BLT_QUICK(source, dest, count);
+	CARD32 d = LengthenPointer(dest);
+	CARD32 s = LengthenPointer(source);
+	CARD32 c = count;
+
+	CARD32 dPageStart = d & MASK_PAGE;
+	CARD32 sPageStart = s & MASK_PAGE;
+	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
+	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+
+	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
+		BlockTransfer(s, d, c);
 	} else {
-		OP_BLT_FAST(source, dest, count);
+		for(;;) {
+			CARD32 sRun = PageSize - (d & MASK_OFFSET);
+			CARD32 dRun = PageSize - (s & MASK_OFFSET);
+			CARD32 run = (sRun < dRun) ? sRun : dRun;
+			if (c < run) run = c;
+
+			BlockTransfer(s, d, run);
+			s += run;
+			d += run;
+			c -= run;
+			if (c == 0) break;
+
+			// Update stack in case of PageFault
+			dest   += run;
+			source += run;
+			Push(source);
+			Push((CARD16)c);
+			Push(dest);
+			Discard();
+			Discard();
+			Discard();
+		}
 	}
 }
 #else
@@ -113,10 +121,6 @@ void E_BLT() {
 		Push(source + 1);
 		Push(count - 1);
 		Push(dest + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 #endif
@@ -124,71 +128,63 @@ void E_BLT() {
 
 // zBLTL - 0364
 #ifdef USE_FAST_BLT
-static inline void OP_BLTL_QUICK(LONG_POINTER source, LONG_POINTER dest, CARDINAL count) {
-	// Assume source region stay within one page
-	// Assume dest region stay within one page
-	CARD16 *s = Fetch(source);
-	CARD16 *d = Store(dest);
-	while(count--) *d++ = *s++;
-}
-static void OP_BLTL_FAST(LONG_POINTER source, LONG_POINTER dest, CARDINAL count) {
-	for(;;) {
-		CARD16 sRun = PageSize - (source % PageSize);
-		CARD16 dRun = PageSize - (dest   % PageSize);
-		CARD16 run = (sRun < dRun) ? sRun : dRun;
-		if (count < run) run = count;
-
-		OP_BLTL_QUICK(source, dest, run);
-
-		source += run;
-		count  -= run;
-		dest   += run;
-		if (count == 0) break;
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			PushLong(source);
-//			Push(count);
-//			PushLong(dest);
-//			break;
-//		}
-	}
-}
 void E_BLTL() {
-	LONG_POINTER dest = PopLong();
-	CARDINAL count  = Pop();
+	LONG_POINTER dest   = PopLong();
+	CARDINAL     count  = Pop();
 	LONG_POINTER source = PopLong();
-	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTL  %8X %8X %5d", savedPC, source, dest, count);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTL      %8X %8X %5d", savedPC, source, dest, count);
 
 	if (count == 0) return;
 
-	CARD32 dStartPage = dest                 / PageSize;
-	CARD32 sStartPage = source               / PageSize;
-	CARD32 dEndPage   = (dest   + count - 1) / PageSize;
-	CARD32 sEndPage   = (source + count - 1) / PageSize;
-	if (dStartPage == dEndPage && sStartPage == sEndPage) {
-		// Most of BLTL is this case.
-		OP_BLTL_QUICK(source, dest, count);
+	CARD32 d = dest;
+	CARD32 s = source;
+	CARD32 c = count;
+
+	CARD32 dPageStart = d & MASK_PAGE;
+	CARD32 sPageStart = s & MASK_PAGE;
+	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
+	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+
+	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
+		BlockTransfer(s, d, c);
 	} else {
-		OP_BLTL_FAST(source, dest, count);
+		for(;;) {
+			CARD32 sRun = PageSize - (d & MASK_OFFSET);
+			CARD32 dRun = PageSize - (s & MASK_OFFSET);
+			CARD32 run = (sRun < dRun) ? sRun : dRun;
+			if (c < run) run = c;
+
+			BlockTransfer(s, d, run);
+			s += run;
+			d += run;
+			c -= run;
+			if (c == 0) break;
+
+			// Update stack in case of PageFault
+			source += run;
+			dest   += run;
+			PushLong(source);
+			Push((CARD16)c);
+			PushLong(dest);
+			Discard(); Discard();
+			Discard();
+			Discard(); Discard();
+		}
 	}
 }
 #else
 void E_BLTL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTL", savedPC);
 	for(;;) {
-		LONG_POINTER dest = PopLong();
-		CARDINAL count = Pop();
+		LONG_POINTER dest   = PopLong();
+		CARDINAL     count  = Pop();
 		LONG_POINTER source = PopLong();
 		if (count == 0) break;
+
 		*Store(dest) = *Fetch(source);
 		PushLong(source + 1);
 		Push(count - 1);
 		PushLong(dest + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 #endif
@@ -196,71 +192,62 @@ void E_BLTL() {
 
 // zBLTC - 0365
 #ifdef USE_FAST_BLT
-static inline void OP_BLTC_QUICK(POINTER source, POINTER dest, CARDINAL count) {
-	// Assume source region stay within one page
-	// Assume dest region stay within one page
-	CARD16 *s = FetchCode(source); // ReadCode(offset) == *Fech(CB + offset)
-	CARD16 *d = StoreMds(dest);
-	while(count--) *d++ = *s++;
-}
-static inline void OP_BLTC_FAST(POINTER source, POINTER dest, CARDINAL count) {
-	for(;;) {
-		CARD16 sRun = PageSize - ((CodeCache::CB() + source) % PageSize);
-		CARD16 dRun = PageSize - (dest                       % PageSize);
-		CARD16 run = (sRun < dRun) ? sRun : dRun;
-		if (count < run) run = count;
-
-		OP_BLTC_QUICK(source, dest, run);
-
-		source += run;
-		count  -= run;
-		dest   += run;
-		if (count == 0) break;
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			Push(source);
-//			Push(count);
-//			Push(dest);
-//			break;
-//		}
-	}
-}
 void E_BLTC() {
 	POINTER  dest   = Pop();
 	CARDINAL count  = Pop();
 	POINTER  source = Pop();
-	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTC      %4X     %4X %5d", savedPC, source, dest, count);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTC      %8X %8X %5d", savedPC, source, dest, count);
 
 	if (count == 0) return;
 
-	CARD32 dStartPage = dest                                   / PageSize;
-	CARD32 sStartPage = (CodeCache::CB() + source)             / PageSize;
-	CARD32 dEndPage   = (dest                     + count - 1) / PageSize;
-	CARD32 sEndPage   = (CodeCache::CB() + source + count - 1) / PageSize;
-	if (dStartPage == dEndPage && sStartPage == sEndPage) {
-		// Most of BLTC is this case.
-		OP_BLTC_QUICK(source, dest, count);
+	CARD32 d = LengthenPointer(dest);
+	CARD32 s = CodeCache::CB() + source;
+	CARD32 c = count;
+
+	CARD32 dPageStart = d & MASK_PAGE;
+	CARD32 sPageStart = s & MASK_PAGE;
+	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
+	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+
+	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
+		BlockTransfer(s, d, c);
 	} else {
-		OP_BLTC_FAST(source, dest, count);
+		for(;;) {
+			CARD32 sRun = PageSize - (d & MASK_OFFSET);
+			CARD32 dRun = PageSize - (s & MASK_OFFSET);
+			CARD32 run = (sRun < dRun) ? sRun : dRun;
+			if (c < run) run = c;
+
+			BlockTransfer(s, d, run);
+			s += run;
+			d += run;
+			c -= run;
+			if (c == 0) break;
+
+			// Update stack in case of PageFault
+			source += run;
+			dest   += run;
+			Push(source);
+			Push((CARD16)c);
+			Push(dest);
+			Discard();
+			Discard();
+			Discard();
+		}
 	}
 }
 #else
 void E_BLTC() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTC", savedPC);
 	for(;;) {
-		POINTER dest = Pop();
-		CARDINAL count = Pop();
-		POINTER source = Pop();
+		POINTER  dest   = Pop();
+		CARDINAL count  = Pop();
+		POINTER  source = Pop();
 		if (count == 0) break;
 		*StoreMds(dest) = ReadCode(source);
 		Push(source + 1);
-		Push(count - 1);
-		Push(dest + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
+		Push(count  - 1);
+		Push(dest   + 1);
 	}
 }
 #endif
@@ -268,36 +255,6 @@ void E_BLTC() {
 
 // zBLTCL - 0366
 #ifdef USE_FAST_BLT
-static inline void OP_BLTCL_QUICK(POINTER source, LONG_POINTER dest, CARDINAL count) {
-	// Assume source region stay within one page
-	// Assume dest region stay within one page
-	CARD16 *s = FetchCode(source); // ReadCode(offset) == *Fech(CB + offset)
-	CARD16 *d = Store(dest);
-	while(count--) *d++ = *s++;
-}
-static inline void OP_BLTCL_FAST(POINTER source, LONG_POINTER dest, CARDINAL count) {
-	for(;;) {
-		CARD16 sRun = PageSize - ((CodeCache::CB() + source) % PageSize);
-		CARD16 dRun = PageSize - (dest                       % PageSize);
-		CARD16 run = (sRun < dRun) ? sRun : dRun;
-		if (count < run) run = count;
-
-		OP_BLTCL_QUICK(source, dest, run);
-
-		source += run;
-		count  -= run;
-		dest   += run;
-		if (count == 0) break;
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			Push(source);
-//			Push(count);
-//			PushLong(dest);
-//			break;
-//		}
-	}
-}
 void E_BLTCL() {
 	LONG_POINTER  dest   = PopLong();
 	CARDINAL      count  = Pop();
@@ -306,24 +263,49 @@ void E_BLTCL() {
 
 	if (count == 0) return;
 
-	CARD32 dStartPage = dest                                   / PageSize;
-	CARD32 sStartPage = (CodeCache::CB() + source)             / PageSize;
-	CARD32 dEndPage   = (dest                     + count - 1) / PageSize;
-	CARD32 sEndPage   = (CodeCache::CB() + source + count - 1) / PageSize;
-	if (dStartPage == dEndPage && sStartPage == sEndPage) {
-		// Most of BLTCL is this case.
-		OP_BLTCL_QUICK(source, dest, count);
+	CARD32 d = dest;
+	CARD32 s = CodeCache::CB() + source;
+	CARD32 c = count;
+
+	CARD32 dPageStart = d & MASK_PAGE;
+	CARD32 sPageStart = s & MASK_PAGE;
+	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
+	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+
+	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
+		BlockTransfer(s, d, c);
 	} else {
-		OP_BLTCL_FAST(source, dest, count);
+		for(;;) {
+			CARD32 sRun = PageSize - (d & MASK_OFFSET);
+			CARD32 dRun = PageSize - (s & MASK_OFFSET);
+			CARD32 run = (sRun < dRun) ? sRun : dRun;
+			if (c < run) run = c;
+
+			BlockTransfer(s, d, run);
+			s += run;
+			d += run;
+			c -= run;
+			if (c == 0) break;
+
+			// Update stack in case of PageFault
+			source += run;
+			dest   += run;
+			Push(source);
+			Push((CARD16)c);
+			PushLong(dest);
+			Discard();
+			Discard();
+			Discard(); Discard();
+		}
 	}
 }
 #else
 void E_BLTCL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTCL", savedPC);
 	for(;;) {
-		LONG_POINTER dest = PopLong();
-		CARDINAL count = Pop();
-		POINTER source = Pop();
+		LONG_POINTER dest   = PopLong();
+		CARDINAL     count  = Pop();
+		POINTER      source = Pop();
 		if (count == 0) break;
 		*Store(dest) = ReadCode(source);
 		Push(source + 1);
@@ -339,7 +321,7 @@ void E_BLTCL() {
 
 
 // aBLTLR - 047
-#ifdef USE_FAST_BLT
+#ifdef USE_FAST_BLT_
 static inline void OP_BLTLR_QUICK(LONG_POINTER source, LONG_POINTER dest, CARDINAL count) {
 	CARD16 *s = Fetch(source + count - 1);
 	CARD16 *d = Store(dest   + count - 1);
@@ -397,8 +379,8 @@ void E_BLTLR() {
 void E_BLTLR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTLR", savedPC);
 	for(;;) {
-		LONG_POINTER dest = PopLong();
-		CARDINAL count = Pop();
+		LONG_POINTER dest   = PopLong();
+		CARDINAL     count  = Pop();
 		LONG_POINTER source = PopLong();
 		if (count == 0) break;
 		count = count - 1;
