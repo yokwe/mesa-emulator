@@ -90,6 +90,26 @@ __attribute__((always_inline)) static inline void BLTR(CARD32& s, CARD32& d, CAR
 	while(run--) *dp-- = *sp--;
 }
 
+__attribute__((always_inline)) static inline CARD32 BLE(CARD32& a, CARD32& b, CARD32& c, CARD32& r) {
+	CARD16 *ap = Fetch(a);
+	CARD16 *bp = Fetch(b);
+	// NO PAGE FAULT AFTER THIS
+
+	CARD32 ar = PageSize - (a & MASK_OFFSET);
+	CARD32 br = PageSize - (b & MASK_OFFSET);
+	CARD32 run = (ar < br) ? ar : br;
+	if (c < run) run = c;
+
+	a += run;
+	b += run;
+	c -= run;
+	r =  run;
+
+	while(run--) {
+		if (*ap++ != *bp++) return 0; // FALSE - NOT EQUAL
+	}
+	return 1; // TRUE - EQUAL
+}
 
 // zBLT - 0363
 #ifdef USE_FAST_BLT
@@ -307,10 +327,6 @@ void E_BLTCL() {
 		Push(source + 1);
 		Push(count - 1);
 		PushLong(dest + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 #endif
@@ -365,10 +381,6 @@ void E_BLTLR() {
 		PushLong(source);
 		Push(count);
 		PushLong(dest);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 #endif
@@ -376,83 +388,55 @@ void E_BLTLR() {
 
 // aBLEL - 050
 #ifdef USE_FAST_BLT
-static inline void OP_BLEL_QUICK(LONG_POINTER ptr1, LONG_POINTER ptr2, CARDINAL count) {
-	CARD16 *p1 = Fetch(ptr1);
-	CARD16 *p2 = Fetch(ptr2);
-
-	while(count--) {
-		if (*p1++ != *p2++) {
-			Push(0);
-			return;
-		}
-	}
-	Push(1);
-}
-static inline void OP_BLEL_FAST(LONG_POINTER ptr1, LONG_POINTER ptr2, CARDINAL count) {
-	for(;;) {
-		CARD16 p1Run = PageSize - (ptr1 % PageSize);
-		CARD16 p2Run = PageSize - (ptr2 % PageSize);
-		CARD16 run = (p1Run < p2Run) ? p1Run : p2Run;
-		if (count < run) run = count;
-
-		CARD32 r = run;
-		CARD16 *p1 = Fetch(ptr1);
-		CARD16 *p2 = Fetch(ptr2);
-
-		while(r--) {
-			if (*p1++ != *p2++) {
-				Push(0);
-				return;
-			}
-		}
-
-		ptr1  += run;
-		count -= run;
-		ptr2  += run;
-		if (count == 0) {
-			Push(1);
-			break;
-		}
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			PushLong(ptr2);
-//			Push(count);
-//			PushLong(ptr1);
-//			break;
-//		}
-	}
-}
 void E_BLEL() {
-	LONG_POINTER ptr1 = PopLong();
-	CARDINAL count = Pop();
-	LONG_POINTER ptr2 = PopLong();
+	LONG_POINTER ptr1  = PopLong();
+	CARDINAL     count = Pop();
+	LONG_POINTER ptr2  = PopLong();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLEL  %8X %8X %5d", savedPC, ptr1, ptr2, count);
 
 	if (count == 0) {
-		Push(1);
+		Push(1); // TRUE - EQUAL
 		return;
 	}
 
-	CARDINAL p1StartPage = ptr1               / PageSize;
-	CARDINAL p2StartPage = ptr2               / PageSize;
-	CARDINAL p1EndPage   = (ptr1 + count - 1) / PageSize;
-	CARDINAL p2EndPage   = (ptr2 + count - 1) / PageSize;
+	CARD32 a = ptr1;
+	CARD32 b = ptr2;
+	CARD32 c = count;
+	CARD32 r;
+	CARD32 result;
 
-	if (p1StartPage == p1EndPage && p2StartPage == p2EndPage) {
-		// Most of BLEL is this case.
-		OP_BLEL_QUICK(ptr1, ptr2, count);
-	} else {
-		OP_BLEL_FAST(ptr1, ptr2, count);
+	for(;;) {
+		result = BLE(a, b, c, r);
+		if (!result) break; // break if result is FALSE - NOT EQUAL
+		if (c == 0)  break; // break reach to end. TRUE - EQUAL
+
+		// Update stack in case of PageFault
+		ptr1  += r;
+		ptr2  += r;
+		count -= r;
+
+		PushLong(ptr2);
+		Push(count);
+		PushLong(ptr1);
+		Discard(); Discard();
+		Discard();
+		Discard(); Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
+	Push(result);
 }
 #else
 void E_BLEL() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLEL", savedPC);
 	for(;;) {
-		LONG_POINTER ptr1 = PopLong();
-		CARDINAL count = Pop();
-		LONG_POINTER ptr2 = PopLong();
+		LONG_POINTER ptr1  = PopLong();
+		CARDINAL     count = Pop();
+		LONG_POINTER ptr2  = PopLong();
 		if (count == 0) {
 			Push(1);
 			break;
@@ -464,10 +448,6 @@ void E_BLEL() {
 		PushLong(ptr2 + 1);
 		Push(count - 1);
 		PushLong(ptr1 + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 #endif
@@ -475,53 +455,6 @@ void E_BLEL() {
 
 // aBLECL - 051
 #ifdef USE_FAST_BLT
-static inline void OP_BLECL_QUICK(LONG_POINTER ptr, CARDINAL offset, CARDINAL count) {
-	CARD16 *o = FetchCode(offset);
-	CARD16 *p = Fetch(ptr);
-
-	while(count--) {
-		if (*o++ != *p++) {
-			Push(0);
-			return;
-		}
-	}
-	Push(1);
-}
-static inline void OP_BLECL_FAST(LONG_POINTER ptr, CARDINAL offset, CARDINAL count) {
-	for(;;) {
-		CARD16 oRun = PageSize - ((CodeCache::CB() + offset) % PageSize);
-		CARD16 pRun = PageSize - (ptr % PageSize);
-		CARD16 run = (oRun < pRun) ? oRun : pRun;
-		if (count < run) run = count;
-
-		CARD32 r = run;
-		CARD16 *o = FetchCode(offset);
-		CARD16 *p = Fetch(ptr);
-
-		while(r--) {
-			if (*o++ != *p++) {
-				Push(0);
-				return;
-			}
-		}
-
-		ptr    += run;
-		count  -= run;
-		offset += run;
-		if (count == 0) {
-			Push(1);
-			return;
-		}
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			Push(offset);
-//			Push(count);
-//			PushLong(ptr);
-//			break;
-//		}
-	}
-}
 void E_BLECL() {
 	LONG_POINTER ptr    = PopLong();
 	CARDINAL     count  = Pop();
@@ -533,17 +466,36 @@ void E_BLECL() {
 		return;
 	}
 
-	CARDINAL pStartPage = ptr                                    / PageSize;
-	CARDINAL cStartPage = (CodeCache::CB() + offset)             / PageSize;
-	CARDINAL pEndPage   = (ptr + count - 1)                      / PageSize;
-	CARDINAL cEndPage   = (CodeCache::CB() + offset + count - 1) / PageSize;
+	CARD32 a = ptr;
+	CARD32 b = CodeCache::CB() + offset;
+	CARD32 c = count;
+	CARD32 r;
+	CARD32 result;
 
-	if (pStartPage == pEndPage && cStartPage == cEndPage) {
-		// Most of BLECL is this case.
-		OP_BLECL_QUICK(ptr, offset, count);
-	} else {
-		OP_BLECL_FAST(ptr, offset, count);
+	for(;;) {
+		result = BLE(a, b, c, r);
+		if (!result) break; // break if result is FALSE - NOT EQUAL
+		if (c == 0)  break; // break reach to end. TRUE - EQUAL
+
+		// Update stack in case of PageFault
+		ptr    += r;
+		offset += r;
+		count  -= r;
+
+		Push(offset);
+		Push(count);
+		PushLong(ptr);
+		Discard();
+		Discard();
+		Discard(); Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
+	Push(result);
 }
 #else
 void E_BLECL() {
@@ -563,17 +515,13 @@ void E_BLECL() {
 		Push(offset + 1);
 		Push(count - 1);
 		PushLong(ptr + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 #endif
 
 
 // aCKSUM - 052
-static CARDINAL Checksum(CARDINAL chksum, CARDINAL data) {
+__attribute__((always_inline)) static inline CARDINAL Checksum(CARDINAL chksum, CARDINAL data) {
 	CARDINAL temp = chksum + data;
 	if (temp < chksum) temp = temp + 1;
 	if ((CARD16)0x8000 <= temp) {
@@ -583,26 +531,43 @@ static CARDINAL Checksum(CARDINAL chksum, CARDINAL data) {
 	}
 	return temp;
 }
+#ifdef USE_FAST_BLT
 void E_CKSUM() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  CKSUM", savedPC);
-	CARDINAL cksum;
+	LONG_POINTER source = PopLong();
+	CARDINAL     count  = Pop();
+	CARDINAL     cksum  = Pop();
+
+	// No need to maintain stack, because count is small.
+	CARD16* p = Fetch(source);
+	CARD32  c = count;
 	for(;;) {
-		LONG_POINTER source = PopLong();
-		CARDINAL count = Pop();
-		cksum = Pop();
-		if (count == 0) break;
-		Push(Checksum(cksum, *Fetch(source)));
-		Push(count - 1);
-		PushLong(source + 1);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			return;
-//		}
+		if (c == 0) break;
+		cksum = Checksum(cksum, *p++);
+		c--;
 	}
 	if (cksum == (CARDINAL)0xffff) cksum = 0;
 	Push(cksum);
 }
-
+#else
+void E_CKSUM() {
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  CKSUM", savedPC);
+	for(;;) {
+		LONG_POINTER source = PopLong();
+		CARDINAL     count = Pop();
+		CARDINAL     cksum = Pop();
+		if (count == 0) {
+			if (cksum == (CARDINAL)0xffff) cksum = 0;
+			Push(cksum);
+			break;
+		}
+		cksum = Checksum(cksum, *Fetch(source));
+		Push(cksum);
+		Push(count - 1);
+		PushLong(source + 1);
+	}
+}
+#endif
 
 // aBYTBLT - 055
 void E_BYTBLT() {
