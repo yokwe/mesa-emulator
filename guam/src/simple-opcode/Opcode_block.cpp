@@ -48,6 +48,10 @@ static log4cpp::Category& logger = Logger::getLogger("block");
 
 #include "Opcode.h"
 
+#define USE_FAST_BLT
+
+static const int    DEBUG_FORCE_ABORT = 0;
+
 static const CARD32 MASK_OFFSET = PageSize - 1;
 
 __attribute__((always_inline)) static inline void BLT(CARD32& s, CARD32& d, CARD32& c, CARD32& r) {
@@ -87,8 +91,6 @@ __attribute__((always_inline)) static inline void BLTR(CARD32& s, CARD32& d, CAR
 }
 
 
-#define USE_FAST_BLT
-
 // zBLT - 0363
 #ifdef USE_FAST_BLT
 void E_BLT() {
@@ -111,13 +113,20 @@ void E_BLT() {
 		// Update stack in case of PageFault
 		source += r;
 		dest   += r;
+		count  -= r;
 
 		Push(source);
-		Push((CARD16)c);
+		Push(count);
 		Push(dest);
 		Discard();
 		Discard();
 		Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 #else
@@ -159,13 +168,20 @@ void E_BLTL() {
 		// Update stack in case of PageFault
 		source += r;
 		dest   += r;
+		count  -= r;
 
 		PushLong(source);
-		Push((CARD16)c);
+		Push(count);
 		PushLong(dest);
 		Discard(); Discard();
 		Discard();
 		Discard(); Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 #else
@@ -208,12 +224,20 @@ void E_BLTC() {
 		// Update stack in case of PageFault
 		source += r;
 		dest   += r;
+		count  -= r;
+
 		Push(source);
-		Push((CARD16)c);
+		Push(count);
 		Push(dest);
 		Discard();
 		Discard();
 		Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 #else
@@ -255,12 +279,20 @@ void E_BLTCL() {
 		// Update stack in case of PageFault
 		source += r;
 		dest   += r;
+		count  -= r;
+
 		Push(source);
-		Push((CARD16)c);
+		Push(count);
 		PushLong(dest);
 		Discard();
 		Discard();
 		Discard(); Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 #else
@@ -304,12 +336,20 @@ void E_BLTLR() {
 		if (c == 0) break;
 
 		// Update stack in case of PageFault
-		PushLong(source + c - 1);
-		Push((CARD16)c);
-		PushLong(dest + c - 1);
+		count  -= r;
+
+		PushLong(source);
+		Push(count);
+		PushLong(dest);
 		Discard(); Discard();
 		Discard();
 		Discard(); Discard();
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 #else
