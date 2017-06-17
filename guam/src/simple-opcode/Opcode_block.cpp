@@ -49,16 +49,43 @@ static log4cpp::Category& logger = Logger::getLogger("block");
 #include "Opcode.h"
 
 static const CARD32 MASK_OFFSET = PageSize - 1;
-static const CARD32 MASK_PAGE   = ~MASK_OFFSET;
 
-static inline void BlockTransfer(CARD32 source, CARD32 dest, CARD32 count) {
-//	logger.debug("BlockTransfer  %8X  %8X  %5d", source, dest, count);
-	// Assume source region stay within one page
-	// Assume dest region stay within one page
-	CARD16 *s = Fetch(source);
-	CARD16 *d = Store(dest);
-	while(count--) *d++ = *s++;
+__attribute__((always_inline)) static inline void BLT(CARD32& s, CARD32& d, CARD32& c, CARD32& r) {
+	CARD16 *sp = Fetch(s);
+	CARD16 *dp = Store(d);
+	// NO PAGE FAULT AFTER THIS
+
+	CARD32 sr = PageSize - (s & MASK_OFFSET);
+	CARD32 dr = PageSize - (d & MASK_OFFSET);
+	CARD32 run = (sr < dr) ? sr : dr;
+	if (c < run) run = c;
+
+	s += run;
+	d += run;
+	c -= run;
+	r =  run;
+
+	while(run--) *dp++ = *sp++;
 }
+
+__attribute__((always_inline)) static inline void BLTR(CARD32& s, CARD32& d, CARD32& c, CARD32& r) {
+	CARD16 *sp = Fetch(s);
+	CARD16 *dp = Store(d);
+	// NO PAGE FAULT AFTER THIS
+
+	CARD32 sr = (s & MASK_OFFSET) + 1;
+	CARD32 dr = (d & MASK_OFFSET) + 1;
+	CARD32 run = (sr < dr) ? sr : dr;
+	if (c < run) run = c;
+
+	s -= run;
+	d -= run;
+	c -= run;
+	r =  run;
+
+	while(run--) *dp-- = *sp--;
+}
+
 
 #define USE_FAST_BLT
 
@@ -70,43 +97,27 @@ void E_BLT() {
 	POINTER  source = Pop();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLT       %8X %8X %5d", savedPC, source, dest, count);
 
-
 	if (count == 0) return;
 
 	CARD32 d = LengthenPointer(dest);
 	CARD32 s = LengthenPointer(source);
 	CARD32 c = count;
+	CARD32 r;
 
-	CARD32 dPageStart = d & MASK_PAGE;
-	CARD32 sPageStart = s & MASK_PAGE;
-	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
-	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+	for(;;) {
+		BLT(s, d, c, r);
+		if (c == 0) break;
 
-	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
-		BlockTransfer(s, d, c);
-	} else {
-		for(;;) {
-			CARD32 sRun = PageSize - (d & MASK_OFFSET);
-			CARD32 dRun = PageSize - (s & MASK_OFFSET);
-			CARD32 run = (sRun < dRun) ? sRun : dRun;
-			if (c < run) run = c;
+		// Update stack in case of PageFault
+		source += r;
+		dest   += r;
 
-			BlockTransfer(s, d, run);
-			s += run;
-			d += run;
-			c -= run;
-			if (c == 0) break;
-
-			// Update stack in case of PageFault
-			dest   += run;
-			source += run;
-			Push(source);
-			Push((CARD16)c);
-			Push(dest);
-			Discard();
-			Discard();
-			Discard();
-		}
+		Push(source);
+		Push((CARD16)c);
+		Push(dest);
+		Discard();
+		Discard();
+		Discard();
 	}
 }
 #else
@@ -139,37 +150,22 @@ void E_BLTL() {
 	CARD32 d = dest;
 	CARD32 s = source;
 	CARD32 c = count;
+	CARD32 r;
 
-	CARD32 dPageStart = d & MASK_PAGE;
-	CARD32 sPageStart = s & MASK_PAGE;
-	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
-	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+	for(;;) {
+		BLT(s, d, c, r);
+		if (c == 0) break;
 
-	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
-		BlockTransfer(s, d, c);
-	} else {
-		for(;;) {
-			CARD32 sRun = PageSize - (d & MASK_OFFSET);
-			CARD32 dRun = PageSize - (s & MASK_OFFSET);
-			CARD32 run = (sRun < dRun) ? sRun : dRun;
-			if (c < run) run = c;
+		// Update stack in case of PageFault
+		source += r;
+		dest   += r;
 
-			BlockTransfer(s, d, run);
-			s += run;
-			d += run;
-			c -= run;
-			if (c == 0) break;
-
-			// Update stack in case of PageFault
-			source += run;
-			dest   += run;
-			PushLong(source);
-			Push((CARD16)c);
-			PushLong(dest);
-			Discard(); Discard();
-			Discard();
-			Discard(); Discard();
-		}
+		PushLong(source);
+		Push((CARD16)c);
+		PushLong(dest);
+		Discard(); Discard();
+		Discard();
+		Discard(); Discard();
 	}
 }
 #else
@@ -203,37 +199,21 @@ void E_BLTC() {
 	CARD32 d = LengthenPointer(dest);
 	CARD32 s = CodeCache::CB() + source;
 	CARD32 c = count;
+	CARD32 r;
 
-	CARD32 dPageStart = d & MASK_PAGE;
-	CARD32 sPageStart = s & MASK_PAGE;
-	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
-	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+	for(;;) {
+		BLT(s, d, c, r);
+		if (c == 0) break;
 
-	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
-		BlockTransfer(s, d, c);
-	} else {
-		for(;;) {
-			CARD32 sRun = PageSize - (d & MASK_OFFSET);
-			CARD32 dRun = PageSize - (s & MASK_OFFSET);
-			CARD32 run = (sRun < dRun) ? sRun : dRun;
-			if (c < run) run = c;
-
-			BlockTransfer(s, d, run);
-			s += run;
-			d += run;
-			c -= run;
-			if (c == 0) break;
-
-			// Update stack in case of PageFault
-			source += run;
-			dest   += run;
-			Push(source);
-			Push((CARD16)c);
-			Push(dest);
-			Discard();
-			Discard();
-			Discard();
-		}
+		// Update stack in case of PageFault
+		source += r;
+		dest   += r;
+		Push(source);
+		Push((CARD16)c);
+		Push(dest);
+		Discard();
+		Discard();
+		Discard();
 	}
 }
 #else
@@ -266,37 +246,21 @@ void E_BLTCL() {
 	CARD32 d = dest;
 	CARD32 s = CodeCache::CB() + source;
 	CARD32 c = count;
+	CARD32 r;
 
-	CARD32 dPageStart = d & MASK_PAGE;
-	CARD32 sPageStart = s & MASK_PAGE;
-	CARD32 dPageEnd   = (d + c - 1) & MASK_PAGE;
-	CARD32 sPageEnd   = (s + c - 1) & MASK_PAGE;
+	for(;;) {
+		BLT(s, d, c, r);
+		if (c == 0) break;
 
-	if (dPageStart == dPageEnd && sPageStart == sPageEnd) {
-		BlockTransfer(s, d, c);
-	} else {
-		for(;;) {
-			CARD32 sRun = PageSize - (d & MASK_OFFSET);
-			CARD32 dRun = PageSize - (s & MASK_OFFSET);
-			CARD32 run = (sRun < dRun) ? sRun : dRun;
-			if (c < run) run = c;
-
-			BlockTransfer(s, d, run);
-			s += run;
-			d += run;
-			c -= run;
-			if (c == 0) break;
-
-			// Update stack in case of PageFault
-			source += run;
-			dest   += run;
-			Push(source);
-			Push((CARD16)c);
-			PushLong(dest);
-			Discard();
-			Discard();
-			Discard(); Discard();
-		}
+		// Update stack in case of PageFault
+		source += r;
+		dest   += r;
+		Push(source);
+		Push((CARD16)c);
+		PushLong(dest);
+		Discard();
+		Discard();
+		Discard(); Discard();
 	}
 }
 #else
@@ -321,58 +285,31 @@ void E_BLTCL() {
 
 
 // aBLTLR - 047
-#ifdef USE_FAST_BLT_
-static inline void OP_BLTLR_QUICK(LONG_POINTER source, LONG_POINTER dest, CARDINAL count) {
-	CARD16 *s = Fetch(source + count - 1);
-	CARD16 *d = Store(dest   + count - 1);
-	while(count--) *d-- = *s--;
-}
-static inline void OP_BLTLR_FAST(LONG_POINTER source, LONG_POINTER dest, CARDINAL count) {
-	for(;;) {
-		CARD16 sRun = (source + count - 1) % PageSize;
-		CARD16 dRun = (dest   + count - 1) % PageSize;
-		CARD16 run = (sRun < dRun) ? sRun : dRun;
-		run++;
-		if (count < run) run = count;
-
-		// The block below cannot replace with OP_BLTLR_QUICK(source, dest, run);
-		// Because value of run and count can be different.
-		{
-			CARD16 *s = Fetch(source + count - 1);
-			CARD16 *d = Store(dest   + count - 1);
-			int r = run;
-			while(r--) *d-- = *s--;
-		}
-
-		count  -= run;
-		if (count == 0) break;
-
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			PushLong(source);
-//			Push(count);
-//			PushLong(dest);
-//			break;
-//		}
-	}
-}
+#ifdef USE_FAST_BLT
 void E_BLTLR() {
-	LONG_POINTER dest = PopLong();
-	CARDINAL count  = Pop();
+	LONG_POINTER dest   = PopLong();
+	CARDINAL     count  = Pop();
 	LONG_POINTER source = PopLong();
-	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTLR %8X %8X %5d", savedPC, source, dest, count);
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BLTLR     %8X %8X %5d", savedPC, source, dest, count);
 
 	if (count == 0) return;
 
-	CARD32 dStartPage = dest                 / PageSize;
-	CARD32 sStartPage = source               / PageSize;
-	CARD32 dEndPage   = (dest   + count - 1) / PageSize;
-	CARD32 sEndPage   = (source + count - 1) / PageSize;
-	if (dStartPage == dEndPage && sStartPage == sEndPage) {
-		// Most of BLTLR is this case.
-		OP_BLTLR_QUICK(source, dest, count);
-	} else {
-		OP_BLTLR_FAST(source, dest, count);
+	CARD32 d = dest   + count - 1;
+	CARD32 s = source + count - 1;
+	CARD32 c = count;
+	CARD32 r;
+
+	for(;;) {
+		BLTR(s, d, c, r);
+		if (c == 0) break;
+
+		// Update stack in case of PageFault
+		PushLong(source + c - 1);
+		Push((CARD16)c);
+		PushLong(dest + c - 1);
+		Discard(); Discard();
+		Discard();
+		Discard(); Discard();
 	}
 }
 #else
