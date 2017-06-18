@@ -563,6 +563,7 @@ void E_CKSUM() {
 
 
 // aBYTBLT - 055
+// TODO need to implements fast version of E_BYTBLT
 void E_BYTBLT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BYTBLT", savedPC);
 	for(;;) {
@@ -580,11 +581,18 @@ void E_BYTBLT() {
 		Push(count - 1);
 		PushLong(sourceBase);
 		Push(sourceOffset + 1);
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 
 
 // aBYTBLTR - 056
+// TODO need to implements fast version of E_BYTBLTR
 void E_BYTBLTR() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BYTBLTR", savedPC);
 	for(;;) {
@@ -604,6 +612,12 @@ void E_BYTBLTR() {
 		Push(count - 1);
 		PushLong(sourceBase);
 		Push(sourceOffset);
+
+		if (DEBUG_FORCE_ABORT) {
+			PC = savedPC;
+			SP = savedSP;
+			ERROR_Abort();
+		}
 	}
 }
 
