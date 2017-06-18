@@ -25,13 +25,6 @@ OF SUCH DAMAGE.
 */
 
 
-// TODO Don't call InterruptThread::isPending(). Like we did in Opcode_bitblt.cpp
-//      PC = savedPC and return doesn't make sense.
-// TODO Check correctness of each implementation. Especially *R() methods.
-//      *R() need copy data backward in [0..count).
-// TODO Use LONG_POINTER & OP_BLTL_QUICK as many as possible
-//      Use LONG_POINTER & OP_BLTL_QUICK in BLT and BLTC
-
 //
 // Opcode_block.cpp
 //
@@ -44,7 +37,6 @@ static log4cpp::Category& logger = Logger::getLogger("block");
 #include "../mesa/MesaBasic.h"
 #include "../mesa/Memory.h"
 #include "../mesa/Function.h"
-#include "../mesa/MesaThread.h"
 
 #include "Opcode.h"
 
@@ -569,6 +561,7 @@ void E_CKSUM() {
 }
 #endif
 
+
 // aBYTBLT - 055
 void E_BYTBLT() {
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  BYTBLT", savedPC);
@@ -580,33 +573,13 @@ void E_BYTBLT() {
 		LONG_POINTER destBase     = PopLong();
 		if (count == 0) break;
 
-		sourceBase   = sourceBase + sourceOffset / 2;
-		sourceOffset = sourceOffset % 2;
-		destBase     = destBase + destOffset / 2;
-		destOffset   = destOffset % 2;
 		StoreByte(destBase, destOffset, FetchByte(sourceBase, sourceOffset));
-		if (sourceOffset == 1) {
-			sourceBase = sourceBase + 1;
-			sourceOffset = 0;
-		} else {
-			sourceOffset = 1;
-		}
-		if (destOffset == 1) {
-			destBase = destBase + 1;
-			destOffset = 0;
-		} else {
-			destOffset = 1;
-		}
 
 		PushLong(destBase);
-		Push(destOffset);
+		Push(destOffset + 1);
 		Push(count - 1);
 		PushLong(sourceBase);
-		Push(sourceOffset);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
+		Push(sourceOffset + 1);
 	}
 }
 
@@ -631,10 +604,6 @@ void E_BYTBLTR() {
 		Push(count - 1);
 		PushLong(sourceBase);
 		Push(sourceOffset);
-//		if (InterruptThread::isPending()) {
-//			PC = savedPC;
-//			break;
-//		}
 	}
 }
 
