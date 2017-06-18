@@ -229,6 +229,30 @@ union GlobalWord {
 	};
 };
 
+
+// In PrincOps 4.0
+//GlobalOverhead : TYPE =  MACHINE DEPENDENT RECORD (
+//  available (0): UNSPECIFIED,
+//  word      (1): GlobalWord,
+//  codebase  (2): LONG_POINTER TO COdeSegment
+//  global    (4): GlobaiVariables];
+struct OldGlobalOverhead {
+	UNSPEC       available;
+	CARD16       word;
+	CARD32       codebase;
+	UNSPEC       global[0];
+}
+__attribute__((packed));
+
+// GlobalBase: PROC[frame: GlobalFrameHandle] RETURNS [GlobalFrameBase]
+static inline GlobalFrameBase OldBlobaseBase(GlobalFrameHandle frame) {
+	return frame - SIZE(OldGlobalOverhead);
+}
+
+#define OLD_GO_OFFSET(p,m) (OldBlobaseBase(p) + OFFSET(OldGlobalOverhead, m))
+
+
+// In Changed Chapter
 //GlobalOverhead : TYPE =  MACHINE DEPENDENT RECORD (
 //  available (0): UNSPECIFIED,
 //  word      (1): GlobalWord,

@@ -50,6 +50,7 @@ class testType : public testBase {
 	CPPUNIT_TEST(testCodeSegment);
 	CPPUNIT_TEST(testGlobalWord);
 	CPPUNIT_TEST(testGlobalOverhead);
+	CPPUNIT_TEST(testOldGlobalOverhead);
 	CPPUNIT_TEST(testGFTItem);
 	CPPUNIT_TEST(testGlobalFrameTable);
 	CPPUNIT_TEST(testLocalWord);
@@ -248,7 +249,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL((CARD16)0x0001, t.u);
 	}
 
-	//GlobaiOverhead : TYPE  =  MACHINE DEPENDENT RECORD (
+	//GlobalOverhead : TYPE  =  MACHINE DEPENDENT RECORD (
 	//  available (0): UNSPECIFIED,
 	//  word      (1): GlobalWord,
 	//  global    (2): GlobaiVariables];
@@ -261,6 +262,25 @@ public:
     	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(GlobalOverhead, global));
 
     	CPPUNIT_ASSERT_EQUAL((CARD32)0x12340010, GlobalBase(0x12340012));
+    }
+
+
+    // In PrincOps 4.0
+    // GlobalOverhead : TYPE =  MACHINE DEPENDENT RECORD (
+    //   available (0): UNSPECIFIED,
+    //   word      (1): GlobalWord,
+    //   codebase  (2): LONG_POINTER TO COdeSegment
+    //   global    (4): GlobaiVariables];
+    void testOldGlobalOverhead() {
+    	CPPUNIT_ASSERT_EQUAL((CARD32)4, SIZE(OldGlobalOverhead));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)8, SIZE(OldGlobalOverhead[2]));
+
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(OldGlobalOverhead, available));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(OldGlobalOverhead, word));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(OldGlobalOverhead, codebase));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)4, OFFSET(OldGlobalOverhead, global));
+
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0x12340010, OldBlobaseBase(0x12340014));
     }
 
 
