@@ -46,7 +46,7 @@ extern void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeF
 // 9.5.1 Trap Routines
 extern void BoundsTrap();
 extern void BreakTrap();
-extern void CodeTrap(GlobalFrameHandle gf);
+extern void CodeTrap(GFTHandle gfi);
 extern void ControlTrap(ShortControlLink src);
 extern void DivCheckTrap();
 extern void DivZeroTrap();
