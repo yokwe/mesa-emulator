@@ -43,7 +43,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentdisk");
 #include "AgentDisk.h"
 #include "DiskFile.h"
 
-static const CARD32 DEBUG_DONT_USE_THREAD = 1;
+static const CARD32 DEBUG_DONT_USE_THREAD = 0;
 
 int AgentDisk::IOThread::stopThread = 0;
 
