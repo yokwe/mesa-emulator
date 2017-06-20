@@ -43,6 +43,10 @@ static log4cpp::Category& logger = Logger::getLogger("agentdisplay");
 #include "Agent.h"
 #include "AgentDisplay.h"
 
+// TODO Implements colorType == DisplayIOFaceGuam::T_monochrome and DisplayIOFaceGuam::T_byteColor
+// TODO Provide Implementation for mono and 256
+
+
 void AgentDisplay::Initialize() {
 	if (fcbAddress == 0) ERROR();
 
