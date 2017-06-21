@@ -43,6 +43,47 @@ static log4cpp::Category& logger = Logger::getLogger("control");
 
 #include "Opcode.h"
 
+#define TRACE_XFER
+
+#ifdef TRACE_XFER
+static const char* getLinkType(ControlLink link) {
+	switch(ControlLinkType(link)) {
+	case LT_oldProcedure:
+		return "OLD";
+	case LT_newProcedure:
+		return "NEW";
+	case LT_frame:
+		return "FRAME";
+	case LT_indirect:
+		return "IND";
+	default:
+		ERROR();
+		return "ERROR";
+	}
+}
+static const char* getXferType(XferType type) {
+	switch(type) {
+	case XT_return:
+		return "RET";
+	case XT_call:
+		return "CALL";
+	case XT_localCall:
+		return "LCALL";
+	case XT_port:
+		return "PORT";
+	case XT_xfer:
+		return "XFER";
+	case XT_trap:
+		return "TRAP";
+	case XT_processSwitch:
+		return "SWITCH";
+	default:
+		ERROR();
+		return "ERROR";
+	}
+}
+#endif
+
 // 9.5.2 Trap Processing
 // Trap: PROC[ptr: POINTER TO ControlLink]
 static inline void Trap(POINTER ptr) {
@@ -205,6 +246,11 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 	int push = 0;
 	ControlLink nDst = dst;
 
+#ifdef TRACE_XFER
+	CARD16 oldLF  = LFCache::LF();
+	CARD16 oldGFI = GFI;
+#endif
+
 	if (type == XT_trap && freeFlag) ERROR();
 	while (ControlLinkType(nDst) == LT_indirect ) {
 		IndirectLink link = MakeIndirectLink(nDst);
@@ -294,6 +340,15 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 		nLF = 0;
 		break;
 	}
+
+#ifdef TRACE_XFER
+	{
+		const char* typeS    = getXferType(type);
+		const char* linkType = getLinkType(nDst);
+
+		logger.debug("XFER %-6s  %-5s  %04X%s%04X-%04X  %04X+%04X-%04X", typeS, linkType, oldGFI, (freeFlag ? "-" : "+"), savedPC, oldLF, GFI, nPC, nLF);
+	}
+#endif
 
 	if (push) {
 		Push((CARD16)dst);
