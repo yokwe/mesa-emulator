@@ -135,12 +135,23 @@ public:
 	//currentVersion: CARDINAL = 01055;
 	static const CARD16 currentVersion = 01055;
 
+	//SwapInfo: TYPE = MACHINE DEPENDENT RECORD [
+	//  -- This is the actual usage of PSB.PDA.available.
+	//  externalStateVector(0): LONG POINTER TO ExternalStateVector,
+	//  availableC(2), availableD(3), availableE(4): WORD];
+	struct SwapInfo {
+		CARD32 externalStateVector; // LONG POINTER TO ExternalStateVector
+		CARD16 availableC;
+		CARD16 availableD;
+		CARD16 availableE;
+	} __attribute__((packed));
+
+	static const CARD32 SWAPINFO = PDA + OFFSET(ProcessDataArea, available);
+
+
 	//PESV: PROCEDURE[] RETURNS [LONG POINTER TO ExternalStateVector] = INLINE {
 	//  RETURN[LOOPHOLE[PSB.PDA.available, SwapInfo].externalStateVector]};
-	CARD32 PESV() {
-		CARD32 p = PDA + OFFSET(ProcessDataArea, available);
-		return ReadDbl(p);
-	}
+	static const CARD32 PSEV = SWAPINFO + OFFSET(SwapInfo, externalStateVector);
 
 	//ExternalStateVector: TYPE = MACHINE DEPENDENT RECORD [
 	//	-- Items describing the boot session in general:
@@ -165,10 +176,29 @@ public:
 	//	    spareB(49): WORD];
 
 	struct ExternalStateVector {
-		CARD16 version;     // version of CPSwapDefs. It must be 01055
-		CARD32 bootSession; // random number identifying boot session
-		CARD32 loadState;   // LONG POITER TO LoadStateFormat.Object
-		// Not every field is described
+		CARD16 version;                 // version of CPSwapDefs. It must be 01055
+		CARD32 bootSession;             // random number identifying boot session
+		CARD32 loadState;               // LONG POINTER TO LoadStateFormat.Object
+		CARD32 mapLog;                  // LONG POINTER TO VMMapLog.Descriptor
+		CARD32 patchTalbe;              // LONG POINTER TO PatchTable
+		CARD32 breakBlocks;             // LONG POINTER TO BBArray
+		CARD32 breakpointHandlers;      // LONG POINTER TO BreakpointHandlerItem
+		CARD16 mds;                     // MDS of *all* processes
+		CARD16 faultsBeingProcessed[6];
+		CARD16 systemVolumeID[4];       // -- nullID if none or not known yet
+		CARD32 virtualMemoryCount;
+		union {
+			CARD16 u27;
+			struct {
+				CARD16 loadStateDirty    :  1; // set by debugee, reset by debugger
+				CARD16 loadStateChanging :  1;
+				CARD16 breakTableInUse   :  1;
+				CARD16 patchTableInUse   : 13;
+			};
+		};
+		CARD16 swapData[20];
+		CARD16 spareA;
+		CARD16 spareB;
 	} __attribute__((packed));
 
 };
