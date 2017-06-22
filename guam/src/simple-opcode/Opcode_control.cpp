@@ -43,7 +43,7 @@ static log4cpp::Category& logger = Logger::getLogger("control");
 
 #include "Opcode.h"
 
-#define TRACE_XFER
+//#define TRACE_XFER
 
 // 9.5.2 Trap Processing
 // Trap: PROC[ptr: POINTER TO ControlLink]
