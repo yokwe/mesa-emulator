@@ -45,45 +45,6 @@ static log4cpp::Category& logger = Logger::getLogger("control");
 
 #define TRACE_XFER
 
-#ifdef TRACE_XFER
-static const char* getLinkType(ControlLink link) {
-	switch(ControlLinkType(link)) {
-	case LT_oldProcedure:
-		return "OLD";
-	case LT_newProcedure:
-		return "NEW";
-	case LT_frame:
-		return "FRAME";
-	case LT_indirect:
-		return "IND";
-	default:
-		ERROR();
-		return "ERROR";
-	}
-}
-static const char* getXferType(XferType type) {
-	switch(type) {
-	case XT_return:
-		return "RET";
-	case XT_call:
-		return "CALL";
-	case XT_localCall:
-		return "LCALL";
-	case XT_port:
-		return "PORT";
-	case XT_xfer:
-		return "XFER";
-	case XT_trap:
-		return "TRAP";
-	case XT_processSwitch:
-		return "SWITCH";
-	default:
-		ERROR();
-		return "ERROR";
-	}
-}
-#endif
-
 // 9.5.2 Trap Processing
 // Trap: PROC[ptr: POINTER TO ControlLink]
 static inline void Trap(POINTER ptr) {
@@ -343,10 +304,10 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 
 #ifdef TRACE_XFER
 	{
-		const char* typeS    = getXferType(type);
-		const char* linkType = getLinkType(nDst);
+		const char* xferType = getXferType(type);
+		const char* linkType = getControlLinkType(nDst);
 
-		logger.debug("XFER %-6s  %-5s  %04X%s%04X-%04X  %04X+%04X-%04X", typeS, linkType, oldGFI, (freeFlag ? "-" : "+"), savedPC, oldLF, GFI, nPC, nLF);
+		logger.debug("XFER %-6s  %-5s %s%04X+%04X-%04X  %04X+%04X-%04X", xferType, linkType, (freeFlag ? "#" : " "), oldGFI, savedPC, oldLF, GFI, nPC, nLF);
 	}
 #endif
 
@@ -522,4 +483,42 @@ void E_XF() {
 	ControlLink      dst = ReadDblLF(ptr + OFFSET(TransferDescriptor, dst));
 	ShortControlLink src = *FetchLF (ptr + OFFSET(TransferDescriptor, src));
 	XFER(dst, src, XT_xfer, 1);
+}
+
+// Debug
+const char* getControlLinkType(ControlLink link) {
+	switch(ControlLinkType(link)) {
+	case LT_oldProcedure:
+		return "OLD";
+	case LT_newProcedure:
+		return "NEW";
+	case LT_frame:
+		return "FRAME";
+	case LT_indirect:
+		return "IND";
+	default:
+		ERROR();
+		return "ERROR";
+	}
+}
+const char* getXferType(XferType type) {
+	switch(type) {
+	case XT_return:
+		return "RET";
+	case XT_call:
+		return "CALL";
+	case XT_localCall:
+		return "LCALL";
+	case XT_port:
+		return "PORT";
+	case XT_xfer:
+		return "XFER";
+	case XT_trap:
+		return "TRAP";
+	case XT_processSwitch:
+		return "SWITCH";
+	default:
+		ERROR();
+		return "ERROR";
+	}
 }
