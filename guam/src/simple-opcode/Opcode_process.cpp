@@ -47,6 +47,7 @@ static log4cpp::Category& logger = Logger::getLogger("process");
 #define SV_OFFSET(sv,m) (sv + OFFSET(StateVector, m))
 #define MAX(a,b) (((a) < (b)) ? (b) : (a))
 
+//#define TRACE_RESCHEDULE
 
 // 10.3.1 Queuing Procedures
 
@@ -206,6 +207,13 @@ void Reschedule(int preemption) {
 	PsbIndex psb;
 	PsbLink link;
 
+#ifdef  TRACE_RESCHEDULE
+	CARD16 oldPSB = PSB;
+	CARD16 oldGFI = GFI;
+	CARD16 oldPC  = savedPC;
+	CARD16 oldLF  = LFCache::LF();
+#endif
+
 	if (ProcessorThread::getRunning()) SaveProcess(preemption);
 	Queue queue = {*FetchPda(OFFSET(ProcessDataArea, ready))};
 	if (queue.tail == PsbNull) goto BusyWait;
@@ -223,6 +231,11 @@ void Reschedule(int preemption) {
 		if (DEBUG_SHOW_RUNNING) logger.debug("start running");
 		ProcessorThread::startRunning();
 	}
+
+#ifdef  TRACE_RESCHEDULE
+	logger.debug("RESCHED  %04X %04X  %04X+%04X-%04X  %04X+%04X-%04X", oldPSB, PSB, oldGFI, oldPC, oldLF, GFI, PC, LFCache::LF());
+#endif
+
 //	running = 1;
 //	ProcessorThread::startRunning();
 	//logger.debug("%s XFER PSB = %4d  GFI = %04X  CB = %08X  PC = %04X  LF = %04X", __FUNCTION__, PSB, GFI, CB, PC, LF);
