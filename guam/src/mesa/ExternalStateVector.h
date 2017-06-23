@@ -46,11 +46,11 @@ OF SUCH DAMAGE.
 class LoadStateFormat {
 public:
 	//VersionID: CARDINAL = 06113;
-	const CARD16 VersionID = 06113;
+	static const CARD16 VersionID = 6113;
 
 	//Index: TYPE = CARDINAL;
 	//nullIndex: Index = LAST[Index];
-	const CARD16 nullIndex = (CARD16)~0U;
+	static const CARD16 nullIndex = (CARD16)~0U;
 
 	//ModuleInfoIndex: TYPE = Handle RELATIVE POINTER TO ARRAY [0..0) OF ModuleInfo;
 	//BcdInfoIndex:    TYPE = Handle RELATIVE POINTER TO ARRAY Index[0..0) OF BcdInfo;
@@ -133,7 +133,7 @@ class CPSwapDefs {
 public:
 	//oldVersion: CARDINAL = 01054;
 	//currentVersion: CARDINAL = 01055;
-	static const CARD16 currentVersion = 01055;
+	static const CARD16 currentVersion = 1055;
 
 	//SwapInfo: TYPE = MACHINE DEPENDENT RECORD [
 	//  -- This is the actual usage of PSB.PDA.available.
