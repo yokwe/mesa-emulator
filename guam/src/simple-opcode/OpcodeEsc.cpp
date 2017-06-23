@@ -37,10 +37,100 @@ static log4cpp::Category& logger = Logger::getLogger("esc");
 #include "../util/Perf.h"
 
 #include "../mesa/MesaThread.h"
+#include "../mesa/ExternalStateVector.h"
 
 #include "Opcode.h"
 #include "Interpreter.h"
 
+#define PDA_OFFSET(m) (PDA + OFFSET(ProcessDataArea, m))
+
+#ifndef DUMPESV
+#define dumpESV()
+#else
+static void dumpESV() {
+	CARD32 esv = ReadDbl(PDA_OFFSET(available)); // first CARD32 of available is LONG POINTER TO ESV
+	logger.info("dumpESV esv  %8X", esv);
+	if (esv == 0) {
+		logger.warn("dumpESV esv is zero");
+		return;
+	}
+
+	// Sanity Check
+	{
+		CARD16 version = *Fetch(esv + OFFSET(CPSwapDefs::ExternalStateVector, version));
+		if (version != CPSwapDefs::currentVersion) {
+			logger.warn("dumpESV ESV version mismatch  %d", version);
+			return;
+		}
+	}
+
+	CARD32 loadState = ReadDbl(esv + OFFSET(CPSwapDefs::ExternalStateVector, loadState));
+	logger.info("dumpESV loadState %8X", loadState);
+
+	if (loadState == 0) {
+		logger.warn("dumpESV loadState is zero");
+		return;
+	}
+
+	// Sanity Check
+	{
+		CARD16 version = *Fetch(loadState + OFFSET(LoadStateFormat::Object, versionident));
+		if (version != LoadStateFormat::VersionID) {
+			logger.warn("dumpESV LoadState version mismatch  %d", version);
+			return;
+		}
+	}
+	{
+//		CARD16 versionident = *Fetch(loadState + OFFSET(LoadStateFormat::Object, versionident));
+		CARD16 nModules     = *Fetch(loadState + OFFSET(LoadStateFormat::Object, nModules));
+		CARD16 maxModules   = *Fetch(loadState + OFFSET(LoadStateFormat::Object, maxModules));
+		CARD16 nBcds        = *Fetch(loadState + OFFSET(LoadStateFormat::Object, nBcds));
+		CARD16 maxBcds      = *Fetch(loadState + OFFSET(LoadStateFormat::Object, maxBcds));
+		CARD16 nextID       = *Fetch(loadState + OFFSET(LoadStateFormat::Object, nextID));
+		CARD16 moduleInfo   = *Fetch(loadState + OFFSET(LoadStateFormat::Object, moduleInfo));
+		CARD16 bcdInfo      = *Fetch(loadState + OFFSET(LoadStateFormat::Object, bcdInfo));
+		logger.info("dumpESV LoadState nModules    %4d / %4d", nModules, maxModules);
+		logger.info("dumpESV LoadState nBcds       %4d / %4d", nBcds, maxBcds);
+		logger.info("dumpESV LoadState nextID     %5d", nextID);
+		logger.info("dumpESV LoadState moduleInfo %5d", moduleInfo);
+		logger.info("dumpESV LoadState bcdInfo    %5d", bcdInfo);
+
+		{
+			CARD32 p = loadState + bcdInfo;
+			for(CARD32 i = 0; i < nBcds; i++) {
+				CARD16 u0   = *Fetch(p + OFFSET(LoadStateFormat::BcdInfo, u0));
+				CARD16 base = ReadDbl(p + OFFSET(LoadStateFormat::BcdInfo, base));
+				CARD16 id   = *Fetch(p + OFFSET(LoadStateFormat::BcdInfo, id));
+
+				if (base == 0) {
+					logger.info("bcd %4d pages = %3d  id = %5d  base = %8X %5d", i, u0 & 0x3FFFU, id, base, 12206);
+				} else {
+					logger.info("bcd %4d pages = %3d  id = %5d  base = %8X %5d", i, u0 & 0x3FFFU, id, base, 12206);
+				}
+
+				p += SIZE(LoadStateFormat::BcdInfo);
+			}
+		}
+
+		{
+			CARD32 p = loadState + moduleInfo;
+			for(CARD32 i = 0; i < nModules; i++) {
+//				CARD16 u0   = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, u0));
+				CARD16 index   = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, index));
+
+				logger.info("mod %4d index = %3d", i, index);
+
+				p += SIZE(LoadStateFormat::ModuleInfo);
+			}
+		}
+
+	}
+	{
+		CARD16* p27 = Store(esv + OFFSET(CPSwapDefs::ExternalStateVector, u27));
+		*p27 = 0;
+	}
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -391,6 +481,7 @@ void E_WRMP() {
 	case 900:
 		//  cGerm: Code = 900;  -- Germ entered
 		logger.info("MP  900 cGerm");
+		dumpESV();
 		break;
 	case 910:
 		//  cGermAction: Code = 910;  -- Germ action running (e.g. inLoad, outLoad)
@@ -448,6 +539,7 @@ void E_WRMP() {
 	case 930:
 		//  cControl: Code = 930;  -- Pilot Control and MesaRuntime components being initialized
 		logger.info("MP  930 cControl");
+		dumpESV();
 		break;
 	case 937:
 		// cTimeNotAvailable: Code = 937;  -- trying to get the time from either hardware clock or ethernet
@@ -464,25 +556,31 @@ void E_WRMP() {
 	case 940:
 		// cStorage: Code = 940;  -- Pilot Store component being initialized
 		logger.info("MP  940 cStorage");
+		dumpESV();
 		break;
 	case 960:
 		// cDeleteTemps: Code = 960;  -- temporary files from previous run being deleted
 		logger.info("MP  960 cDeleteTemps");
+		dumpESV();
 		break;
 	case 970:
 		// cMap: Code = 970;  -- client and other non-bootloaded code being mapped
 		logger.info("MP  970 cMap");
+		dumpESV();
 		break;
 	case 980:
 		// cCommunication: Code = 980;  -- Pilot Communication component being initialized
 		logger.info("MP  980 cCommunication");
+		dumpESV();
 		break;
 	case 990:
 		// cClient: Code = 990;  -- PilotClient.Run called
 		logger.info("MP  990 cClient");
+		dumpESV();
 		break;
 	default:
 		logger.info("MP %04d", MP);
+		dumpESV();
 		if (perf_stop_at_mp_8000 && MP == 8000) ProcessorThread::stop();
 		break;
 	}
