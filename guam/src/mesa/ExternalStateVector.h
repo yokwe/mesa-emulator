@@ -50,7 +50,7 @@ public:
 
 	//Index: TYPE = CARDINAL;
 	//nullIndex: Index = LAST[Index];
-	const CARD16 nullIndex = ~0U;
+	const CARD16 nullIndex = (CARD16)~0U;
 
 	//ModuleInfoIndex: TYPE = Handle RELATIVE POINTER TO ARRAY [0..0) OF ModuleInfo;
 	//BcdInfoIndex:    TYPE = Handle RELATIVE POINTER TO ARRAY Index[0..0) OF BcdInfo;
@@ -74,8 +74,8 @@ public:
 		union {
 			CARD16 u0;
 			struct {
-				CARD16 resolved :  1;
 				CARD16 cgfi     : 15;
+				CARD16 resolved :  1;
 			};
 		};
 		CARD16 index;
@@ -92,13 +92,13 @@ public:
 		union {
 			CARD16 u0;
 			struct {
-				CARD16 exports      :  1;
-				CARD16 typeExported :  1;
 				CARD16 pages        : 14;
+				CARD16 typeExported :  1;
+				CARD16 exports      :  1;
 			};
-			CARD32 base;
-			CARD16 id;
 		};
+		CARD32 base;
+		CARD16 id;
 	} __attribute__((packed));
 
 
@@ -180,19 +180,19 @@ public:
 		CARD32 bootSession;             // random number identifying boot session
 		CARD32 loadState;               // LONG POINTER TO LoadStateFormat.Object
 		CARD32 mapLog;                  // LONG POINTER TO VMMapLog.Descriptor
-		CARD32 patchTalbe;              // LONG POINTER TO PatchTable
+		CARD32 patchTable;              // LONG POINTER TO PatchTable
 		CARD32 breakBlocks;             // LONG POINTER TO BBArray
 		CARD32 breakpointHandlers;      // LONG POINTER TO BreakpointHandlerItem
 		CARD16 mds;                     // MDS of *all* processes
 		CARD16 faultsBeingProcessed[6];
-		CARD16 systemVolumeID[4];       // -- nullID if none or not known yet
+		CARD16 systemVolumeID[5];       // -- nullID if none or not known yet
 		CARD32 virtualMemoryCount;
 		union {
 			CARD16 u27;
 			struct {
 				CARD16 loadStateDirty    :  1; // set by debugee, reset by debugger
 				CARD16 loadStateChanging :  1;
-				CARD16 breakTableInUse   :  1;
+				CARD16 breakBlocksInUse  :  1;
 				CARD16 patchTableInUse   : 13;
 			};
 		};
