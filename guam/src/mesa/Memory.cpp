@@ -299,6 +299,16 @@ CARD16* Memory::getAddress(CARD32 virtualAddress) {
 	//
 	return page->word + of;
 }
+int Memory::isVacant(CARD32 virtualAddress) {
+	const CARD32 vp = virtualAddress / PageSize;
+	if (vpSize <= vp) {
+		logger.fatal("%s  va = %6X  vp = %4X", __FUNCTION__, virtualAddress, vp);
+		ERROR();
+	}
+	Map *p = maps + vp;
+	MapFlags mf = p->mf;
+	return Vacant(mf);
+}
 void Memory::setReferencedFlag(CARD32 vp) {
 	if (vpSize <= vp) {
 		logger.fatal("%s  vp = %4X", __FUNCTION__, vp);
