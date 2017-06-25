@@ -132,6 +132,8 @@ public:
 	static void finalize();
 
 	static CARD16 *getAddress(CARD32 virtualAddress);
+	static CARD16 read16(CARD32 virtualAddress);
+	static CARD32 read32(CARD32 virtualAddress);
 	static int isVacant(CARD32 virtualAddress);
 	//
 	static void setReferencedFlag(CARD32 vp);

@@ -299,6 +299,15 @@ CARD16* Memory::getAddress(CARD32 virtualAddress) {
 	//
 	return page->word + of;
 }
+CARD16 Memory::read16(CARD32 virtualAddress) {
+	CARD16* p = getAddress(virtualAddress);
+	return *p;
+}
+CARD32 Memory::read32(CARD32 virtualAddress) {
+	CARD16* p0 = getAddress(virtualAddress + 0);
+	CARD16* p1 = getAddress(virtualAddress + 1);
+	return (*p1 << WordSize) | *p0;
+}
 int Memory::isVacant(CARD32 virtualAddress) {
 	const CARD32 vp = virtualAddress / PageSize;
 	if (vpSize <= vp) {
