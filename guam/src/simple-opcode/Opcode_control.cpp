@@ -44,6 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("control");
 #include "Opcode.h"
 
 //#define TRACE_XFER
+//#define TRACE_CODETRAP
 
 // 9.5.2 Trap Processing
 // Trap: PROC[ptr: POINTER TO ControlLink]
@@ -234,7 +235,12 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 		if (GF != LengthenPointer(gf)) ERROR(); // Sanity check
 		CodeCache::setCB(ReadDbl(GFT_OFFSET(GFI, codebase)));
 		if (DEBUG_TRACE_XFER) logger.debug("XFER  GF  = %08X  CB = %08X", GF, CodeCache::CB());
-		if (CodeCache::CB() & 1) CodeTrap(GFI);
+		if (CodeCache::CB() & 1) {
+#ifdef TRACE_CODETRAP
+			logger.debug("XFER  CODETRAP  OLD  GFI = %04X  GF = %08X  CB = %08X", GFI, GF, CodeCache::CB());
+#endif
+			CodeTrap(GFI);
+		}
 		nPC = proc.pc;
 		if (DEBUG_TRACE_XFER) logger.debug("XFER  nPC = %6o", nPC);
 		if (nPC == 0) UnboundTrap(dst);
@@ -261,7 +267,12 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 		GF = ReadDbl(GFT_OFFSET(GFI, globalFrame));
 		CodeCache::setCB(ReadDbl(GFT_OFFSET(GFI, codebase)));
 		if (DEBUG_TRACE_XFER) logger.debug("XFER  GF  = %08X  CB = %08X", GF, CodeCache::CB());
-		if (CodeCache::CB() & 1) CodeTrap(GFI);
+		if (CodeCache::CB() & 1) {
+#ifdef TRACE_CODETRAP
+			logger.debug("XFER  CODETRAP  FRA  GFI = %04X  GF = %08X  CB = %08X", GFI, GF, CodeCache::CB());
+#endif
+			CodeTrap(GFI);
+		}
 		nPC = *FetchMds(LO_OFFSET(nLF, pc));
 		if (DEBUG_TRACE_XFER) logger.debug("XFER  nPC = %6o", nPC);
 
@@ -281,7 +292,12 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 		GF = ReadDbl(GFT_OFFSET(GFI, globalFrame));
 		CodeCache::setCB(ReadDbl(GFT_OFFSET(GFI, codebase)));
 		if (DEBUG_TRACE_XFER) logger.debug("XFER  GF  = %08X  CB = %08X", GF, CodeCache::CB());
-		if (CodeCache::CB() & 1) CodeTrap(GFI);
+		if (CodeCache::CB() & 1) {
+#ifdef TRACE_CODETRAP
+			logger.debug("XFER  CODETRAP  NEW  GFI = %04X  GF = %08X  CB = %08X", GFI, GF, CodeCache::CB());
+#endif
+			CodeTrap(GFI);
+		}
 		nPC = proc.pc;
 		if (DEBUG_TRACE_XFER) logger.debug("XFER  nPC = %6o", nPC);
 		if (nPC == 0) UnboundTrap(dst);
@@ -303,7 +319,7 @@ void XFER(ControlLink dst, ShortControlLink src, XferType type, int freeFlag = 0
 	}
 
 #ifdef TRACE_XFER
-	{
+	if (7600 <= MP) {
 		const char* xferType = getXferType(type);
 		const char* linkType = getControlLinkType(nDst);
 
