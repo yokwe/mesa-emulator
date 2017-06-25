@@ -44,10 +44,39 @@ static log4cpp::Category& logger = Logger::getLogger("esc");
 
 #define PDA_OFFSET(m) (PDA + OFFSET(ProcessDataArea, m))
 
+#define DUMPESV
+
 #ifndef DUMPESV
 #define dumpESV()
 #else
 static void dumpESV() {
+	{
+		for(int i = PrincOpsExtras2::GermUseOnly_FIRST; i <= PrincOpsExtras2::GermUseOnly_LAST; i++) {
+			CARD32 o = i * SIZE(GFTItem);
+			CARD32 p = mGFT + o;
+			CARD32 globalframe = ReadDbl(p + 0);
+			CARD32 codebase    = ReadDbl(p + 2);
+
+			if (codebase) logger.info("GFT GERM  %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
+		}
+		for(int i = PrincOpsExtras2::Reserved_FIRST; i <= PrincOpsExtras2::Reserved_LAST; i++) {
+			CARD32 o = i * SIZE(GFTItem);
+			CARD32 p = mGFT + o;
+			CARD32 globalframe = ReadDbl(p + 0);
+			CARD32 codebase    = ReadDbl(p + 2);
+
+			if (codebase) logger.info("GFT PILOT %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
+		}
+		for(int i = PrincOpsExtras2::Reserved_LAST + 1; i < PrincOpsExtras2::GFTIndex_LAST; i++) {
+			CARD32 o = i * SIZE(GFTItem);
+			CARD32 p = mGFT + o;
+			CARD32 globalframe = ReadDbl(p + 0);
+			CARD32 codebase    = ReadDbl(p + 2);
+
+			if (codebase == 0) break;
+			logger.info("GFT APPL  %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
+		}
+	}
 	CARD32 esv = ReadDbl(PDA_OFFSET(available)); // first CARD32 of available is LONG POINTER TO ESV
 	logger.info("dumpESV esv  %8X", esv);
 	if (esv == 0) {
@@ -81,14 +110,14 @@ static void dumpESV() {
 		}
 	}
 	{
-//		CARD16 versionident = *Fetch(loadState + OFFSET(LoadStateFormat::Object, versionident));
-		CARD16 nModules     = *Fetch(loadState + OFFSET(LoadStateFormat::Object, nModules));
-		CARD16 maxModules   = *Fetch(loadState + OFFSET(LoadStateFormat::Object, maxModules));
-		CARD16 nBcds        = *Fetch(loadState + OFFSET(LoadStateFormat::Object, nBcds));
-		CARD16 maxBcds      = *Fetch(loadState + OFFSET(LoadStateFormat::Object, maxBcds));
-		CARD16 nextID       = *Fetch(loadState + OFFSET(LoadStateFormat::Object, nextID));
-		CARD16 moduleInfo   = *Fetch(loadState + OFFSET(LoadStateFormat::Object, moduleInfo));
-		CARD16 bcdInfo      = *Fetch(loadState + OFFSET(LoadStateFormat::Object, bcdInfo));
+//		CARD16 versionident = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, versionident));
+		CARD16 nModules     = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nModules));
+		CARD16 maxModules   = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, maxModules));
+		CARD16 nBcds        = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nBcds));
+		CARD16 maxBcds      = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, maxBcds));
+		CARD16 nextID       = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nextID));
+		CARD16 moduleInfo   = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, moduleInfo));
+		CARD16 bcdInfo      = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, bcdInfo));
 		logger.info("dumpESV LoadState nModules    %4d / %4d", nModules, maxModules);
 		logger.info("dumpESV LoadState nBcds       %4d / %4d", nBcds, maxBcds);
 		logger.info("dumpESV LoadState nextID     %5d", nextID);
@@ -98,15 +127,20 @@ static void dumpESV() {
 		{
 			CARD32 p = loadState + bcdInfo;
 			for(CARD32 i = 0; i < nBcds; i++) {
-				CARD16 u0   = *Fetch(p + OFFSET(LoadStateFormat::BcdInfo, u0));
-				CARD16 base = ReadDbl(p + OFFSET(LoadStateFormat::BcdInfo, base));
-				CARD16 id   = *Fetch(p + OFFSET(LoadStateFormat::BcdInfo, id));
+				CARD16 u0   = *Memory::getAddress(p + 0);
+				CARD32 u1   = *Memory::getAddress(p + 1);
+				CARD32 u2   = *Memory::getAddress(p + 2);
+				CARD16 u3   = *Memory::getAddress(p + 3);
 
-				if (base == 0) {
-					logger.info("bcd %4d pages = %3d  id = %5d  base = %8X %5d", i, u0 & 0x3FFFU, id, base, 12206);
-				} else {
-					logger.info("bcd %4d pages = %3d  id = %5d  base = %8X %5d", i, u0 & 0x3FFFU, id, base, 12206);
-				}
+				CARD32 base = u2 << 16 | u1;
+				CARD16 id   = u3;
+
+				CARD32 v = 0;
+				if (!Memory::isVacant(base)) v = *Memory::getAddress(base);
+				logger.info("bcd %4d pages = %3d  id = %5d  base = %8X  %5d", i, u0 & 0x3FFFU, id, base, v);
+
+//				CARD16 version = *Memory::getAddress(loadState + base);
+//				logger.info("bcd version  %5d", version);
 
 				p += SIZE(LoadStateFormat::BcdInfo);
 			}
@@ -115,10 +149,12 @@ static void dumpESV() {
 		{
 			CARD32 p = loadState + moduleInfo;
 			for(CARD32 i = 0; i < nModules; i++) {
-//				CARD16 u0   = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, u0));
-				CARD16 index   = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, index));
+//				if (i == 10) break;
+				CARD16 u0          = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, u0));
+				CARD16 index       = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, index));
+				CARD16 globalFrame = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, globalFrame));
 
-				logger.info("mod %4d index = %3d", i, index);
+				logger.info("mod %4d %3d  %04X  %04X", i, index, u0 & 0x7FFF, globalFrame);
 
 				p += SIZE(LoadStateFormat::ModuleInfo);
 			}
@@ -481,7 +517,6 @@ void E_WRMP() {
 	case 900:
 		//  cGerm: Code = 900;  -- Germ entered
 		logger.info("MP  900 cGerm");
-		dumpESV();
 		break;
 	case 910:
 		//  cGermAction: Code = 910;  -- Germ action running (e.g. inLoad, outLoad)
@@ -539,7 +574,6 @@ void E_WRMP() {
 	case 930:
 		//  cControl: Code = 930;  -- Pilot Control and MesaRuntime components being initialized
 		logger.info("MP  930 cControl");
-		dumpESV();
 		break;
 	case 937:
 		// cTimeNotAvailable: Code = 937;  -- trying to get the time from either hardware clock or ethernet
@@ -556,31 +590,28 @@ void E_WRMP() {
 	case 940:
 		// cStorage: Code = 940;  -- Pilot Store component being initialized
 		logger.info("MP  940 cStorage");
-		dumpESV();
 		break;
 	case 960:
 		// cDeleteTemps: Code = 960;  -- temporary files from previous run being deleted
 		logger.info("MP  960 cDeleteTemps");
-		dumpESV();
 		break;
 	case 970:
 		// cMap: Code = 970;  -- client and other non-bootloaded code being mapped
 		logger.info("MP  970 cMap");
-		dumpESV();
 		break;
 	case 980:
 		// cCommunication: Code = 980;  -- Pilot Communication component being initialized
 		logger.info("MP  980 cCommunication");
-		dumpESV();
 		break;
 	case 990:
 		// cClient: Code = 990;  -- PilotClient.Run called
 		logger.info("MP  990 cClient");
-		dumpESV();
+//		dumpESV();
 		break;
 	default:
 		logger.info("MP %04d", MP);
-		dumpESV();
+		if (MP == 7600) dumpESV();
+		if (MP == 8000) dumpESV();
 		if (perf_stop_at_mp_8000 && MP == 8000) ProcessorThread::stop();
 		break;
 	}
