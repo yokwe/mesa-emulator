@@ -14,6 +14,7 @@ HEADERS += Memory.h   MesaProcessor.h   MesaThread.h   Pilot.h
 SOURCES += Memory.cpp MesaProcessor.cpp MesaThread.cpp Pilot.cpp
 
 HEADERS += ExternalStateVector.h
+SOURCES += ExternalStateVector.cpp
 
 ###############################################
 
