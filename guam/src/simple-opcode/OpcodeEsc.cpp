@@ -611,7 +611,14 @@ void E_WRMP() {
 	default:
 		logger.info("MP %04d", MP);
 		if (MP == 7600) dumpESV();
-		if (MP == 8000) dumpESV();
+		if (MP == 8000) {
+//			dumpESV();
+			CPSwapDefs::ExternalStateVector esv;
+			read(PDA_OFFSET(available), esv);
+			logger.info("esv version            %d", esv.version);
+			logger.info("esv virtualMemoryCount %d", esv.virtualMemoryCount);
+			logger.info("esv mds                %d", esv.mds);
+		}
 		if (perf_stop_at_mp_8000 && MP == 8000) ProcessorThread::stop();
 		break;
 	}
