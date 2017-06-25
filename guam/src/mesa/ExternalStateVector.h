@@ -202,4 +202,64 @@ public:
 	} __attribute__((packed));
 
 };
+
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+//
+// APilot/15.0.1/Mesa/Public/PrincOpsExtras2.mesa
+//
+class PrincOpsExtras2 {
+public:
+//  -- GFT
+//
+//  GFTIndex: TYPE = CARDINAL[0..16384);
+	static const CARD16 GFTIndex_FIRST = 0;
+	static const CARD16 GFTIndex_LAST  = 16383;
+//
+//  GlobalFrameTable: TYPE = LONG BASE POINTER TO ARRAY GFTIndex OF GFTItem;
+//
+//  GFT: GlobalFrameTable = LOOPHOLE[400000B];
+//
+//  GFTHandle: TYPE = GlobalFrameTable RELATIVE ORDERED POINTER [0..LAST[CARDINAL]] TO GFTItem;
+//
+//  EmptyGFTItem: GFTItem = [inuse[globalFrame: NIL, codebase: [code[NIL]]]];
+//  nullGFI: GFTIndex = FIRST[GFTIndex];
+	static const CARD16 nullGFI = 0;
+
+//  nullGFH: GFTHandle = FIRST[GFTHandle];
+//
+//	-- First page reserved for Germ
+//  GermUseOnly: TYPE = GFTIndex[0..64);  -- Environment.wordsPerPage / SIZE[GFTItem]
+	static const CARD16 GermUseOnly_FIRST =  0;
+	static const CARD16 GermUseOnly_LAST  = 63;
+
+//	-- reserved for Pilot use
+//  Reserved: TYPE = GFTIndex[LAST[GermUseOnly]+1..LAST[GermUseOnly]+6);
+	static const CARD16 Reserved_FIRST = GermUseOnly_LAST + 1;
+	static const CARD16 Reserved_LAST  = GermUseOnly_LAST + 6;
+
+//  CrossMDSSlot: GFTIndex = FIRST[Reserved];  -- used for crossMDS linkage in Germ
+	static const CARD16 CrossMDSSlot = Reserved_FIRST;
+//
+//  GFTItem: TYPE = MACHINE DEPENDENT RECORD [
+//	 SELECT OVERLAID * FROM
+//	   inuse => [
+//		 globalFrame: LongGlobalFrameHandle,
+//		 codebase: PrincOps.GlobalCodebase],
+//	   free => [
+//		 next: GFTHandle,
+//	     fill0: CARDINAL � 0,
+//	     nullCodebase: LONG CARDINAL � 0]
+//	   ENDCASE];
+//
+//  codebaseLowOffset: CARDINAL = 2;
+//  codebaseHighOffset: CARDINAL = 3;
+//
+//  GFTIndexToHandle: PROCEDURE [gfi: GFTIndex] RETURNS [GFTHandle] = INLINE {
+//	RETURN[ LOOPHOLE[gfi * SIZE[GFTItem]] ] };
+//
+//  GFTHandleToIndex: PROCEDURE [gfh: GFTHandle] RETURNS [GFTIndex] = INLINE {
+//	RETURN[ LOOPHOLE[gfh] / SIZE[GFTItem] ] };
+};
 #endif
