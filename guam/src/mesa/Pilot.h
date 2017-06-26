@@ -671,12 +671,17 @@ public:
 	//Null: Stamp = Stamp[net: 0, host: 0, time: 0];
 
 	struct Stamp {
-		CARD8 net;
-		CARD8 host;
-		//CARD32 time;
-		CARD16 timeLow;
-		CARD16 timeHigh;
-	};
+		union {
+			struct {
+				CARD16 host : 8;
+				CARD16 net  : 8;
+			} __attribute__((packed));
+			CARD16    u0;
+		};
+		CARD32 time;
+//		CARD16 timeLow;
+//		CARD16 timeHigh;
+	} __attribute__((packed));
 };
 
 
