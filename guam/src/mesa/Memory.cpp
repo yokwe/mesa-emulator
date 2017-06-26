@@ -299,15 +299,6 @@ CARD16* Memory::getAddress(CARD32 virtualAddress) {
 	//
 	return page->word + of;
 }
-CARD16 Memory::read16(CARD32 virtualAddress) {
-	CARD16* p = getAddress(virtualAddress);
-	return *p;
-}
-CARD32 Memory::read32(CARD32 virtualAddress) {
-	CARD16* p0 = getAddress(virtualAddress + 0);
-	CARD16* p1 = getAddress(virtualAddress + 1);
-	return (*p1 << WordSize) | *p0;
-}
 int Memory::isVacant(CARD32 virtualAddress) {
 	const CARD32 vp = virtualAddress / PageSize;
 	if (vpSize <= vp) {
@@ -437,4 +428,15 @@ void CodeCache::stats() {
 	if (!PERF_ENABLE) return;
 	long long total = hit + miss;
 	logger.info("CodeCache %10llu %6.2f%%   miss %10llu", total, ((double)hit / total) * 100.0, miss);
+}
+
+
+void readObject(CARD32 ptr, CARD16& target) {
+	CARD16* p = Memory::getAddress(ptr);
+	target = *p;
+}
+void readObject(CARD32 ptr, CARD32& target) {
+	CARD16* p0 = Memory::getAddress(ptr + 0);
+	CARD16* p1 = Memory::getAddress(ptr + 0);
+	target = (*p1 << WordSize) | *p0;
 }

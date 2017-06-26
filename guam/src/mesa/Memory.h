@@ -132,8 +132,6 @@ public:
 	static void finalize();
 
 	static CARD16 *getAddress(CARD32 virtualAddress);
-	static CARD16 read16(CARD32 virtualAddress);
-	static CARD32 read32(CARD32 virtualAddress);
 	static int isVacant(CARD32 virtualAddress);
 	//
 	static void setReferencedFlag(CARD32 vp);
@@ -543,5 +541,8 @@ static inline void LoadStack(StateHandle state) {
 static inline int ValidContext() {
 	return (SIZE(CodeSegment) * 2) <= PC;
 }
+
+extern void readObject(CARD32 ptr, CARD16* target);
+extern void readObject(CARD32 ptr, CARD32* target);
 
 #endif /* MEMORY_H_ */
