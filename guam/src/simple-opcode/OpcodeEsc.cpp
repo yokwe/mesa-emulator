@@ -49,6 +49,141 @@ static log4cpp::Category& logger = Logger::getLogger("esc");
 #ifndef DUMPESV
 #define dumpESV()
 #else
+
+#define READ_TARGET(p, t, f) readObject(p + OFFSET(t, f), target.f);
+
+void readObject(CARD32 ptr, LoadStateFormat::ModuleInfo& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	readObject(ptr, target.u0);
+
+	READ_TARGET(ptr, LoadStateFormat::ModuleInfo, u0);
+	READ_TARGET(ptr, LoadStateFormat::ModuleInfo, index);
+	READ_TARGET(ptr, LoadStateFormat::ModuleInfo, globalFrame);
+}
+void readObject(CPSwapDefs::ExternalStateVector& target) {
+	CARD32 ptr;
+	readObject(PDA + OFFSET(ProcessDataArea, available), ptr);
+	readObject(ptr, target);
+}
+void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, version);
+	if (target.version != CPSwapDefs::currentVersion) {
+		logger.warn("Unknown version  %d", target.version);
+		return;
+	}
+
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, bootSession);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, loadState);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, mds);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, virtualMemoryCount);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, u27);
+}
+void readObject(CARD32 ptr, LoadStateFormat::BcdInfo& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	READ_TARGET(ptr, LoadStateFormat::BcdInfo, u0);
+	READ_TARGET(ptr, LoadStateFormat::BcdInfo, base);
+	READ_TARGET(ptr, LoadStateFormat::BcdInfo, id);
+}
+void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, version);
+	if (target.version != CPSwapDefs::currentVersion) {
+		logger.error("version mismatch.  %d", target.version);
+		ERROR();
+		return;
+	}
+
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, bootSession);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, loadState);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, mds);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, virtualMemoryCount);
+	READ_TARGET(ptr, CPSwapDefs::ExternalStateVector, u27);
+}
+
+void readObject(CARD32 ptr, LoadStateFormat::Object& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	READ_TARGET(ptr, LoadStateFormat::Object, versionident);
+	if (target.versionident != LoadStateFormat::VersionID) {
+		logger.error("version mismatch.  %d", target.versionident);
+		ERROR();
+		return;
+	}
+
+	READ_TARGET(ptr, LoadStateFormat::Object, nModules);
+	READ_TARGET(ptr, LoadStateFormat::Object, maxModules);
+	READ_TARGET(ptr, LoadStateFormat::Object, nBcds);
+	READ_TARGET(ptr, LoadStateFormat::Object, maxBcds);
+	READ_TARGET(ptr, LoadStateFormat::Object, nextID);
+	READ_TARGET(ptr, LoadStateFormat::Object, moduleInfo);
+	READ_TARGET(ptr, LoadStateFormat::Object, bcdInfo);
+}
+
+void readObject(CARD32 ptr, TimeStamp::Stamp& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	READ_TARGET(ptr, TimeStamp::Stamp, u0);
+	READ_TARGET(ptr, TimeStamp::Stamp, time);
+}
+void readObject(CARD32 ptr, BcdDefs::BCD& target) {
+	::memset(&target, 0, sizeof(target));
+	if (ptr == 0) {
+		logger.warn("ptr is zero");
+		return;
+	}
+
+	if (Memory::isVacant(ptr)) {
+		logger.warn("ptr is not mapped  %8X", ptr);
+		return;
+	}
+
+	READ_TARGET(ptr, BcdDefs::BCD, versionIdent);
+	if (target.versionIdent != BcdDefs::VersionID) {
+		logger.warn("version mismatch.  %d", target.versionIdent);
+		return;
+	}
+
+	READ_TARGET(ptr, BcdDefs::BCD, version);
+	READ_TARGET(ptr, BcdDefs::BCD, creator);
+
+//	object.nModules   = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, nModules));
+//	object.maxModules = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, maxModules));
+//	object.nBcds      = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, nBcds));
+//	object.maxBcds    = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, maxBcds));
+//	object.nextID     = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, nextID));
+//	object.moduleInfo = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, moduleInfo));
+//	object.bcdInfo    = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, bcdInfo));
+}
+
 static void dumpESV() {
 	{
 		for(int i = PrincOpsExtras2::GermUseOnly_FIRST; i <= PrincOpsExtras2::GermUseOnly_LAST; i++) {
@@ -614,10 +749,34 @@ void E_WRMP() {
 		if (MP == 8000) {
 //			dumpESV();
 			CPSwapDefs::ExternalStateVector esv;
-			read(PDA_OFFSET(available), esv);
-			logger.info("esv version            %d", esv.version);
-			logger.info("esv virtualMemoryCount %d", esv.virtualMemoryCount);
-			logger.info("esv mds                %d", esv.mds);
+			read(esv);
+			logger.info("esv version            %8d", esv.version);
+			logger.info("esv virtualMemoryCount %8d", esv.virtualMemoryCount);
+			logger.info("esv mds                %8d", esv.mds);
+			logger.info("esv loadState          %8X", esv.loadState);
+
+			LoadStateFormat::Object loadState;
+			read(esv.loadState, loadState);
+			logger.info("loadState version      %8X", loadState.versionident);
+			logger.info("loadState mod       %4d / %4d", loadState.nModules, loadState.maxModules);
+			logger.info("loadState bcd       %4d / %4d", loadState.nBcds, loadState.maxBcds);
+			logger.info("loadState nextID       %8X", loadState.nextID);
+			logger.info("loadState moduleInfo   %8d", loadState.moduleInfo);
+			logger.info("loadState bcdInfo      %8d", loadState.bcdInfo);
+
+			for(CARD32 i = 0; i < loadState.nModules; i++) {
+				CARD32 p = esv.loadState + loadState.moduleInfo + (SIZE(LoadStateFormat::ModuleInfo) * i);
+				LoadStateFormat::ModuleInfo moduleInfo;
+				read(p, moduleInfo);
+				logger.info("mod %4d %4d %04X", moduleInfo.index, moduleInfo.cgfi, moduleInfo.globalFrame);
+			}
+
+			for(CARD32 i = 0; i < loadState.nBcds; i++) {
+				CARD32 p = esv.loadState + loadState.bcdInfo + (SIZE(LoadStateFormat::BcdInfo) * i);
+				LoadStateFormat::BcdInfo bcdInfo;
+				read(p, bcdInfo);
+				logger.info("bcd %4d %4d %8X", bcdInfo.id, bcdInfo.pages, bcdInfo.base);
+			}
 		}
 		if (perf_stop_at_mp_8000 && MP == 8000) ProcessorThread::stop();
 		break;
