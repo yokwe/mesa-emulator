@@ -124,7 +124,6 @@ public:
 	} __attribute__((packed));
 };
 
-void read(CARD32 ptr, LoadStateFormat::Object& object);
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -204,7 +203,6 @@ public:
 	} __attribute__((packed));
 };
 
-void read(CARD32 ptr, CPSwapDefs::ExternalStateVector& externalStateVector);
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -264,4 +262,12 @@ public:
 //  GFTHandleToIndex: PROCEDURE [gfh: GFTHandle] RETURNS [GFTIndex] = INLINE {
 //	RETURN[ LOOPHOLE[gfh] / SIZE[GFTItem] ] };
 };
+
+
+void read(CARD32 ptr, LoadStateFormat::Object&     object);
+void read(CARD32 ptr, LoadStateFormat::ModuleInfo& moduleInfo);
+void read(CARD32 ptr, LoadStateFormat::BcdInfo&    bcdIfo);
+void read(CARD32 ptr, CPSwapDefs::ExternalStateVector& externalStateVector);
+void read(CPSwapDefs::ExternalStateVector& externalStateVector);
+
 #endif
