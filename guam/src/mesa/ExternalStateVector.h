@@ -264,10 +264,10 @@ public:
 };
 
 
-void read(CARD32 ptr, LoadStateFormat::Object&     object);
-void read(CARD32 ptr, LoadStateFormat::ModuleInfo& moduleInfo);
-void read(CARD32 ptr, LoadStateFormat::BcdInfo&    bcdIfo);
-void read(CARD32 ptr, CPSwapDefs::ExternalStateVector& externalStateVector);
-void read(CPSwapDefs::ExternalStateVector& externalStateVector);
+void readObject(CARD32 ptr, LoadStateFormat::Object&     object);
+void readObject(CARD32 ptr, LoadStateFormat::ModuleInfo& moduleInfo);
+void readObject(CARD32 ptr, LoadStateFormat::BcdInfo&    bcdIfo);
+void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector& externalStateVector);
+void readObject(CPSwapDefs::ExternalStateVector& externalStateVector);
 
 #endif

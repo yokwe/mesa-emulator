@@ -29,59 +29,11 @@ OF SUCH DAMAGE.
 // ExternalStateVector.cpp
 //
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("esv");
+//#include "../util/Util.h"
+//static log4cpp::Category& logger = Logger::getLogger("esv");
+//
+//#include "Memory.h"
+//#include "ExternalStateVector.h"
+//
 
-#include "Memory.h"
-#include "ExternalStateVector.h"
-
-#define PDA_OFFSET(m) (PDA + OFFSET(ProcessDataArea, m))
-
-
-void read(CARD32 ptr, CPSwapDefs::ExternalStateVector& externalStateVector) {
-	{
-		CARD16* p = (CARD16*)&externalStateVector;
-		for(CARD32 i = 0; i < SIZE(externalStateVector); i++) *p++ = 0;
-	}
-
-	if (ptr == 0) {
-		logger.warn("ptr is zero");
-		return;
-	}
-	externalStateVector.version = Memory::read16(ptr + OFFSET(CPSwapDefs::ExternalStateVector, version));
-	if (externalStateVector.version != CPSwapDefs::currentVersion) {
-		logger.error("version mismatch.  %d", externalStateVector.version);
-		ERROR();
-		return;
-	}
-	externalStateVector.bootSession        = Memory::read32(ptr + OFFSET(CPSwapDefs::ExternalStateVector, bootSession));
-	externalStateVector.loadState          = Memory::read32(ptr + OFFSET(CPSwapDefs::ExternalStateVector, loadState));
-	externalStateVector.mds                = Memory::read16(ptr + OFFSET(CPSwapDefs::ExternalStateVector, mds));
-	externalStateVector.virtualMemoryCount = Memory::read32(ptr + OFFSET(CPSwapDefs::ExternalStateVector, virtualMemoryCount));
-	externalStateVector.u27                = Memory::read16(ptr + OFFSET(CPSwapDefs::ExternalStateVector, u27));
-}
-
-void read(CARD32 ptr, LoadStateFormat::Object& object) {
-	{
-		CARD16* p = (CARD16*)&object;
-		for(CARD32 i = 0; i < SIZE(object); i++) *p++ = 0;
-	}
-
-	if (ptr == 0) {
-		logger.warn("ptr is zero");
-		return;
-	}
-	object.versionident = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, versionident));
-	if (object.versionident != LoadStateFormat::VersionID) {
-		logger.warn("version mismatch.  %d", object.versionident);
-		return;
-	}
-
-	object.nModules   = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, nModules));
-	object.maxModules = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, maxModules));
-	object.nBcds      = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, nBcds));
-	object.maxBcds    = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, maxBcds));
-	object.nextID     = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, nextID));
-	object.moduleInfo = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, moduleInfo));
-	object.bcdInfo    = Memory::read16(ptr + OFFSET(LoadStateFormat::Object, bcdInfo));
-}
+// Temporary moved to OpcodeEsc.cpp
