@@ -11,7 +11,7 @@ SOURCES += testBase.cpp
 
 SOURCES += testAgent.cpp testMain.cpp testMemory.cpp testOpcode_000.cpp testOpcode_100.cpp testOpcode_200.cpp
 SOURCES += testOpcode_300.cpp testOpcode_esc.cpp testPilot.cpp testType.cpp testByteBuffer.cpp
-SOURCES += testESV.cpp
+SOURCES += testExternalStateVector.cpp
 
 LIBS += ../../tmp/build/mesa/libmesa.a
 LIBS += ../../tmp/build/simple-opcode/libsimple-opcode.a
