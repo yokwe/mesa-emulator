@@ -38,7 +38,8 @@ OF SUCH DAMAGE.
 #include "Constant.h"
 
 // 2.1 Basic Data Types
-const int WordSize = Environment::bitsPerWord;
+// const int WordSize = Environment::bitsPerWord;
+const int WordSize = 16;
 
 // 2.1.2 Bit, Nibble, Byte
 // NibblePair: TYPE = MACHINE DEPENDENT RECORD[left (0:0..3) NIBBLE, right(0:4..7) NIBBLE];

@@ -34,10 +34,9 @@ OF SUCH DAMAGE.
 
 #include "MesaBasic.h"
 
-#include "Pilot.h"
-
 // for compatibility
-const CARD16 PageSize = Environment::wordsPerPage;
+//const CARD16 PageSize = Environment::wordsPerPage;
+const CARD16 PageSize = 256;
 
 const CARD16 cSS = 14;
 // cSV = SIZE[StateVector] + MAX[SIZE[ControlLink], SIZE[FSIndex], SIZE[LONG POINTER]]
