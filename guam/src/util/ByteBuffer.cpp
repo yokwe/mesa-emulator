@@ -30,8 +30,8 @@ OF SUCH DAMAGE.
 //
 
 #include "Util.h"
-static log4cpp::Category& logger = Logger::getLogger("bytebuffer");
+//static log4cpp::Category& logger = Logger::getLogger("bytebuffer");
 
 #include "ByteBuffer.h"
 
-log4cpp::Category& ByteBuffer::logger(logger);
+log4cpp::Category& ByteBuffer::logger(Logger::getLogger("bytebuffer"));
