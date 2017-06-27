@@ -263,11 +263,4 @@ public:
 //	RETURN[ LOOPHOLE[gfh] / SIZE[GFTItem] ] };
 };
 
-
-void readObject(CARD32 ptr, LoadStateFormat::Object&     object);
-void readObject(CARD32 ptr, LoadStateFormat::ModuleInfo& moduleInfo);
-void readObject(CARD32 ptr, LoadStateFormat::BcdInfo&    bcdIfo);
-void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector& externalStateVector);
-void readObject(CPSwapDefs::ExternalStateVector& externalStateVector);
-
 #endif
