@@ -24,15 +24,15 @@ contains(QT_MAJOR_VERSION, 4) {
         QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
 }
 
-LIBS += ../../tmp/build/mesa/libmesa.a
 LIBS += ../../tmp/build/simple-opcode/libsimple-opcode.a
+LIBS += ../../tmp/build/mesa/libmesa.a
 LIBS += ../../tmp/build/agent/libagent.a
 LIBS += ../../tmp/build/util/libutil.a
 
 LIBS += -llog4cpp
 
-POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
 POST_TARGETDEPS += ../../tmp/build/simple-opcode/libsimple-opcode.a
+POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
 POST_TARGETDEPS += ../../tmp/build/agent/libagent.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
