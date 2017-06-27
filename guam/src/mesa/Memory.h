@@ -542,7 +542,4 @@ static inline int ValidContext() {
 	return (SIZE(CodeSegment) * 2) <= PC;
 }
 
-extern void readObject(CARD32 ptr, CARD16* target);
-extern void readObject(CARD32 ptr, CARD32* target);
-
 #endif /* MEMORY_H_ */
