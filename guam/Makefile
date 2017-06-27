@@ -30,6 +30,7 @@ all:
 	(cd src/mesa;          make all)
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
+	(cd src/trace;         make all)
 	(cd src/util;          make all)
 	(cd src/test;          make all)
 	(cd src/guam-headless; make all)
@@ -49,6 +50,7 @@ clean:
 	mkdir  tmp/build/mesa
 	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
+	mkdir  tmp/build/trace
 	mkdir  tmp/build/util
 	mkdir  tmp/build/test
 	mkdir  tmp/build/guam-headless
@@ -143,6 +145,7 @@ qmake:
 	(cd src/mesa;          qmake)
 	(cd src/simple-opcode; qmake)
 	(cd src/agent;         qmake)
+	(cd src/trace;         qmake)
 	(cd src/util;          qmake)
 	(cd src/test;          qmake)
 	(cd src/guam-headless; qmake)
