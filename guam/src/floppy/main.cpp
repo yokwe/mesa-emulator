@@ -3,7 +3,6 @@ static log4cpp::Category& logger = Logger::getLogger("floppy");
 
 #include "../mesa/MesaBasic.h"
 #include "../agent/DiskFile.h"
-#include "../agent/AgentProcessor.h"
 
 #include "../util/ByteBuffer.h"
 
@@ -295,8 +294,8 @@ public:
 		}
 		type             = bb.get16();
 
-		createData.setTime_t(AgentProcessor::toUnixTime(bb.get32()));
-		lastWrittenData.setTime_t(AgentProcessor::toUnixTime(bb.get32()));
+		createData.setTime_t(Util::toUnixTime(bb.get32()));
+		lastWrittenData.setTime_t(Util::toUnixTime(bb.get32()));
 
 		size             = bb.get32();
 		offset           = bb.get32();
