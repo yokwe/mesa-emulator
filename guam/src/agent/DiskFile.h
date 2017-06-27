@@ -33,6 +33,7 @@ OF SUCH DAMAGE.
 #define DISKFILE_H__
 
 #include "../mesa/Constant.h"
+#include "../mesa/Pilot.h"
 
 #include <QtCore>
 
