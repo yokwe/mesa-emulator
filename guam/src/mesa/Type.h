@@ -59,24 +59,24 @@ union BytePair {
 	};
 };
 
-static inline BYTE HighByte(UNSPEC u) {
+inline BYTE HighByte(UNSPEC u) {
 	BytePair t = {u};
 	return t.left;
 }
-static inline BYTE LowByte(UNSPEC u) {
+inline BYTE LowByte(UNSPEC u) {
 	BytePair t = {u};
 	return t.right;
 }
 
 // 2.1.3.1 Basic Logical Operators
-static inline UNSPEC Not(UNSPEC u) {
+inline UNSPEC Not(UNSPEC u) {
 	return ~u;
 }
-static inline int Odd(UNSPEC u) {
+inline int Odd(UNSPEC u) {
 	return u & 0x01;
 }
 
-static inline UNSPEC Shift(UNSPEC data, int count) {
+inline UNSPEC Shift(UNSPEC data, int count) {
 	if (0 < count) {
 		if (16 <= count) return 0;
 		return (UNSPEC)(data << count);
@@ -87,7 +87,7 @@ static inline UNSPEC Shift(UNSPEC data, int count) {
 	}
 	return data;
 }
-static inline UNSPEC Rotate(UNSPEC data, int count) {
+inline UNSPEC Rotate(UNSPEC data, int count) {
 	if (0 < count) {
 		if (16 <= count) count = count % 16;
 		int t = data << count;
@@ -102,7 +102,7 @@ static inline UNSPEC Rotate(UNSPEC data, int count) {
 }
 
 // 2.1.3.2 Basic Arithmetic Operator
-static inline INT16 ArithShift(INT16 data, int count) {
+inline INT16 ArithShift(INT16 data, int count) {
 	if (0 < count) {
 		if (16 <= count) return 0;
 		return (INT16)(((data << count) & 0x7fff) | (data & 0x8000));
@@ -130,18 +130,18 @@ union Long {
 	};
 };
 
-static inline UNSPEC HighHalf(LONG_UNSPEC u) {
+inline UNSPEC HighHalf(LONG_UNSPEC u) {
 //	Long t = {u};
 //	return t.high;
 	return (UNSPEC)(u >> WordSize);
 }
-static inline UNSPEC LowHalf(LONG_UNSPEC u) {
+inline UNSPEC LowHalf(LONG_UNSPEC u) {
 //	Long t = {u};
 //	return t.low;
 	return (UNSPEC)u;
 }
 
-static inline LONG_UNSPEC LongShift(LONG_UNSPEC data, int count) {
+inline LONG_UNSPEC LongShift(LONG_UNSPEC data, int count) {
 	if (0 < count) {
 		if (32 <= count) return 0;
 		return (LONG_UNSPEC)(data << count);
@@ -152,7 +152,7 @@ static inline LONG_UNSPEC LongShift(LONG_UNSPEC data, int count) {
 	}
 	return data;
 }
-static inline INT32 LongArithShift(INT32 data, int count) {
+inline INT32 LongArithShift(INT32 data, int count) {
 	if (0 < count) {
 		if (32 <= count) return 0;
 		return (INT32)(((data << count) & 0x7fffffff) | (data & 0x80000000));
@@ -165,7 +165,7 @@ static inline INT32 LongArithShift(INT32 data, int count) {
 }
 
 // 2.4.1 Assignment
-static inline INT16 SignExtend(BYTE z) {
+inline INT16 SignExtend(BYTE z) {
 	return (INT8)z;
 }
 
@@ -184,10 +184,10 @@ union MapFlags {
 		CARD16 reserved   : 13;
 	};
 };
-static inline int Vacant(MapFlags mf) {
+inline int Vacant(MapFlags mf) {
 	return mf.protect && mf.dirty && !mf.referenced;
 }
-static inline int Protect(MapFlags mf) {
+inline int Protect(MapFlags mf) {
 	return mf.protect;
 }
 
@@ -246,7 +246,7 @@ struct OldGlobalOverhead {
 __attribute__((packed));
 
 // GlobalBase: PROC[frame: GlobalFrameHandle] RETURNS [GlobalFrameBase]
-static inline GlobalFrameBase OldBlobaseBase(GlobalFrameHandle frame) {
+inline GlobalFrameBase OldBlobaseBase(GlobalFrameHandle frame) {
 	return frame - SIZE(OldGlobalOverhead);
 }
 
@@ -265,7 +265,7 @@ struct GlobalOverhead {
 };
 
 // GlobalBase: PROC[frame: GlobalFrameHandle] RETURNS [GlobalFrameBase]
-static inline GlobalFrameBase GlobalBase(GlobalFrameHandle frame) {
+inline GlobalFrameBase GlobalBase(GlobalFrameHandle frame) {
 	return frame - SIZE(GlobalOverhead);
 }
 
@@ -333,7 +333,7 @@ struct LocalOverhead {
 };
 
 // LocalBase: PROC[frame: LocalFrameHandle] RETURNS[LocalFrameBase]
-static inline LocalFrameBase LocalBase(LocalFrameHandle frame) {
+inline LocalFrameBase LocalBase(LocalFrameHandle frame) {
 	return (CARD16)(frame - (CARD16)SIZE(LocalOverhead));
 }
 
@@ -589,7 +589,7 @@ union TaggedControlLink {
 };
 
 // ControlLink Type : PROCEDURE [link: ControlLink]  RETURNS [LinkType]
-static inline LinkType ControlLinkType(ControlLink link) {
+inline LinkType ControlLinkType(ControlLink link) {
 	TaggedControlLink cl = {link};
 	return (LinkType)cl.tag;
 }
@@ -600,10 +600,7 @@ static inline LinkType ControlLinkType(ControlLink link) {
 typedef LocalFrameHandle FrameLink;
 
 // MakeFramelink: PROCEDURE [link : ControlLink] RETURNS [FrameLink]
-static inline FrameLink MakeFrameLink(ControlLink link) {
-	if (ControlLinkType(link) != LT_frame) ERROR();
-	return (CARD16)link;
-}
+FrameLink MakeFrameLink(ControlLink link);
 
 // 9.1.2 Indirect Control Links
 
@@ -611,10 +608,7 @@ static inline FrameLink MakeFrameLink(ControlLink link) {
 typedef CARD16 IndirectLink;
 
 // MakeIndirectLink: PROC[link: ControlLink] RETURNS[Indirectlink]
-static inline IndirectLink MakeIndirectLink(ControlLink link) {
-	if (ControlLinkType(link) != LT_indirect) ERROR();
-	return (CARD16)link;
-}
+IndirectLink MakeIndirectLink(ControlLink link);
 
 // 9.1.3 Procedure Descriptor
 //ProcDesc: TYPE =  MACHINE DEPENDENT RECORD [
@@ -629,10 +623,7 @@ union ProcDesc {
 };
 
 // MakeProcDesc: PROC[link: ControlLink] RETURNS[ProcDesc]
-static inline CARD32 MakeProcDesc(ControlLink link) {
-	if (ControlLinkType(link) != LT_oldProcedure) ERROR();
-	return link;
-}
+CARD32 MakeProcDesc(ControlLink link);
 
 // 9.1.4 new Procedure Descriptor
 // NewProcDesc: TYPE = MACHINE DEPENDENT RECORD[
@@ -647,10 +638,7 @@ union NewProcDesc {
 };
 
 // MakeNewProcDesc: PROC[link: ControlLink] RETURNS [NewProcDesc]
-static inline CARD32 MakeNewProcDesc(ControlLink link) {
-	if (ControlLinkType(link) != LT_newProcedure) ERROR();
-	return link;
-}
+CARD32 MakeNewProcDesc(ControlLink link);
 
 
 // 9.2.1 Frame Allocation Vector
@@ -684,18 +672,10 @@ struct AllocationVector {
 };
 
 // AVFrame : PROC[avi : AVItem] RETURNS [LocalFrameHandle]
-static inline LocalFrameHandle AVFrame(CARD16 u) {
-	AVItem avi = {u};
-	if (avi.tag != AT_frame) ERROR();
-	return u;
-}
+LocalFrameHandle AVFrame(CARD16 u);
 
 // AVLink : PROC[avi : AVItem] RETURNS [POINTER TO AVItem]
-static inline POINTER AVLink(CARD16 u) {
-	AVItem avi = {u};
-	if (avi.tag != AT_frame) ERROR();
-	return u;
-}
+POINTER AVLink(CARD16 u);
 
 // 9.3 Control Transfer primitives
 enum XferType { XT_return = 0, XT_call = 1, XT_localCall = 2, XT_port = 3, XT_xfer = 4, XT_trap = 5, XT_processSwitch = 6, XT_unused = 7};
@@ -964,10 +944,10 @@ struct ProcessStateBlock {
 // PsbHandle: TYPE = POINTER TO ProcessStateBlock;
 typedef POINTER PsbHandle;
 
-static inline PsbHandle Handle(PsbIndex index) {
+inline PsbHandle Handle(PsbIndex index) {
 	return index * SIZE(ProcessStateBlock);
 }
-static inline PsbIndex Index(PsbHandle handle) {
+inline PsbIndex Index(PsbHandle handle) {
 	return handle / SIZE(ProcessStateBlock);
 }
 
