@@ -26,26 +26,36 @@ OF SUCH DAMAGE.
 
 
 //
-// Trace.h
+// BcdOps.cpp
 //
 
-#ifndef TRACE_H_
-#define TRACE_H_ 1
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("bcdops");
 
-#include "../mesa/MesaBasic.h"
+#include "../mesa/Memory.h"
 
-// readObject
-void readObject(CARD32 ptr, CARD16*                          target);
-void readObject(CARD32 ptr, CARD32*                          target);
+#include "BCDOps.h"
 
-void readObject(CARD32 ptr, BcdDefs::BCD*                    target);
-void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector* target);
-void readObject(CARD32 ptr, LoadStateFormat::ModuleInfo*     target);
-void readObject(CARD32 ptr, LoadStateFormat::BcdInfo*        target);
-void readObject(CARD32 ptr, LoadStateFormat::Object*         target);
-void readObject(CARD32 ptr, PrincOpsExtras2::GFTItem*        target);
-void readObject(CARD32 ptr, TimeStamp::Stamp*                target);
+VersionStamp::VersionStamp(const TimeStamp::Stamp& stamp) {
+	this->net  = stamp.net;
+	this->host = stamp.host;
+	this->time = QDateTime::fromTime_t(Util::toUnixTime(stamp.time));
+}
+QString VersionStamp::toString() {
+	return QString("%1#%2#%3").arg(net, 0, 16).arg(host, 0, 16).arg(time.toString("yyyy-MM-dd HH:mm:ss"));
+}
 
-#endif
+BCDOps::BCDOps(CARD32 ptr) {
+	if (Memory::isVacant(ptr)) {
+		logger.fatal("ptr is not mapped");
+		ERROR();
+	}
+	readObject(ptr, &header);
 
+	version = VersionStamp(header.version);
+	creator = VersionStamp(header.version);
 
+	logger.info("version %s", version.toString().toLocal8Bit().constData());
+	logger.info("creator %s", creator.toString().toLocal8Bit().constData());
+
+}

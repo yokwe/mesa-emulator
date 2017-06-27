@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Trace.h
-SOURCES += Trace.cpp
+HEADERS += BcdOps.h   Trace.h
+SOURCES += BcdOps.cpp Trace.cpp
 
 ###############################################
 

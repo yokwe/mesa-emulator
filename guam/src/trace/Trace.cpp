@@ -37,7 +37,23 @@ static log4cpp::Category& logger = Logger::getLogger("trace");
 
 #include "Trace.h"
 
-#define PDA_OFFSET(m) (PDA + OFFSET(ProcessDataArea, m))
+#define READ_OBJECT_PROLOGUE() \
+{ \
+	if (ptr == 0) { \
+		logger.fatal("ptr is zero"); \
+		ERROR(); \
+		return; \
+	} \
+	if (target == 0) { \
+		logger.fatal("target is zero"); \
+		ERROR(); \
+		return; \
+	} \
+	::memset(target, 0, sizeof(*target)); \
+}
+
+#define READ_TARGET(t, f) readObject(ptr + OFFSET(t, f), &(target->f));
+
 
 
 void readObject(CARD32 ptr, CARD16* target) {
@@ -188,166 +204,166 @@ void readObject(CARD32 ptr, PrincOpsExtras2::GFTItem* target) {
 	READ_TARGET(PrincOpsExtras2::GFTItem, codebase);
 }
 
-void dumpESV() {
-	{
-		for(int i = PrincOpsExtras2::GermUseOnly_FIRST; i <= PrincOpsExtras2::GermUseOnly_LAST; i++) {
-			CARD32 o = i * SIZE(GFTItem);
-			CARD32 p = mGFT + o;
-			CARD32 globalframe = ReadDbl(p + 0);
-			CARD32 codebase    = ReadDbl(p + 2);
-
-			if (codebase) logger.info("GFT GERM  %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
-		}
-		for(int i = PrincOpsExtras2::Reserved_FIRST; i <= PrincOpsExtras2::Reserved_LAST; i++) {
-			CARD32 o = i * SIZE(GFTItem);
-			CARD32 p = mGFT + o;
-			CARD32 globalframe = ReadDbl(p + 0);
-			CARD32 codebase    = ReadDbl(p + 2);
-
-			if (codebase) logger.info("GFT PILOT %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
-		}
-		for(int i = PrincOpsExtras2::Reserved_LAST + 1; i < PrincOpsExtras2::GFTIndex_LAST; i++) {
-			CARD32 o = i * SIZE(GFTItem);
-			CARD32 p = mGFT + o;
-			CARD32 globalframe = ReadDbl(p + 0);
-			CARD32 codebase    = ReadDbl(p + 2);
-
-			if (codebase == 0) break;
-			logger.info("GFT APPL  %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
-		}
-	}
-	CARD32 esv = ReadDbl(PDA_OFFSET(available)); // first CARD32 of available is LONG POINTER TO ESV
-	logger.info("dumpESV esv  %8X", esv);
-	if (esv == 0) {
-		logger.warn("dumpESV esv is zero");
-		return;
-	}
-
-	// Sanity Check
-	{
-		CARD16 version = *Fetch(esv + OFFSET(CPSwapDefs::ExternalStateVector, version));
-		if (version != CPSwapDefs::currentVersion) {
-			logger.warn("dumpESV ESV version mismatch  %d", version);
-			return;
-		}
-	}
-
-	CARD32 loadState = ReadDbl(esv + OFFSET(CPSwapDefs::ExternalStateVector, loadState));
-	logger.info("dumpESV loadState %8X", loadState);
-
-	if (loadState == 0) {
-		logger.warn("dumpESV loadState is zero");
-		return;
-	}
-
-	// Sanity Check
-	{
-		CARD16 version = *Fetch(loadState + OFFSET(LoadStateFormat::Object, versionident));
-		if (version != LoadStateFormat::VersionID) {
-			logger.warn("dumpESV LoadState version mismatch  %d", version);
-			return;
-		}
-	}
-	{
-//		CARD16 versionident = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, versionident));
-		CARD16 nModules     = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nModules));
-		CARD16 maxModules   = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, maxModules));
-		CARD16 nBcds        = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nBcds));
-		CARD16 maxBcds      = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, maxBcds));
-		CARD16 nextID       = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nextID));
-		CARD16 moduleInfo   = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, moduleInfo));
-		CARD16 bcdInfo      = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, bcdInfo));
-		logger.info("dumpESV LoadState nModules    %4d / %4d", nModules, maxModules);
-		logger.info("dumpESV LoadState nBcds       %4d / %4d", nBcds, maxBcds);
-		logger.info("dumpESV LoadState nextID     %5d", nextID);
-		logger.info("dumpESV LoadState moduleInfo %5d", moduleInfo);
-		logger.info("dumpESV LoadState bcdInfo    %5d", bcdInfo);
-
-		{
-			CARD32 p = loadState + bcdInfo;
-			for(CARD32 i = 0; i < nBcds; i++) {
-				CARD16 u0   = *Memory::getAddress(p + 0);
-				CARD32 u1   = *Memory::getAddress(p + 1);
-				CARD32 u2   = *Memory::getAddress(p + 2);
-				CARD16 u3   = *Memory::getAddress(p + 3);
-
-				CARD32 base = u2 << 16 | u1;
-				CARD16 id   = u3;
-
-				CARD32 v = 0;
-				if (!Memory::isVacant(base)) v = *Memory::getAddress(base);
-				logger.info("bcd %4d pages = %3d  id = %5d  base = %8X  %5d", i, u0 & 0x3FFFU, id, base, v);
-
-//				CARD16 version = *Memory::getAddress(loadState + base);
-//				logger.info("bcd version  %5d", version);
-
-				p += SIZE(LoadStateFormat::BcdInfo);
-			}
-		}
-
-		{
-			CARD32 p = loadState + moduleInfo;
-			for(CARD32 i = 0; i < nModules; i++) {
-//				if (i == 10) break;
-				CARD16 u0          = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, u0));
-				CARD16 index       = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, index));
-				CARD16 globalFrame = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, globalFrame));
-
-				logger.info("mod %4d %3d  %04X  %04X", i, index, u0 & 0x7FFF, globalFrame);
-
-				p += SIZE(LoadStateFormat::ModuleInfo);
-			}
-		}
-
-	}
-	{
-		CARD16* p27 = Store(esv + OFFSET(CPSwapDefs::ExternalStateVector, u27));
-		*p27 = 0;
-	}
-}
-
-void a() {
-	CPSwapDefs::ExternalStateVector esv;
-	{
-		CARD32 ptr = 0;
-		// read first long word from PDA available
-		readObject(PDA + OFFSET(ProcessDataArea, available), &ptr);
-		readObject(ptr, &esv);
-	}
-	logger.info("esv       version      %8d", esv.version);
-	logger.info("esv       vmCount      %8d", esv.virtualMemoryCount);
-	logger.info("esv       mds          %8d", esv.mds);
-	logger.info("esv       loadState    %8X", esv.loadState);
-
-	LoadStateFormat::Object loadState;
-	readObject(esv.loadState, &loadState);
-	logger.info("loadState version      %8X", loadState.versionident);
-	logger.info("loadState mod       %4d / %4d", loadState.nModules, loadState.maxModules);
-	logger.info("loadState bcd       %4d / %4d", loadState.nBcds, loadState.maxBcds);
-	logger.info("loadState nextID       %8X", loadState.nextID);
-	logger.info("loadState moduleInfo   %8d", loadState.moduleInfo);
-	logger.info("loadState bcdInfo      %8d", loadState.bcdInfo);
-
-	for(CARD32 i = 0; i < loadState.nModules; i++) {
-		CARD32 p = esv.loadState + loadState.moduleInfo + (SIZE(LoadStateFormat::ModuleInfo) * i);
-		LoadStateFormat::ModuleInfo moduleInfo;
-		readObject(p, &moduleInfo);
-		logger.info("mod %4d %4d     %04X", moduleInfo.index, moduleInfo.cgfi, moduleInfo.globalFrame);
-	}
-
-	for(CARD32 i = 0; i < loadState.nBcds; i++) {
-		CARD32 p = esv.loadState + loadState.bcdInfo + (SIZE(LoadStateFormat::BcdInfo) * i);
-		LoadStateFormat::BcdInfo bcdInfo;
-		readObject(p, &bcdInfo);
-		logger.info("bcd %4d %4d %8X", bcdInfo.id, bcdInfo.pages, bcdInfo.base);
-
-		BcdDefs::BCD bcd;
-		readObject(bcdInfo.base, &bcd);
-		{
-			QDateTime time = QDateTime::fromTime_t(Util::toUnixTime(bcd.version.time));
-			logger.info("    %d#%d#%s", bcd.version.net, bcd.version.host, time.toString("yyyy-MM-dd HH:mm:ss").toLocal8Bit().constData());
-		}
-
-
-	}
-}
+//void dumpESV() {
+//	{
+//		for(int i = PrincOpsExtras2::GermUseOnly_FIRST; i <= PrincOpsExtras2::GermUseOnly_LAST; i++) {
+//			CARD32 o = i * SIZE(GFTItem);
+//			CARD32 p = mGFT + o;
+//			CARD32 globalframe = ReadDbl(p + 0);
+//			CARD32 codebase    = ReadDbl(p + 2);
+//
+//			if (codebase) logger.info("GFT GERM  %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
+//		}
+//		for(int i = PrincOpsExtras2::Reserved_FIRST; i <= PrincOpsExtras2::Reserved_LAST; i++) {
+//			CARD32 o = i * SIZE(GFTItem);
+//			CARD32 p = mGFT + o;
+//			CARD32 globalframe = ReadDbl(p + 0);
+//			CARD32 codebase    = ReadDbl(p + 2);
+//
+//			if (codebase) logger.info("GFT PILOT %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
+//		}
+//		for(int i = PrincOpsExtras2::Reserved_LAST + 1; i < PrincOpsExtras2::GFTIndex_LAST; i++) {
+//			CARD32 o = i * SIZE(GFTItem);
+//			CARD32 p = mGFT + o;
+//			CARD32 globalframe = ReadDbl(p + 0);
+//			CARD32 codebase    = ReadDbl(p + 2);
+//
+//			if (codebase == 0) break;
+//			logger.info("GFT APPL  %4d  %4X  gf %8X   cb %8X", i, o, globalframe, codebase);
+//		}
+//	}
+//	CARD32 esv = ReadDbl(PDA_OFFSET(available)); // first CARD32 of available is LONG POINTER TO ESV
+//	logger.info("dumpESV esv  %8X", esv);
+//	if (esv == 0) {
+//		logger.warn("dumpESV esv is zero");
+//		return;
+//	}
+//
+//	// Sanity Check
+//	{
+//		CARD16 version = *Fetch(esv + OFFSET(CPSwapDefs::ExternalStateVector, version));
+//		if (version != CPSwapDefs::currentVersion) {
+//			logger.warn("dumpESV ESV version mismatch  %d", version);
+//			return;
+//		}
+//	}
+//
+//	CARD32 loadState = ReadDbl(esv + OFFSET(CPSwapDefs::ExternalStateVector, loadState));
+//	logger.info("dumpESV loadState %8X", loadState);
+//
+//	if (loadState == 0) {
+//		logger.warn("dumpESV loadState is zero");
+//		return;
+//	}
+//
+//	// Sanity Check
+//	{
+//		CARD16 version = *Fetch(loadState + OFFSET(LoadStateFormat::Object, versionident));
+//		if (version != LoadStateFormat::VersionID) {
+//			logger.warn("dumpESV LoadState version mismatch  %d", version);
+//			return;
+//		}
+//	}
+//	{
+////		CARD16 versionident = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, versionident));
+//		CARD16 nModules     = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nModules));
+//		CARD16 maxModules   = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, maxModules));
+//		CARD16 nBcds        = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nBcds));
+//		CARD16 maxBcds      = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, maxBcds));
+//		CARD16 nextID       = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, nextID));
+//		CARD16 moduleInfo   = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, moduleInfo));
+//		CARD16 bcdInfo      = *Memory::getAddress(loadState + OFFSET(LoadStateFormat::Object, bcdInfo));
+//		logger.info("dumpESV LoadState nModules    %4d / %4d", nModules, maxModules);
+//		logger.info("dumpESV LoadState nBcds       %4d / %4d", nBcds, maxBcds);
+//		logger.info("dumpESV LoadState nextID     %5d", nextID);
+//		logger.info("dumpESV LoadState moduleInfo %5d", moduleInfo);
+//		logger.info("dumpESV LoadState bcdInfo    %5d", bcdInfo);
+//
+//		{
+//			CARD32 p = loadState + bcdInfo;
+//			for(CARD32 i = 0; i < nBcds; i++) {
+//				CARD16 u0   = *Memory::getAddress(p + 0);
+//				CARD32 u1   = *Memory::getAddress(p + 1);
+//				CARD32 u2   = *Memory::getAddress(p + 2);
+//				CARD16 u3   = *Memory::getAddress(p + 3);
+//
+//				CARD32 base = u2 << 16 | u1;
+//				CARD16 id   = u3;
+//
+//				CARD32 v = 0;
+//				if (!Memory::isVacant(base)) v = *Memory::getAddress(base);
+//				logger.info("bcd %4d pages = %3d  id = %5d  base = %8X  %5d", i, u0 & 0x3FFFU, id, base, v);
+//
+////				CARD16 version = *Memory::getAddress(loadState + base);
+////				logger.info("bcd version  %5d", version);
+//
+//				p += SIZE(LoadStateFormat::BcdInfo);
+//			}
+//		}
+//
+//		{
+//			CARD32 p = loadState + moduleInfo;
+//			for(CARD32 i = 0; i < nModules; i++) {
+////				if (i == 10) break;
+//				CARD16 u0          = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, u0));
+//				CARD16 index       = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, index));
+//				CARD16 globalFrame = *Fetch(p + OFFSET(LoadStateFormat::ModuleInfo, globalFrame));
+//
+//				logger.info("mod %4d %3d  %04X  %04X", i, index, u0 & 0x7FFF, globalFrame);
+//
+//				p += SIZE(LoadStateFormat::ModuleInfo);
+//			}
+//		}
+//
+//	}
+//	{
+//		CARD16* p27 = Store(esv + OFFSET(CPSwapDefs::ExternalStateVector, u27));
+//		*p27 = 0;
+//	}
+//}
+//
+//void a() {
+//	CPSwapDefs::ExternalStateVector esv;
+//	{
+//		CARD32 ptr = 0;
+//		// read first long word from PDA available
+//		readObject(PDA + OFFSET(ProcessDataArea, available), &ptr);
+//		readObject(ptr, &esv);
+//	}
+//	logger.info("esv       version      %8d", esv.version);
+//	logger.info("esv       vmCount      %8d", esv.virtualMemoryCount);
+//	logger.info("esv       mds          %8d", esv.mds);
+//	logger.info("esv       loadState    %8X", esv.loadState);
+//
+//	LoadStateFormat::Object loadState;
+//	readObject(esv.loadState, &loadState);
+//	logger.info("loadState version      %8X", loadState.versionident);
+//	logger.info("loadState mod       %4d / %4d", loadState.nModules, loadState.maxModules);
+//	logger.info("loadState bcd       %4d / %4d", loadState.nBcds, loadState.maxBcds);
+//	logger.info("loadState nextID       %8X", loadState.nextID);
+//	logger.info("loadState moduleInfo   %8d", loadState.moduleInfo);
+//	logger.info("loadState bcdInfo      %8d", loadState.bcdInfo);
+//
+//	for(CARD32 i = 0; i < loadState.nModules; i++) {
+//		CARD32 p = esv.loadState + loadState.moduleInfo + (SIZE(LoadStateFormat::ModuleInfo) * i);
+//		LoadStateFormat::ModuleInfo moduleInfo;
+//		readObject(p, &moduleInfo);
+//		logger.info("mod %4d %4d     %04X", moduleInfo.index, moduleInfo.cgfi, moduleInfo.globalFrame);
+//	}
+//
+//	for(CARD32 i = 0; i < loadState.nBcds; i++) {
+//		CARD32 p = esv.loadState + loadState.bcdInfo + (SIZE(LoadStateFormat::BcdInfo) * i);
+//		LoadStateFormat::BcdInfo bcdInfo;
+//		readObject(p, &bcdInfo);
+//		logger.info("bcd %4d %4d %8X", bcdInfo.id, bcdInfo.pages, bcdInfo.base);
+//
+//		BcdDefs::BCD bcd;
+//		readObject(bcdInfo.base, &bcd);
+//		{
+//			QDateTime time = QDateTime::fromTime_t(Util::toUnixTime(bcd.version.time));
+//			logger.info("    %d#%d#%s", bcd.version.net, bcd.version.host, time.toString("yyyy-MM-dd HH:mm:ss").toLocal8Bit().constData());
+//		}
+//
+//
+//	}
+//}

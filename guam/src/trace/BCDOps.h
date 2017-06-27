@@ -26,25 +26,52 @@ OF SUCH DAMAGE.
 
 
 //
-// Trace.h
+// BCDOps.h
 //
 
-#ifndef TRACE_H_
-#define TRACE_H_ 1
+#ifndef BCDOPS_H_
+#define BCDOPS_H_ 1
 
-#include "../mesa/MesaBasic.h"
+#include "../mesa/Pilot.h"
 
-// readObject
-void readObject(CARD32 ptr, CARD16*                          target);
-void readObject(CARD32 ptr, CARD32*                          target);
+#include "Trace.h"
 
-void readObject(CARD32 ptr, BcdDefs::BCD*                    target);
-void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector* target);
-void readObject(CARD32 ptr, LoadStateFormat::ModuleInfo*     target);
-void readObject(CARD32 ptr, LoadStateFormat::BcdInfo*        target);
-void readObject(CARD32 ptr, LoadStateFormat::Object*         target);
-void readObject(CARD32 ptr, PrincOpsExtras2::GFTItem*        target);
-void readObject(CARD32 ptr, TimeStamp::Stamp*                target);
+#include <QtCore>
+
+class VersionStamp {
+public:
+	CARD8     net;
+	CARD8     host;
+	QDateTime time;
+
+	VersionStamp(const TimeStamp::Stamp& stamp);
+	VersionStamp(const VersionStamp& that) : net(that.net), host(that.host), time(that.time) {}
+	VersionStamp() : net(0), host(0), time(QDateTime::fromTime_t(0)) {}
+	QString toString();
+};
+
+class FTRecord {
+public:
+	QString          name;
+	TimeStamp::Stamp stamp;
+	FTRecord(CARD32& ptr);
+	FTRecord(const FTRecord& that) : name(that.name), stamp(that.stamp) {}
+	FTRecord() {}
+};
+
+class BCDOps {
+public:
+	BCDOps(CARD32 ptr);
+
+	VersionStamp version;
+	VersionStamp creator;
+
+	QMap<CARD16, QString>  ss;
+	QMap<CARD16, FTRecord> ft;
+
+private:
+	BcdDefs::BCD header;
+};
 
 #endif
 
