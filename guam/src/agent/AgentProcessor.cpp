@@ -43,7 +43,7 @@ static log4cpp::Category& logger = Logger::getLogger("agentproc");
 #include "AgentProcessor.h"
 
 static quint32 getMesaTime() {
-	return AgentProcessor::toMesaTime(Util::getUnixTime());
+	return Util::toMesaTime(Util::getUnixTime());
 }
 
 void AgentProcessor::Initialize() {
