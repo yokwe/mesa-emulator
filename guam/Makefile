@@ -90,6 +90,17 @@ floppy:
 	(cd src/agent;         make all)
 	(cd src/floppy;        make all)
 
+trace:
+	(cd src/mesa;          make all)
+	(cd src/simple-opcode; make all)
+	(cd src/agent;         make all)
+	(cd src/util;          make all)
+	(cd src/trace;         make all)
+
+run-trace: trace
+	echo -n >tmp/debug.log
+	tmp/build/trace/trace
+
 run-guam: guam
 	echo -n >tmp/debug.log
 	tmp/build/guam/guam
