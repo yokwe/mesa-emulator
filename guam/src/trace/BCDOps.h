@@ -62,6 +62,85 @@ public:
 	QString toString();
 };
 
+//CTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+//  name: NameRecord,
+//  file: FTIndex,
+//  config: CTIndex,
+//  namedInstance: BOOLEAN,
+//  nControls: NATURAL,
+//  controls: ARRAY [0..0) OF Namee];  -- only config or module are valid
+
+//ENRecord: TYPE = RECORD [
+//   nEntries: CARDINAL, initialPC: ARRAY [0..0) OF PrincOps.BytePC];
+class ENRecord {
+public:
+	QVector<CARD16> initialPC;
+
+	ENRecord(const QVector<CARD16>& initialPC_) : initialPC(initialPC_) {}
+	ENRecord(const ENRecord& that) : initialPC(that.initialPC) {}
+	ENRecord() : initialPC(QVector<CARD16>()) {}
+
+	QString toString();
+};
+
+//SegClass: TYPE = {code, symbols, acMap, other};
+//SGRecord: TYPE = RECORD [
+//  file: FTIndex, base: CARDINAL,
+//  pages: [0..256), extraPages: [0..64), class: SegClass];
+
+//CodeDesc: TYPE = RECORD [
+//  sgi: SGIndex, offset, length: CARDINAL];
+class CodeDesc {
+public:
+	CARD16 sgi;
+	CARD16 offset;
+	CARD16 length;
+
+	CodeDesc(CARD16 sgi_, CARD16 offset_, CARD16 length_) : sgi(sgi_), offset(offset_), length(length_) {}
+	CodeDesc(const CodeDesc& that) : sgi(that.sgi), offset(that.offset), length(that.length) {}
+	CodeDesc() : sgi(0), offset(0), length(0) {}
+};
+
+//MTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+//  name: NameRecord,
+//  file: FTIndex,
+//  config: CTIndex,
+//  code: CodeDesc,
+//  sseg: SGIndex,
+//  links: LFIndex,
+//  linkLoc: LinkLocation,
+//  namedInstance, initial: BOOLEAN,
+//  boundsChecks, nilChecks: BOOLEAN,
+//  tableCompiled, residentFrame, crossJumped, packageable: BOOLEAN,
+//  packed: BOOLEAN, linkspace: BOOLEAN,
+//  spare: PACKED ARRAY [0..4) OF BOOLEAN,
+//  framesize: [0..PrincOps.MaxFrameSize),
+//  entries: ENIndex,
+//  atoms: ATIndex];
+class MTRecord {
+public:
+	QString name;
+	FTRecord file;
+	CARD16   config;  // CTIndex
+	CodeDesc code;
+	CARD16   sseg;    // SGIndex
+	CARD16   links;   // LFIndex
+	CARD16   linkLoc;
+	bool     namedInstance;
+	bool     initial;
+	bool     boundsChecks;
+	bool     nilChecks;
+	bool     tableCompiled;
+	bool     residentFrame;
+	bool     crossJumped;
+	bool     packageable;
+	bool     packed;
+	bool     linkspace;
+	CARD16   framesize;
+	ENRecord entries;
+	CARD16   atoms;
+};
+
 class BCDOps {
 public:
 	BCDOps(CARD32 ptr);
@@ -78,6 +157,7 @@ public:
 
 	QMap<CARD16, QString>  ss;
 	QMap<CARD16, FTRecord> ft;
+	QMap<CARD16, ENRecord> en;
 
 private:
 	BcdDefs::BCD header;

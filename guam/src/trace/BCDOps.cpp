@@ -45,6 +45,16 @@ QString FTRecord::toString() {
 	return QString("%1 %2").arg(name, -20).arg(stamp.toString(), 30);
 }
 
+QString ENRecord::toString() {
+	QString ret;
+
+	CARD16 size = initialPC.size();
+	for(CARD16 i = 0; i < size; i++) {
+		ret.append(QString(i ? ", %1" : "%1").arg(initialPC[i]));
+	}
+	return ret;
+}
+
 BCDOps::BCDOps(CARD32 ptr) {
 	if (Memory::isVacant(ptr)) {
 		logger.fatal("ptr is not mapped");
@@ -78,7 +88,6 @@ BCDOps::BCDOps(CARD32 ptr) {
 			logger.info("ss %5d %3d %s!", index, len, value.toLocal8Bit().constData());
 		}
 	}
-
 	// build ft
 	{
 		const CARD32 limit  = header.ftLimit;
@@ -103,10 +112,9 @@ BCDOps::BCDOps(CARD32 ptr) {
 			TimeStamp::Stamp stamp;
 
 			CARD16 index = pos - offset;
-			readObject(pos, &nameRecord);
-			pos += SIZE(nameRecord);
-			readObject(pos, &stamp);
-			pos += SIZE(stamp);
+
+			READ_OBJECT(pos, nameRecord);
+			READ_OBJECT(pos, stamp);
 
 			VersionStamp versionStamp(stamp);
 			FTRecord ftRecord(ss[nameRecord], versionStamp);
@@ -115,6 +123,44 @@ BCDOps::BCDOps(CARD32 ptr) {
 			logger.info("ft %5d %s", index, ftRecord.toString().toLocal8Bit().constData());
 		}
 	}
+	// build en
+	{
+		const CARD32 limit  = header.enLimit;
+		const CARD32 offset = header.enOffset;
+
+		logger.info("enOffset %5d", limit);
+		logger.info("enLimit  %5d", offset);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+			CARD16 nEntries;
+			ENRecord enRecord;
+
+			CARD16 index = pos - offset;
+
+			READ_OBJECT(pos, nEntries);
+
+			for(CARD16 i = 0; i < nEntries; i++) {
+				CARD16 pc;
+				READ_OBJECT(pos, pc);
+				enRecord.initialPC.append(pc);
+			}
+			en[index] = enRecord;
+
+			logger.info("en %5d  (%d)%s", index, enRecord.initialPC.size(), enRecord.toString().toLocal8Bit().constData());
+		}
+	}
+
 
 
 	version    = VersionStamp(header.version);
