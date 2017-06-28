@@ -747,7 +747,7 @@ public:
 			MTIndex  mti;
 			IMPIndex impi;
 			EXPIndex expi;
-			CARD16   u;
+			CARD16   u1;
 		};
 	};
 
