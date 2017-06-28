@@ -61,6 +61,12 @@ class testPilot : public testBase {
 	CPPUNIT_TEST(testTimeStamp);
 
 	// Ignore BcdDefs
+	CPPUNIT_TEST(testNamee);
+	CPPUNIT_TEST(testCTRecord);
+	CPPUNIT_TEST(testFTRecord);
+	CPPUNIT_TEST(testCodeDesc);
+	CPPUNIT_TEST(testMTRecord);
+	CPPUNIT_TEST(testENRecord);
 
 	// System
 	CPPUNIT_TEST(testSwitches);
@@ -181,6 +187,140 @@ class testPilot : public testBase {
 
 
 public:
+	// BcdDefs
+	void testNamee() {
+		//Namee: TYPE = RECORD [
+		//  SELECT type: * FROM
+		//    config => [cti: CTIndex],
+		//    module => [mti: MTIndex],
+		//    import => [impi: IMPIndex],
+		//    export => [expi: EXPIndex]
+		//    ENDCASE];
+
+		CPPUNIT_ASSERT_EQUAL((CARD32)2, SIZE(BcdDefs::Namee));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::Namee, type));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::Namee, u1));
+	}
+	void testCTRecord() {
+		//CTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+		//  name: NameRecord,
+		//  file: FTIndex,
+		//  config: CTIndex,
+		//  namedInstance: BOOLEAN,
+		//  nControls: NATURAL,
+		//  controls: ARRAY [0..0) OF Namee];  -- only config or module are valid
+		CPPUNIT_ASSERT_EQUAL((CARD32)4, SIZE(BcdDefs::CTRecord));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::CTRecord, name));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::CTRecord, file));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(BcdDefs::CTRecord, config));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)3, OFFSET(BcdDefs::CTRecord, u3));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)4, OFFSET(BcdDefs::CTRecord, controls));
+	}
+	void testFTRecord() {
+		//FTRecord: TYPE = RECORD [
+		//  name: NameRecord,
+		//  version: VersionStamp];
+		CPPUNIT_ASSERT_EQUAL((CARD32)4, SIZE(BcdDefs::FTRecord));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::FTRecord, name));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::FTRecord, version));
+	}
+	void testCodeDesc() {
+		//CodeDesc: TYPE = RECORD [
+		//  sgi: SGIndex,
+		//  offset,
+		//  length: CARDINAL];
+		CPPUNIT_ASSERT_EQUAL((CARD32)3, SIZE(BcdDefs::CodeDesc));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::CodeDesc, sgi));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::CodeDesc, offset));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(BcdDefs::CodeDesc, length));
+	}
+	void testMTRecord() {
+		//MTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+		//  name: NameRecord,
+		//  file: FTIndex,
+		//  config: CTIndex,
+		//  code: CodeDesc,
+		//  sseg: SGIndex,
+		//  links: LFIndex,
+		//  linkLoc: LinkLocation,
+		//  namedInstance, initial: BOOLEAN,
+		//  boundsChecks, nilChecks: BOOLEAN,
+		//  tableCompiled, residentFrame, crossJumped, packageable: BOOLEAN,
+		//  packed: BOOLEAN, linkspace: BOOLEAN,
+		//  spare: PACKED ARRAY [0..4) OF BOOLEAN,
+		//  framesize: [0..PrincOps.MaxFrameSize),
+		//  entries: ENIndex,
+		//  atoms: ATIndex];
+		CPPUNIT_ASSERT_EQUAL((CARD32)12, SIZE(BcdDefs::MTRecord));
+    	CPPUNIT_ASSERT_EQUAL((CARD32) 0, OFFSET(BcdDefs::MTRecord, name));
+    	CPPUNIT_ASSERT_EQUAL((CARD32) 1, OFFSET(BcdDefs::MTRecord, file));
+    	CPPUNIT_ASSERT_EQUAL((CARD32) 2, OFFSET(BcdDefs::MTRecord, config));
+    	CPPUNIT_ASSERT_EQUAL((CARD32) 3, OFFSET(BcdDefs::MTRecord, code));
+    	CPPUNIT_ASSERT_EQUAL((CARD32) 6, OFFSET(BcdDefs::MTRecord, sseg));
+       	CPPUNIT_ASSERT_EQUAL((CARD32) 7, OFFSET(BcdDefs::MTRecord, links));
+       	CPPUNIT_ASSERT_EQUAL((CARD32) 8, OFFSET(BcdDefs::MTRecord, u6));
+       	CPPUNIT_ASSERT_EQUAL((CARD32) 9, OFFSET(BcdDefs::MTRecord, framesize));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)10, OFFSET(BcdDefs::MTRecord, entries));
+       	CPPUNIT_ASSERT_EQUAL((CARD32)11, OFFSET(BcdDefs::MTRecord, atoms));
+
+       	BcdDefs::MTRecord t;
+
+       	t.u6 = 0;
+       	t.spare = ~t.spare;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x000f, t.u6);
+
+       	t.u6 = 0;
+       	t.linkspace = ~t.linkspace;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0010, t.u6);
+
+       	t.u6 = 0;
+       	t.packed = ~t.packed;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0020, t.u6);
+
+       	t.u6 = 0;
+       	t.packageable = ~t.packageable;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0040, t.u6);
+
+       	t.u6 = 0;
+       	t.crossJumped = ~t.crossJumped;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0080, t.u6);
+
+       	t.u6 = 0;
+       	t.residentFrame = ~t.residentFrame;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0100, t.u6);
+
+       	t.u6 = 0;
+       	t.tableCompiled = ~t.tableCompiled;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0200, t.u6);
+
+       	t.u6 = 0;
+       	t.nilChecks = ~t.nilChecks;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0400, t.u6);
+
+       	t.u6 = 0;
+       	t.boundsChecks = ~t.boundsChecks;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0800, t.u6);
+
+       	t.u6 = 0;
+       	t.initail = ~t.initail;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x1000, t.u6);
+
+       	t.u6 = 0;
+       	t.namedInstace = ~t.namedInstace;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x2000, t.u6);
+
+       	t.u6 = 0;
+       	t.linkLoc = ~t.linkLoc;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0xc000, t.u6);
+	}
+	void testENRecord() {
+		//ENRecord: TYPE = RECORD [
+		//   nEntries: CARDINAL, initialPC: ARRAY [0..0) OF PrincOps.BytePC];
+		CPPUNIT_ASSERT_EQUAL((CARD32)1, SIZE(BcdDefs::ENRecord));
+      	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::ENRecord, nEntries));
+      	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::ENRecord, ininialPC));
+	}
+
 	// TimeStamp
 	void testTimeStamp() {
 		//Stamp: TYPE = RECORD [net, host: [0..377B], time: LONG CARDINAL];
@@ -199,7 +339,6 @@ public:
        	t.host = ~t.host;
        	CPPUNIT_ASSERT_EQUAL((CARD16)0x00FF, t.u0);
 	}
-
 
 	// System
 	void testSwitches() {
