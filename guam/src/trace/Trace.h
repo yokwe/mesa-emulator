@@ -34,6 +34,9 @@ OF SUCH DAMAGE.
 
 #include "../mesa/MesaBasic.h"
 
+#define READ_OBJECT(ptr, target) \
+{ readObject(ptr, &target); ptr += SIZE(target); }
+
 // readObject
 void readObject(CARD32 ptr, CARD16*                          target);
 void readObject(CARD32 ptr, CARD32*                          target);
