@@ -792,7 +792,7 @@ public:
 	struct FTRecord {
 		CARD16           name;
 		TimeStamp::Stamp version;
-	};
+	} __attribute__((packed));
 	//FTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO FTRecord;
 	//FTNull: FTIndex = LAST[FTIndex];
 	//FTSelf: FTIndex = LAST[FTIndex] - 1;
@@ -812,7 +812,7 @@ public:
 		SGIndex sgi;
 		CARD16  offset;
 		CARD16  length;
-	};
+	} __attribute__((packed));
 
 	//MTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
 	//  name: NameRecord,
@@ -853,11 +853,11 @@ public:
 				CARD16 linkLoc       : 2;
 			};
 			CARD16 u6;
-		};
+		} __attribute__((packed));
 		CARD16  framesize;
 		ENIndex entries;
 		ATIndex atoms;
-	};
+	} __attribute__((packed));
 
 	//MTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO MTRecord;
 	//MTNull: MTIndex = LAST[MTIndex];
@@ -870,7 +870,7 @@ public:
 	struct ENRecord {
 		CARD16 nEntries;
 		CARD16 ininialPC[0];
-	};
+	} __attribute__((packed));
 	//ENIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO ENRecord;
 	//ENNull: ENIndex = LAST[ENIndex];
 	static const ENIndex ENNull = tLimit;
@@ -976,7 +976,7 @@ public:
 		ATIndex  atLimit;
 		CARD16   apOffset;
 		CARD16   apLimit;
-	};
+	} __attribute__((packed));
 };
 
 
