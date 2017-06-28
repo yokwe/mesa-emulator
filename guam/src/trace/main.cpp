@@ -26,63 +26,55 @@ OF SUCH DAMAGE.
 
 
 //
-// BCDOps.h
+// main.cpp
 //
 
-#ifndef BCDOPS_H_
-#define BCDOPS_H_ 1
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("main");
 
-#include "../mesa/Pilot.h"
+#include "../mesa/Memory.h"
 
-#include "Trace.h"
+#include "BCDOps.h"
 
-#include <QtCore>
+void FrameFault(FSIndex fsi) {
+	logger.fatal("fsi %d", fsi);
+	ERROR();
+}
+void PageFault(LONG_POINTER ptr) {
+	logger.fatal("ptr = %8X", ptr);
+	ERROR();
+}
+void WriteProtectFault(LONG_POINTER ptr) {
+	logger.fatal("ptr = %8X", ptr);
+	ERROR();
+}
 
-class VersionStamp {
-public:
-	CARD8     net;
-	CARD8     host;
-	QDateTime time;
+int main(int /*argc*/, char** /*argv*/) {
+	logger.info("START");
+	QString path("tmp/GermOpsImpl.bcd");
+	quint32 vmBits = 22;
+	quint32 rmBits = 20;
+	CARD32  ptr = 0x10000;
 
-	VersionStamp(const TimeStamp::Stamp& stamp) : net(stamp.net), host(stamp.host), time(QDateTime::fromTime_t(Util::toUnixTime(stamp.time))) {}
-	VersionStamp(const VersionStamp& that) : net(that.net), host(that.host), time(that.time) {}
-	VersionStamp() : net(0), host(0), time(QDateTime::fromTime_t(0)) {}
+	logger.info("vmBits = %2d  rmBits = %2d", vmBits, rmBits);
+//	Memory::initialize(vmBits, rmBits, Agent::ioRegionPage);
+	Memory::initialize(vmBits, rmBits, 0x80);
 
-	QString toString();
-};
+	quint32 size;
+	logger.info("path %s", path.toLocal8Bit().constData());
+	CARD16* p = (CARD16*)Util::mapFile(path, size);
+	logger.info("size %u", size);
+	quint32 nPage = (size + 511) / 512;
+	logger.info("nPage %u", nPage);
+	for(quint32 i = 0; i < nPage; i++) {
+		CARD32 offset = 256 * i;
+		CARD16* q = Memory::getAddress(ptr + offset);
+		Util::toBigEndian(p + offset, q, 256);
+	}
+	Util::unmapFile(p);
 
-class FTRecord {
-public:
-	QString      name;
-	VersionStamp stamp;
-	FTRecord(const QString& name_, const VersionStamp& stamp_) : name(name_), stamp(stamp_) {}
-	FTRecord(const FTRecord& that) : name(that.name), stamp(that.stamp) {}
-	FTRecord() : name(""), stamp(VersionStamp()) {}
+	BCDOps bcd(ptr);
 
-	QString toString();
-};
-
-class BCDOps {
-public:
-	BCDOps(CARD32 ptr);
-
-	VersionStamp version;
-	VersionStamp creator;
-
-	FTRecord sourceFile;
-
-	CARD32  nConfigs;
-	CARD32  nModules;
-	CARD32  nImports;
-	CARD32  nExports;
-
-	QMap<CARD16, QString>  ss;
-	QMap<CARD16, FTRecord> ft;
-
-private:
-	BcdDefs::BCD header;
-};
-
-#endif
-
-
+	logger.info("STOP");
+	return 0;
+}

@@ -29,6 +29,7 @@ OF SUCH DAMAGE.
 // BcdOps.cpp
 //
 
+
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("bcdops");
 
@@ -36,13 +37,12 @@ static log4cpp::Category& logger = Logger::getLogger("bcdops");
 
 #include "BCDOps.h"
 
-VersionStamp::VersionStamp(const TimeStamp::Stamp& stamp) {
-	this->net  = stamp.net;
-	this->host = stamp.host;
-	this->time = QDateTime::fromTime_t(Util::toUnixTime(stamp.time));
-}
 QString VersionStamp::toString() {
-	return QString("%1#%2#%3").arg(net, 0, 16).arg(host, 0, 16).arg(time.toString("yyyy-MM-dd HH:mm:ss"));
+	return QString("%1#%2# %3").arg(net, 0, 8).arg(host, 0, 8).arg(time.toString("yyyy-MM-dd HH:mm:ss"));
+}
+
+QString FTRecord::toString() {
+	return QString("%1 %2").arg(name, -20).arg(stamp.toString(), 30);
 }
 
 BCDOps::BCDOps(CARD32 ptr) {
@@ -51,11 +51,88 @@ BCDOps::BCDOps(CARD32 ptr) {
 		ERROR();
 	}
 	readObject(ptr, &header);
+	// Build ss
+	{
+		const CARD32 limit  = header.ssLimit;
+		const CARD32 offset = header.ssOffset;
 
-	version = VersionStamp(header.version);
-	creator = VersionStamp(header.version);
+		CARD32 p = ptr + offset;
+		CARD32 bytePos    = 2 * sizeof(CARD16) + 1;
+		CARD32 byteLimit  = limit * sizeof(CARD16);
 
-	logger.info("version %s", version.toString().toLocal8Bit().constData());
-	logger.info("creator %s", creator.toString().toLocal8Bit().constData());
+		logger.info("bytePos   %5d", bytePos);
+		logger.info("byteLimit %5d", byteLimit);
+
+		for(;;) {
+			if (byteLimit <= bytePos) break;
+
+			CARD16 index = bytePos - 3;
+			CARD32 len = FetchByte(p, bytePos++);
+			QString value;
+			for(CARD32 i = 0; i < len; i++) {
+				CARD8 byte = FetchByte(p, bytePos++);
+				value.append(byte);
+			}
+			ss[index] = value;
+
+			logger.info("ss %5d %3d %s!", index, len, value.toLocal8Bit().constData());
+		}
+	}
+
+	// build ft
+	{
+		const CARD32 limit  = header.ftLimit;
+		const CARD32 offset = header.ftOffset;
+
+		logger.info("ftOffset %5d", limit);
+		logger.info("ftLimit  %5d", offset);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+			CARD16 nameRecord;
+			TimeStamp::Stamp stamp;
+
+			CARD16 index = pos - offset;
+			readObject(pos, &nameRecord);
+			pos += SIZE(nameRecord);
+			readObject(pos, &stamp);
+			pos += SIZE(stamp);
+
+			VersionStamp versionStamp(stamp);
+			FTRecord ftRecord(ss[nameRecord], versionStamp);
+			ft[index] = ftRecord;
+
+			logger.info("ft %5d %s", index, ftRecord.toString().toLocal8Bit().constData());
+		}
+	}
+
+
+	version    = VersionStamp(header.version);
+	creator    = VersionStamp(header.version);
+
+	sourceFile = ft[header.sourceFile];
+	nConfigs   = header.nConfigs;
+	nModules   = header.nModules;
+	nImports   = header.nImports;
+	nExports   = header.nExports;
+
+	logger.info("version    %s", version.toString().toLocal8Bit().constData());
+	logger.info("creator    %s", creator.toString().toLocal8Bit().constData());
+	logger.info("sourceFile %s", sourceFile.toString().toLocal8Bit().constData());
+	logger.info("nConfigs %4d",  nConfigs);
+	logger.info("nModules %4d",  nModules);
+	logger.info("nImports %4d",  nImports);
+	logger.info("nExports %4d",  nExports);
+
 
 }
