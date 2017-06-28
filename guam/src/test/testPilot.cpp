@@ -215,6 +215,16 @@ public:
        	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(BcdDefs::CTRecord, config));
        	CPPUNIT_ASSERT_EQUAL((CARD32)3, OFFSET(BcdDefs::CTRecord, u3));
        	CPPUNIT_ASSERT_EQUAL((CARD32)4, OFFSET(BcdDefs::CTRecord, controls));
+
+       	BcdDefs::CTRecord t;
+
+       	t.u3 = 0;
+       	t.namedInstance = ~t.namedInstance;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x8000, t.u3);
+
+       	t.u3 = 0;
+       	t.nControls = ~t.nControls;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x7FFF, t.u3);
 	}
 	void testFTRecord() {
 		//FTRecord: TYPE = RECORD [
