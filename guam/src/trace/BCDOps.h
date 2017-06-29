@@ -62,6 +62,32 @@ public:
 	QString toString();
 };
 
+//Namee: TYPE = RECORD [
+//  SELECT type: * FROM
+//    config => [cti: CTIndex],
+//    module => [mti: MTIndex],
+//    import => [impi: IMPIndex],
+//    export => [expi: EXPIndex]
+//    ENDCASE];
+class Namee {
+public:
+	enum class Type {
+		config  = BcdDefs::N_config,
+		module  = BcdDefs::N_module,
+		import  = BcdDefs::N_import,
+		exports = BcdDefs::N_export,
+	};
+	Type   type;
+	CARD16 index;
+
+	Namee(Type type_, CARD16 index_) : type(type_), index(index_) {}
+	Namee(const Namee& that) : type(that.type), index(that.index) {}
+	Namee() : type(Type::config), index(0) {}
+
+	QString toString();
+	QString toString(Type type);
+};
+
 //CTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
 //  name: NameRecord,
 //  file: FTIndex,
@@ -69,6 +95,16 @@ public:
 //  namedInstance: BOOLEAN,
 //  nControls: NATURAL,
 //  controls: ARRAY [0..0) OF Namee];  -- only config or module are valid
+class CTRecord {
+public:
+	QString        name;
+	FTRecord       file;
+	CARD16         config;
+	bool           namedInstance;
+	QVector<Namee> controls;
+
+	QString toString();
+};
 
 //ENRecord: TYPE = RECORD [
 //   nEntries: CARDINAL, initialPC: ARRAY [0..0) OF PrincOps.BytePC];
@@ -89,13 +125,21 @@ public:
 //  pages: [0..256), extraPages: [0..64), class: SegClass];
 class SGRecord {
 public:
+	enum class SegClass {
+		code    = BcdDefs::SC_code,
+		symbols = BcdDefs::SC_symbols,
+		acMap   = BcdDefs::SC_acMap,
+		other   = BcdDefs::SC_other,
+	};
+
 	FTRecord file;
 	CARD16   base;
 	CARD16   pages;
 	CARD16   extraPages;
-	CARD16   segClass;
+	SegClass segClass;
 
 	QString toString();
+	static QString toString(SegClass segClass);
 };
 
 //CodeDesc: TYPE = RECORD [

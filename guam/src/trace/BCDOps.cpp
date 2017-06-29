@@ -42,7 +42,7 @@ QString VersionStamp::toString() {
 }
 
 QString FTRecord::toString() {
-	return QString("%1 %2").arg(name, -20).arg(stamp.toString(), 30);
+	return QString("%1 %2").arg(name, -30).arg(stamp.toString(), 30);
 }
 
 QString ENRecord::toString() {
@@ -55,26 +55,53 @@ QString ENRecord::toString() {
 	return ret;
 }
 
-QString SGRecord::toString() {
-	//SegClass: TYPE = {code, symbols, acMap, other};
-	const char* sc;
-	switch(segClass) {
-	case BcdDefs::SC_code:
-		sc = "code";
-		break;
-	case BcdDefs::SC_symbols:
-		sc = "symbols";
-		break;
-	case BcdDefs::SC_acMap:
-		sc = "acMap";
-		break;
-	case BcdDefs::SC_other:
-		sc = "other";
-		break;
+QString Namee::toString() {
+	return QString("[%1 %2]").arg(toString(type)).arg(index);
+}
+QString Namee::toString(Namee::Type type) {
+	switch(type) {
+	case Namee::Type::config:
+		return "config";
+	case Namee::Type::module:
+		return "module";
+	case Namee::Type::import:
+		return "import";
+	case Namee::Type::exports:
+		return "export";
 	default:
 		ERROR();
+		return "??";
 	}
-	return QString("%1 %2+%3+%4 %5").arg(file.toString()).arg(base).arg(pages).arg(extraPages).arg(sc);
+}
+
+QString CTRecord::toString() {
+	QString controlList;
+
+	CARD16 size = controls.size();
+	for(CARD16 i = 0; i < size; i++) {
+		controlList.append(QString(i ? ", %1" : "%1").arg(controls[i].toString()));
+	}
+	QString index = (config == BcdDefs::CTNull) ? "#NULL#" : QString("ct-%1").arg(config);
+	return QString("%1 %2 (%3)").arg(file.toString(), 30).arg(index).arg(controlList);
+}
+
+QString SGRecord::toString(SegClass segClass) {
+	switch(segClass) {
+	case SegClass::code:
+		return "code";
+	case SegClass::symbols:
+		return "symbols";
+	case SegClass::acMap:
+		return "acMap";
+	case SegClass::other:
+		return "other";
+	default:
+		ERROR();
+		return "??";
+	}
+}
+QString SGRecord::toString() {
+	return QString("%1 %2+%3+%4 %5").arg(file.toString()).arg(base).arg(pages).arg(extraPages).arg(toString(segClass));
 }
 
 
@@ -152,7 +179,7 @@ BCDOps::BCDOps(CARD32 ptr) {
 //			QString name = sourceName.replace(".mesa", ".bcd").replace(".config", ".bcd").prepend("#SELF#");
 			QString name = "#SELF#";
 			FTRecord record(name, header.version);
-			ft[BcdDefs::FTSelf] = record;
+			ft[(CARD16)BcdDefs::FTSelf] = record;
 		}
 	}
 	// build en
@@ -187,9 +214,56 @@ BCDOps::BCDOps(CARD32 ptr) {
 			}
 			en[index] = enRecord;
 
-			logger.info("en %5d  (%d)%s", index, enRecord.initialPC.size(), enRecord.toString().toLocal8Bit().constData());
+//			logger.info("en %5d  (%d)%s", index, enRecord.initialPC.size(), enRecord.toString().toLocal8Bit().constData());
 		}
 	}
+	// build ct
+	{
+		const CARD32 limit  = header.ctLimit;
+		const CARD32 offset = header.ctOffset;
+		logger.info("ct  %5d %5d", offset, limit);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+
+			CARD16 index = pos - offset;
+
+			BcdDefs::CTRecord ctRecord;
+
+			READ_OBJECT(pos, ctRecord.name);
+			READ_OBJECT(pos, ctRecord.file);
+			READ_OBJECT(pos, ctRecord.config);
+			READ_OBJECT(pos, ctRecord.u3);
+
+			CTRecord record;
+			record.name          = ss[ctRecord.name];
+			record.file          = ft[ctRecord.file];
+			record.config        = ctRecord.config;
+			record.namedInstance = ctRecord.namedInstance;
+
+			for(CARD16 i = 0; i < ctRecord.nControls; i++) {
+				CARD16 type;
+				CARD16 index;
+				READ_OBJECT(pos, type);
+				READ_OBJECT(pos, index);
+
+				Namee namee((Namee::Type)type, index);
+				record.controls.append(namee);
+			}
+			logger.info("ct %5d %s", index, record.toString().toLocal8Bit().constData());
+		}
+	}
+
 	// build sg
 	{
 		const CARD32 limit  = header.sgLimit;
@@ -221,7 +295,7 @@ BCDOps::BCDOps(CARD32 ptr) {
 			record.base       = sgRecord.base;
 			record.pages      = sgRecord.pages;
 			record.extraPages = sgRecord.extraPages;
-			record.segClass   = sgRecord.segClass;
+			record.segClass   = (SGRecord::SegClass)sgRecord.segClass;
 			sg[index] = record;
 
 			logger.info("sg %5d %s", index, record.toString().toLocal8Bit().constData());
