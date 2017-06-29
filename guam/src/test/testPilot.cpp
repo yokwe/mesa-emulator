@@ -67,6 +67,7 @@ class testPilot : public testBase {
 	CPPUNIT_TEST(testCodeDesc);
 	CPPUNIT_TEST(testMTRecord);
 	CPPUNIT_TEST(testENRecord);
+	CPPUNIT_TEST(testSGRecord);
 
 	// System
 	CPPUNIT_TEST(testSwitches);
@@ -329,6 +330,29 @@ public:
 		CPPUNIT_ASSERT_EQUAL((CARD32)1, SIZE(BcdDefs::ENRecord));
       	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::ENRecord, nEntries));
       	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::ENRecord, ininialPC));
+	}
+	void testSGRecord() {
+		//SGRecord: TYPE = RECORD [
+		//  file: FTIndex, base: CARDINAL,
+		//  pages: [0..256), extraPages: [0..64), class: SegClass];
+		CPPUNIT_ASSERT_EQUAL((CARD32)3, SIZE(BcdDefs::SGRecord));
+     	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::SGRecord, file));
+     	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::SGRecord, base));
+     	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(BcdDefs::SGRecord, u2));
+
+     	BcdDefs::SGRecord t;
+
+     	t.u2 = 0;
+     	t.pages = ~t.pages;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0xFF00, t.u2);
+
+     	t.u2 = 0;
+     	t.extraPages = ~t.extraPages;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x00FC, t.u2);
+
+     	t.u2 = 0;
+     	t.segClass = ~t.segClass;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0003, t.u2);
 	}
 
 	// TimeStamp
