@@ -55,23 +55,48 @@ QString ENRecord::toString() {
 	return ret;
 }
 
+QString SGRecord::toString() {
+	//SegClass: TYPE = {code, symbols, acMap, other};
+	const char* sc;
+	switch(segClass) {
+	case BcdDefs::SC_code:
+		sc = "code";
+		break;
+	case BcdDefs::SC_symbols:
+		sc = "symbols";
+		break;
+	case BcdDefs::SC_acMap:
+		sc = "acMap";
+		break;
+	case BcdDefs::SC_other:
+		sc = "other";
+		break;
+	default:
+		ERROR();
+	}
+	return QString("%1 %2+%3+%4 %5").arg(file.toString()).arg(base).arg(pages).arg(extraPages).arg(sc);
+}
+
+
 BCDOps::BCDOps(CARD32 ptr) {
 	if (Memory::isVacant(ptr)) {
 		logger.fatal("ptr is not mapped");
 		ERROR();
 	}
+
 	readObject(ptr, &header);
 	// Build ss
 	{
 		const CARD32 limit  = header.ssLimit;
 		const CARD32 offset = header.ssOffset;
+		logger.info("ss  %5d %5d", offset, limit);
 
 		CARD32 p = ptr + offset;
 		CARD32 bytePos    = 2 * sizeof(CARD16) + 1;
 		CARD32 byteLimit  = limit * sizeof(CARD16);
 
-		logger.info("bytePos   %5d", bytePos);
-		logger.info("byteLimit %5d", byteLimit);
+//		logger.info("bytePos   %5d", bytePos);
+//		logger.info("byteLimit %5d", byteLimit);
 
 		for(;;) {
 			if (byteLimit <= bytePos) break;
@@ -85,16 +110,14 @@ BCDOps::BCDOps(CARD32 ptr) {
 			}
 			ss[index] = value;
 
-			logger.info("ss %5d %3d %s!", index, len, value.toLocal8Bit().constData());
+//			logger.info("ss %5d %3d %s!", index, len, value.toLocal8Bit().constData());
 		}
 	}
 	// build ft
 	{
 		const CARD32 limit  = header.ftLimit;
 		const CARD32 offset = header.ftOffset;
-
-		logger.info("ftOffset %5d", limit);
-		logger.info("ftLimit  %5d", offset);
+//		logger.info("ft  %5d %5d", offset, limit);
 
 		CARD32 posOffset = ptr + offset;
 		CARD32 posLimit  = ptr + offset + limit;
@@ -122,14 +145,21 @@ BCDOps::BCDOps(CARD32 ptr) {
 
 			logger.info("ft %5d %s", index, ftRecord.toString().toLocal8Bit().constData());
 		}
+
+		// Add FTSelf
+		{
+//			QString sourceName = ft[header.sourceFile].name;
+//			QString name = sourceName.replace(".mesa", ".bcd").replace(".config", ".bcd").prepend("#SELF#");
+			QString name = "#SELF#";
+			FTRecord record(name, header.version);
+			ft[BcdDefs::FTSelf] = record;
+		}
 	}
 	// build en
 	{
 		const CARD32 limit  = header.enLimit;
 		const CARD32 offset = header.enOffset;
-
-		logger.info("enOffset %5d", limit);
-		logger.info("enLimit  %5d", offset);
+//		logger.info("en  %5d %5d", offset, limit);
 
 		CARD32 posOffset = ptr + offset;
 		CARD32 posLimit  = ptr + offset + limit;
@@ -160,25 +190,66 @@ BCDOps::BCDOps(CARD32 ptr) {
 			logger.info("en %5d  (%d)%s", index, enRecord.initialPC.size(), enRecord.toString().toLocal8Bit().constData());
 		}
 	}
+	// build sg
+	{
+		const CARD32 limit  = header.sgLimit;
+		const CARD32 offset = header.sgOffset;
+		logger.info("sg  %5d %5d", offset, limit);
 
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
 
+		CARD32 pos       = posOffset;
 
-	version    = VersionStamp(header.version);
-	creator    = VersionStamp(header.version);
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
 
-	sourceFile = ft[header.sourceFile];
-	nConfigs   = header.nConfigs;
-	nModules   = header.nModules;
-	nImports   = header.nImports;
-	nExports   = header.nExports;
+			CARD16 index = pos - offset;
+
+			BcdDefs::SGRecord sgRecord;
+			READ_OBJECT(pos, sgRecord.file);
+			READ_OBJECT(pos, sgRecord.base);
+			READ_OBJECT(pos, sgRecord.u2);
+
+			SGRecord record;
+			record.file       = ft[sgRecord.file];
+			record.base       = sgRecord.base;
+			record.pages      = sgRecord.pages;
+			record.extraPages = sgRecord.extraPages;
+			record.segClass   = sgRecord.segClass;
+			sg[index] = record;
+
+			logger.info("sg %5d %s", index, record.toString().toLocal8Bit().constData());
+		}
+	}
+
+	version     = VersionStamp(header.version);
+	creator     = VersionStamp(header.creator);
+
+	sourceFile  = ft[header.sourceFile];
+	nPages      = header.nPages;
+	firstDummy  = header.firstdummy;
+	definitions = header.definitions;
+	nConfigs    = header.nConfigs;
+	nModules    = header.nModules;
+	nImports    = header.nImports;
+	nExports    = header.nExports;
 
 	logger.info("version    %s", version.toString().toLocal8Bit().constData());
 	logger.info("creator    %s", creator.toString().toLocal8Bit().constData());
 	logger.info("sourceFile %s", sourceFile.toString().toLocal8Bit().constData());
-	logger.info("nConfigs %4d",  nConfigs);
-	logger.info("nModules %4d",  nModules);
-	logger.info("nImports %4d",  nImports);
-	logger.info("nExports %4d",  nExports);
+	logger.info("nPages     %4d", nPages);
+	logger.info("firstDummy %4d", firstDummy);
+	logger.info("definitions%4d", definitions);
+	logger.info("nConfigs   %4d", nConfigs);
+	logger.info("nModules   %4d", nModules);
+	logger.info("nImports   %4d", nImports);
+	logger.info("nExports   %4d", nExports);
 
 
 }

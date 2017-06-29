@@ -87,6 +87,16 @@ public:
 //SGRecord: TYPE = RECORD [
 //  file: FTIndex, base: CARDINAL,
 //  pages: [0..256), extraPages: [0..64), class: SegClass];
+class SGRecord {
+public:
+	FTRecord file;
+	CARD16   base;
+	CARD16   pages;
+	CARD16   extraPages;
+	CARD16   segClass;
+
+	QString toString();
+};
 
 //CodeDesc: TYPE = RECORD [
 //  sgi: SGIndex, offset, length: CARDINAL];
@@ -145,10 +155,14 @@ class BCDOps {
 public:
 	BCDOps(CARD32 ptr);
 
+	QString      name;
 	VersionStamp version;
 	VersionStamp creator;
 
 	FTRecord sourceFile;
+	CARD32   nPages;
+	CARD32   firstDummy;
+	bool     definitions;
 
 	CARD32  nConfigs;
 	CARD32  nModules;
@@ -158,6 +172,7 @@ public:
 	QMap<CARD16, QString>  ss;
 	QMap<CARD16, FTRecord> ft;
 	QMap<CARD16, ENRecord> en;
+	QMap<CARD16, SGRecord> sg;
 
 private:
 	BcdDefs::BCD header;
