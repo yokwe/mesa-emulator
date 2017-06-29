@@ -799,6 +799,28 @@ public:
 	static const FTIndex FTNull = tLimit;
 	static const FTIndex FTSelf = tLimit - 1;
 
+	//SegClass: TYPE = {code, symbols, acMap, other};
+	static const CARD16 SC_code    = 0;
+	static const CARD16 SC_symbols = 1;
+	static const CARD16 SC_acMap   = 2;
+	static const CARD16 SC_other   = 3;
+
+	//SGRecord: TYPE = RECORD [
+	//  file: FTIndex, base: CARDINAL,
+	//  pages: [0..256), extraPages: [0..64), class: SegClass];
+	struct SGRecord {
+		CARD16 file;
+		CARD16 base;
+		union {
+			struct {
+				CARD16 segClass   : 2;
+				CARD16 extraPages : 6;
+				CARD16 pages      : 8;
+			};
+			CARD16 u2;
+		};
+	};
+
 
 	//-- Module Table
 	//LinkLocation: TYPE = {frame, code, dontcare};
