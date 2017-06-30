@@ -753,7 +753,7 @@ public:
 
 	//NameRecord: TYPE = RECORD [CARDINAL];
 	//NullName: NameRecord = [1];
-	static const NameRecord NullName = 1;
+	static const CARD16 NullName = 1;
 
 	//NTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO NTRecord;
 	//NTNull: NTIndex = LAST[NTIndex];
@@ -785,7 +785,7 @@ public:
 
 	//CTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO CTRecord;
 	//CTNull: CTIndex = LAST[CTIndex];
-	static const CTIndex CTNull = tLimit;
+	static const CARD16 CTNull = tLimit;
 
 
 	//FTRecord: TYPE = RECORD [name: NameRecord, version: VersionStamp];
@@ -796,8 +796,8 @@ public:
 	//FTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO FTRecord;
 	//FTNull: FTIndex = LAST[FTIndex];
 	//FTSelf: FTIndex = LAST[FTIndex] - 1;
-	static const FTIndex FTNull = tLimit;
-	static const FTIndex FTSelf = tLimit - 1;
+	static const CARD16 FTNull = tLimit;
+	static const CARD16 FTSelf = tLimit - 1;
 
 	//SegClass: TYPE = {code, symbols, acMap, other};
 	static const CARD16 SC_code    = 0;
@@ -857,6 +857,9 @@ public:
 		Link   frag[0];
 	};
 
+	//  LFIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO LinkFrag;
+	//  LFNull: LFIndex = LAST[LFIndex];
+	static const CARD16 LFNull = tLimit;
 
 	//-- Module Table
 	//LinkLocation: TYPE = {frame, code, dontcare};
@@ -931,7 +934,7 @@ public:
 	} __attribute__((packed));
 	//ENIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO ENRecord;
 	//ENNull: ENIndex = LAST[ENIndex];
-	static const ENIndex ENNull = tLimit;
+	static const CARD16 ENNull = tLimit;
 
 
 	//BCD: TYPE = RECORD [
