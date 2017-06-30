@@ -313,11 +313,11 @@ public:
        	CPPUNIT_ASSERT_EQUAL((CARD16)0x0800, t.u6);
 
        	t.u6 = 0;
-       	t.initail = ~t.initail;
+       	t.initial = ~t.initial;
        	CPPUNIT_ASSERT_EQUAL((CARD16)0x1000, t.u6);
 
        	t.u6 = 0;
-       	t.namedInstace = ~t.namedInstace;
+       	t.namedInstance = ~t.namedInstance;
        	CPPUNIT_ASSERT_EQUAL((CARD16)0x2000, t.u6);
 
        	t.u6 = 0;

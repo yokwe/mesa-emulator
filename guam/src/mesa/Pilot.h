@@ -870,8 +870,8 @@ public:
 				CARD16 tableCompiled : 1;
 				CARD16 nilChecks     : 1;
 				CARD16 boundsChecks  : 1;
-				CARD16 initail       : 1;
-				CARD16 namedInstace  : 1;
+				CARD16 initial       : 1;
+				CARD16 namedInstance : 1;
 				CARD16 linkLoc       : 2;
 			};
 			CARD16 u6;
