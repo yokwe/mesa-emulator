@@ -42,6 +42,7 @@ void readObject(CARD32 ptr, CARD16*                          target);
 void readObject(CARD32 ptr, CARD32*                          target);
 
 void readObject(CARD32 ptr, BcdDefs::BCD*                    target);
+void readObject(CARD32 ptr, BcdDefs::CodeDesc*               target);
 void readObject(CARD32 ptr, CPSwapDefs::ExternalStateVector* target);
 void readObject(CARD32 ptr, LoadStateFormat::ModuleInfo*     target);
 void readObject(CARD32 ptr, LoadStateFormat::BcdInfo*        target);

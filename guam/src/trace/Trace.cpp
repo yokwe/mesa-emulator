@@ -196,6 +196,13 @@ void readObject(CARD32 ptr, BcdDefs::BCD* target) {
 	READ_TARGET(BcdDefs::BCD, apLimit);
 }
 
+void readObject(CARD32 ptr, BcdDefs::CodeDesc* target) {
+	READ_OBJECT_PROLOGUE();
+
+	READ_TARGET(BcdDefs::CodeDesc, sgi);
+	READ_TARGET(BcdDefs::CodeDesc, offset);
+	READ_TARGET(BcdDefs::CodeDesc, length);
+}
 
 void readObject(CARD32 ptr, PrincOpsExtras2::GFTItem* target) {
 	READ_OBJECT_PROLOGUE();

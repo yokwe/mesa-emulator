@@ -155,6 +155,39 @@ public:
 	CodeDesc() : sgi(0), offset(0), length(0) {}
 };
 
+//Link: TYPE = MACHINE DEPENDENT RECORD [
+//  rep(0): SELECT tag(0:0..1): LinkTag FROM
+//    procedure => [gfi(0:2..15): GFIndex, ep(1): CARDINAL],
+//    signal => [gfi(0:2..15): GFIndex, index(1): CARDINAL],
+//    variable => [gfi(0:2..15): GFIndex, offset(1): CARDINAL],
+//    type => [fill(0:2..15): [0..37777B], typeID(1): TYPIndex],
+//    ENDCASE];
+class Link {
+public:
+	enum class Tag {
+		proc = BcdDefs::LT_prodecure,
+		sig  = BcdDefs::LT_signal,
+		var  = BcdDefs::LT_variable,
+		type = BcdDefs::LT_type,
+	};
+
+	Tag    tag;
+	CARD16 gfi;
+	CARD16 value;
+
+	QString toString(Tag tag);
+	QString toString();
+};
+
+//LinkFrag: TYPE = RECORD [frag: SEQUENCE length: NAT OF Link];
+class LinkFrag {
+public:
+	CARD16 length;
+	QVector<Link> frag;
+
+	QString toString();
+};
+
 //MTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
 //  name: NameRecord,
 //  file: FTIndex,
@@ -173,11 +206,11 @@ public:
 //  atoms: ATIndex];
 class MTRecord {
 public:
-	QString name;
+	QString  name;
 	FTRecord file;
 	CARD16   config;  // CTIndex
 	CodeDesc code;
-	CARD16   sseg;    // SGIndex
+	SGRecord sseg;    // SGIndex
 	CARD16   links;   // LFIndex
 	CARD16   linkLoc;
 	bool     namedInstance;
@@ -217,6 +250,11 @@ public:
 	QMap<CARD16, FTRecord> ft;
 	QMap<CARD16, ENRecord> en;
 	QMap<CARD16, SGRecord> sg;
+	QMap<CARD16, CTRecord> ct;
+	QMap<CARD16, MTRecord> mt;
+	QMap<CARD16, LinkFrag> lf;
+
+	QString getName(CARD16 nameRecord);
 
 private:
 	BcdDefs::BCD header;

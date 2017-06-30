@@ -37,6 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("bcdops");
 
 #include "BCDOps.h"
 
+
 QString VersionStamp::toString() {
 	return QString("%1#%2# %3").arg(net, 0, 8).arg(host, 0, 8).arg(time.toString("yyyy-MM-dd HH:mm:ss"));
 }
@@ -104,6 +105,46 @@ QString SGRecord::toString() {
 	return QString("%1 %2+%3+%4 %5").arg(file.toString()).arg(base).arg(pages).arg(extraPages).arg(toString(segClass));
 }
 
+QString BCDOps::getName(CARD16 nameRecord) {
+	switch(nameRecord) {
+	case BcdDefs::NullName:
+		return "#NULL#";
+	default:
+		if (ss.contains(nameRecord)) return ss[nameRecord];
+		logger.fatal("Unknown nameRecord %d", nameRecord);
+		ERROR();
+	}
+}
+
+QString Link::toString(Tag tag) {
+	switch(tag) {
+	case Tag::proc:
+		return "proc";
+	case Tag::sig:
+		return "sig";
+	case Tag::type:
+		return "type";
+	case Tag::var:
+		return "var";
+	default:
+		ERROR();
+		return "???";
+	}
+}
+QString Link::toString() {
+	return QString("%1 %2 %3").arg(toString(tag)).arg(gfi).arg(value);
+}
+
+QString LinkFrag::toString() {
+	QString ret;
+	ret.append(QString("(%1)").arg(length));
+
+	for(CARD16 i = 0; i < length; i++) {
+		ret.append(QString(i ? ", [%1]" : "[%1]").arg(frag[i].toString()));
+	}
+	return ret;
+}
+
 
 BCDOps::BCDOps(CARD32 ptr) {
 	if (Memory::isVacant(ptr)) {
@@ -139,6 +180,9 @@ BCDOps::BCDOps(CARD32 ptr) {
 
 //			logger.info("ss %5d %3d %s!", index, len, value.toLocal8Bit().constData());
 		}
+
+		// Add BcdDefs::NullName
+		ss[(CARD16)BcdDefs::NullName] = "#NULL#";
 	}
 	// build ft
 	{
@@ -167,7 +211,7 @@ BCDOps::BCDOps(CARD32 ptr) {
 			READ_OBJECT(pos, stamp);
 
 			VersionStamp versionStamp(stamp);
-			FTRecord ftRecord(ss[nameRecord], versionStamp);
+			FTRecord ftRecord(getName(nameRecord), versionStamp);
 			ft[index] = ftRecord;
 
 			logger.info("ft %5d %s", index, ftRecord.toString().toLocal8Bit().constData());
@@ -246,7 +290,7 @@ BCDOps::BCDOps(CARD32 ptr) {
 			READ_OBJECT(pos, ctRecord.u3);
 
 			CTRecord record;
-			record.name          = ss[ctRecord.name];
+			record.name          = getName(ctRecord.name);
 			record.file          = ft[ctRecord.file];
 			record.config        = ctRecord.config;
 			record.namedInstance = ctRecord.namedInstance;
@@ -260,6 +304,8 @@ BCDOps::BCDOps(CARD32 ptr) {
 				Namee namee((Namee::Type)type, index);
 				record.controls.append(namee);
 			}
+			ct[index] = record;
+
 			logger.info("ct %5d %s", index, record.toString().toLocal8Bit().constData());
 		}
 	}
@@ -299,6 +345,114 @@ BCDOps::BCDOps(CARD32 ptr) {
 			sg[index] = record;
 
 			logger.info("sg %5d %s", index, record.toString().toLocal8Bit().constData());
+		}
+	}
+
+	// build lf
+	{
+		const CARD32 limit  = header.lfLimit;
+		const CARD32 offset = header.lfOffset;
+		logger.info("lf  %5d %5d", offset, limit);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+
+			CARD16 index = pos - offset;
+
+			LinkFrag record;
+			READ_OBJECT(pos, record.length);
+
+			for(CARD16 i = 0; i < record.length; i++) {
+				BcdDefs::Link link;
+				READ_OBJECT(pos, link.u0);
+				READ_OBJECT(pos, link.u1);
+
+				Link aLink;
+				aLink.tag   = (Link::Tag)link.tag;
+				aLink.gfi   = link.gfi;
+				aLink.value = link.u1;
+
+				record.frag.append(aLink);
+			}
+
+			lf[index] = record;
+
+			logger.info("lf %5d %s", index, record.toString().toLocal8Bit().constData());
+		}
+	}
+
+	// build mt
+	{
+		const CARD32 limit  = header.mtLimit;
+		const CARD32 offset = header.mtOffset;
+		logger.info("mt  %5d %5d", offset, limit);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+
+			CARD16 index = pos - offset;
+
+			BcdDefs::MTRecord mtRecord;
+			READ_OBJECT(pos, mtRecord.name);
+			READ_OBJECT(pos, mtRecord.file);
+			READ_OBJECT(pos, mtRecord.config);
+			READ_OBJECT(pos, mtRecord.code);
+			READ_OBJECT(pos, mtRecord.sseg);
+			READ_OBJECT(pos, mtRecord.links);
+			READ_OBJECT(pos, mtRecord.u6);
+			READ_OBJECT(pos, mtRecord.framesize);
+			READ_OBJECT(pos, mtRecord.entries);
+			READ_OBJECT(pos, mtRecord.atoms);
+
+			MTRecord record;
+			record.name          = getName(mtRecord.name);
+			record.file          = ft[mtRecord.file];
+			record.config        = mtRecord.config;
+			record.code.sgi      = mtRecord.code.sgi;
+			record.code.offset   = mtRecord.code.offset;
+			record.code.length   = mtRecord.code.length;
+			record.sseg          = sg[mtRecord.sseg];
+			record.links         = mtRecord.links;  // LFIndex
+			record.linkLoc       = mtRecord.linkLoc;
+			record.namedInstance = mtRecord.namedInstance;
+			record.initial       = mtRecord.initial;
+			record.boundsChecks  = mtRecord.boundsChecks;
+			record.nilChecks     = mtRecord.nilChecks;
+			record.tableCompiled = mtRecord.tableCompiled;
+			record.residentFrame = mtRecord.residentFrame;
+			record.crossJumped   = mtRecord.crossJumped;
+			record.packageable   = mtRecord.packageable;
+			record.packed        = mtRecord.packed;
+			record.linkspace     = mtRecord.linkspace;
+			record.framesize     = mtRecord.framesize;
+			record.entries       = en[mtRecord.entries];
+			record.atoms         = mtRecord.atoms;
+
+			mt[index] = record;
+
+			logger.info("mt %5d %s  %d  %d  %d", index, record.name.toLocal8Bit().constData(), record.config, record.links, record.framesize);
+			logger.info("   %s", record.sseg.toString().toLocal8Bit().constData());
+			logger.info("   %s", record.entries.toString().toLocal8Bit().constData());
 		}
 	}
 
