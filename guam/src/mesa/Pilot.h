@@ -821,6 +821,42 @@ public:
 		};
 	};
 
+	//Link: TYPE = MACHINE DEPENDENT RECORD [
+	//  rep(0): SELECT tag(0:0..1): LinkTag FROM
+	//    procedure => [gfi(0:2..15): GFIndex, ep(1): CARDINAL],
+	//    signal => [gfi(0:2..15): GFIndex, index(1): CARDINAL],
+	//    variable => [gfi(0:2..15): GFIndex, offset(1): CARDINAL],
+	//    type => [fill(0:2..15): [0..37777B], typeID(1): TYPIndex],
+	//    ENDCASE];
+	//NullLink, nullLink: Link = [procedure[0, 0]];
+	//UnboundLink, unboundLink: Link = [variable[0, 0]];
+	static const CARD16 LT_prodecure = 0;
+	static const CARD16 LT_signal    = 1;
+	static const CARD16 LT_variable  = 2;
+	static const CARD16 LT_type      = 3;
+	struct Link {
+		union {
+			struct {
+				CARD16 gfi : 14;
+				CARD16 tag :  2;
+			};
+			CARD16 u0;
+		};
+		union {
+			CARD16 ep;     // procedure
+			CARD16 index;  // signal
+			CARD16 offset; // variable
+			CARD16 typeID; // type
+			CARD16 u1;
+		};
+	};
+
+	//LinkFrag: TYPE = RECORD [frag: SEQUENCE length: NAT OF Link];
+	struct LinkFrag {
+		CARD16 length;
+		Link   frag[0];
+	};
+
 
 	//-- Module Table
 	//LinkLocation: TYPE = {frame, code, dontcare};
