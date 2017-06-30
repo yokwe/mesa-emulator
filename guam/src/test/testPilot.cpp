@@ -70,6 +70,8 @@ class testPilot : public testBase {
 	CPPUNIT_TEST(testSGRecord);
 	CPPUNIT_TEST(testLink);
 	CPPUNIT_TEST(testLinkFrag);
+	CPPUNIT_TEST(testIMPRecord);
+	CPPUNIT_TEST(testEXPRecord);
 
 	// System
 	CPPUNIT_TEST(testSwitches);
@@ -384,6 +386,61 @@ public:
 		//LinkFrag: TYPE = RECORD [frag: SEQUENCE length: NAT OF Link];
 		CPPUNIT_ASSERT_EQUAL((CARD32)1, SIZE(BcdDefs::LinkFrag));
     	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::LinkFrag, length));
+	}
+	void testIMPRecord() {
+		//IMPRecord: TYPE = RECORD [
+		//  name: NameRecord,
+		//  port: Portable,
+		//  namedInstance: BOOLEAN,
+		//  file: FTIndex,
+		//  gfi: GFIndex];
+		CPPUNIT_ASSERT_EQUAL((CARD32)4, SIZE(BcdDefs::IMPRecord));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::IMPRecord, name));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::IMPRecord, u1));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(BcdDefs::IMPRecord, file));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)3, OFFSET(BcdDefs::IMPRecord, gfi));
+
+	   	BcdDefs::IMPRecord t;
+
+    	t.u1 = 0;
+       	t.port = ~t.port;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x8000, t.u1);
+
+    	t.u1 = 0;
+       	t.namedInstance = ~t.namedInstance;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x4000, t.u1);
+	}
+	void testEXPRecord() {
+		//EXPRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+		//  name: NameRecord,
+		//  size: [0..377b],
+		//  port: Portable,
+		//  namedInstance, typeExported: BOOLEAN,
+		//  file: FTIndex,
+		//  links: ARRAY [0..0) OF Link];
+		CPPUNIT_ASSERT_EQUAL((CARD32)3, SIZE(BcdDefs::EXPRecord));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::EXPRecord, name));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::EXPRecord, u1));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)2, OFFSET(BcdDefs::EXPRecord, file));
+	   	CPPUNIT_ASSERT_EQUAL((CARD32)3, OFFSET(BcdDefs::EXPRecord, links));
+
+	   	BcdDefs::EXPRecord t;
+
+    	t.u1 = 0;
+       	t.size = ~t.size;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0xFF00, t.u1);
+
+    	t.u1 = 0;
+       	t.port = ~t.port;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0080, t.u1);
+
+    	t.u1 = 0;
+       	t.namedInstance = ~t.namedInstance;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0040, t.u1);
+
+    	t.u1 = 0;
+       	t.typeExported = ~t.typeExported;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x0020, t.u1);
 	}
 
 	// TimeStamp

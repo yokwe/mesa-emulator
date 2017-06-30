@@ -936,6 +936,55 @@ public:
 	//ENNull: ENIndex = LAST[ENIndex];
 	static const CARD16 ENNull = tLimit;
 
+	//-- Portable Type
+	//Portable: TYPE = {module, interface};
+	static const CARD16 P_module    = 0;
+	static const CARD16 P_interface = 1;
+
+	//IMPRecord: TYPE = RECORD [
+	//  name: NameRecord,
+	//  port: Portable,
+	//  namedInstance: BOOLEAN,
+	//  file: FTIndex,
+	//  gfi: GFIndex];
+	struct IMPRecord {
+		CARD16 name;
+		union {
+			struct {
+				CARD16 filler        : 14;
+				CARD16 namedInstance :  1;
+				CARD16 port          :  1;
+			};
+			CARD16 u1;
+		};
+		CARD16 file;
+		CARD16 gfi;
+	} __attribute__((packed));
+
+
+	//EXPRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+	//  name: NameRecord,
+	//  size: [0..377b],
+	//  port: Portable,
+	//  namedInstance, typeExported: BOOLEAN,
+	//  file: FTIndex,
+	//  links: ARRAY [0..0) OF Link];
+	struct EXPRecord {
+		CARD16 name;
+		union {
+			struct {
+				CARD16 filler        : 5;
+				CARD16 typeExported  : 1;
+				CARD16 namedInstance : 1;
+				CARD16 port          : 1;
+				CARD16 size          : 8;
+			};
+			CARD16 u1;
+		};
+		CARD16 file;
+		Link links[0];
+	} __attribute__((packed));
+
 
 	//BCD: TYPE = RECORD [
 	//  versionIdent: CARDINAL,
