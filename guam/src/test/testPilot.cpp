@@ -68,6 +68,8 @@ class testPilot : public testBase {
 	CPPUNIT_TEST(testMTRecord);
 	CPPUNIT_TEST(testENRecord);
 	CPPUNIT_TEST(testSGRecord);
+	CPPUNIT_TEST(testLink);
+	CPPUNIT_TEST(testLinkFrag);
 
 	// System
 	CPPUNIT_TEST(testSwitches);
@@ -353,6 +355,35 @@ public:
      	t.u2 = 0;
      	t.segClass = ~t.segClass;
        	CPPUNIT_ASSERT_EQUAL((CARD16)0x0003, t.u2);
+	}
+	void testLink() {
+		//Link: TYPE = MACHINE DEPENDENT RECORD [
+		//  rep(0): SELECT tag(0:0..1): LinkTag FROM
+		//    procedure => [gfi(0:2..15): GFIndex, ep(1): CARDINAL],
+		//    signal => [gfi(0:2..15): GFIndex, index(1): CARDINAL],
+		//    variable => [gfi(0:2..15): GFIndex, offset(1): CARDINAL],
+		//    type => [fill(0:2..15): [0..37777B], typeID(1): TYPIndex],
+		//    ENDCASE];
+		//NullLink, nullLink: Link = [procedure[0, 0]];
+		//UnboundLink, unboundLink: Link = [variable[0, 0]];
+		CPPUNIT_ASSERT_EQUAL((CARD32)2, SIZE(BcdDefs::Link));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::Link, u0));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)1, OFFSET(BcdDefs::Link, u1));
+
+    	BcdDefs::Link t;
+
+    	t.u0 = 0;
+       	t.tag = ~t.tag;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0xC000, t.u0);
+
+    	t.u0 = 0;
+       	t.gfi = ~t.gfi;
+       	CPPUNIT_ASSERT_EQUAL((CARD16)0x3FFF, t.u0);
+	}
+	void testLinkFrag() {
+		//LinkFrag: TYPE = RECORD [frag: SEQUENCE length: NAT OF Link];
+		CPPUNIT_ASSERT_EQUAL((CARD32)1, SIZE(BcdDefs::LinkFrag));
+    	CPPUNIT_ASSERT_EQUAL((CARD32)0, OFFSET(BcdDefs::LinkFrag, length));
 	}
 
 	// TimeStamp
