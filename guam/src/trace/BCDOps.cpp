@@ -29,6 +29,8 @@ OF SUCH DAMAGE.
 // BcdOps.cpp
 //
 
+// TODO Read Symbol Segment and get list of procddure and variables.
+//      See mh.bikini.app.DumpSymbol and mh.bikini.mesa.symbol.*
 
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("bcdops");
@@ -132,6 +134,12 @@ QString Link::toString(Tag tag) {
 	}
 }
 QString Link::toString() {
+	//NullLink, nullLink: Link = [procedure[0, 0]];
+	//UnboundLink, unboundLink: Link = [variable[0, 0]];
+
+	if (tag == Tag::proc && gfi == 0 && value == 0) return "#NULL#";
+	if (tag == Tag::var && gfi == 0 && value == 0) return "#UNBOUND#";
+
 	return QString("%1 %2 %3").arg(toString(tag)).arg(gfi).arg(value);
 }
 
@@ -142,6 +150,22 @@ QString LinkFrag::toString() {
 	for(CARD16 i = 0; i < length; i++) {
 		ret.append(QString(i ? ", [%1]" : "[%1]").arg(frag[i].toString()));
 	}
+	return ret;
+}
+
+QString IMPRecord::toString() {
+	// name port file gfi
+	return QString("%1 %2 %3").arg((port == Portable::interface) ? "def" : "mod").arg(file.toString()).arg(gfi);
+}
+
+QString EXPRecord::toString() {
+	// name size port file links
+	QString ret = QString("%1 %2  ").arg((port == Portable::interface) ? "def" : "mod").arg(file.toString());
+
+	for(CARD16 i = 0; i < size; i++) {
+		ret.append(QString(i ? ", [%1]" : "[%1]").arg(links[i].toString()));
+	}
+
 	return ret;
 }
 
@@ -453,6 +477,97 @@ BCDOps::BCDOps(CARD32 ptr) {
 			logger.info("mt %5d %s  %d  %d  %d", index, record.name.toLocal8Bit().constData(), record.config, record.links, record.framesize);
 			logger.info("   %s", record.sseg.toString().toLocal8Bit().constData());
 			logger.info("   %s", record.entries.toString().toLocal8Bit().constData());
+		}
+	}
+
+	// build imp
+	{
+		const CARD32 limit  = header.impLimit;
+		const CARD32 offset = header.impOffset;
+		logger.info("imp  %5d %5d", offset, limit);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+
+			CARD16 index = pos - offset;
+
+			BcdDefs::IMPRecord impRecord;
+			READ_OBJECT(pos, impRecord.name);
+			READ_OBJECT(pos, impRecord.u1);
+			READ_OBJECT(pos, impRecord.file);
+			READ_OBJECT(pos, impRecord.gfi);
+
+			IMPRecord record;
+			record.name          = ss[impRecord.name];
+			record.port          = (Portable)impRecord.port;
+			record.namedInstance = impRecord.namedInstance;
+			record.file          = ft[impRecord.file];
+			record.gfi           = impRecord.gfi;
+			imp[index] = record;
+
+			logger.info("imp%5d %s", index, record.toString().toLocal8Bit().constData());
+		}
+	}
+
+	// build exp
+	{
+		const CARD32 limit  = header.expLimit;
+		const CARD32 offset = header.expOffset;
+		logger.info("exp  %5d %5d", offset, limit);
+
+		CARD32 posOffset = ptr + offset;
+		CARD32 posLimit  = ptr + offset + limit;
+
+		CARD32 pos       = posOffset;
+
+		for(;;) {
+			if (posLimit <= pos) {
+				if (posLimit != pos) {
+					ERROR();
+				}
+				break;
+			}
+
+			CARD16 index = pos - offset;
+
+			BcdDefs::EXPRecord expRecord;
+			READ_OBJECT(pos, expRecord.name);
+			READ_OBJECT(pos, expRecord.u1);
+			READ_OBJECT(pos, expRecord.file);
+
+			EXPRecord record;
+			record.name          = ss[expRecord.name];
+			record.size          = expRecord.size;
+			record.port          = (Portable)expRecord.port;
+			record.namedInstance = expRecord.namedInstance;
+			record.typeExported  = expRecord.typeExported;
+			record.file          = ft[expRecord.file];
+
+			for(CARD16 i = 0; i < record.size; i++) {
+				BcdDefs::Link link;
+				READ_OBJECT(pos, link.u0);
+				READ_OBJECT(pos, link.u1);
+
+				Link aLink;
+				aLink.tag   = (Link::Tag)link.tag;
+				aLink.gfi   = link.gfi;
+				aLink.value = link.u1;
+
+				record.links.append(aLink);
+			}
+			exp[index] = record;
+
+			logger.info("exp%5d %s", index, record.toString().toLocal8Bit().constData());
 		}
 	}
 

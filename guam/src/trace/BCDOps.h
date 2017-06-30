@@ -162,6 +162,8 @@ public:
 //    variable => [gfi(0:2..15): GFIndex, offset(1): CARDINAL],
 //    type => [fill(0:2..15): [0..37777B], typeID(1): TYPIndex],
 //    ENDCASE];
+//NullLink, nullLink: Link = [procedure[0, 0]];
+//UnboundLink, unboundLink: Link = [variable[0, 0]];
 class Link {
 public:
 	enum class Tag {
@@ -228,6 +230,50 @@ public:
 	CARD16   atoms;
 };
 
+//Portable: TYPE = {module, interface};
+enum class Portable {
+	module    = BcdDefs::P_module,
+	interface = BcdDefs::P_interface,
+};
+
+//IMPRecord: TYPE = RECORD [
+//  name: NameRecord,
+//  port: Portable,
+//  namedInstance: BOOLEAN,
+//  file: FTIndex,
+//  gfi: GFIndex];
+class IMPRecord {
+public:
+	QString name;
+	Portable port;
+	bool     namedInstance;
+	FTRecord file;
+	CARD16   gfi;
+
+	QString toString();
+};
+
+//EXPRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+//  name: NameRecord,
+//  size: [0..377b],
+//  port: Portable,
+//  namedInstance, typeExported: BOOLEAN,
+//  file: FTIndex,
+//  links: ARRAY [0..0) OF Link];
+class EXPRecord {
+public:
+	QString       name;
+	CARD16        size;
+	Portable      port;
+	bool          namedInstance;
+	bool          typeExported;
+	FTRecord      file;
+	QVector<Link> links;
+
+	QString toString();
+};
+
+
 class BCDOps {
 public:
 	BCDOps(CARD32 ptr);
@@ -246,13 +292,15 @@ public:
 	CARD32  nImports;
 	CARD32  nExports;
 
-	QMap<CARD16, QString>  ss;
-	QMap<CARD16, FTRecord> ft;
-	QMap<CARD16, ENRecord> en;
-	QMap<CARD16, SGRecord> sg;
-	QMap<CARD16, CTRecord> ct;
-	QMap<CARD16, MTRecord> mt;
-	QMap<CARD16, LinkFrag> lf;
+	QMap<CARD16, QString>   ss;
+	QMap<CARD16, FTRecord>  ft;
+	QMap<CARD16, ENRecord>  en;
+	QMap<CARD16, SGRecord>  sg;
+	QMap<CARD16, CTRecord>  ct;
+	QMap<CARD16, MTRecord>  mt;
+	QMap<CARD16, LinkFrag>  lf;
+	QMap<CARD16, IMPRecord> imp;
+	QMap<CARD16, EXPRecord> exp;
 
 	QString getName(CARD16 nameRecord);
 

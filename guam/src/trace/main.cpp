@@ -51,8 +51,9 @@ void WriteProtectFault(LONG_POINTER ptr) {
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
-//	QString path("tmp/GermOpsImpl.bcd");
-	QString path("tmp/UnpackedPilotKernel.bcd");
+	QString path("tmp/GermOpsImpl.bcd");          // simple module
+//	QString path("tmp/UnpackedPilotKernel.bcd");  // large config
+//	QString path("tmp/Space.bcd");                // defs
 	quint32 vmBits = 22;
 	quint32 rmBits = 20;
 	CARD32  ptr = 0x10000;
