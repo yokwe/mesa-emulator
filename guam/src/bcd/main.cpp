@@ -33,10 +33,13 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("main");
 
 #include "BCDData.h"
+#include "BCD.h"
 
 int main(int, char**) {
 	logger.info("START");
-	BCDData* data = BCDData::getInstance("tmp/Device.bcd");
-	logger.info("word = %d", data->getCARD16());
+	BCDData* data = BCDData::getInstance("tmp/TimeStamp.bcd");
+
+	BCD bcd(data);
+
 	logger.info("STOP");
 }
