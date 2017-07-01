@@ -53,6 +53,21 @@ CARD16 BCDData::asCARD16(CARD16 word, int startBit, int stopBit) {
 
 BCDData::~BCDData() {}
 
+CARD16 BCDData::getCARD16() {
+	CARD16 b0 = getCARD8();
+	CARD16 b1 = getCARD8();
+	return (b0 << 8) | b1;
+}
+CARD32 BCDData::getCARD32() {
+	CARD32 b0 = getCARD16();
+	CARD32 b1 = getCARD16();
+	return (b1 << 16) | b0;
+}
+void   BCDData::get(int size, CARD8* data) {
+	for(int i = 0; i < size; i++) {
+		data[i] = getCARD8();
+	}
+}
 
 //
 //
@@ -88,7 +103,11 @@ public:
 	}
 	CARD8 getCARD8() {
 		char data;
-		file.read(&data, 1);
+		quint32 nRead = (quint32)file.read(&data, 1);
+		if (nRead != 1) {
+			logger.fatal("nRead %d", nRead);
+			ERROR();
+		}
 		return (CARD8)data;
 	}
 

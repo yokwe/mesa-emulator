@@ -73,27 +73,15 @@ public:
 	virtual void   setPosition(int newPosition) = 0;
 	virtual CARD8  getCARD8() = 0;
 
-	CARD16 getCARD16() {
-		CARD16 b0 = getCARD8();
-		CARD16 b1 = getCARD8();
-		return (b0 << 8) | b1;
-	}
-	CARD16 getCARD32() {
-		CARD32 w0 = getCARD16();
-		CARD32 w1 = getCARD16();
-		return (w0 << 15) | w1;
-	}
+	CARD16 getCARD16();
+	CARD32 getCARD32();
 	INT16  getINT16() {
 		return (INT16)getCARD16();
 	}
 	INT32  getINT32() {
 		return (INT32)getCARD32();
 	}
-	void   get(int size, CARD8* data) {
-		for(int i = 0; i < size; i++) {
-			data[i] = getCARD8();
-		}
-	}
+	void   get(int size, CARD8* data);
 };
 
 #endif
