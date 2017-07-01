@@ -31,6 +31,7 @@ all:
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/trace;         make all)
+	(cd src/bcd;           make all)
 	(cd src/util;          make all)
 	(cd src/test;          make all)
 	(cd src/guam-headless; make all)
@@ -51,6 +52,7 @@ clean:
 	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
 	mkdir  tmp/build/trace
+	mkdir  tmp/build/bcd
 	mkdir  tmp/build/util
 	mkdir  tmp/build/test
 	mkdir  tmp/build/guam-headless
@@ -96,6 +98,15 @@ trace:
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
 	(cd src/trace;         make all)
+
+bcd:
+	(cd src/mesa;          make all)
+	(cd src/util;          make all)
+	(cd src/bcd;           make all)
+
+run-bcd: bcd
+	echo -n >tmp/debug.log
+	tmp/build/bcd/bcd
 
 run-trace: trace
 	echo -n >tmp/debug.log
