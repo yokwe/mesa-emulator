@@ -187,10 +187,10 @@ void BCD::initializeFTRecord() {
 	// FTSelf: FTIndex = LAST[FTIndex] - 1;
 	FTRecord ftNull;
 	ftNull.name = "#NULL#";
-	ft[65535] = ftNull;
+	ft[T_LIMIT] = ftNull;
 
 	FTRecord ftSelf;
 	ftSelf.name = "#SELF#";
 	ftSelf.version = version;
-	ft[65534] = ftSelf;
+	ft[T_LIMIT - 1] = ftSelf;
 }
