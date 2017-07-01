@@ -36,10 +36,10 @@ static log4cpp::Category& logger = Logger::getLogger("bcd");
 
 #include "BCD.h"
 
-VersionStamp::VersionStamp(BCDData *data) {
-	net  = data->getCARD8();
-	host = data->getCARD8();
-	time = data->getCARD32();
+VersionStamp::VersionStamp(BCD *bcd) {
+	net  = bcd->data->getCARD8();
+	host = bcd->data->getCARD8();
+	time = bcd->data->getCARD32();
 	//	logger.info("versionStamp  %02X %02X %08X", net, host, time);
 
 	dateTime = QDateTime::fromTime_t(Util::toUnixTime(time));
@@ -47,6 +47,16 @@ VersionStamp::VersionStamp(BCDData *data) {
 
 QString VersionStamp::toString() {
 	return QString("%1#%2#%3%4").arg(dateTime.toString("yyyyMMdd")).arg(dateTime.toString("HHmmss")).arg(net, 2, 16, QChar('0')).arg(host, 2, 16, QChar('0'));
+}
+
+FTRecord::FTRecord(BCD *bcd) {
+	CARD16 nameRecord = bcd->data->getCARD16();
+	name    = bcd->ss[nameRecord];
+	version = VersionStamp(bcd);
+	//	logger.info("%s  %3d  %s!", "FTReord", nameRecord, name.toLocal8Bit().constData());
+}
+QString FTRecord::toString() {
+	return QString("%1 %2").arg(version.toString()).arg(name);
 }
 
 BCD::BCD(BCDData *data_) {
@@ -58,8 +68,8 @@ BCD::BCD(BCDData *data_) {
 		ERROR();
 	}
 
-	version = VersionStamp(data);
-	creator = VersionStamp(data);
+	version = VersionStamp(this);
+	creator = VersionStamp(this);
 
 	logger.info("version %s", version.toString().toLocal8Bit().constData());
 	logger.info("creator %s", creator.toString().toLocal8Bit().constData());
@@ -125,34 +135,62 @@ BCD::BCD(BCDData *data_) {
 
 	//
 	initializeNameRecord();
+	initializeFTRecord();
 }
 
 void BCD::initializeNameRecord() {
-		int offset = ssOffset;
-		int limit  = ssLimit;
+	int offset = ssOffset;
+	int limit  = ssLimit;
 
-		if (limit == 0) return;
+	if (limit == 0) return;
 
-		data->position(offset + 2);
-		data->getCARD8();
-		for(;;) {
-			int bytePos = data->bytePosition();
-			int pos = data->position();
+	data->position(offset + 2);
+	data->getCARD8();
+	for(;;) {
+		int bytePos = data->bytePosition();
+		int pos = data->position();
 
-			if ((offset + limit) <= pos) break; // position exceed limit
+		if ((offset + limit) <= pos) break; // position exceed limit
 
-			int length = data->getCARD8();
-			QString value;
-			for(int i = 0; i < length; i++) {
-				CARD8 byte = data->getCARD8();
-				value.append(byte);
-			}
-
-			int index = bytePos - (offset * 2) - 3;
-//			logger.info("ss %4d %s!", index, value.toLocal8Bit().constData());
-			ss[index] = value;
+		int length = data->getCARD8();
+		QString value;
+		for(int i = 0; i < length; i++) {
+			CARD8 byte = data->getCARD8();
+			value.append(byte);
 		}
-		// Add special
-		ss[1] = "#NULL#";
-	}
 
+		int index = bytePos - (offset * 2) - 3;
+		ss[index] = value;
+
+//		logger.info("ss %4d %s!", index, value.toLocal8Bit().constData());
+	}
+	// NullName: NameRecord = [1];
+	ss[1] = "#NULL#";
+}
+
+void BCD::initializeFTRecord() {
+	int offset = ftOffset;
+	int limit  = ftLimit;
+
+	data->position(offset);
+	for(;;) {
+		int pos = data->position();
+		if ((offset + limit) <= pos) break; // position exceed limit
+
+		int index = pos - offset;
+		FTRecord record(this);
+		ft[index] = record;
+
+		logger.info("ft %3d %s", index, record.toString().toLocal8Bit().constData());
+	}
+	// FTNull: FTIndex = LAST[FTIndex];
+	// FTSelf: FTIndex = LAST[FTIndex] - 1;
+	FTRecord ftNull;
+	ftNull.name = "#NULL#";
+	ft[65535] = ftNull;
+
+	FTRecord ftSelf;
+	ftSelf.name = "#SELF#";
+	ftSelf.version = version;
+	ft[65534] = ftSelf;
+}

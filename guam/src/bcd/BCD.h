@@ -39,11 +39,13 @@ OF SUCH DAMAGE.
 
 #include <QMap>
 
+class BCD;
+
 class VersionStamp {
 public:
 	VersionStamp() : net(0), host(0), time(0), dateTime() {}
 	VersionStamp(const VersionStamp& that) : net(that.net), host(that.host), time(that.time), dateTime(that.dateTime) {}
-	VersionStamp(BCDData* data);
+	VersionStamp(BCD* bcd);
 
 	QString toString();
 
@@ -52,6 +54,19 @@ private:
 	CARD16    host;
 	CARD32    time;
 	QDateTime dateTime;
+};
+
+// FTRecord: TYPE = RECORD [name: NameRecord, version: VersionStamp];
+class FTRecord {
+public:
+	QString      name;
+	VersionStamp version;
+
+	FTRecord() : name(), version() {}
+	FTRecord(const FTRecord& that) : name(that.name), version(that.version) {}
+	FTRecord(BCD* bcd);
+
+	QString toString();
 };
 
 class BCD {
@@ -164,8 +179,8 @@ public:
 	CARD16       apOffset; // atom printname table
 	CARD16       apLimit;
 
-	QMap<CARD16, QString>ss;
-//	QMap<CARD16, FTRecord>  ft;
+	QMap<CARD16, QString>   ss;
+	QMap<CARD16, FTRecord>  ft;
 //	QMap<CARD16, CTRecord>  ct;
 //	QMap<CARD16, SGRecord>  sg;
 //	QMap<CARD16, TYPRecord> typ;
@@ -176,6 +191,7 @@ public:
 
 private:
 	void initializeNameRecord();
+	void initializeFTRecord();
 };
 
 #endif
