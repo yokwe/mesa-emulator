@@ -29,8 +29,8 @@ POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input
-HEADERS += BCD.h   BCDFile.h
-SOURCES += BCD.cpp BCDFile.cpp
+HEADERS += BCD.h   BCDFile.h   Symbols.h
+SOURCES += BCD.cpp BCDFile.cpp Symbols.cpp
 
 SOURCES += main.cpp
 

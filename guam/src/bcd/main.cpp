@@ -34,10 +34,12 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 
 #include "BCDFile.h"
 #include "BCD.h"
+#include "Symbols.h"
 
 int main(int, char**) {
 	logger.info("START");
-	BCDFile* file = BCDFile::getInstance("tmp/PilotDisk.bcd");
+	BCDFile* file = BCDFile::getInstance("tmp/BasicHeadsGuam.symbols");
 	BCD bcd(file);
+	Symbols symbols(&bcd, 2);
 	logger.info("STOP");
 }
