@@ -32,14 +32,12 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("main");
 
-#include "BCDData.h"
+#include "BCDFile.h"
 #include "BCD.h"
 
 int main(int, char**) {
 	logger.info("START");
-	BCDData* data = BCDData::getInstance("tmp/TimeStamp.bcd");
-
-	BCD bcd(data);
-
+	BCDFile* file = BCDFile::getInstance("tmp/PilotDisk.bcd");
+	BCD bcd(file);
 	logger.info("STOP");
 }

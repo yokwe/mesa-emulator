@@ -26,35 +26,25 @@ OF SUCH DAMAGE.
 
 
 //
-// BCDData.h
+// BCDFile.h
 //
 
-#ifndef BCDDATA_H__
-#define BCDDATA_H__
+#ifndef BCDFILE_H__
+#define BCDFILE_H__
 
 #include "../util/Util.h"
 #include "../mesa/MesaBasic.h"
 
-class BCDData {
+class BCDFile {
 public:
 	static const int BYTES_PER_WORD = 2;
 
 	// File file
-	static BCDData* getInstance(QString path);
+	static BCDFile* getInstance(QString path);
 	// From mesa memory
-	static BCDData* getInstance(CARD32 ptr);
+	static BCDFile* getInstance(CARD32 ptr);
 
-
-	// Mesa field extraction
-	static CARD16 asCARD16(CARD16 word, int startBit, int stopBit);
-    static bool asBool(int word, int startBit, int stopBit) {
-        return asCARD16(word, startBit, stopBit) != 0;
-    }
-    static bool asBool(int word, int startBit) {
-        return asCARD16(word, startBit, startBit);
-    }
-
-    virtual ~BCDData() = 0;
+    virtual ~BCDFile() = 0;
 
 	int  bytePosition() {
 		return getPosition();

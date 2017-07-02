@@ -26,56 +26,41 @@ OF SUCH DAMAGE.
 
 
 //
-// BCDData.cpp
+// BCDFile.cpp
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("bcddata");
+static log4cpp::Category& logger = Logger::getLogger("bcdfile");
 
 #include "../mesa/Memory.h"
 
-#include "BCDData.h"
+#include "BCDFile.h"
 
-static const int MAX_BIT = 15;
+BCDFile::~BCDFile() {}
 
-CARD16 BCDData::asCARD16(CARD16 word, int startBit, int stopBit) {
-	if (startBit < 0)        ERROR();
-	if (stopBit  < 0)        ERROR();
-	if (stopBit  < startBit) ERROR();
-	if (MAX_BIT  < startBit) ERROR();
-	if (MAX_BIT  < stopBit)  ERROR();
-
-	int shift  = MAX_BIT - stopBit;
-	int mask   = ((int)(1L << (stopBit - startBit + 1)) - 1) << shift;
-
-	return (CARD16)((word & mask) >> shift);
-}
-
-BCDData::~BCDData() {}
-
-CARD16 BCDData::getCARD16() {
+CARD16 BCDFile::getCARD16() {
 	CARD16 b0 = getCARD8();
 	CARD16 b1 = getCARD8();
 	return (b0 << 8) | b1;
 }
-CARD32 BCDData::getCARD32() {
+CARD32 BCDFile::getCARD32() {
 	CARD32 b0 = getCARD16();
 	CARD32 b1 = getCARD16();
 	return (b1 << 16) | b0;
 }
-void   BCDData::get(int size, CARD8* data) {
+void   BCDFile::get(int size, CARD8* data) {
 	for(int i = 0; i < size; i++) {
 		data[i] = getCARD8();
 	}
 }
 
 //
-//
+// BCDFileFile
 //
 
-class FileBCDData : public BCDData {
+class BCDFileFile : public BCDFile {
 public:
-	FileBCDData(QString path) : file(path) {
+	BCDFileFile(QString path) : file(path) {
 		if (!file.exists()) {
 			logger.fatal("File does not exist. path = %s", path.toLocal8Bit().constData());
 			ERROR();
@@ -88,7 +73,7 @@ public:
 		capacity = file.size();
 		logger.info("%s  %s  %d", __FUNCTION__, path.toLocal8Bit().constData(), capacity);
 	}
-	~FileBCDData() {
+	~BCDFileFile() {
 		if (file.isOpen()) file.close();
 	}
 
@@ -116,13 +101,13 @@ private:
 	int   capacity;
 };
 
-BCDData* BCDData::getInstance(QString path) {
-	return new FileBCDData(path);
+BCDFile* BCDFile::getInstance(QString path) {
+	return new BCDFileFile(path);
 }
 
 
 //
-// MesaMemoryBCDData
+// BCDFileMesaMemory
 //
 
 void PageFault(CARD32 ptr) {
@@ -132,9 +117,9 @@ void WriteProtectFault(CARD32 ptr) {
 	logger.fatal("%s %X", __FUNCTION__, ptr);
 }
 
-class MesaMemoryBCDData : public BCDData {
+class BCDFileMesaMemory : public BCDFile {
 public:
-	MesaMemoryBCDData(CARD32 ptr_) {
+	BCDFileMesaMemory(CARD32 ptr_) {
 		ptr = ptr_;
 		pos = 0;
 		if (Memory::isVacant(ptr)) {
@@ -142,7 +127,7 @@ public:
 			ERROR();
 		}
 	}
-	~MesaMemoryBCDData() {
+	~BCDFileMesaMemory() {
 	}
 
 	int getPosition() {
@@ -162,6 +147,6 @@ private:
 	CARD32 ptr;
 	CARD32 pos;
 };
-BCDData* BCDData::getInstance(CARD32 ptr) {
-	return new MesaMemoryBCDData(ptr);
+BCDFile* BCDFile::getInstance(CARD32 ptr) {
+	return new BCDFileMesaMemory(ptr);
 }

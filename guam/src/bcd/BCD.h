@@ -35,12 +35,19 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 #include "../mesa/MesaBasic.h"
 
-#include "BCDData.h"
+#include "BCDFile.h"
 
 #include <QMap>
 
 class BCD;
+static const CARD16 T_LIMIT = 0177777;
 
+CARD16 bitField(CARD16 word, int startBit, int stopBit);
+CARD16 bitField(CARD16 word, int startBit);
+
+
+// Stamp: TYPE = RECORD [net, host: [0..377B], time: LONG CARDINAL];
+// Null: Stamp = Stamp[net: 0, host: 0, time: 0];
 class VersionStamp {
 public:
 	VersionStamp() : net(0), host(0), time(0), dateTime() {}
@@ -56,28 +63,47 @@ private:
 	QDateTime dateTime;
 };
 
+// NameRecord: TYPE = RECORD [CARDINAL];
+// NullName: NameRecord = [1];
+class NameRecord {
+public:
+	static const CARD16 NullName = 1;
+
+	CARD16  index;
+	QString name;
+
+	NameRecord(CARD16 index_, QString name_) : index(index_), name(name_) {}
+	NameRecord() : index(NullName), name("#NULL#") {}
+
+	QString toString();
+};
+
+
 // FTRecord: TYPE = RECORD [name: NameRecord, version: VersionStamp];
 class FTRecord {
 public:
-	QString      name;
+	// FTNull: FTIndex = LAST[FTIndex];
+	// FTSelf: FTIndex = LAST[FTIndex] - 1;
+	static const CARD16 FTNull = T_LIMIT;
+	static const CARD16 FTSelf = T_LIMIT - 1;
+
+	CARD16       index;
+	NameRecord   name;
 	VersionStamp version;
 
-	FTRecord() : name(), version() {}
-	FTRecord(const FTRecord& that) : name(that.name), version(that.version) {}
-	FTRecord(BCD* bcd);
+	FTRecord() : index(0), name(), version() {}
+	FTRecord(const FTRecord& that) : index(that.index), name(that.name), version(that.version) {}
+	FTRecord(BCD* bcd, CARD16 index);
 
 	QString toString();
 };
 
 class BCD {
 public:
-	//tLimit: CARDINAL = 177777B;
-	static const CARD16 T_LIMIT = 0177777;
-
 	//VersionID: CARDINAL = 6103
 	static const CARD16 VersionID = 6103;
 
-	BCD(BCDData* data);
+	BCD(BCDFile* bcdData);
 
 	//BCD: TYPE = RECORD [
 	//  versionIdent: CARDINAL,
@@ -125,15 +151,15 @@ public:
 	//  apOffset; // atom printname table
 	//  apLimit: CARDINAL];
 
-	BCDData*     data;
+	BCDFile*     file;
 
 	CARD16       versionIdent;
 	VersionStamp version;
 	VersionStamp creator;
-//	FTRecord     sourceFile;
-//	FTRecord     unpackagedFile;
-	CARD16       sourceFile;
-	CARD16       unpackagedFile;
+	FTRecord     sourceFile;
+	FTRecord     unpackagedFile;
+//	CARD16       sourceFile;
+//	CARD16       unpackagedFile;
 	CARD16       nConfigs;
 	CARD16       nModules;
 	CARD16       nImports;
@@ -179,15 +205,15 @@ public:
 	CARD16       apOffset; // atom printname table
 	CARD16       apLimit;
 
-	QMap<CARD16, QString>   ss;
-	QMap<CARD16, FTRecord>  ft;
-//	QMap<CARD16, CTRecord>  ct;
-//	QMap<CARD16, SGRecord>  sg;
-//	QMap<CARD16, TYPRecord> typ;
-//	QMap<CARD16, LinkFrag>  lf;
-//	QMap<CARD16, ENRecord>  en;
-//	QMap<CARD16, ATRecord>  at;
-//	QMap<CARD16, MTRecord>  mt;
+	QMap<CARD16, NameRecord> ss;
+	QMap<CARD16, FTRecord>   ft;
+//	QMap<CARD16, CTRecord>   ct;
+//	QMap<CARD16, SGRecord>   sg;
+//	QMap<CARD16, TYPRecord>  typ;
+//	QMap<CARD16, LinkFrag>   lf;
+//	QMap<CARD16, ENRecord>   en;
+//	QMap<CARD16, ATRecord>   at;
+//	QMap<CARD16, MTRecord>   mt;
 
 private:
 	void initializeNameRecord();
