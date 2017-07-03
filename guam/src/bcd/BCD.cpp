@@ -55,10 +55,10 @@ CARD16 bitField(CARD16 word, int startBit) {
 }
 
 
-VersionStamp::VersionStamp(BCD *bcd) {
-	net  = bcd->file->getCARD8();
-	host = bcd->file->getCARD8();
-	time = bcd->file->getCARD32();
+VersionStamp::VersionStamp(BCD& bcd) {
+	net  = bcd.file.getCARD8();
+	host = bcd.file.getCARD8();
+	time = bcd.file.getCARD32();
 	//	logger.info("VersionStamp  %02X %02X %08X", net, host, time);
 
 	dateTime = QDateTime::fromTime_t(Util::toUnixTime(time));
@@ -74,10 +74,10 @@ QString NameRecord::toString() {
 	return name;
 }
 
-FTRecord::FTRecord(BCD *bcd, CARD16 index_) {
-	CARD16 nameRecord = bcd->file->getCARD16();
+FTRecord::FTRecord(BCD& bcd, CARD16 index_) {
+	CARD16 nameRecord = bcd.file.getCARD16();
 	index   = index_;
-	name    = bcd->ss[nameRecord];
+	name    = bcd.ss[nameRecord];
 	version = VersionStamp(bcd);
 	//	logger.info("%s  %3d  %s!", "FTReord", nameRecord, name.toLocal8Bit().constData());
 }
@@ -87,27 +87,25 @@ QString FTRecord::toString() {
 	return QString("%1 %2").arg(version.toString()).arg(name.toString());
 }
 
-BCD::BCD(BCDFile *bcdData_) {
-	file = bcdData_;
-
-	versionIdent = file->getCARD16();
+BCD::BCD(BCDFile& bcdFile) : file(bcdFile) {
+	versionIdent = file.getCARD16();
 	if (versionIdent != VersionID) {
 		logger.fatal("versionIdent %d", versionIdent);
 		ERROR();
 	}
 
-	version = VersionStamp(this);
-	creator = VersionStamp(this);
+	version = VersionStamp(*this);
+	creator = VersionStamp(*this);
 
-	CARD16 sourceFileIndex     = file->getCARD16();
-	CARD16 unpackagedFileIndex = file->getCARD16();
+	CARD16 sourceFileIndex     = file.getCARD16();
+	CARD16 unpackagedFileIndex = file.getCARD16();
 
-	nConfigs = file->getCARD16();
-	nModules = file->getCARD16();
-	nImports = file->getCARD16();
-	nExports = file->getCARD16();
+	nConfigs = file.getCARD16();
+	nModules = file.getCARD16();
+	nImports = file.getCARD16();
+	nExports = file.getCARD16();
 
-	CARD16 flags  = file->getCARD16();
+	CARD16 flags  = file.getCARD16();
 	nPages        = bitField(flags, 0, 7);
 	definitions   = bitField(flags, 8);
 	repackaged    = bitField(flags, 9);
@@ -115,40 +113,40 @@ BCD::BCD(BCDFile *bcdData_) {
 	tableCompiled = bitField(flags, 11);
 	spare4        = bitField(flags, 12, 15);
 
-	firstDummy = file->getCARD16();
-	nDummies   = file->getCARD16();
-	ssOffset   = file->getCARD16();
-	ssLimit    = file->getCARD16();
-	ctOffset   = file->getCARD16();
-	ctLimit    = file->getCARD16();
-	mtOffset   = file->getCARD16();
-	mtLimit    = file->getCARD16();
-	impOffset  = file->getCARD16();
-	impLimit   = file->getCARD16();
-	expOffset  = file->getCARD16();
-	expLimit   = file->getCARD16();
-	enOffset   = file->getCARD16();
-	enLimit    = file->getCARD16();
-	sgOffset   = file->getCARD16();
-	sgLimit    = file->getCARD16();
-	ftOffset   = file->getCARD16();
-	ftLimit    = file->getCARD16();
-	spOffset   = file->getCARD16();
-	spLimit    = file->getCARD16();
-	ntOffset   = file->getCARD16();
-	ntLimit    = file->getCARD16();
-	typOffset  = file->getCARD16();
-	typLimit   = file->getCARD16();
-	tmOffset   = file->getCARD16();
-	tmLimit    = file->getCARD16();
-	fpOffset   = file->getCARD16();
-	fpLimit    = file->getCARD16();
-	lfOffset   = file->getCARD16();
-	lfLimit    = file->getCARD16();
-	atOffset   = file->getCARD16();
-	atLimit    = file->getCARD16();
-	apOffset   = file->getCARD16();
-	apLimit    = file->getCARD16();
+	firstDummy = file.getCARD16();
+	nDummies   = file.getCARD16();
+	ssOffset   = file.getCARD16();
+	ssLimit    = file.getCARD16();
+	ctOffset   = file.getCARD16();
+	ctLimit    = file.getCARD16();
+	mtOffset   = file.getCARD16();
+	mtLimit    = file.getCARD16();
+	impOffset  = file.getCARD16();
+	impLimit   = file.getCARD16();
+	expOffset  = file.getCARD16();
+	expLimit   = file.getCARD16();
+	enOffset   = file.getCARD16();
+	enLimit    = file.getCARD16();
+	sgOffset   = file.getCARD16();
+	sgLimit    = file.getCARD16();
+	ftOffset   = file.getCARD16();
+	ftLimit    = file.getCARD16();
+	spOffset   = file.getCARD16();
+	spLimit    = file.getCARD16();
+	ntOffset   = file.getCARD16();
+	ntLimit    = file.getCARD16();
+	typOffset  = file.getCARD16();
+	typLimit   = file.getCARD16();
+	tmOffset   = file.getCARD16();
+	tmLimit    = file.getCARD16();
+	fpOffset   = file.getCARD16();
+	fpLimit    = file.getCARD16();
+	lfOffset   = file.getCARD16();
+	lfLimit    = file.getCARD16();
+	atOffset   = file.getCARD16();
+	atLimit    = file.getCARD16();
+	apOffset   = file.getCARD16();
+	apLimit    = file.getCARD16();
 
 	//
 	initializeNameRecord();
@@ -177,19 +175,20 @@ void BCD::initializeNameRecord() {
 
 	if (limit == 0) return;
 
-	file->position(offset + 2);
-	file->getCARD8();
+	file.position(offset + 2);
+	file.getCARD8();
 	for(;;) {
-		int bytePos = file->bytePosition();
-		int pos = file->position();
+		int bytePos = file.bytePosition();
+		int pos = file.position();
 
 		if ((offset + limit) <= pos) break; // position exceed limit
 
-		int length = file->getCARD8();
+		int length = file.getCARD8();
 		QString value;
 		for(int i = 0; i < length; i++) {
-			CARD8 byte = file->getCARD8();
-			value.append(byte);
+	     	char data = file.getCARD8();
+	    	QChar c(data);
+	    	value.append(c);
 		}
 
 		int index = bytePos - (offset * 2) - 3;
@@ -204,13 +203,13 @@ void BCD::initializeFTRecord() {
 	int offset = ftOffset;
 	int limit  = ftLimit;
 
-	file->position(offset);
+	file.position(offset);
 	for(;;) {
-		int pos = file->position();
+		int pos = file.position();
 		if ((offset + limit) <= pos) break; // position exceed limit
 
 		int index = pos - offset;
-		FTRecord record(this, index);
+		FTRecord record(*this, index);
 		ft[index] = record;
 
 		logger.info("ft %3d %s", index, record.toString().toLocal8Bit().constData());

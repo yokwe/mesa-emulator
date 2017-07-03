@@ -48,7 +48,7 @@ public:
 
     BlockDescriptor() : offset(0), size(0) {}
     BlockDescriptor(const BlockDescriptor& that) : offset(that.offset), size(that.size) {}
-    BlockDescriptor(BCD* bcd);
+    BlockDescriptor(BCD& bcd);
 
     QString toString();
 };
@@ -241,8 +241,10 @@ public:
      //  spareBlock: BlockDescriptor,
      //  fgRelPgBase: CARDINAL,
      //  fgPgCount: [0..256]];
-     BCD*            bcd;
+     BCD&            bcd;
+     BCDFile&        file;
      CARD32          symbolBase;
+     CARD32          offsetBase;
 
      CARD16          versionIdent;
      VersionStamp    version;
@@ -271,7 +273,7 @@ public:
      CARD16          fgRelPgBase;
      CARD16          fgPgCount;
      //
-//     QString ss;
+     QString ss;
 //     QMap<CARD16, CTXRecord>    ctx;
 //     QMap<CARD16, HTRecord>     ht;
 //     QMap<CARD16, MDRecord>     md;
@@ -281,8 +283,10 @@ public:
 //     QMap<CARD16, LTRecord>     lt;
 //     QMap<CARD16, Tree.Node>    tree;
 
-     Symbols(BCD* bcd, int symbolBase);
+     Symbols(BCD& bcd, int symbolBase);
 
+private:
+     void initializeSS();
 };
 
 

@@ -52,7 +52,7 @@ class VersionStamp {
 public:
 	VersionStamp() : net(0), host(0), time(0), dateTime() {}
 	VersionStamp(const VersionStamp& that) : net(that.net), host(that.host), time(that.time), dateTime(that.dateTime) {}
-	VersionStamp(BCD* bcd);
+	VersionStamp(BCD& bcd);
 
 	QString toString();
 
@@ -91,9 +91,9 @@ public:
 	NameRecord   name;
 	VersionStamp version;
 
-	FTRecord() : index(0), name(), version() {}
+	FTRecord() : index(FTNull), name(), version() {}
 	FTRecord(const FTRecord& that) : index(that.index), name(that.name), version(that.version) {}
-	FTRecord(BCD* bcd, CARD16 index);
+	FTRecord(BCD& bcd, CARD16 index);
 
 	QString toString();
 };
@@ -103,7 +103,7 @@ public:
 	//VersionID: CARDINAL = 6103
 	static const CARD16 VersionID = 6103;
 
-	BCD(BCDFile* bcdData);
+	BCD(BCDFile& bcdFile);
 
 	//BCD: TYPE = RECORD [
 	//  versionIdent: CARDINAL,
@@ -151,7 +151,7 @@ public:
 	//  apOffset; // atom printname table
 	//  apLimit: CARDINAL];
 
-	BCDFile*     file;
+	BCDFile&     file;
 
 	CARD16       versionIdent;
 	VersionStamp version;
