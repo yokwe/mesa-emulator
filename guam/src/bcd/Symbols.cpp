@@ -244,13 +244,13 @@ bool Symbols::isSymbolsFile(BCD* bcd) {
     return word0 == BCD::VersionID && word256 == Symbols::VersionID;
 }
 
-Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_), file(bcd.file) {
+Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_) {
     symbolBase      = symbolBase_;
     offsetBase      = (symbolBase - ALTO_BIAS) * WORDS_PER_PAGE;
 
-    file.position(offsetBase);
+    bcd.file.position(offsetBase);
 
-	versionIdent = file.getCARD16();
+	versionIdent = bcd.file.getCARD16();
 	if (versionIdent != VersionID) {
 		logger.fatal("versionIdent %d", versionIdent);
 		ERROR();
@@ -263,15 +263,15 @@ Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_), file(bcd.file) {
 	logger.info("creator        %s", creator.toString().toLocal8Bit().constData());
 	logger.info("source         %s", sourceVersion.toString().toLocal8Bit().constData());
 
-    CARD16 word = file.getCARD16();
+    CARD16 word = bcd.file.getCARD16();
     definitionsFile = bitField(word, 15);
     logger.info("definitionFile %d", definitionsFile);
 
     directoryCtx    = bitField(word, 1, 15);
     logger.info("directoryCtx   %d", directoryCtx);
-    importCtx       = file.getCARD16();
+    importCtx       = bcd.file.getCARD16();
     logger.info("importCtx      %d", importCtx);
-    outerCtx        = file.getCARD16();
+    outerCtx        = bcd.file.getCARD16();
     logger.info("outerCtx       %d", outerCtx);
 
 
@@ -308,9 +308,9 @@ Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_), file(bcd.file) {
     spareBlock      = BlockDescriptor(bcd);
     logger.info("spareBlock     %s", spareBlock.toString().toLocal8Bit().constData());
 
-    fgRelPgBase     = file.getCARD16();
+    fgRelPgBase     = bcd.file.getCARD16();
     logger.info("fgRelPgBase    %d", fgRelPgBase);
-    fgPgCount       = file.getCARD16();
+    fgPgCount       = bcd.file.getCARD16();
     logger.info("fgPgCount      %d", fgPgCount);
 
     // Read block
@@ -321,24 +321,24 @@ void Symbols::initializeSS() {
     CARD16 base  = offsetBase + ssBlock.offset;
     CARD16 limit = base + ssBlock.size;
 
-    file.position(base);
-    CARD16 length    = file.getCARD16();
-    CARD16 maxLength = file.getCARD16();
+    bcd.file.position(base);
+    CARD16 length    = bcd.file.getCARD16();
+    CARD16 maxLength = bcd.file.getCARD16();
 
     for(int i = 0; i < length; i++) {
-     	char data = file.getCARD8();
+     	char data = bcd.file.getCARD8();
     	QChar c(data);
     	ss.append(c);
     }
 
     // Advance position
     for(int i = length; i <= maxLength; i++) {
-    	file.getCARD8();
+    	bcd.file.getCARD8();
     }
 
     // sanity check
     {
-    	int pos = file.position();
+    	int pos = bcd.file.position();
         if (pos != limit) {
         	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
             ERROR();
@@ -346,3 +346,4 @@ void Symbols::initializeSS() {
     }
     logger.info("ss = (%d)%s ... %s!", ss.length(), ss.left(10).toLatin1().constData(), ss.right(10).toLatin1().constData());
 }
+

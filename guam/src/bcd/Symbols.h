@@ -242,7 +242,6 @@ public:
      //  fgRelPgBase: CARDINAL,
      //  fgPgCount: [0..256]];
      BCD&            bcd;
-     BCDFile&        file;
      CARD32          symbolBase;
      CARD32          offsetBase;
 
