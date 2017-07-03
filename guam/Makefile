@@ -168,6 +168,7 @@ qmake:
 	(cd src/simple-opcode; qmake)
 	(cd src/agent;         qmake)
 	(cd src/trace;         qmake)
+	(cd src/bcd;           qmake)
 	(cd src/util;          qmake)
 	(cd src/test;          qmake)
 	(cd src/guam-headless; qmake)
