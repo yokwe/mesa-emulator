@@ -372,6 +372,15 @@ void Symbols::initializeHT() {
         lastSSIndex = data.ssIndex;
     }
 
+    // sanity check
+    {
+    	int pos = bcd.file.position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+
     // Add special
     ht[HTIndex::HT_NULL] = HTRecord();
 }
