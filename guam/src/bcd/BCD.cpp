@@ -77,7 +77,7 @@ QString NameRecord::toString() {
 FTRecord::FTRecord(BCD& bcd, CARD16 index_) {
 	CARD16 nameRecord = bcd.file.getCARD16();
 	index   = index_;
-	name    = bcd.ss[nameRecord].name;
+	name    = bcd.ss[nameRecord].toString();
 	version = VersionStamp(bcd);
 	//	logger.info("%s  %3d  %s!", "FTReord", nameRecord, name.toLocal8Bit().constData());
 }
