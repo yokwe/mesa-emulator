@@ -75,6 +75,9 @@ HTRecord::HTRecord(Symbols& symbols, CARD16 index_, CARD16 lastSSIndex) {
     ssIndex     = symbols.bcd.file.getCARD16();
     // ss.substring(lastSSIndex, data.ssIndex);
     value       = symbols.ss.mid(lastSSIndex, ssIndex - lastSSIndex);
+
+    // Special
+    if (index == HTIndex::HT_NULL) value = "#NULL#";
 }
 
 QString HTRecord::toString() {
