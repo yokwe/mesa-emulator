@@ -82,18 +82,60 @@ public:
 // FTRecord: TYPE = RECORD [name: NameRecord, version: VersionStamp];
 class FTRecord {
 public:
+	// FTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO FTRecord;
 	// FTNull: FTIndex = LAST[FTIndex];
 	// FTSelf: FTIndex = LAST[FTIndex] - 1;
-	static const CARD16 FTNull = T_LIMIT;
-	static const CARD16 FTSelf = T_LIMIT - 1;
+	static const CARD16 FT_NULL = T_LIMIT;
+	static const CARD16 FT_SELF = T_LIMIT - 1;
 
 	CARD16       index;
-	NameRecord   name;
+	QString      name;
 	VersionStamp version;
 
-	FTRecord() : index(FTNull), name(), version() {}
+	FTRecord() : index(FT_NULL), name(), version() {}
 	FTRecord(const FTRecord& that) : index(that.index), name(that.name), version(that.version) {}
+	FTRecord(CARD16 index_, QString name_, VersionStamp version_) : index(index_), name(name_), version(version_) {}
 	FTRecord(BCD& bcd, CARD16 index);
+
+	bool isNull() {
+		return index == FT_NULL;
+	}
+	bool isSelf() {
+		return index == FT_SELF;
+	}
+	QString toString();
+};
+
+//  -- Segment Table
+//
+// SGRecord: TYPE = RECORD [
+//   file: FTIndex, base: CARDINAL,
+//   pages: [0..256), extraPages: [0..64), class: SegClass];
+class SGRecord {
+public:
+	// SGIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO SGRecord;
+	// SGNull: SGIndex = LAST[SGIndex];
+	static const CARD16 SG_NULL = T_LIMIT;
+
+	// SegClass: TYPE = {code, symbols, acMap, other};
+	enum class SegClass {
+		CODE, SYMBOLS, AC_MAP, OTHER,
+	};
+	static QString toString(SegClass value);
+
+	CARD16   index;
+	CARD16   fileIndex;
+	FTRecord file;
+	CARD16   base;
+	CARD16   pages;
+	CARD16   extraPages;
+	SegClass segClass;
+
+	SGRecord() : index(SG_NULL), fileIndex(0), file(), base(0), pages(0), extraPages(0), segClass(SegClass::OTHER) {}
+	SGRecord(const SGRecord& that) :
+		index(that.index), fileIndex(that.fileIndex), file(that.file), base(that.base), pages(that.pages),
+		extraPages(that.extraPages), segClass(that.segClass) {}
+	SGRecord(BCD& bcd, CARD16 index);
 
 	QString toString();
 };
@@ -208,7 +250,7 @@ public:
 	QMap<CARD16, NameRecord> ss;
 	QMap<CARD16, FTRecord>   ft;
 //	QMap<CARD16, CTRecord>   ct;
-//	QMap<CARD16, SGRecord>   sg;
+	QMap<CARD16, SGRecord>   sg;
 //	QMap<CARD16, TYPRecord>  typ;
 //	QMap<CARD16, LinkFrag>   lf;
 //	QMap<CARD16, ENRecord>   en;
@@ -218,6 +260,7 @@ public:
 private:
 	void initializeNameRecord();
 	void initializeFTRecord();
+	void initializeSGRecord();
 };
 
 #endif

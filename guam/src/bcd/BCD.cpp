@@ -77,15 +77,55 @@ QString NameRecord::toString() {
 FTRecord::FTRecord(BCD& bcd, CARD16 index_) {
 	CARD16 nameRecord = bcd.file.getCARD16();
 	index   = index_;
-	name    = bcd.ss[nameRecord];
+	name    = bcd.ss[nameRecord].name;
 	version = VersionStamp(bcd);
 	//	logger.info("%s  %3d  %s!", "FTReord", nameRecord, name.toLocal8Bit().constData());
 }
 QString FTRecord::toString() {
-	if (index == FTNull) return "#NULL#";
-	if (index == FTSelf) return "#SELF#";
-	return QString("%1 %2").arg(version.toString()).arg(name.toString());
+	if (index == FT_NULL) return "#NULL#";
+	if (index == FT_SELF) return "#SELF#";
+	return QString("%1 %2").arg(version.toString()).arg(name);
 }
+
+
+QMap<SGRecord::SegClass, QString> segClassMapInit() {
+	QMap<SGRecord::SegClass, QString> ret;
+
+	ret[SGRecord::SegClass::CODE]    = "CODE";
+	ret[SGRecord::SegClass::SYMBOLS] = "SYMBOLS";
+	ret[SGRecord::SegClass::AC_MAP]  = "AC_MAP";
+	ret[SGRecord::SegClass::OTHER]   = "OTHER";
+
+	return ret;
+}
+static QMap<SGRecord::SegClass, QString> segClassMap = segClassMapInit();
+QString SGRecord::toString(SegClass value) {
+	if (segClassMap.contains(value)) {
+		return segClassMap[value];
+	} else {
+		logger.error("Unknown value = %d", (int)value);
+		ERROR();
+		return QString("%1").arg((int)value);
+	}
+};
+SGRecord::SGRecord(BCD& bcd, CARD16 index_) {
+	index = index_;
+
+	fileIndex = bcd.file.getCARD16();
+	file      = bcd.ft[fileIndex];
+
+	base = bcd.file.getCARD16();
+
+	CARD16 word = bcd.file.getCARD16();
+	pages      = bitField(word, 0, 7);
+	extraPages = bitField(word, 8, 13);
+	segClass   = (SegClass)bitField(word, 14, 15);
+}
+QString SGRecord::toString() {
+	if (index == SG_NULL) return "#NULL#";
+	return QString("%1+%2+%3 %4 %5").arg(base, 4).arg(pages, 4).arg(extraPages, 4).arg(toString(segClass), -7).arg(file.toString());
+}
+
 
 BCD::BCD(BCDFile& bcdFile) : file(bcdFile) {
 	versionIdent = file.getCARD16();
@@ -151,6 +191,7 @@ BCD::BCD(BCDFile& bcdFile) : file(bcdFile) {
 	//
 	initializeNameRecord();
 	initializeFTRecord();
+	initializeSGRecord();
 
 	sourceFile     = ft[sourceFileIndex];
 	unpackagedFile = ft[unpackagedFileIndex];
@@ -197,6 +238,9 @@ void BCD::initializeNameRecord() {
 
 		logger.info("ss %4d %s!", index, record.toString().toLocal8Bit().constData());
 	}
+
+	// Add special
+	ss[NameRecord::NullName] = NameRecord();
 }
 
 void BCD::initializeFTRecord() {
@@ -214,4 +258,29 @@ void BCD::initializeFTRecord() {
 
 		logger.info("ft %3d %s", index, record.toString().toLocal8Bit().constData());
 	}
+
+	// Add special
+	ft[FTRecord::FT_NULL] = FTRecord();
+	ft[FTRecord::FT_SELF] = FTRecord(FTRecord::FT_SELF, "#SELF#", version);
+}
+
+
+void BCD::initializeSGRecord() {
+	int offset = sgOffset;
+	int limit  = sgLimit;
+
+	file.position(offset);
+	for(;;) {
+		int pos = file.position();
+		if ((offset + limit) <= pos) break; // position exceed limit
+
+		int index = pos - offset;
+		SGRecord record(*this, index);
+		sg[index] = record;
+
+		logger.info("sg %3d %s", index, record.toString().toLocal8Bit().constData());
+	}
+
+	// Add special
+	sg[SGRecord::SG_NULL] = SGRecord();
 }
