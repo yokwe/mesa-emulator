@@ -213,7 +213,7 @@ public:
     //mdType: Table.Selector = 5;
     //bodyType: Table.Selector = 6;
 
-    static bool isSymbolsFile(BCD* bcd);
+    static bool isSymbolsFile(const BCD& bcd);
 
 
      //STHeader: TYPE = RECORD [
