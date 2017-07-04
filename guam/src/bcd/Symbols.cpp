@@ -235,11 +235,11 @@ QString Symbols::toString(VarTag value) {
 	}
 }
 
-bool Symbols::isSymbolsFile(BCD* bcd) {
-    bcd->file.position(0);
-	CARD16 word0 = bcd->file.getCARD16();
-    bcd->file.position(256);
-    CARD16 word256 = bcd->file.getCARD16();
+bool Symbols::isSymbolsFile(const BCD& bcd) {
+    bcd.file.position(0);
+	CARD16 word0 = bcd.file.getCARD16();
+    bcd.file.position(WORDS_PER_PAGE);
+    CARD16 word256 = bcd.file.getCARD16();
 
     return word0 == BCD::VersionID && word256 == Symbols::VersionID;
 }
@@ -253,6 +253,7 @@ Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_) {
 	versionIdent = bcd.file.getCARD16();
 	if (versionIdent != VersionID) {
 		logger.fatal("versionIdent %d", versionIdent);
+		logger.fatal("symbolBase   %d", symbolBase);
 		ERROR();
 	}
 
