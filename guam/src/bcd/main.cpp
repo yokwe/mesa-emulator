@@ -36,10 +36,34 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 #include "BCD.h"
 #include "Symbols.h"
 
-int main(int, char**) {
+int main(int, char** argv) {
 	logger.info("START");
-	BCDFile* file = BCDFile::getInstance("tmp/BasicHeadsGuam.symbols");
+	QString path = argv[1];
+	logger.info("path = %s", path.toLocal8Bit().constData());
+	BCDFile* file = BCDFile::getInstance(path);
 	BCD bcd(*file);
-	Symbols symbols(bcd, 2);
+
+	int symbolBase = -1;
+	if (Symbols::isSymbolsFile(bcd)) {
+		logger.info("file is symbol file");
+		symbolBase = 2;
+	} else {
+	   for (SGRecord e : bcd.sg.values()) {
+			if (e.segClass != SGRecord::SegClass::SYMBOLS)
+				continue;
+			if (!e.file.isSelf())
+				continue;
+
+			logger.info("found symbol segment  %s", e.toString().toLocal8Bit().constData());
+			symbolBase = e.base;
+			break;
+		}
+	}
+	if (symbolBase == -1) {
+		logger.fatal("No Symbol Segment");
+		ERROR();
+	}
+	
+	Symbols symbols(bcd, symbolBase);
 	logger.info("STOP");
 }
