@@ -316,6 +316,10 @@ Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_) {
 
     // Read block
     initializeSS();
+    initializeHT();
+
+    // Resolve index
+    HTIndex::resolve();
 };
 
 void Symbols::initializeSS() {
@@ -348,3 +352,26 @@ void Symbols::initializeSS() {
     logger.info("ss = (%d)%s ... %s!", ss.length(), ss.left(10).toLatin1().constData(), ss.right(10).toLatin1().constData());
 }
 
+void Symbols::initializeHT() {
+    CARD16 base  = offsetBase + htBlock.offset;
+    int    limit = base + htBlock.size;
+
+    CARD16 lastSSIndex = 0;
+    CARD16 index = 0;
+    bcd.file.position(base);
+
+    for(;;) {
+        int pos = bcd.file.position();
+        if (limit <= pos) break;
+
+        HTRecord data(*this, index, lastSSIndex);
+        ht[index] = data;
+
+        logger.info("ht %s", data.toString().toLocal8Bit().constData());
+        index++;
+        lastSSIndex = data.ssIndex;
+    }
+
+    // Add special
+    ht[HTIndex::HT_NULL] = HTRecord();
+}

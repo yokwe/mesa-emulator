@@ -37,6 +37,8 @@ OF SUCH DAMAGE.
 
 #include "BCD.h"
 
+#include "HTRecord.h"
+
 //-- symbol segment headers
 //
 //WordOffset: TYPE = CARDINAL;
@@ -274,7 +276,7 @@ public:
      //
      QString ss;
 //     QMap<CARD16, CTXRecord>    ctx;
-//     QMap<CARD16, HTRecord>     ht;
+     QMap<CARD16, HTRecord>     ht;
 //     QMap<CARD16, MDRecord>     md;
 //     QMap<CARD16, SERecord>     se;
 //     QMap<CARD16, BodyRecord>   body;
@@ -286,6 +288,7 @@ public:
 
 private:
      void initializeSS();
+     void initializeHT();
 };
 
 
