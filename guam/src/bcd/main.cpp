@@ -36,34 +36,38 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 #include "BCD.h"
 #include "Symbols.h"
 
-int main(int, char** argv) {
+int main(int argc, char** argv) {
 	logger.info("START");
-	QString path = argv[1];
-	logger.info("path = %s", path.toLocal8Bit().constData());
-	BCDFile* file = BCDFile::getInstance(path);
-	BCD bcd(*file);
 
-	int symbolBase = -1;
-	if (Symbols::isSymbolsFile(bcd)) {
-		logger.info("file is symbol file");
-		symbolBase = 2;
-	} else {
-	   for (SGRecord e : bcd.sg.values()) {
-			if (e.segClass != SGRecord::SegClass::SYMBOLS)
-				continue;
-			if (!e.file.isSelf())
-				continue;
+	for(int i = 1; i < argc; i++) {
+		QString path = argv[i];
+		logger.info("path = %s", path.toLocal8Bit().constData());
+		BCDFile* file = BCDFile::getInstance(path);
+		BCD bcd(*file);
 
-			logger.info("found symbol segment  %s", e.toString().toLocal8Bit().constData());
-			symbolBase = e.base;
-			break;
+		int symbolBase = -1;
+		if (Symbols::isSymbolsFile(bcd)) {
+			logger.info("file is symbol file");
+			symbolBase = 2;
+		} else {
+		   for (SGRecord e : bcd.sg.values()) {
+				if (e.segClass != SGRecord::SegClass::SYMBOLS)
+					continue;
+				if (!e.file.isSelf())
+					continue;
+
+				logger.info("found symbol segment  %s", e.toString().toLocal8Bit().constData());
+				symbolBase = e.base;
+				break;
+			}
 		}
-	}
-	if (symbolBase == -1) {
-		logger.fatal("No Symbol Segment");
-		ERROR();
+		if (symbolBase == -1) {
+			logger.fatal("No Symbol Segment");
+			ERROR();
+		}
+
+		Symbols symbols(bcd, symbolBase);
 	}
 	
-	Symbols symbols(bcd, symbolBase);
 	logger.info("STOP");
 }
