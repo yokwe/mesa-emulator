@@ -88,20 +88,15 @@ QString FTRecord::toString() {
 }
 
 
-QMap<SGRecord::SegClass, QString> segClassMapInit() {
-	QMap<SGRecord::SegClass, QString> ret;
-
-	ret[SGRecord::SegClass::CODE]    = "CODE";
-	ret[SGRecord::SegClass::SYMBOLS] = "SYMBOLS";
-	ret[SGRecord::SegClass::AC_MAP]  = "AC_MAP";
-	ret[SGRecord::SegClass::OTHER]   = "OTHER";
-
-	return ret;
-}
-static QMap<SGRecord::SegClass, QString> segClassMap = segClassMapInit();
 QString SGRecord::toString(SegClass value) {
-	if (segClassMap.contains(value)) {
-		return segClassMap[value];
+	static QMap<SGRecord::SegClass, QString> map({
+		{SegClass::CODE,    "CODE"},
+		{SegClass::SYMBOLS, "SYMBOLS"},
+		{SegClass::AC_MAP,  "AC_MAP"},
+		{SegClass::OTHER,   "OTHER"},
+	});
+	if (map.contains(value)) {
+		return map[value];
 	} else {
 		logger.error("Unknown value = %d", (int)value);
 		ERROR();
