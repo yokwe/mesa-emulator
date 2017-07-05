@@ -106,7 +106,7 @@ bcd:
 
 run-bcd: bcd
 	echo -n >tmp/debug.log
-	tmp/build/bcd/bcd
+	tmp/build/bcd/bcd tmp/TimeStamp.bcd
 
 run-trace: trace
 	echo -n >tmp/debug.log
