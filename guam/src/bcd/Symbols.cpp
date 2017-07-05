@@ -34,6 +34,22 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 
 #include "Symbols.h"
 
+
+#define TO_STRING_PROLOGUE(e) \
+	typedef e ENUM; \
+	static QMap<ENUM, QString> map({
+#define MAP_ENTRY(m) {ENUM::m, #m},
+#define TO_STRING_EPILOGUE \
+	}); \
+	if (map.contains(value)) { \
+		return map[value]; \
+	} else { \
+		logger.error("Unknown value = %d", (int)value); \
+		ERROR(); \
+		return QString("%1").arg((int)value); \
+	}
+
+
 BlockDescriptor::BlockDescriptor(BCD& bcd) {
     offset = bcd.file.getCARD16();
     size   = bcd.file.getCARD16();
@@ -43,197 +59,124 @@ QString BlockDescriptor::toString() {
 }
 
 
-static QMap<Symbols::TypeClass, QString> typeClassMapInit() {
-	QMap<Symbols::TypeClass, QString> ret;
-
-	ret[Symbols::TypeClass::MODE]       = "MODE";
-	ret[Symbols::TypeClass::BASIC]      = "BASIC";
-	ret[Symbols::TypeClass::ENUMERATED] = "ENUMERATED";
-	ret[Symbols::TypeClass::RECORD]     = "RECORD";
-	ret[Symbols::TypeClass::REF]        = "REF";
-	//
-	ret[Symbols::TypeClass::ARRAY]      = "ARRAY";
-	ret[Symbols::TypeClass::ARRAY_DESC] = "ARRAY_DESC";
-	ret[Symbols::TypeClass::TRANSFER]   = "TRANSFER";
-	ret[Symbols::TypeClass::DEFINITION] = "DEFINITION";
-	ret[Symbols::TypeClass::UNION]      = "UNION";
-	//
-	ret[Symbols::TypeClass::SEQUENCE]   = "SEQUENCE";
-	ret[Symbols::TypeClass::RELATIVE]   = "RELATIVE";
-	ret[Symbols::TypeClass::SUB_RANGE]  = "SUB_RANGE";
-	ret[Symbols::TypeClass::LONG]       = "LONG";
-	ret[Symbols::TypeClass::REAL]       = "REAL";
-	//
-	ret[Symbols::TypeClass::OPAQUE]     = "OPAQUE";
-	ret[Symbols::TypeClass::ZONE]       = "ZONE";
-	ret[Symbols::TypeClass::ANY]        = "ANY";
-	ret[Symbols::TypeClass::NIL]        = "NIL";
-	ret[Symbols::TypeClass::BITS]       = "BITS";
-	//
-	ret[Symbols::TypeClass::FIXED_SEQUENCE] = "FIXED_SEQUENCE";
-
-	return ret;
-}
-static QMap<Symbols::TypeClass, QString> typeClassMap = typeClassMapInit();
-
 QString Symbols::toString(TypeClass value) {
-	if (typeClassMap.contains(value)) {
-		return typeClassMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(TypeClass)
+
+	MAP_ENTRY(MODE)
+	MAP_ENTRY(BASIC)
+	MAP_ENTRY(ENUMERATED)
+	MAP_ENTRY(RECORD)
+	MAP_ENTRY(REF)
+	//
+	MAP_ENTRY(ARRAY)
+	MAP_ENTRY(ARRAY_DESC)
+	MAP_ENTRY(TRANSFER)
+	MAP_ENTRY(DEFINITION)
+	MAP_ENTRY(UNION)
+	//
+	MAP_ENTRY(SEQUENCE)
+	MAP_ENTRY(RELATIVE)
+	MAP_ENTRY(SUB_RANGE)
+	MAP_ENTRY(LONG)
+	MAP_ENTRY(REAL)
+	//
+	MAP_ENTRY(OPAQUE)
+	MAP_ENTRY(ZONE)
+	MAP_ENTRY(ANY)
+	MAP_ENTRY(NIL)
+	MAP_ENTRY(BITS)
+	//
+	MAP_ENTRY(FIXED_SEQUENCE)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::TransferMode, QString> transferModeMapInit() {
-	QMap<Symbols::TransferMode, QString> ret;
 
-	ret[Symbols::TransferMode::PROC]    = "PROC";
-	ret[Symbols::TransferMode::PORT]    = "PORT";
-	ret[Symbols::TransferMode::SIGNAL]  = "SIGNAL";
-	ret[Symbols::TransferMode::ERROR]   = "ERROR";
-	ret[Symbols::TransferMode::PROCESS] = "PROCESS";
-	ret[Symbols::TransferMode::PROGRAM] = "PROGRAM";
-	ret[Symbols::TransferMode::NONE]    = "NONE";
-
-	return ret;
-}
-static QMap<Symbols::TransferMode, QString> transferModeMap = transferModeMapInit();
 QString Symbols::toString(TransferMode value) {
-	if (transferModeMap.contains(value)) {
-		return transferModeMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(TransferMode)
+
+	MAP_ENTRY(PROC)
+	MAP_ENTRY(PORT)
+	MAP_ENTRY(SIGNAL)
+	MAP_ENTRY(ERROR)
+	MAP_ENTRY(PROCESS)
+	MAP_ENTRY(PROGRAM)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::ExtensionType, QString> extensionTypeMapInit() {
-	QMap<Symbols::ExtensionType, QString> ret;
 
-	ret[Symbols::ExtensionType::VALUE]   = "VALUE";
-	ret[Symbols::ExtensionType::FORM]    = "FORM";
-	ret[Symbols::ExtensionType::DEFAULT] = "DEFAULT";
-	ret[Symbols::ExtensionType::NONE]    = "NONE";
-
-	return ret;
-}
-static QMap<Symbols::ExtensionType, QString> extensionTypeMap = extensionTypeMapInit();
 QString Symbols::toString(ExtensionType value) {
-	if (extensionTypeMap.contains(value)) {
-		return extensionTypeMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(ExtensionType)
+
+	MAP_ENTRY(VALUE)
+	MAP_ENTRY(FORM)
+	MAP_ENTRY(DEFAULT)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::Linkage, QString> linkageMapInit() {
-	QMap<Symbols::Linkage, QString> ret;
 
-	ret[Symbols::Linkage::VAL]      = "VAL";
-	ret[Symbols::Linkage::REF]      = "REF";
-	ret[Symbols::Linkage::TYPE]     = "TYPE";
-	ret[Symbols::Linkage::MANIFEST] = "MANIFEST";
-	ret[Symbols::Linkage::NONE]     = "NONE";
-
-	return ret;
-}
-static QMap<Symbols::Linkage, QString> linkageMap = linkageMapInit();
 QString Symbols::toString(Linkage value) {
-	if (linkageMap.contains(value)) {
-		return linkageMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(Linkage)
+
+	MAP_ENTRY(VAL)
+	MAP_ENTRY(REF)
+	MAP_ENTRY(TYPE)
+	MAP_ENTRY(MANIFEST)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::RefClass, QString> refClassMapInit() {
-	QMap<Symbols::RefClass, QString> ret;
 
-	ret[Symbols::RefClass::NONE]      = "NONE";
-	ret[Symbols::RefClass::SIMPLE]    = "SIMPLE";
-	ret[Symbols::RefClass::COMPOSITE] = "COMPOSITE";
-
-	return ret;
-}
-static QMap<Symbols::RefClass, QString> refClassMap = refClassMapInit();
 QString Symbols::toString(RefClass value) {
-	if (refClassMap.contains(value)) {
-		return refClassMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(RefClass)
+
+	MAP_ENTRY(NONE)
+	MAP_ENTRY(SIMPLE)
+	MAP_ENTRY(COMPOSITE)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::Closure, QString> closureMapInit() {
-	QMap<Symbols::Closure, QString> ret;
 
-	ret[Symbols::Closure::NONE] = "NONE";
-	ret[Symbols::Closure::UNIT] = "UNIT";
-	ret[Symbols::Closure::RC]   = "RC";
-	ret[Symbols::Closure::FULL] = "FULL";
-
-	return ret;
-}
-static QMap<Symbols::Closure, QString> closureMap = closureMapInit();
 QString Symbols::toString(Closure value) {
-	if (closureMap.contains(value)) {
-		return closureMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(Closure)
+
+	MAP_ENTRY(NONE)
+	MAP_ENTRY(UNIT)
+	MAP_ENTRY(RC)
+	MAP_ENTRY(FULL)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::LinkTag, QString> linkTagMapInit() {
-	QMap<Symbols::LinkTag, QString> ret;
 
-	ret[Symbols::LinkTag::VARIABLE]  = "VARIABLE";
-	ret[Symbols::LinkTag::PROCEDURE] = "PROCEDURE";
-	ret[Symbols::LinkTag::TYPE]      = "TYPE";
-
-	return ret;
-}
-static QMap<Symbols::LinkTag, QString> linkTagMap = linkTagMapInit();
 QString Symbols::toString(LinkTag value) {
-	if (linkTagMap.contains(value)) {
-		return linkTagMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(LinkTag)
+
+	MAP_ENTRY(VARIABLE)
+	MAP_ENTRY(PROCEDURE)
+	MAP_ENTRY(TYPE)
+
+	TO_STRING_EPILOGUE
 }
 
-static QMap<Symbols::VarTag, QString> varTagMapInit() {
-	QMap<Symbols::VarTag, QString> ret;
 
-	ret[Symbols::VarTag::VAR]   = "VAR";
-	ret[Symbols::VarTag::PROC0] = "PROC0";
-	ret[Symbols::VarTag::TYPE]  = "TYPE";
-	ret[Symbols::VarTag::PROC1] = "PROC1";
-
-	return ret;
-}
-static QMap<Symbols::VarTag, QString> varTagMap = varTagMapInit();
 QString Symbols::toString(VarTag value) {
-	if (varTagMap.contains(value)) {
-		return varTagMap[value];
-	} else {
-		logger.error("Unknown value = %d", (int)value);
-		ERROR();
-		return QString("%1").arg((int)value);
-	}
+	TO_STRING_PROLOGUE(VarTag)
+
+	MAP_ENTRY(VAR)
+	MAP_ENTRY(PROC0)
+	MAP_ENTRY(TYPE)
+	MAP_ENTRY(PROC1)
+
+	TO_STRING_EPILOGUE
 }
+
 
 bool Symbols::isSymbolsFile(const BCD& bcd) {
     bcd.file.position(0);
