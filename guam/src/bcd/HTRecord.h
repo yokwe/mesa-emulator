@@ -58,7 +58,7 @@ public:
 	QString toString();
 
 private:
-	static QList<HTIndex> all;
+	static QList<HTIndex*> all;
 };
 
 //HTRecord: TYPE = RECORD [

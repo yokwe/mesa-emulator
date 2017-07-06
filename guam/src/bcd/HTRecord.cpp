@@ -37,28 +37,31 @@ static log4cpp::Category& logger = Logger::getLogger("htrecord");
 #include "Symbols.h"
 
 
-QList<HTIndex> HTIndex::all;
+QList<HTIndex*> HTIndex::all;
 
 HTIndex::HTIndex(Symbols& symbols_, CARD16 index_) : symbols(&symbols_), index(index_), value(0) {
-	all.append(*this);
+	all.append(this);
 }
 
 QString HTIndex::toString() {
-	return QString("ht-%1-%2").arg(index).arg(value ? value->toString() : "#EMPTY#");
+	return QString("ht-%1-[%2]").arg(index).arg(value ? value->toString().toLocal8Bit().constData() : "#EMPTY#");
 }
 void HTIndex::resolve() {
-	for(HTIndex e: all) {
-		if (e.value) continue;
-		if (e.index == HT_NULL) continue;
+	for(HTIndex* p: all) {
+		const CARD16 index = p->index;
+		if (index == HT_NULL) continue;
+		if (p->value) continue;
 
-		if (e.symbols == 0) {
-			logger.error("e.symbols == null  e = %s", e.toString());
+		if (p->symbols == 0) {
+			logger.error("p->symbols == null  p = %s", p->toString().toLocal8Bit().constData());
 			ERROR();
 		}
-		if (e.symbols->ht.contains(e.index)) {
-			e.value = &(e.symbols->ht[e.index]);
+
+		if (p->symbols->ht.contains(index)) {
+			HTRecord& record = p->symbols->ht[index];
+			p->value = &record;
 		} else {
-			logger.error("Unknown index  e = %s", e.toString());
+			logger.error("Unknown index  p = %s", p->toString().toLocal8Bit().constData());
 			ERROR();
 		}
 	}
