@@ -106,7 +106,7 @@ bcd:
 
 run-bcd: bcd
 	echo -n >tmp/debug.log
-	tmp/build/bcd/bcd tmp/TimeStamp.bcd
+	tmp/build/bcd/bcd tmp/GermOpsImpl.bcd
 
 run-trace: trace
 	echo -n >tmp/debug.log
