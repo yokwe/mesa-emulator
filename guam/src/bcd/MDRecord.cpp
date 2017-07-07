@@ -46,6 +46,8 @@ MDIndex::MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(in
 QString MDIndex::toString() {
 	if (index == MDIndex::MD_NULL) return "#NULL#";
 	if (index == MDIndex::OWM_MDI) return "#OWN#";
+	if (value == 0) return QString("md-%1").arg(index);
+
 	return QString("md-%1-%2").arg(index).arg(value ? value->toString() : "#EMPTY#");
 }
 void MDIndex::resolve() {
@@ -57,14 +59,14 @@ void MDIndex::resolve() {
 		if (p->index == MD_NULL) continue;
 
 		if (p->symbols == 0) {
-			logger.error("p->symbols == null  p = %s", p->toString());
+			logger.error("p->symbols == null %d p = %s", index, p->toString().toLocal8Bit().constData());
 			ERROR();
 		}
 		if (p->symbols->md.contains(index)) {
 			logger.info("resolve md %4d", index);
 			p->value = p->symbols->md[index];
 		} else {
-			logger.error("Unknown index  p = %s", p->toString());
+			logger.error("Unknown %d = %s", index, p->toString().toLocal8Bit().constData());
 			ERROR();
 		}
 	}

@@ -44,6 +44,7 @@ HTIndex::HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(in
 }
 
 QString HTIndex::toString() {
+	if (value == 0) return QString("htx-%1").arg(index);
 	return QString("ht-%1-[%2]").arg(index).arg(value ? value->toString().toLocal8Bit().constData() : "#EMPTY#");
 }
 void HTIndex::resolve() {
@@ -66,7 +67,7 @@ void HTIndex::resolve() {
 			p->value = p->symbols->ht[index];
 //			logger.info("resolve ht %4d", index);
 		} else {
-			logger.error("Unknown index  p = %s", p->toString().toLocal8Bit().constData());
+			logger.error("Unknown index %d  p = %s", index, p->toString().toLocal8Bit().constData());
 			ERROR();
 		}
 	}

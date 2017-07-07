@@ -39,6 +39,8 @@ OF SUCH DAMAGE.
 
 #include "HTRecord.h"
 #include "MDRecord.h"
+#include "CTXRecord.h"
+
 
 //-- symbol segment headers
 //
@@ -276,7 +278,7 @@ public:
      CARD16           fgPgCount;
      //
      QString ss;
-//     QMap<CARD16, CTXRecord*>    ctx;
+     QMap<CARD16, CTXRecord*>    ctx;
      QMap<CARD16, HTRecord*>     ht;
      QMap<CARD16, MDRecord*>     md;
 //     QMap<CARD16, SERecord*>     se;
@@ -291,6 +293,7 @@ private:
      void initializeSS();
      void initializeHT();
      void initializeMD();
+     void initializeCTX();
 };
 
 

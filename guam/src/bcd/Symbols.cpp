@@ -35,21 +35,6 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "Symbols.h"
 
 
-#define TO_STRING_PROLOGUE(e) \
-	typedef e ENUM; \
-	static QMap<ENUM, QString> map({
-#define MAP_ENTRY(m) {ENUM::m, #m},
-#define TO_STRING_EPILOGUE \
-	}); \
-	if (map.contains(value)) { \
-		return map[value]; \
-	} else { \
-		logger.error("Unknown value = %d", (int)value); \
-		ERROR(); \
-		return QString("%1").arg((int)value); \
-	}
-
-
 BlockDescriptor::BlockDescriptor(BCD* bcd) {
     offset = bcd->file->getCARD16();
     size   = bcd->file->getCARD16();
@@ -143,7 +128,7 @@ QString Symbols::toString(RefClass value) {
 }
 
 
-QString Symbols::toString(Closure value) {
+QString toString(Closure value) {
 	TO_STRING_PROLOGUE(Closure)
 
 	MAP_ENTRY(NONE)
@@ -264,10 +249,12 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeSS();
     initializeHT();
     initializeMD();
+    initializeCTX();
 
     // Resolve index
     HTIndex::resolve();
     MDIndex::resolve();
+    CTXIndex::resolve();
 
 //	for(MDRecord* p: md.values()) {
 //		logger.info("MD %s", p->toString().toLocal8Bit().constData());
@@ -341,18 +328,17 @@ void Symbols::initializeMD() {
     CARD16 base  = offsetBase + mdBlock->offset;
     int    limit = base + mdBlock->size;
 
-    CARD16 index = 0;
     file->position(base);
 
     for(;;) {
         int pos = file->position();
         if (limit <= pos) break;
 
+        int index = pos - base;
         MDRecord* record = new MDRecord(this, index);
         md[index] = record;
 
         logger.info("md %s", record->toString().toLocal8Bit().constData());
-        index++;
     }
 
     // sanity check
@@ -368,3 +354,34 @@ void Symbols::initializeMD() {
     md[MDIndex::MD_NULL] = new MDRecord(MDIndex::MD_NULL);
     md[MDIndex::OWM_MDI] = new MDRecord(MDIndex::OWM_MDI);
 }
+
+void Symbols::initializeCTX() {
+    CARD16 base  = offsetBase + ctxBlock->offset;
+    int    limit = base + ctxBlock->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        CTXRecord* record = new CTXRecord(this, index);
+        ctx[index] = record;
+
+        logger.info("ctx %s", record->toString().toLocal8Bit().constData());
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+
+    // Add special
+//    ctx[CTXIndex::CTX_NULL] = new CTXRecord(MDIndex::MD_NULL);
+}
+
