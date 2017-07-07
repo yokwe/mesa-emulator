@@ -55,9 +55,8 @@ public:
 	CARD16    index;
 	MDRecord* value;
 
-	MDIndex() : symbols(0), index(MD_NULL), value(0) {}
-	MDIndex(const MDIndex& that) : symbols(that.symbols), index(that.index), value(that.value) {}
-	MDIndex(Symbols& symbols_, CARD16 index_);
+	MDIndex(CARD16 index_) : symbols(0), index(index_), value(0) {}
+	MDIndex(Symbols* symbols_, CARD16 index_);
 
 	QString toString();
 
@@ -78,22 +77,19 @@ class MDRecord {
 public:
 	CARD16       index;
 
-	VersionStamp stamp;
-	HTIndex      moduleId;
-	HTIndex      fileId;
-	bool         shared;
-	bool         exported;
-//	CTXIndex     ctx;
-//	CTXIndex     defaultImport;
-	CARD16       ctx;
-	CARD16       defaultImport;
-	CARD16       file;
+	VersionStamp* stamp;
+	HTIndex*      moduleId;
+	HTIndex*      fileId;
+	bool          shared;
+	bool          exported;
+//	CTXIndex      ctx;
+//	CTXIndex      defaultImport;
+	CARD16        ctx;
+	CARD16        defaultImport;
+	CARD16        file;
 
-	MDRecord() : index(MDIndex::MD_NULL), stamp(), moduleId(), fileId(), shared(false), exported(false), ctx(0), defaultImport(0), file(0) {}
-	MDRecord(const MDRecord& that) :
-		index(that.index), stamp(that.stamp), moduleId(that.moduleId), fileId(that.fileId), shared(that.shared), exported(that.exported),
-		ctx(that.ctx), defaultImport(that.defaultImport), file(0) {}
-	MDRecord(Symbols& symbols, CARD16 index);
+	MDRecord(CARD16 index_) : index(index_), stamp(0), moduleId(0), fileId(0), shared(false), exported(false), ctx(0), defaultImport(0), file(0) {}
+	MDRecord(Symbols* symbols, CARD16 index);
 
 	bool isNull() {
 		return index == MDIndex::MD_NULL;

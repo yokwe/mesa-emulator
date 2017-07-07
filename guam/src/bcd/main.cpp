@@ -43,21 +43,21 @@ int main(int argc, char** argv) {
 		QString path = argv[i];
 		logger.info("path = %s", path.toLocal8Bit().constData());
 		BCDFile* file = BCDFile::getInstance(path);
-		BCD bcd(*file);
+		BCD* bcd = new BCD(file);
 
 		int symbolBase = -1;
 		if (Symbols::isSymbolsFile(bcd)) {
 			logger.info("file is symbol file");
 			symbolBase = 2;
 		} else {
-		   for (SGRecord e : bcd.sg.values()) {
-				if (e.segClass != SGRecord::SegClass::SYMBOLS)
+		   for (SGRecord* p : bcd->sg.values()) {
+				if (p->segClass != SGRecord::SegClass::SYMBOLS)
 					continue;
-				if (!e.file.isSelf())
+				if (!p->file->isSelf())
 					continue;
 
-				logger.info("found symbol segment  %s", e.toString().toLocal8Bit().constData());
-				symbolBase = e.base;
+				logger.info("found symbol segment  %s", p->toString().toLocal8Bit().constData());
+				symbolBase = p->base;
 				break;
 			}
 		}

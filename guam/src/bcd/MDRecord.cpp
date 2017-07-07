@@ -39,10 +39,9 @@ static log4cpp::Category& logger = Logger::getLogger("mdrecord");
 
 QList<MDIndex*> MDIndex::all;
 
-MDIndex::MDIndex(Symbols& symbols_, CARD16 index_) : symbols(&symbols_), index(index_), value(0) {
+MDIndex::MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
 	all.append(this);
 }
-
 
 QString MDIndex::toString() {
 	if (index == MDIndex::MD_NULL) return "#NULL#";
@@ -61,9 +60,9 @@ void MDIndex::resolve() {
 			logger.error("p->symbols == null  p = %s", p->toString());
 			ERROR();
 		}
-		if (p->symbols->ht.contains(index)) {
-			MDRecord& record = p->symbols->md[index];
-			p->value = &record;
+		if (p->symbols->md.contains(index)) {
+			logger.info("resolve md %4d", index);
+			p->value = p->symbols->md[index];
 		} else {
 			logger.error("Unknown index  p = %s", p->toString());
 			ERROR();
@@ -71,36 +70,30 @@ void MDIndex::resolve() {
 	}
 }
 
-MDRecord::MDRecord(Symbols& symbols, CARD16 index_) {
+MDRecord::MDRecord(Symbols* symbols, CARD16 index_) {
 	index = index_;
 
-	stamp    = VersionStamp(symbols.bcd);
+	stamp    = new VersionStamp(symbols->bcd);
+	moduleId = new HTIndex(symbols, symbols->file->getCARD16());
 
-	{
-		CARD16 index = symbols.bcd.file.getCARD16();
-		logger.info("moduleId %4d", index);
-		moduleId = HTIndex(symbols, index);
-	}
-
-	CARD16 word = symbols.bcd.file.getCARD16();
-	{
-		CARD16 index = bitField(word, 0, 12);
-		logger.info("fileId   %4d", index);
-		fileId   = HTIndex(symbols, index);
-	}
+	CARD16 word = symbols->file->getCARD16();
+	fileId   = new HTIndex(symbols, bitField(word, 0, 12));
     shared   = bitField(word, 13);
     exported = bitField(word, 14, 15);
 
-    ctx           = symbols.bcd.file.getCARD16();
-    defaultImport = symbols.bcd.file.getCARD16();
+    ctx           = symbols->file->getCARD16();
+    defaultImport = symbols->file->getCARD16();
 //    ctx           = CTIndex(symbols, symbols.bcd.file.getCARD16());
 //    defaultImport = CTIndex(symbols, symbols.bcd.file.getCARD16());
 
-    file = symbols.bcd.file.getCARD16();;
+    file = symbols->file->getCARD16();
 }
 
 QString MDRecord::toString() {
+	if (index == MDIndex::MD_NULL) return "#NULL#";
+	if (index == MDIndex::OWM_MDI) return "#OWN#";
+
 	return QString("%1 %2 %3 %4 %5 %6 %7 %8 %9").
-			arg(index, 4).arg(stamp.toString()).arg(moduleId.toString()).arg(fileId.toString()).
+			arg(index, 4).arg(stamp->toString()).arg(moduleId->toString()).arg(fileId->toString()).
 			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx).arg(defaultImport).arg(file);
 }

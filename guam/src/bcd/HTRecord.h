@@ -52,8 +52,7 @@ public:
 	HTRecord* value;
 
 	HTIndex() : symbols(0), index(HT_NULL), value(0) {}
-	HTIndex(const HTIndex& that) : symbols(that.symbols), index(that.index), value(that.value) {}
-	HTIndex(Symbols& symbols, CARD16 index);
+	HTIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();
 
@@ -74,10 +73,8 @@ public:
 	CARD16  ssIndex;
 	QString value;
 
-	HTRecord() : index(HTIndex::HT_NULL), anyInternal(false), anyPublic(false), link(0), ssIndex(0), value("#NULL#") {}
-	HTRecord(const HTRecord& that) :
-		index(that.index), anyInternal(that.anyInternal), anyPublic(that.anyPublic), link(that.link), ssIndex(that.ssIndex), value(that.value) {}
-	HTRecord(Symbols& symbols, CARD16 index, CARD16 lastSSIndex);
+	HTRecord(CARD16 index_) : index(index_), anyInternal(false), anyPublic(false), link(0), ssIndex(0), value("#SPECIAL#") {}
+	HTRecord(Symbols* symbols, CARD16 index, CARD16 lastSSIndex);
 
 	QString toString();
 };

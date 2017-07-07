@@ -49,9 +49,7 @@ public:
     CARD16 offset;
     CARD16 size;
 
-    BlockDescriptor() : offset(0), size(0) {}
-    BlockDescriptor(const BlockDescriptor& that) : offset(that.offset), size(that.size) {}
-    BlockDescriptor(BCD& bcd);
+    BlockDescriptor(BCD* bcd);
 
     QString toString();
 };
@@ -216,7 +214,7 @@ public:
     //mdType: Table.Selector = 5;
     //bodyType: Table.Selector = 6;
 
-    static bool isSymbolsFile(const BCD& bcd);
+    static bool isSymbolsFile(BCD* bcd);
 
 
      //STHeader: TYPE = RECORD [
@@ -244,48 +242,50 @@ public:
      //  spareBlock: BlockDescriptor,
      //  fgRelPgBase: CARDINAL,
      //  fgPgCount: [0..256]];
-     BCD&            bcd;
-     CARD32          symbolBase;
-     CARD32          offsetBase;
+     BCD*             bcd;
+     BCDFile*         file;
 
-     CARD16          versionIdent;
-     VersionStamp    version;
-     VersionStamp    creator;
-     VersionStamp    sourceVersion;
-     bool            definitionsFile;
-     CARD16          directoryCtx; // CTXIndex
-     CARD16          importCtx;    // CTXIndex
-     CARD16          outerCtx;     // CTXIndex
-     BlockDescriptor hvBlock;
-     BlockDescriptor htBlock;
-     BlockDescriptor ssBlock;
-     BlockDescriptor outerPackBlock;
-     BlockDescriptor innerPackBlock;
-     BlockDescriptor constBlock;
-     BlockDescriptor seBlock;
-     BlockDescriptor ctxBlock;
-     BlockDescriptor mdBlock;
-     BlockDescriptor bodyBlock;
-     BlockDescriptor extBlock;
-     BlockDescriptor treeBlock;
-     BlockDescriptor litBlock;
-     BlockDescriptor sLitBlock;
-     BlockDescriptor epMapBlock;
-     BlockDescriptor spareBlock;
-     CARD16          fgRelPgBase;
-     CARD16          fgPgCount;
+     CARD32           symbolBase;
+     CARD32           offsetBase;
+
+     CARD16           versionIdent;
+     VersionStamp*    version;
+     VersionStamp*    creator;
+     VersionStamp*    sourceVersion;
+     bool             definitionsFile;
+     CARD16           directoryCtx; // CTXIndex
+     CARD16           importCtx;    // CTXIndex
+     CARD16           outerCtx;     // CTXIndex
+     BlockDescriptor* hvBlock;
+     BlockDescriptor* htBlock;
+     BlockDescriptor* ssBlock;
+     BlockDescriptor* outerPackBlock;
+     BlockDescriptor* innerPackBlock;
+     BlockDescriptor* constBlock;
+     BlockDescriptor* seBlock;
+     BlockDescriptor* ctxBlock;
+     BlockDescriptor* mdBlock;
+     BlockDescriptor* bodyBlock;
+     BlockDescriptor* extBlock;
+     BlockDescriptor* treeBlock;
+     BlockDescriptor* litBlock;
+     BlockDescriptor* sLitBlock;
+     BlockDescriptor* epMapBlock;
+     BlockDescriptor* spareBlock;
+     CARD16           fgRelPgBase;
+     CARD16           fgPgCount;
      //
      QString ss;
-//     QMap<CARD16, CTXRecord>    ctx;
-     QMap<CARD16, HTRecord>     ht;
-     QMap<CARD16, MDRecord>     md;
-//     QMap<CARD16, SERecord>     se;
-//     QMap<CARD16, BodyRecord>   body;
-//     QMap<CARD16, ExtRecord>    ext;
-//     QMap<CARD16, LTRecord>     lt;
-//     QMap<CARD16, Tree.Node>    tree;
+//     QMap<CARD16, CTXRecord*>    ctx;
+     QMap<CARD16, HTRecord*>     ht;
+     QMap<CARD16, MDRecord*>     md;
+//     QMap<CARD16, SERecord*>     se;
+//     QMap<CARD16, BodyRecord*>   body;
+//     QMap<CARD16, ExtRecord*>    ext;
+//     QMap<CARD16, LTRecord*>     lt;
+//     QMap<CARD16, Tree.Node*>    tree;
 
-     Symbols(BCD& bcd, int symbolBase);
+     Symbols(BCD* bcd, int symbolBase);
 
 private:
      void initializeSS();

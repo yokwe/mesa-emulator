@@ -42,17 +42,11 @@ OF SUCH DAMAGE.
 class BCD;
 static const CARD16 T_LIMIT = 0177777;
 
-CARD16 bitField(CARD16 word, int startBit, int stopBit);
-CARD16 bitField(CARD16 word, int startBit);
-
-
 // Stamp: TYPE = RECORD [net, host: [0..377B], time: LONG CARDINAL];
 // Null: Stamp = Stamp[net: 0, host: 0, time: 0];
 class VersionStamp {
 public:
-	VersionStamp() : net(0), host(0), time(0), dateTime() {}
-	VersionStamp(const VersionStamp& that) : net(that.net), host(that.host), time(that.time), dateTime(that.dateTime) {}
-	VersionStamp(BCD& bcd);
+	VersionStamp(BCD* bcd);
 
 	QString toString();
 
@@ -88,14 +82,13 @@ public:
 	static const CARD16 FT_NULL = T_LIMIT;
 	static const CARD16 FT_SELF = T_LIMIT - 1;
 
-	CARD16       index;
-	QString      name;
-	VersionStamp version;
+	CARD16        index;
+	QString       name;
+	VersionStamp* version;
 
-	FTRecord() : index(FT_NULL), name(), version() {}
-	FTRecord(const FTRecord& that) : index(that.index), name(that.name), version(that.version) {}
-	FTRecord(CARD16 index_, QString name_, VersionStamp version_) : index(index_), name(name_), version(version_) {}
-	FTRecord(BCD& bcd, CARD16 index);
+	FTRecord() : index(FT_NULL), name(), version(0) {}
+	FTRecord(CARD16 index_, QString name_, VersionStamp* version_) : index(index_), name(name_), version(version_) {}
+	FTRecord(BCD* bcd, CARD16 index);
 
 	bool isNull() {
 		return index == FT_NULL;
@@ -123,19 +116,16 @@ public:
 	};
 	static QString toString(SegClass value);
 
-	CARD16   index;
-	CARD16   fileIndex;
-	FTRecord file;
-	CARD16   base;
-	CARD16   pages;
-	CARD16   extraPages;
-	SegClass segClass;
+	CARD16    index;
+	CARD16    fileIndex;
+	FTRecord* file;
+	CARD16    base;
+	CARD16    pages;
+	CARD16    extraPages;
+	SegClass  segClass;
 
-	SGRecord() : index(SG_NULL), fileIndex(0), file(), base(0), pages(0), extraPages(0), segClass(SegClass::OTHER) {}
-	SGRecord(const SGRecord& that) :
-		index(that.index), fileIndex(that.fileIndex), file(that.file), base(that.base), pages(that.pages),
-		extraPages(that.extraPages), segClass(that.segClass) {}
-	SGRecord(BCD& bcd, CARD16 index);
+	SGRecord() : index(SG_NULL), fileIndex(0), file(0), base(0), pages(0), extraPages(0), segClass(SegClass::OTHER) {}
+	SGRecord(BCD* bcd, CARD16 index);
 
 	QString toString();
 };
@@ -145,7 +135,7 @@ public:
 	//VersionID: CARDINAL = 6103
 	static const CARD16 VersionID = 6103;
 
-	BCD(BCDFile& bcdFile);
+	BCD(BCDFile* bcdFile);
 
 	//BCD: TYPE = RECORD [
 	//  versionIdent: CARDINAL,
@@ -193,69 +183,69 @@ public:
 	//  apOffset; // atom printname table
 	//  apLimit: CARDINAL];
 
-	BCDFile&     file;
+	BCDFile*     file;
 
-	CARD16       versionIdent;
-	VersionStamp version;
-	VersionStamp creator;
-	FTRecord     sourceFile;
-	FTRecord     unpackagedFile;
-//	CARD16       sourceFile;
-//	CARD16       unpackagedFile;
-	CARD16       nConfigs;
-	CARD16       nModules;
-	CARD16       nImports;
-	CARD16       nExports;
-	CARD16       nPages;
-	bool         definitions;
-	bool         repackaged;
-	bool         typeExported;
-	bool         tableCompiled;
-	CARD16       spare4;
-	CARD16       firstDummy;
-	CARD16       nDummies;
-	CARD16       ssOffset; // string table
-	CARD16       ssLimit;
-	CARD16       ctOffset; // config table
-	CARD16       ctLimit;
-	CARD16       mtOffset; // module table
-	CARD16       mtLimit;
-	CARD16       impOffset; // import table
-	CARD16       impLimit;
-	CARD16       expOffset; // export table
-	CARD16       expLimit;
-	CARD16       enOffset; // entry table
-	CARD16       enLimit;
-	CARD16       sgOffset; // segment table
-	CARD16       sgLimit;
-	CARD16       ftOffset; // file table
-	CARD16       ftLimit;
-	CARD16       spOffset; // space table
-	CARD16       spLimit;
-	CARD16       ntOffset; // name table
-	CARD16       ntLimit;
-	CARD16       typOffset; // type table
-	CARD16       typLimit;
-	CARD16       tmOffset; // type map table
-	CARD16       tmLimit;
-	CARD16       fpOffset; // frame pack table
-	CARD16       fpLimit;
-	CARD16       lfOffset; // link fragment table
-	CARD16       lfLimit;
-	CARD16       atOffset; // atom table
-	CARD16       atLimit;
-	CARD16       apOffset; // atom printname table
-	CARD16       apLimit;
+	CARD16        versionIdent;
+	VersionStamp* version;
+	VersionStamp* creator;
+	FTRecord*     sourceFile;
+	FTRecord*     unpackagedFile;
+//	CARD16        sourceFile;
+//	CARD16        unpackagedFile;
+	CARD16        nConfigs;
+	CARD16        nModules;
+	CARD16        nImports;
+	CARD16        nExports;
+	CARD16        nPages;
+	bool          definitions;
+	bool          repackaged;
+	bool          typeExported;
+	bool          tableCompiled;
+	CARD16        spare4;
+	CARD16        firstDummy;
+	CARD16        nDummies;
+	CARD16        ssOffset; // string table
+	CARD16        ssLimit;
+	CARD16        ctOffset; // config table
+	CARD16        ctLimit;
+	CARD16        mtOffset; // module table
+	CARD16        mtLimit;
+	CARD16        impOffset; // import table
+	CARD16        impLimit;
+	CARD16        expOffset; // export table
+	CARD16        expLimit;
+	CARD16        enOffset; // entry table
+	CARD16        enLimit;
+	CARD16        sgOffset; // segment table
+	CARD16        sgLimit;
+	CARD16        ftOffset; // file table
+	CARD16        ftLimit;
+	CARD16        spOffset; // space table
+	CARD16        spLimit;
+	CARD16        ntOffset; // name table
+	CARD16        ntLimit;
+	CARD16        typOffset; // type table
+	CARD16        typLimit;
+	CARD16        tmOffset; // type map table
+	CARD16        tmLimit;
+	CARD16        fpOffset; // frame pack table
+	CARD16        fpLimit;
+	CARD16        lfOffset; // link fragment table
+	CARD16        lfLimit;
+	CARD16        atOffset; // atom table
+	CARD16        atLimit;
+	CARD16        apOffset; // atom printname table
+	CARD16        apLimit;
 
-	QMap<CARD16, NameRecord> ss;
-	QMap<CARD16, FTRecord>   ft;
-//	QMap<CARD16, CTRecord>   ct;
-	QMap<CARD16, SGRecord>   sg;
-//	QMap<CARD16, TYPRecord>  typ;
-//	QMap<CARD16, LinkFrag>   lf;
-//	QMap<CARD16, ENRecord>   en;
-//	QMap<CARD16, ATRecord>   at;
-//	QMap<CARD16, MTRecord>   mt;
+	QMap<CARD16, NameRecord*> ss;
+	QMap<CARD16, FTRecord*>   ft;
+//	QMap<CARD16, CTRecord*>   ct;
+	QMap<CARD16, SGRecord*>   sg;
+//	QMap<CARD16, TYPRecord*>  typ;
+//	QMap<CARD16, LinkFrag*>   lf;
+//	QMap<CARD16, ENRecord*>   en;
+//	QMap<CARD16, ATRecord*>   at;
+//	QMap<CARD16, MTRecord*>   mt;
 
 private:
 	void initializeNameRecord();

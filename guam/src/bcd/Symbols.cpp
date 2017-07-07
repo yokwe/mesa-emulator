@@ -50,9 +50,9 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 	}
 
 
-BlockDescriptor::BlockDescriptor(BCD& bcd) {
-    offset = bcd.file.getCARD16();
-    size   = bcd.file.getCARD16();
+BlockDescriptor::BlockDescriptor(BCD* bcd) {
+    offset = bcd->file->getCARD16();
+    size   = bcd->file->getCARD16();
 }
 QString BlockDescriptor::toString() {
 	return QString("[%1 %2]").arg(offset, 4).arg(size, 4);
@@ -178,83 +178,86 @@ QString Symbols::toString(VarTag value) {
 }
 
 
-bool Symbols::isSymbolsFile(const BCD& bcd) {
-    bcd.file.position(0);
-	CARD16 word0 = bcd.file.getCARD16();
-    bcd.file.position(WORDS_PER_PAGE);
-    CARD16 word256 = bcd.file.getCARD16();
+bool Symbols::isSymbolsFile(BCD* bcd) {
+    bcd->file->position(0);
+	CARD16 word0 = bcd->file->getCARD16();
+    bcd->file->position(WORDS_PER_PAGE);
+    CARD16 word256 = bcd->file->getCARD16();
 
     return word0 == BCD::VersionID && word256 == Symbols::VersionID;
 }
 
-Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_) {
+Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
+	bcd             = bcd_;
+	file            = bcd->file;
+
     symbolBase      = symbolBase_;
     offsetBase      = (symbolBase - ALTO_BIAS) * WORDS_PER_PAGE;
 
-    bcd.file.position(offsetBase);
+    file->position(offsetBase);
 
-	versionIdent = bcd.file.getCARD16();
+	versionIdent = file->getCARD16();
 	if (versionIdent != VersionID) {
 		logger.fatal("versionIdent %d", versionIdent);
 		logger.fatal("symbolBase   %d", symbolBase);
 		ERROR();
 	}
 
-	version = VersionStamp(bcd);
-	creator = VersionStamp(bcd);
-	sourceVersion = VersionStamp(bcd);
-	logger.info("version        %s", version.toString().toLocal8Bit().constData());
-	logger.info("creator        %s", creator.toString().toLocal8Bit().constData());
-	logger.info("source         %s", sourceVersion.toString().toLocal8Bit().constData());
+	version       = new VersionStamp(bcd);
+	creator       = new VersionStamp(bcd);
+	sourceVersion = new VersionStamp(bcd);
+	logger.info("version        %s", version->toString().toLocal8Bit().constData());
+	logger.info("creator        %s", creator->toString().toLocal8Bit().constData());
+	logger.info("source         %s", sourceVersion->toString().toLocal8Bit().constData());
 
-    CARD16 word = bcd.file.getCARD16();
+    CARD16 word = file->getCARD16();
     definitionsFile = bitField(word, 15);
     logger.info("definitionFile %d", definitionsFile);
 
     directoryCtx    = bitField(word, 1, 15);
     logger.info("directoryCtx   %d", directoryCtx);
-    importCtx       = bcd.file.getCARD16();
+    importCtx       = file->getCARD16();
     logger.info("importCtx      %d", importCtx);
-    outerCtx        = bcd.file.getCARD16();
+    outerCtx        = file->getCARD16();
     logger.info("outerCtx       %d", outerCtx);
 
 
-    hvBlock         = BlockDescriptor(bcd);
-    logger.info("hvBlock        %s", hvBlock.toString().toLocal8Bit().constData());
-    htBlock         = BlockDescriptor(bcd);
-    logger.info("htBlock        %s", htBlock.toString().toLocal8Bit().constData());
-    ssBlock         = BlockDescriptor(bcd);
-    logger.info("ssBlock        %s", ssBlock.toString().toLocal8Bit().constData());
-    outerPackBlock  = BlockDescriptor(bcd);
+    hvBlock         = new BlockDescriptor(bcd);
+    logger.info("hvBlock        %s", hvBlock->toString().toLocal8Bit().constData());
+    htBlock         = new BlockDescriptor(bcd);
+    logger.info("htBlock        %s", htBlock->toString().toLocal8Bit().constData());
+    ssBlock         = new BlockDescriptor(bcd);
+    logger.info("ssBlock        %s", ssBlock->toString().toLocal8Bit().constData());
+    outerPackBlock  = new BlockDescriptor(bcd);
 //    logger.info("outerPackBlock %s", outerPackBlock.toString().toLocal8Bit().constData());
-    innerPackBlock  = BlockDescriptor(bcd);
+    innerPackBlock  = new BlockDescriptor(bcd);
 //    logger.info("innerPackBlock %s", innerPackBlock.toString().toLocal8Bit().constData());
-    constBlock      = BlockDescriptor(bcd);
+    constBlock      = new BlockDescriptor(bcd);
 //    logger.info("constBlock     %s", constBlock.toString().toLocal8Bit().constData());
-    seBlock         = BlockDescriptor(bcd);
+    seBlock         = new BlockDescriptor(bcd);
 //    logger.info("seBlock        %s", seBlock.toString().toLocal8Bit().constData());
-    ctxBlock        = BlockDescriptor(bcd);
+    ctxBlock        = new BlockDescriptor(bcd);
 //    logger.info("ctxBlock       %s", ctxBlock.toString().toLocal8Bit().constData());
-    mdBlock         = BlockDescriptor(bcd);
+    mdBlock         = new BlockDescriptor(bcd);
 //    logger.info("mdBlock        %s", mdBlock.toString().toLocal8Bit().constData());
-    bodyBlock       = BlockDescriptor(bcd);
+    bodyBlock       = new BlockDescriptor(bcd);
 //    logger.info("bodyBlock      %s", bodyBlock.toString().toLocal8Bit().constData());
-    extBlock        = BlockDescriptor(bcd);
+    extBlock        = new BlockDescriptor(bcd);
 //    logger.info("extBlock       %s", extBlock.toString().toLocal8Bit().constData());
-    treeBlock       = BlockDescriptor(bcd);
+    treeBlock       = new BlockDescriptor(bcd);
 //    logger.info("treeBlock      %s", treeBlock.toString().toLocal8Bit().constData());
-    litBlock        = BlockDescriptor(bcd);
+    litBlock        = new BlockDescriptor(bcd);
 //    logger.info("litBlock       %s", litBlock.toString().toLocal8Bit().constData());
-    sLitBlock       = BlockDescriptor(bcd);
+    sLitBlock       = new BlockDescriptor(bcd);
 //    logger.info("sLitBlock      %s", sLitBlock.toString().toLocal8Bit().constData());
-    epMapBlock      = BlockDescriptor(bcd);
+    epMapBlock      = new BlockDescriptor(bcd);
 //    logger.info("epMapBlock     %s", epMapBlock.toString().toLocal8Bit().constData());
-    spareBlock      = BlockDescriptor(bcd);
+    spareBlock      = new BlockDescriptor(bcd);
 //    logger.info("spareBlock     %s", spareBlock.toString().toLocal8Bit().constData());
 
-    fgRelPgBase     = bcd.file.getCARD16();
+    fgRelPgBase     = file->getCARD16();
 //    logger.info("fgRelPgBase    %d", fgRelPgBase);
-    fgPgCount       = bcd.file.getCARD16();
+    fgPgCount       = file->getCARD16();
 //    logger.info("fgPgCount      %d", fgPgCount);
 
     // Read block
@@ -264,30 +267,45 @@ Symbols::Symbols(BCD& bcd_, int symbolBase_) : bcd(bcd_) {
 
     // Resolve index
     HTIndex::resolve();
+    MDIndex::resolve();
+
+    {
+//    	QListIterator<MDRecord*> i(md.values());
+//    	while(i.hasNext()) {
+//    		MDRecord* p = i.next();
+//
+//    		logger.info("MD %s", p->toString().toLocal8Bit().constData());
+//    	}
+    	for(MDRecord* p: md.values()) {
+    		logger.info("MD %s", p->toString().toLocal8Bit().constData());
+    	}
+//    	MDRecord*p = md[34];
+//    	logger.info("MD 34 %s", p->toString().toLocal8Bit().constData());
+    }
 };
 
 void Symbols::initializeSS() {
-    CARD16 base  = offsetBase + ssBlock.offset;
-    CARD16 limit = base + ssBlock.size;
+    CARD16 base  = offsetBase + ssBlock->offset;
+    CARD16 limit = base + ssBlock->size;
 
-    bcd.file.position(base);
-    CARD16 length    = bcd.file.getCARD16();
-    CARD16 maxLength = bcd.file.getCARD16();
+    file->position(base);
+    CARD16 length    = file->getCARD16();
+    CARD16 maxLength = file->getCARD16();
 
     for(int i = 0; i < length; i++) {
-     	char data = bcd.file.getCARD8();
+     	char data = file->getCARD8();
     	QChar c(data);
     	ss.append(c);
     }
 
     // Advance position
     for(int i = length; i <= maxLength; i++) {
-    	bcd.file.getCARD8();
+    	file->getCARD8();
     }
 
     // sanity check
     {
-    	int pos = bcd.file.position();
+    	int pos = file->position();
         if (pos != limit) {
         	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
             ERROR();
@@ -297,28 +315,28 @@ void Symbols::initializeSS() {
 }
 
 void Symbols::initializeHT() {
-    CARD16 base  = offsetBase + htBlock.offset;
-    int    limit = base + htBlock.size;
+    CARD16 base  = offsetBase + htBlock->offset;
+    int    limit = base + htBlock->size;
 
     CARD16 lastSSIndex = 0;
     CARD16 index = 0;
-    bcd.file.position(base);
+    file->position(base);
 
     for(;;) {
-        int pos = bcd.file.position();
+        int pos = file->position();
         if (limit <= pos) break;
 
-        HTRecord data(*this, index, lastSSIndex);
-        ht[index] = data;
+        HTRecord* record = new HTRecord(this, index, lastSSIndex);
+        ht[index] = record;
 
-        logger.info("ht %s", data.toString().toLocal8Bit().constData());
+        logger.info("ht %s", record->toString().toLocal8Bit().constData());
         index++;
-        lastSSIndex = data.ssIndex;
+        lastSSIndex = record->ssIndex;
     }
 
     // sanity check
     {
-    	int pos = bcd.file.position();
+    	int pos = file->position();
         if (pos != limit) {
         	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
             ERROR();
@@ -326,30 +344,30 @@ void Symbols::initializeHT() {
     }
 
     // Add special
-    ht[HTIndex::HT_NULL] = HTRecord();
+    ht[HTIndex::HT_NULL] = new HTRecord(HTIndex::HT_NULL);
 }
 
 void Symbols::initializeMD() {
-    CARD16 base  = offsetBase + mdBlock.offset;
-    int    limit = base + mdBlock.size;
+    CARD16 base  = offsetBase + mdBlock->offset;
+    int    limit = base + mdBlock->size;
 
     CARD16 index = 0;
-    bcd.file.position(base);
+    file->position(base);
 
     for(;;) {
-        int pos = bcd.file.position();
+        int pos = file->position();
         if (limit <= pos) break;
 
-        MDRecord data(*this, index);
-        md[index] = data;
+        MDRecord* record = new MDRecord(this, index);
+        md[index] = record;
 
-        logger.info("md %s", data.toString().toLocal8Bit().constData());
+        logger.info("md %s", record->toString().toLocal8Bit().constData());
         index++;
     }
 
     // sanity check
     {
-    	int pos = bcd.file.position();
+    	int pos = file->position();
         if (pos != limit) {
         	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
             ERROR();
@@ -357,5 +375,6 @@ void Symbols::initializeMD() {
     }
 
     // Add special
-    md[HTIndex::HT_NULL] = MDRecord();
+    md[MDIndex::MD_NULL] = new MDRecord(MDIndex::MD_NULL);
+    md[MDIndex::OWM_MDI] = new MDRecord(MDIndex::OWM_MDI);
 }
