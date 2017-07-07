@@ -30,7 +30,6 @@ all:
 	(cd src/mesa;          make all)
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
-	(cd src/trace;         make all)
 	(cd src/bcd;           make all)
 	(cd src/util;          make all)
 	(cd src/test;          make all)
@@ -51,7 +50,6 @@ clean:
 	mkdir  tmp/build/mesa
 	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
-	mkdir  tmp/build/trace
 	mkdir  tmp/build/bcd
 	mkdir  tmp/build/util
 	mkdir  tmp/build/test
@@ -92,13 +90,6 @@ floppy:
 	(cd src/agent;         make all)
 	(cd src/floppy;        make all)
 
-trace:
-	(cd src/mesa;          make all)
-	(cd src/simple-opcode; make all)
-	(cd src/agent;         make all)
-	(cd src/util;          make all)
-	(cd src/trace;         make all)
-
 bcd:
 	(cd src/mesa;          make all)
 	(cd src/util;          make all)
@@ -107,10 +98,6 @@ bcd:
 run-bcd: bcd
 	echo -n >tmp/debug.log
 	tmp/build/bcd/bcd tmp/GermOpsImpl.bcd
-
-run-trace: trace
-	echo -n >tmp/debug.log
-	tmp/build/trace/trace
 
 run-guam: guam
 	echo -n >tmp/debug.log
@@ -167,7 +154,6 @@ qmake:
 	(cd src/mesa;          qmake)
 	(cd src/simple-opcode; qmake)
 	(cd src/agent;         qmake)
-	(cd src/trace;         qmake)
 	(cd src/bcd;           qmake)
 	(cd src/util;          qmake)
 	(cd src/test;          qmake)
