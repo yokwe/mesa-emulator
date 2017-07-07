@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Yasuhiro Hasegawa
+Copyright (c) 2014,2017, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -125,4 +125,22 @@ public:
 		return mesaTime - EPOCH_DIFF;
 	}
 };
+
+
+// Helper macro to make toString for enum class
+#define TO_STRING_PROLOGUE(e) \
+	typedef e ENUM; \
+	static QMap<ENUM, QString> map({
+#define MAP_ENTRY(m) {ENUM::m, #m},
+#define TO_STRING_EPILOGUE \
+	}); \
+	if (map.contains(value)) { \
+		return map[value]; \
+	} else { \
+		logger.error("Unknown value = %d", (int)value); \
+		ERROR(); \
+		return QString("%1").arg((int)value); \
+	}
+
+
 #endif
