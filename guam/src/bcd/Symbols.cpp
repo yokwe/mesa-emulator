@@ -269,19 +269,9 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     HTIndex::resolve();
     MDIndex::resolve();
 
-    {
-//    	QListIterator<MDRecord*> i(md.values());
-//    	while(i.hasNext()) {
-//    		MDRecord* p = i.next();
-//
-//    		logger.info("MD %s", p->toString().toLocal8Bit().constData());
-//    	}
-    	for(MDRecord* p: md.values()) {
-    		logger.info("MD %s", p->toString().toLocal8Bit().constData());
-    	}
-//    	MDRecord*p = md[34];
-//    	logger.info("MD 34 %s", p->toString().toLocal8Bit().constData());
-    }
+//	for(MDRecord* p: md.values()) {
+//		logger.info("MD %s", p->toString().toLocal8Bit().constData());
+//	}
 };
 
 void Symbols::initializeSS() {
