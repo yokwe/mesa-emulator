@@ -64,7 +64,7 @@ void HTIndex::resolve() {
 
 		if (p->symbols->ht.contains(index)) {
 			p->value = p->symbols->ht[index];
-			logger.info("resolve ht %4d", index);
+//			logger.info("resolve ht %4d", index);
 		} else {
 			logger.error("Unknown index  p = %s", p->toString().toLocal8Bit().constData());
 			ERROR();
