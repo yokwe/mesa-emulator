@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("htrecord");
 
 #include "Symbols.h"
 
+#include "CTXRecord.h"
+
 
 QList<HTIndex*> HTIndex::all;
 
@@ -46,6 +48,11 @@ HTIndex::HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(in
 QString HTIndex::toString() {
 	if (value == 0) return QString("htx-%1").arg(index);
 	return QString("ht-%1-[%2]").arg(index).arg(value ? value->toString().toLocal8Bit().constData() : "#EMPTY#");
+}
+QString HTIndex::getValue() {
+	if (index == HTIndex::HT_NULL) return "#NULL#";
+	if (value == 0) return "#NULL#";
+	return value->value;
 }
 void HTIndex::resolve() {
 	QMutableListIterator<HTIndex*> i(all);
@@ -93,3 +100,4 @@ QString HTRecord::toString() {
 	if (index == HTIndex::HT_NULL) return "#NULL#";
 	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
 }
+

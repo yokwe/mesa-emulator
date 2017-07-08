@@ -30,7 +30,7 @@ POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input
 HEADERS += BCD.h   BCDFile.h   CTXRecord.h   HTRecord.h   MDRecord.h   SERcord.h   Symbols.h
-SOURCES += BCD.cpp BCDFile.cpp CTXRecord.cpp HTRecord.cpp MDRecord.cpp SERecord.pp Symbols.cpp
+SOURCES += BCD.cpp BCDFile.cpp CTXRecord.cpp HTRecord.cpp MDRecord.cpp SERecord.cpp Symbols.cpp
 
 HEADERS += Table.h
 SOURCES += main.cpp

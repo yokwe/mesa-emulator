@@ -55,6 +55,7 @@ public:
 	HTIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();
+	QString getValue();
 
 private:
 	static QList<HTIndex*> all;

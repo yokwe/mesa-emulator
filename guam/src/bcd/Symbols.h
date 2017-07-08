@@ -40,6 +40,7 @@ OF SUCH DAMAGE.
 class HTRecord;
 class MDRecord;
 class CTXRecord;
+class CTXIndex;
 class SERecord;
 
 //-- symbol segment headers

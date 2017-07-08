@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("ctxrecord");
 
 #include "Symbols.h"
 
+#include "MDRecord.h"
+
 
 QList<CTXIndex*> CTXIndex::all;
 

@@ -38,9 +38,11 @@ OF SUCH DAMAGE.
 #include "Symbols.h"
 
 class Symbols;
-class SERecord;
+
+class CTXIndex;
+class HTIndex;
 class MDIndex;
-class CTIndex;
+class SERecord;
 
 //SEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO SERecord;
 //SENull: SEIndex = FIRST[SEIndex];
@@ -245,12 +247,12 @@ public:
 					CARD16 length;
 				} basic;
 				struct {
-					bool     ordred;
-					bool     machineDep;
-					bool     unpainted;
-					bool     sparse;
-					CTIndex* valueCtx;
-					CARD16   nValues;
+					bool      ordred;
+					bool      machineDep;
+					bool      unpainted;
+					bool      sparse;
+					CTXIndex* valueCtx;
+					CARD16    nValues;
 				} enumerated;
 				struct {
 					bool      comparable;

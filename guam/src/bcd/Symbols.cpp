@@ -145,11 +145,11 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     logger.info("definitionFile %d", definitionsFile);
 
     directoryCtx    = new CTXIndex(this, bitField(word, 1, 15));
-    logger.info("directoryCtx   %d", directoryCtx);
+    logger.info("directoryCtx   %s", directoryCtx->toString().toLocal8Bit().constData());
     importCtx       = new CTXIndex(this, file->getCARD16());
-    logger.info("importCtx      %d", importCtx);
+    logger.info("importCtx      %s", importCtx->toString().toLocal8Bit().constData());
     outerCtx        = new CTXIndex(this, file->getCARD16());
-    logger.info("outerCtx       %d", outerCtx);
+    logger.info("outerCtx       %s", outerCtx->toString().toLocal8Bit().constData());
 
 
     hvBlock         = new BlockDescriptor(bcd);
@@ -195,15 +195,17 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeHT();
     initializeMD();
     initializeCTX();
+    initializeSE();
 
     // Resolve index
     HTIndex::resolve();
     MDIndex::resolve();
     CTXIndex::resolve();
+    SEIndex::resolve();
 
-//	for(MDRecord* p: md.values()) {
-//		logger.info("MD %s", p->toString().toLocal8Bit().constData());
-//	}
+	for(SERecord* p: se.values()) {
+		logger.info("SE %s", p->toString().toLocal8Bit().constData());
+	}
 };
 
 void Symbols::initializeSS() {
@@ -327,7 +329,7 @@ void Symbols::initializeCTX() {
     }
 
     // Add special
-    ctx[CTXIndex::CTX_NULL] = new CTXRecord(CTXIndex::CTX_NULL);
+//    ctx[CTXIndex::CTX_NULL] = new CTXRecord(CTXIndex::CTX_NULL);
 }
 
 void Symbols::initializeSE() {

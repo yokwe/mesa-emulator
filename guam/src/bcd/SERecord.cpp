@@ -30,11 +30,13 @@ OF SUCH DAMAGE.
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("mdrecord");
+static log4cpp::Category& logger = Logger::getLogger("serecord");
 
 #include "SERecord.h"
 
 #include "Symbols.h"
+#include "CTXRecord.h"
+#include "HTRecord.h"
 
 
 QList<SEIndex*> SEIndex::all;
@@ -152,7 +154,14 @@ QString SERecord::toString(TransferMode value) {
 
 QString SERecord::toString() {
 	if (index == SEIndex::SE_NULL) return "#NULL#";
-	return QString("SE %4d", index);
+	switch(seTag) {
+	case SeTag::ID:
+		return QString("SE %1 ID   %2").arg(index, 4).arg(id.hash->getValue());
+	case SeTag::CONS:
+		return QString("SE %1 CONS %2").arg(index, 4).arg(toString(cons.typeTag));
+	default:
+		ERROR();
+	}
 }
 
 SERecord::SERecord(Symbols* symbols, CARD16 index_) {
@@ -196,6 +205,11 @@ void SERecord::initID(Symbols* symbols, CARD16 u0) {
 	case LinkTag::LINKED:
 		id.linked.link = new SEIndex(symbols, symbols->file->getCARD16());
 		break;
+	case LinkTag::SEQUENTIAL:
+	case LinkTag::TERMINAL:
+		break;
+	default:
+		ERROR();
 	}
 }
 
@@ -203,6 +217,8 @@ void SERecord::initCONS(Symbols* symbols, CARD16 u0) {
 	//      typeInfo(0:3..63): SELECT typeTag(0:3..7): TypeClass FROM
 	cons.typeTag = (TypeClass)bitField(u0, 3, 7);
 	switch(cons.typeTag) {
+	case TypeClass::MODE:
+		break;
 	case TypeClass::BASIC:
 		initBASIC(symbols, u0);
 		break;
@@ -264,6 +280,8 @@ void SERecord::initCONS(Symbols* symbols, CARD16 u0) {
 		initFIXED_SEQUENCE(symbols, u0);
 		break;
 	default:
+		logger.fatal("typeTag %d", (int)cons.typeTag);
+		logger.fatal("typeTag %s", toString(cons.typeTag).toLocal8Bit().constData());
 		ERROR();
 	}
 }
@@ -346,7 +364,7 @@ void SERecord::initREF(Symbols* symbols, CARD16 u0) {
 	//          refType(1:0..15): SEIndex],
 	cons.ref.counted  = bitField(u0, 8);
 	cons.ref.ordered  = bitField(u0, 9);
-	cons.ref.readOnly = bitField(u0, 19);
+	cons.ref.readOnly = bitField(u0, 10);
 	cons.ref.list     = bitField(u0, 11);
 	cons.ref.var      = bitField(u0, 12);
 	cons.ref.basing   = bitField(u0, 13, 15);
@@ -389,7 +407,7 @@ void SERecord::initDEFINITION(Symbols* symbols, CARD16 u0) {
 	//        definition => [
 	//          named(0:8..15): BOOLEAN,
 	//          defCtx(1:0..15): CTXIndex],
-	cons.definition.named  = (TransferMode)bitField(u0, 8, 15);
+	cons.definition.named  = bitField(u0, 8, 15);
 
 	cons.definition.defCtx = new CTXIndex(symbols, symbols->file->getCARD16());
 }
@@ -420,7 +438,7 @@ void SERecord::initSEQUENCE(Symbols* symbols, CARD16 u0) {
 	//          componentType(2:0..15): SEIndex],
 	cons.sequence.packed        = bitField(u0, 8);
 	cons.sequence.controlled    = bitField(u0, 9);
-	cons.sequence.machineDep    = bitField(u0, 19, 15);
+	cons.sequence.machineDep    = bitField(u0, 10, 15);
 
 	cons.sequence.tagSei        = new SEIndex(symbols, symbols->file->getCARD16());
 	cons.sequence.componentType = new SEIndex(symbols, symbols->file->getCARD16());
@@ -464,7 +482,7 @@ void SERecord::initOPAQUE(Symbols* symbols, CARD16 u0) {
 	cons.opaque.length      = symbols->file->getCARD16();
 	cons.opaque.id          = new SEIndex(symbols, symbols->file->getCARD16());
 }
-void SERecord::initZONE(Symbols* symbols, CARD16 u0) {
+void SERecord::initZONE(Symbols* /*symbols*/, CARD16 u0) {
 	//        zone => [counted(0:8..8), mds(0:9..15): BOOLEAN],
 	cons.zone.counted = bitField(u0, 8);
 	cons.zone.mds     = bitField(u0, 9, 15);
@@ -475,7 +493,7 @@ void SERecord::initANY(Symbols* /*symbols*/, CARD16 /*u0*/) {
 void SERecord::initNIL(Symbols* /*symbols*/, CARD16 /*u0*/) {
 	//        nil => [],
 }
-void SERecord::initBITS(Symbols* symbols, CARD16 u0) {
+void SERecord::initBITS(Symbols* symbols, CARD16 /*u0*/) {
 	//        bits => [length(1:0..31): BitCount],   -- placed here to avoid
 	cons.bits.length = symbols->file->getCARD32();
 }
