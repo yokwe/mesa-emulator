@@ -37,10 +37,10 @@ OF SUCH DAMAGE.
 
 #include "BCD.h"
 
-#include "HTRecord.h"
-#include "MDRecord.h"
-#include "CTXRecord.h"
-
+class HTRecord;
+class MDRecord;
+class CTXRecord;
+class SERecord;
 
 //-- symbol segment headers
 //
@@ -79,12 +79,6 @@ public:
     //Base: TYPE = Table.Base;
     //Limit: CARDINAL = Table.Limit;
     static const CARD16 LIMIT = 0x4000;
-
-    //TransferMode: TYPE = {proc, port, signal, error, process, program, none};
-    enum class TransferMode {
-        PROC, PORT, SIGNAL, ERROR, PROCESS, PROGRAM, NONE,
-    };
-    static QString toString(TransferMode value);
 
     //  Unspec: TYPE [SIZE[CARDINAL]];
 
@@ -175,74 +169,74 @@ public:
     //ssType: Table.Selector = 3;
     //ctxType: Table.Selector = 4;
     //mdType: Table.Selector = 5;
-    //bodyType: Table.Selector = 6;
+	//bodyType: Table.Selector = 6;
 
     static bool isSymbolsFile(BCD* bcd);
 
 
-     //STHeader: TYPE = RECORD [
-     //  versionIdent: CARDINAL,
-     //  version: TimeStamp.Stamp,
-     //  creator: TimeStamp.Stamp,
-     //  sourceVersion: TimeStamp.Stamp,
-     //  definitionsFile: BOOLEAN,
-     //  directoryCtx, importCtx, outerCtx: Symbols.CTXIndex,
-     //  hvBlock: BlockDescriptor,
-     //  htBlock: BlockDescriptor,
-     //  ssBlock: BlockDescriptor,
-     //  outerPackBlock: BlockDescriptor,
-     //  innerPackBlock: BlockDescriptor,
-     //  constBlock: BlockDescriptor,
-     //  seBlock: BlockDescriptor,
-     //  ctxBlock: BlockDescriptor,
-     //  mdBlock: BlockDescriptor,
-     //  bodyBlock: BlockDescriptor,
-     //  extBlock: BlockDescriptor,
-     //  treeBlock: BlockDescriptor,
-     //  litBlock: BlockDescriptor,
-     //  sLitBlock: BlockDescriptor,
-     //  epMapBlock: BlockDescriptor,
-     //  spareBlock: BlockDescriptor,
-     //  fgRelPgBase: CARDINAL,
-     //  fgPgCount: [0..256]];
-     BCD*             bcd;
-     BCDFile*         file;
+	//STHeader: TYPE = RECORD [
+	//  versionIdent: CARDINAL,
+	//  version: TimeStamp.Stamp,
+	//  creator: TimeStamp.Stamp,
+	//  sourceVersion: TimeStamp.Stamp,
+	//  definitionsFile: BOOLEAN,
+	//  directoryCtx, importCtx, outerCtx: Symbols.CTXIndex,
+	//  hvBlock: BlockDescriptor,
+	//  htBlock: BlockDescriptor,
+	//  ssBlock: BlockDescriptor,
+	//  outerPackBlock: BlockDescriptor,
+	//  innerPackBlock: BlockDescriptor,
+	//  constBlock: BlockDescriptor,
+	//  seBlock: BlockDescriptor,
+	//  ctxBlock: BlockDescriptor,
+	//  mdBlock: BlockDescriptor,
+	//  bodyBlock: BlockDescriptor,
+	//  extBlock: BlockDescriptor,
+	//  treeBlock: BlockDescriptor,
+	//  litBlock: BlockDescriptor,
+	//  sLitBlock: BlockDescriptor,
+	//  epMapBlock: BlockDescriptor,
+	//  spareBlock: BlockDescriptor,
+	//  fgRelPgBase: CARDINAL,
+	//  fgPgCount: [0..256]];
+	BCD*             bcd;
+	BCDFile*         file;
 
-     CARD32           symbolBase;
-     CARD32           offsetBase;
+	CARD32           symbolBase;
+	CARD32           offsetBase;
 
-     CARD16           versionIdent;
-     VersionStamp*    version;
-     VersionStamp*    creator;
-     VersionStamp*    sourceVersion;
-     bool             definitionsFile;
-     CTXIndex*        directoryCtx;
-     CTXIndex*        importCtx;
-     CTXIndex*        outerCtx;
-     BlockDescriptor* hvBlock;
-     BlockDescriptor* htBlock;
-     BlockDescriptor* ssBlock;
-     BlockDescriptor* outerPackBlock;
-     BlockDescriptor* innerPackBlock;
-     BlockDescriptor* constBlock;
-     BlockDescriptor* seBlock;
-     BlockDescriptor* ctxBlock;
-     BlockDescriptor* mdBlock;
-     BlockDescriptor* bodyBlock;
-     BlockDescriptor* extBlock;
-     BlockDescriptor* treeBlock;
-     BlockDescriptor* litBlock;
-     BlockDescriptor* sLitBlock;
-     BlockDescriptor* epMapBlock;
-     BlockDescriptor* spareBlock;
-     CARD16           fgRelPgBase;
-     CARD16           fgPgCount;
-     //
-     QString                     ss;
-     QMap<CARD16, CTXRecord*>    ctx;
-     QMap<CARD16, HTRecord*>     ht;
-     QMap<CARD16, MDRecord*>     md;
-//     QMap<CARD16, SERecord*>     se;
+	CARD16           versionIdent;
+	VersionStamp*    version;
+	VersionStamp*    creator;
+	VersionStamp*    sourceVersion;
+	bool             definitionsFile;
+	CTXIndex*        directoryCtx;
+	CTXIndex*        importCtx;
+	CTXIndex*        outerCtx;
+	BlockDescriptor* hvBlock;
+	BlockDescriptor* htBlock;
+	BlockDescriptor* ssBlock;
+	BlockDescriptor* outerPackBlock;
+	BlockDescriptor* innerPackBlock;
+	BlockDescriptor* constBlock;
+	BlockDescriptor* seBlock;
+	BlockDescriptor* ctxBlock;
+	BlockDescriptor* mdBlock;
+	BlockDescriptor* bodyBlock;
+	BlockDescriptor* extBlock;
+	BlockDescriptor* treeBlock;
+	BlockDescriptor* litBlock;
+	BlockDescriptor* sLitBlock;
+	BlockDescriptor* epMapBlock;
+	BlockDescriptor* spareBlock;
+	CARD16           fgRelPgBase;
+	CARD16           fgPgCount;
+	//
+	QString                     ss;
+	QMap<CARD16, CTXRecord*>    ctx;
+	QMap<CARD16, HTRecord*>     ht;
+	QMap<CARD16, MDRecord*>     md;
+	QMap<CARD16, SERecord*>     se;
 //     QMap<CARD16, BodyRecord*>   body;
 //     QMap<CARD16, ExtRecord*>    ext;
 //     QMap<CARD16, LTRecord*>     lt;
@@ -251,13 +245,11 @@ public:
      Symbols(BCD* bcd, int symbolBase);
 
 private:
-     void initializeSS();
-     void initializeHT();
-     void initializeMD();
-     void initializeCTX();
-     void initializeSE();
+	void initializeSS();
+	void initializeHT();
+	void initializeMD();
+	void initializeCTX();
+	void initializeSE();
 };
-
-
 
 #endif

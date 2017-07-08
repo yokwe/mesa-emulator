@@ -34,6 +34,11 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 
 #include "Symbols.h"
 
+#include "HTRecord.h"
+#include "MDRecord.h"
+#include "CTXRecord.h"
+#include "SERecord.h"
+
 
 BlockDescriptor::BlockDescriptor(BCD* bcd) {
     offset = bcd->file->getCARD16();
@@ -41,21 +46,6 @@ BlockDescriptor::BlockDescriptor(BCD* bcd) {
 }
 QString BlockDescriptor::toString() {
 	return QString("[%1 %2]").arg(offset, 4).arg(size, 4);
-}
-
-
-QString Symbols::toString(TransferMode value) {
-	TO_STRING_PROLOGUE(TransferMode)
-
-	MAP_ENTRY(PROC)
-	MAP_ENTRY(PORT)
-	MAP_ENTRY(SIGNAL)
-	MAP_ENTRY(ERROR)
-	MAP_ENTRY(PROCESS)
-	MAP_ENTRY(PROGRAM)
-	MAP_ENTRY(NONE)
-
-	TO_STRING_EPILOGUE
 }
 
 
@@ -337,6 +327,36 @@ void Symbols::initializeCTX() {
     }
 
     // Add special
-//    ctx[CTXIndex::CTX_NULL] = new CTXRecord(MDIndex::MD_NULL);
+    ctx[CTXIndex::CTX_NULL] = new CTXRecord(CTXIndex::CTX_NULL);
+}
+
+void Symbols::initializeSE() {
+    CARD16 base  = offsetBase + seBlock->offset;
+    int    limit = base + seBlock->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        SERecord* record = new SERecord(this, index);
+        se[index] = record;
+
+        logger.info("se %s", record->toString().toLocal8Bit().constData());
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+
+    // Add special
+//    se[CTXIndex::SE_NULL] = new SERecord(SEIndex::SE_NULL);
 }
 
