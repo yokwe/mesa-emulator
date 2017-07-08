@@ -216,9 +216,9 @@ public:
      VersionStamp*    creator;
      VersionStamp*    sourceVersion;
      bool             definitionsFile;
-     CARD16           directoryCtx; // CTXIndex
-     CARD16           importCtx;    // CTXIndex
-     CARD16           outerCtx;     // CTXIndex
+     CTXIndex*        directoryCtx;
+     CTXIndex*        importCtx;
+     CTXIndex*        outerCtx;
      BlockDescriptor* hvBlock;
      BlockDescriptor* htBlock;
      BlockDescriptor* ssBlock;

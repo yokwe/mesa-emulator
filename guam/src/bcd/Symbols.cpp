@@ -154,11 +154,11 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     definitionsFile = bitField(word, 15);
     logger.info("definitionFile %d", definitionsFile);
 
-    directoryCtx    = bitField(word, 1, 15);
+    directoryCtx    = new CTXIndex(this, bitField(word, 1, 15));
     logger.info("directoryCtx   %d", directoryCtx);
-    importCtx       = file->getCARD16();
+    importCtx       = new CTXIndex(this, file->getCARD16());
     logger.info("importCtx      %d", importCtx);
-    outerCtx        = file->getCARD16();
+    outerCtx        = new CTXIndex(this, file->getCARD16());
     logger.info("outerCtx       %d", outerCtx);
 
 
