@@ -45,7 +45,7 @@ BlockDescriptor::BlockDescriptor(BCD* bcd) {
     size   = bcd->file->getCARD16();
 }
 QString BlockDescriptor::toString() {
-	return QString("[%1 %2]").arg(offset, 4).arg(size, 4);
+	return QString("[%1 %2]").arg(offset, 5).arg(size, 5);
 }
 
 
@@ -159,31 +159,31 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     ssBlock         = new BlockDescriptor(bcd);
     logger.info("ssBlock        %s", ssBlock->toString().toLocal8Bit().constData());
     outerPackBlock  = new BlockDescriptor(bcd);
-//    logger.info("outerPackBlock %s", outerPackBlock.toString().toLocal8Bit().constData());
+//    logger.info("outerPackBlock %s", outerPackBlock->toString().toLocal8Bit().constData());
     innerPackBlock  = new BlockDescriptor(bcd);
-//    logger.info("innerPackBlock %s", innerPackBlock.toString().toLocal8Bit().constData());
+//    logger.info("innerPackBlock %s", innerPackBlock->toString().toLocal8Bit().constData());
     constBlock      = new BlockDescriptor(bcd);
-//    logger.info("constBlock     %s", constBlock.toString().toLocal8Bit().constData());
+//    logger.info("constBlock     %s", constBlock->toString().toLocal8Bit().constData());
     seBlock         = new BlockDescriptor(bcd);
-//    logger.info("seBlock        %s", seBlock.toString().toLocal8Bit().constData());
+    logger.info("seBlock        %s", seBlock->toString().toLocal8Bit().constData());
     ctxBlock        = new BlockDescriptor(bcd);
-//    logger.info("ctxBlock       %s", ctxBlock.toString().toLocal8Bit().constData());
+    logger.info("ctxBlock       %s", ctxBlock->toString().toLocal8Bit().constData());
     mdBlock         = new BlockDescriptor(bcd);
-//    logger.info("mdBlock        %s", mdBlock.toString().toLocal8Bit().constData());
+    logger.info("mdBlock        %s", mdBlock->toString().toLocal8Bit().constData());
     bodyBlock       = new BlockDescriptor(bcd);
-//    logger.info("bodyBlock      %s", bodyBlock.toString().toLocal8Bit().constData());
+//    logger.info("bodyBlock      %s", bodyBlock->toString().toLocal8Bit().constData());
     extBlock        = new BlockDescriptor(bcd);
-//    logger.info("extBlock       %s", extBlock.toString().toLocal8Bit().constData());
+//    logger.info("extBlock       %s", extBlock->toString().toLocal8Bit().constData());
     treeBlock       = new BlockDescriptor(bcd);
-//    logger.info("treeBlock      %s", treeBlock.toString().toLocal8Bit().constData());
+//    logger.info("treeBlock      %s", treeBlock->toString().toLocal8Bit().constData());
     litBlock        = new BlockDescriptor(bcd);
-//    logger.info("litBlock       %s", litBlock.toString().toLocal8Bit().constData());
+//    logger.info("litBlock       %s", litBlock->toString().toLocal8Bit().constData());
     sLitBlock       = new BlockDescriptor(bcd);
-//    logger.info("sLitBlock      %s", sLitBlock.toString().toLocal8Bit().constData());
+//    logger.info("sLitBlock      %s", sLitBlock->toString().toLocal8Bit().constData());
     epMapBlock      = new BlockDescriptor(bcd);
-//    logger.info("epMapBlock     %s", epMapBlock.toString().toLocal8Bit().constData());
+//    logger.info("epMapBlock     %s", epMapBlock->toString().toLocal8Bit().constData());
     spareBlock      = new BlockDescriptor(bcd);
-//    logger.info("spareBlock     %s", spareBlock.toString().toLocal8Bit().constData());
+//    logger.info("spareBlock     %s", spareBlock->toString().toLocal8Bit().constData());
 
     fgRelPgBase     = file->getCARD16();
 //    logger.info("fgRelPgBase    %d", fgRelPgBase);
