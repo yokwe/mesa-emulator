@@ -70,7 +70,7 @@ void CTXIndex::resolve() {
 	}
 }
 
-QString Symbols::toString(Closure value) {
+QString CTXRecord::toString(Closure value) {
 	TO_STRING_PROLOGUE(Closure)
 
 	MAP_ENTRY(NONE)
@@ -161,7 +161,7 @@ QString CTXRecord::toString() {
 	case CtxType::INCLUDED:
 		return QString("%1 %2 %3 %4 %5").arg(header).
 				arg(included.chain->toString()).
-				arg(::toString(included.copied)).
+				arg(toString(included.copied)).
 				arg(included.module->toString()).
 				arg(included.map->toString());
 	case CtxType::IMPORTED:

@@ -80,39 +80,6 @@ public:
     //Limit: CARDINAL = Table.Limit;
     static const CARD16 LIMIT = 0x4000;
 
-    //-- semantic entry table declarations
-    //
-    //TypeClass: TYPE = {
-    //  mode,
-    //  basic,
-    //  enumerated,
-    //  record,
-    //  ref,
-    //  array,
-    //  arraydesc,
-    //  transfer,
-    //  definition,
-    //  union,
-    //  sequence,
-    //  relative,
-    //  subrange,
-    //  long,
-    //  real,
-    //  opaque,
-    //  zone,
-    //  any,
-    //  nil,
-    //  bits,
-    //  fixedSequence};
-    enum class TypeClass {
-        MODE, BASIC, ENUMERATED, RECORD, REF,
-        ARRAY, ARRAY_DESC, TRANSFER, DEFINITION, UNION,
-        SEQUENCE, RELATIVE, SUB_RANGE, LONG, REAL,
-        OPAQUE, ZONE, ANY, NIL, BITS,
-        FIXED_SEQUENCE,
-    };
-    static QString toString(TypeClass value);
-
     //TransferMode: TYPE = {proc, port, signal, error, process, program, none};
     enum class TransferMode {
         PROC, PORT, SIGNAL, ERROR, PROCESS, PROGRAM, NONE,
@@ -169,12 +136,6 @@ public:
     };
     static QString toString(RefClass value);
 
-    //Closure: TYPE = {none, unit, rc, full};  -- completeness of copied contexts
-    enum class Closure {
-        NONE, UNIT, RC, FULL,
-    };
-    static QString toString(Closure value);
-
     //-- module table declarations
     //FileIndex: TYPE = [0..77777B];    -- internal file handle
     //NullFileIndex: FileIndex = LAST[FileIndex];
@@ -199,13 +160,13 @@ public:
     enum class LinkTag {
         VARIABLE, PROCEDURE, TYPE,
     };
-    QString toString(LinkTag value);
+    static QString toString(LinkTag value);
 
     //VarTag: TYPE = MACHINE DEPENDENT {var(0), proc0(1), type(2), proc1(3)};
     enum class VarTag {
         VAR, PROC0, TYPE, PROC1,
     };
-    QString toString(VarTag value);
+    static QString toString(VarTag value);
 
     //DummyLink: TYPE = RECORD [gfi, ep: [0..377B]];
     //-- allocation codes for table components
@@ -277,7 +238,7 @@ public:
      CARD16           fgRelPgBase;
      CARD16           fgPgCount;
      //
-     QString ss;
+     QString                     ss;
      QMap<CARD16, CTXRecord*>    ctx;
      QMap<CARD16, HTRecord*>     ht;
      QMap<CARD16, MDRecord*>     md;
@@ -294,6 +255,7 @@ private:
      void initializeHT();
      void initializeMD();
      void initializeCTX();
+     void initializeSE();
 };
 
 

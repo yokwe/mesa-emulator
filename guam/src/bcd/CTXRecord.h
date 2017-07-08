@@ -67,21 +67,6 @@ private:
 };
 
 
-//ContextLevel: TYPE = [0..7];
-//  lZ: ContextLevel = 0;	-- context level of non-frame records
-//  lG: ContextLevel = 1;	-- context level of global frame
-//  lL: ContextLevel = lG+1;	-- context level of outer procedures
-const CARD16 lZ = 0;
-const CARD16 lG = 1;
-const CARD16 lL = lG + 1;
-
-//Closure: TYPE = {none, unit, rc, full};  -- completeness of copied contexts
-enum class Closure {
-	NONE, UNIT, RC, FULL,
-};
-QString toString(Closure value);
-
-
 //CTXRecord: TYPE = RECORD [
 //  mark(0:0..0), varUpdated(0:1..1): BOOLEAN,
 //  seList(0:2..15): ISEIndex,
@@ -100,10 +85,25 @@ QString toString(Closure value);
 //    ENDCASE];
 class CTXRecord {
 public:
+	//ContextLevel: TYPE = [0..7];
+	//  lZ: ContextLevel = 0;	-- context level of non-frame records
+	//  lG: ContextLevel = 1;	-- context level of global frame
+	//  lL: ContextLevel = lG+1;	-- context level of outer procedures
+	static const CARD16 L_Z = 0;
+	static const CARD16 L_G = 1;
+	static const CARD16 L_L = L_G + 1;
+
 	enum class CtxType {
 		SIMPLE, INCLUDED, IMPORTED, NIL,
 	};
-	QString toString(CtxType value);
+	static QString toString(CtxType value);
+
+	//Closure: TYPE = {none, unit, rc, full};  -- completeness of copied contexts
+	enum class Closure {
+		NONE, UNIT, RC, FULL,
+	};
+	static QString toString(Closure value);
+
 
 	CARD16 index;
 	bool   mark;
