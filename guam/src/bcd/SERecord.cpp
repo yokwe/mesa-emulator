@@ -53,7 +53,6 @@ QString SEIndex::toString() {
 //	return QString("se-%1-%2").arg(index).arg(value->toString());
 }
 void SEIndex::resolve() {
-	logger.info("all %d", all.size());
 	for(SEIndex *p: all) {
 		const CARD16 index = p->index;
 
@@ -65,7 +64,7 @@ void SEIndex::resolve() {
 			ERROR();
 		}
 		if (p->symbols->se.contains(index)) {
-			logger.info("resolve se %4d", index);
+//			logger.info("resolve se %4d", index);
 			p->value = p->symbols->se[index];
 		} else {
 			logger.error("Unknown %d = %s", index, p->toString().toLocal8Bit().constData());
@@ -153,7 +152,7 @@ QString SERecord::toString(TransferMode value) {
 
 
 QString SERecord::toString() {
-	if (index == SEIndex::SE_NULL) return "#NULL#";
+//	if (index == SEIndex::SE_NULL) return "#NULL#";
 	switch(seTag) {
 	case SeTag::ID:
 		return QString("SE %1 ID   %2").arg(index, 4).arg(id.hash->getValue());

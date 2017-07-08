@@ -203,8 +203,9 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     CTXIndex::resolve();
     SEIndex::resolve();
 
-	for(SERecord* p: se.values()) {
-		logger.info("SE %s", p->toString().toLocal8Bit().constData());
+	{
+		MDRecord* p = md[MDIndex::OWM_MDI];
+		logger.info("MD0 %s", p->toString().toLocal8Bit().constData());
 	}
 };
 
@@ -235,7 +236,7 @@ void Symbols::initializeSS() {
             ERROR();
         }
     }
-    logger.info("ss = (%d)%s ... %s!", ss.length(), ss.left(10).toLatin1().constData(), ss.right(10).toLatin1().constData());
+//    logger.info("ss = (%d)%s ... %s!", ss.length(), ss.left(10).toLatin1().constData(), ss.right(10).toLatin1().constData());
 }
 
 void Symbols::initializeHT() {
@@ -253,7 +254,7 @@ void Symbols::initializeHT() {
         HTRecord* record = new HTRecord(this, index, lastSSIndex);
         ht[index] = record;
 
-        logger.info("ht %s", record->toString().toLocal8Bit().constData());
+//        logger.info("ht %s", record->toString().toLocal8Bit().constData());
         index++;
         lastSSIndex = record->ssIndex;
     }
@@ -266,9 +267,6 @@ void Symbols::initializeHT() {
             ERROR();
         }
     }
-
-    // Add special
-    ht[HTIndex::HT_NULL] = new HTRecord(HTIndex::HT_NULL);
 }
 
 void Symbols::initializeMD() {
@@ -285,7 +283,7 @@ void Symbols::initializeMD() {
         MDRecord* record = new MDRecord(this, index);
         md[index] = record;
 
-        logger.info("md %s", record->toString().toLocal8Bit().constData());
+//        logger.info("md %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check
@@ -299,7 +297,6 @@ void Symbols::initializeMD() {
 
     // Add special
     md[MDIndex::MD_NULL] = new MDRecord(MDIndex::MD_NULL);
-    md[MDIndex::OWM_MDI] = new MDRecord(MDIndex::OWM_MDI);
 }
 
 void Symbols::initializeCTX() {
@@ -316,7 +313,7 @@ void Symbols::initializeCTX() {
         CTXRecord* record = new CTXRecord(this, index);
         ctx[index] = record;
 
-        logger.info("ctx %s", record->toString().toLocal8Bit().constData());
+//        logger.info("ctx %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check
@@ -327,9 +324,6 @@ void Symbols::initializeCTX() {
             ERROR();
         }
     }
-
-    // Add special
-//    ctx[CTXIndex::CTX_NULL] = new CTXRecord(CTXIndex::CTX_NULL);
 }
 
 void Symbols::initializeSE() {
@@ -346,7 +340,7 @@ void Symbols::initializeSE() {
         SERecord* record = new SERecord(this, index);
         se[index] = record;
 
-        logger.info("se %s", record->toString().toLocal8Bit().constData());
+//        logger.info("se %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check
@@ -357,8 +351,5 @@ void Symbols::initializeSE() {
             ERROR();
         }
     }
-
-    // Add special
-//    se[CTXIndex::SE_NULL] = new SERecord(SEIndex::SE_NULL);
 }
 

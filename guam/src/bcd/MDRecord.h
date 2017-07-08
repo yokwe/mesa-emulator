@@ -40,6 +40,7 @@ OF SUCH DAMAGE.
 
 class Symbols;
 class MDRecord;
+class CTXIndex;
 
 //MDIndex: TYPE = Base RELATIVE ORDERED POINTER [0..Limit) TO MDRecord;
 //MDNull: MDIndex = LAST[MDIndex];
@@ -82,10 +83,8 @@ public:
 	HTIndex*      fileId;
 	bool          shared;
 	bool          exported;
-//	CTXIndex      ctx;
-//	CTXIndex      defaultImport;
-	CARD16        ctx;
-	CARD16        defaultImport;
+	CTXIndex*     ctx;
+	CTXIndex*     defaultImport;
 	CARD16        file;
 
 	MDRecord(CARD16 index_) : index(index_), stamp(0), moduleId(0), fileId(0), shared(false), exported(false), ctx(0), defaultImport(0), file(0) {}

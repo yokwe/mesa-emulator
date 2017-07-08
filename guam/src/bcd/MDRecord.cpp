@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("mdrecord");
 
 #include "Symbols.h"
 
+#include "CTXRecord.h"
+
 
 QList<MDIndex*> MDIndex::all;
 
@@ -45,13 +47,11 @@ MDIndex::MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(in
 
 QString MDIndex::toString() {
 	if (index == MDIndex::MD_NULL) return "#NULL#";
-	if (index == MDIndex::OWM_MDI) return "#OWN#";
 	if (value == 0) return QString("md-%1").arg(index);
 
 	return QString("md-%1-%2").arg(index).arg(value ? value->toString() : "#EMPTY#");
 }
 void MDIndex::resolve() {
-	logger.info("all %d", all.size());
 	for(MDIndex *p: all) {
 		const CARD16 index = p->index;
 
@@ -63,7 +63,7 @@ void MDIndex::resolve() {
 			ERROR();
 		}
 		if (p->symbols->md.contains(index)) {
-			logger.info("resolve md %4d", index);
+//			logger.info("resolve md %4d", index);
 			p->value = p->symbols->md[index];
 		} else {
 			logger.error("Unknown %d = %s", index, p->toString().toLocal8Bit().constData());
@@ -83,19 +83,16 @@ MDRecord::MDRecord(Symbols* symbols, CARD16 index_) {
     shared   = bitField(word, 13);
     exported = bitField(word, 14, 15);
 
-    ctx           = symbols->file->getCARD16();
-    defaultImport = symbols->file->getCARD16();
-//    ctx           = CTIndex(symbols, symbols.bcd.file.getCARD16());
-//    defaultImport = CTIndex(symbols, symbols.bcd.file.getCARD16());
+    ctx           = new CTXIndex(symbols, symbols->file->getCARD16());
+    defaultImport = new CTXIndex(symbols, symbols->file->getCARD16());
 
     file = symbols->file->getCARD16();
 }
 
 QString MDRecord::toString() {
-	if (index == MDIndex::MD_NULL) return "#NULL#";
-	if (index == MDIndex::OWM_MDI) return "#OWN#";
+//	if (index == MDIndex::MD_NULL) return "#NULL#";
 
 	return QString("%1 %2 %3 %4 %5 %6 %7 %8 %9").
 			arg(index, 4).arg(stamp->toString()).arg(moduleId->toString()).arg(fileId->toString()).
-			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx).arg(defaultImport).arg(file);
+			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString()).arg(file);
 }

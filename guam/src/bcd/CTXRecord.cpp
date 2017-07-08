@@ -46,12 +46,11 @@ CTXIndex::CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(
 }
 
 QString CTXIndex::toString() {
-	if (index == CTXIndex::CTX_NULL) return "#NULL#";
 	if (value == 0) return QString("ctx-%1").arg(index);
 	return QString("ctx-%1-%2").arg(index).arg(value ? value->toString() : "#EMPTY#");
 }
 void CTXIndex::resolve() {
-	logger.info("all %d", all.size());
+//	logger.info("all %d", all.size());
 	for(CTXIndex *p: all) {
 		const CARD16 index = p->index;
 
@@ -63,7 +62,7 @@ void CTXIndex::resolve() {
 			ERROR();
 		}
 		if (p->symbols->ctx.contains(index)) {
-			logger.info("resolve ctx %4d", index);
+//			logger.info("resolve ctx %4d", index);
 			p->value = p->symbols->ctx[index];
 		} else {
 			logger.error("Unknown index %d  p = %s", index, p->toString().toLocal8Bit().constData());
@@ -153,8 +152,6 @@ CTXRecord::CTXRecord(Symbols* symbols, CARD16 index_) {
 }
 
 QString CTXRecord::toString() {
-	if (index == CTXIndex::CTX_NULL) return "#NULL#";
-
 	QString header = QString("%1 %2 %3 %4").arg(index, 4).arg(seList, 4).arg(level).arg(toString(ctxType));
 
 	switch(ctxType) {

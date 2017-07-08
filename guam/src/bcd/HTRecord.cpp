@@ -46,21 +46,15 @@ HTIndex::HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(in
 }
 
 QString HTIndex::toString() {
-	if (value == 0) return QString("htx-%1").arg(index);
+	if (value == 0) return QString("ht-%1").arg(index);
 	return QString("ht-%1-[%2]").arg(index).arg(value ? value->toString().toLocal8Bit().constData() : "#EMPTY#");
 }
 QString HTIndex::getValue() {
-	if (index == HTIndex::HT_NULL) return "#NULL#";
 	if (value == 0) return "#NULL#";
 	return value->value;
 }
 void HTIndex::resolve() {
-	QMutableListIterator<HTIndex*> i(all);
-
-//	for(HTIndex* p: all) {
-	while(i.hasNext()) {
-		HTIndex*p = i.next();
-
+	for(HTIndex* p: all) {
 		const CARD16 index = p->index;
 		if (index == HT_NULL) continue;
 		if (p->value) continue;
@@ -91,13 +85,9 @@ HTRecord::HTRecord(Symbols* symbols, CARD16 index_, CARD16 lastSSIndex) {
     ssIndex     = symbols->file->getCARD16();
     // ss.substring(lastSSIndex, data.ssIndex);
     value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
-
-    // Special
-    if (index == HTIndex::HT_NULL) value = "#NULL#";
 }
 
 QString HTRecord::toString() {
-	if (index == HTIndex::HT_NULL) return "#NULL#";
 	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
 }
 
