@@ -29,8 +29,8 @@ POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input
-HEADERS += BCD.h   BCDFile.h   BodyRecord.h   CTXRecord.h   HTRecord.h   MDRecord.h   SERcord.h   Symbols.h
-SOURCES += BCD.cpp BCDFile.cpp BodyRecord.cpp CTXRecord.cpp HTRecord.cpp MDRecord.cpp SERecord.cpp Symbols.cpp
+HEADERS += BCD.h   BCDFile.h   BodyRecord.h   CTXRecord.h   HTRecord.h   LTRecord.h   MDRecord.h   SERcord.h   Symbols.h
+SOURCES += BCD.cpp BCDFile.cpp BodyRecord.cpp CTXRecord.cpp HTRecord.cpp LTRecord.cpp MDRecord.cpp SERecord.cpp Symbols.cpp
 
 HEADERS += Table.h
 SOURCES += main.cpp

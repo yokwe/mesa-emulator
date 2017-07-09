@@ -39,6 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "CTXRecord.h"
 #include "SERecord.h"
 #include "BodyRecord.h"
+#include "LTRecord.h"
 
 
 BlockDescriptor::BlockDescriptor(BCD* bcd) {
@@ -198,6 +199,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeCTX(ctxBlock);
     initializeSE(seBlock);
     initializeBody(bodyBlock);
+    initializeLT(litBlock);
 
     // Resolve index
     HTIndex::resolve();
@@ -205,6 +207,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     CTXIndex::resolve();
     SEIndex::resolve();
     BTIndex::resolve();
+    LTIndex::resolve();
 
 	{
 		MDRecord* p = md[MDIndex::OWM_MDI];
@@ -370,7 +373,34 @@ void Symbols::initializeBody(BlockDescriptor* block) {
         BodyRecord* record = new BodyRecord(this, index);
         body[index] = record;
 
-        logger.info("body %s", record->toString().toLocal8Bit().constData());
+//        logger.info("body %s", record->toString().toLocal8Bit().constData());
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeLT(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        LTRecord* record = new LTRecord(this, index);
+        lt[index] = record;
+
+        logger.info("lt %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check
