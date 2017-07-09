@@ -57,7 +57,6 @@ public:
 	CARD16     index;
 	CTXRecord* value;
 
-	CTXIndex() : symbols(0), index(CTX_NULL), value(0) {}
 	CTXIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();

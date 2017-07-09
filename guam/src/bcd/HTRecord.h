@@ -51,7 +51,6 @@ public:
 	CARD16    index;
 	HTRecord* value;
 
-	HTIndex() : symbols(0), index(HT_NULL), value(0) {}
 	HTIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();

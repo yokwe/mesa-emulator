@@ -56,7 +56,6 @@ public:
 	CARD16    index;
 	MDRecord* value;
 
-	MDIndex(CARD16 index_) : symbols(0), index(index_), value(0) {}
 	MDIndex(Symbols* symbols_, CARD16 index_);
 
 	QString toString();

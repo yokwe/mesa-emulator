@@ -56,7 +56,6 @@ public:
 	CARD16     index;
 	SERecord* value;
 
-	SEIndex() : symbols(0), index(SE_NULL), value(0) {}
 	SEIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();
