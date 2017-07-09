@@ -29,8 +29,8 @@ OF SUCH DAMAGE.
 // ExtRecord.h
 //
 
-#ifndef ExtRECORD_H__
-#define ExtRECORD_H__
+#ifndef EXTRECORD_H__
+#define EXTRECORD_H__
 
 #include "../util/Util.h"
 #include "../mesa/MesaBasic.h"
