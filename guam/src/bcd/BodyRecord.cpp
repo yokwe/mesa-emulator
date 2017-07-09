@@ -75,7 +75,7 @@ void BTIndex::resolve() {
 QString BodyRecord::toString(Which value) {
 	TO_STRING_PROLOGUE(Which)
 
-	MAP_ENTRY(SIGLING)
+	MAP_ENTRY(SIBLING)
 	MAP_ENTRY(PARENT)
 
 	TO_STRING_EPILOGUE

@@ -117,7 +117,7 @@ private:
 //    ENDCASE];
 class BodyRecord {
 public:
-	enum class Which {SIGLING, PARENT};
+	enum class Which {SIBLING, PARENT};
 	static QString toString(Which value);
 
 	enum class Mark {INTERNAL, EXTERNAL};
