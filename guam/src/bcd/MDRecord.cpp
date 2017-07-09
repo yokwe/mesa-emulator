@@ -92,7 +92,10 @@ MDRecord::MDRecord(Symbols* symbols, CARD16 index_) {
 QString MDRecord::toString() {
 //	if (index == MDIndex::MD_NULL) return "#NULL#";
 
-	return QString("%1 %2 %3 %4 %5 %6 %7 %8 %9").
-			arg(index, 4).arg(stamp->toString()).arg(moduleId->toString()).arg(fileId->toString()).
-			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString()).arg(file);
+//	return QString("%1 %2 %3 %4 %5 %6 %7 %8 %9").
+//			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue()).arg(fileId->getValue()).
+//			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString()).arg(file);
+	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
+			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue()).arg(fileId->getValue()).
+			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
 }
