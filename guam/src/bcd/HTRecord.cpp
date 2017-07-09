@@ -47,10 +47,10 @@ HTIndex::HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(in
 
 QString HTIndex::toString() {
 	if (value == 0) return QString("ht-%1").arg(index);
-	return QString("ht-%1-[%2]").arg(index).arg(value ? value->toString().toLocal8Bit().constData() : "#EMPTY#");
+	return QString("ht-%1-[%2]").arg(index).arg(value ? value->value : "#EMPTY#");
 }
 QString HTIndex::getValue() {
-	if (value == 0) return "#NULL#";
+	if (value == 0) return QString("ht-%1").arg(index);
 	return value->value;
 }
 void HTIndex::resolve() {
