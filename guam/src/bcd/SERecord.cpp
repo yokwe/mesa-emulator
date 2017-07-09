@@ -121,7 +121,7 @@ QString SERecord::toString(TypeClass value) {
 	//
 	MAP_ENTRY(SEQUENCE)
 	MAP_ENTRY(RELATIVE)
-	MAP_ENTRY(SUB_RANGE)
+	MAP_ENTRY(SUBRANGE)
 	MAP_ENTRY(LONG)
 	MAP_ENTRY(REAL)
 	//
@@ -251,7 +251,7 @@ void SERecord::initCONS(Symbols* symbols, CARD16 u0) {
 	case TypeClass::RELATIVE:
 		initRELATIVE(symbols, u0);
 		break;
-	case TypeClass::SUB_RANGE:
+	case TypeClass::SUBRANGE:
 		initSUB_RANGE(symbols, u0);
 		break;
 	case TypeClass::LONG:
