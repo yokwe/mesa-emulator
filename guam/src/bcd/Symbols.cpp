@@ -191,11 +191,11 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 //    logger.info("fgPgCount      %d", fgPgCount);
 
     // Read block
-    initializeSS();
-    initializeHT();
-    initializeMD();
-    initializeCTX();
-    initializeSE();
+    initializeSS(ssBlock);
+    initializeHT(htBlock);
+    initializeMD(mdBlock);
+    initializeCTX(ctxBlock);
+    initializeSE(seBlock);
 
     // Resolve index
     HTIndex::resolve();
@@ -205,13 +205,13 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 
 	{
 		MDRecord* p = md[MDIndex::OWM_MDI];
-		logger.info("MD0 %s", p->toString().toLocal8Bit().constData());
+		logger.info("MD %s", p->toString().toLocal8Bit().constData());
 	}
 };
 
-void Symbols::initializeSS() {
-    CARD16 base  = offsetBase + ssBlock->offset;
-    CARD16 limit = base + ssBlock->size;
+void Symbols::initializeSS(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    CARD16 limit = base + block->size;
 
     file->position(base);
     CARD16 length    = file->getCARD16();
@@ -239,9 +239,9 @@ void Symbols::initializeSS() {
 //    logger.info("ss = (%d)%s ... %s!", ss.length(), ss.left(10).toLatin1().constData(), ss.right(10).toLatin1().constData());
 }
 
-void Symbols::initializeHT() {
-    CARD16 base  = offsetBase + htBlock->offset;
-    int    limit = base + htBlock->size;
+void Symbols::initializeHT(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
 
     CARD16 lastSSIndex = 0;
     CARD16 index = 0;
@@ -269,9 +269,9 @@ void Symbols::initializeHT() {
     }
 }
 
-void Symbols::initializeMD() {
-    CARD16 base  = offsetBase + mdBlock->offset;
-    int    limit = base + mdBlock->size;
+void Symbols::initializeMD(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
 
     file->position(base);
 
@@ -299,9 +299,9 @@ void Symbols::initializeMD() {
     md[MDIndex::MD_NULL] = new MDRecord(MDIndex::MD_NULL);
 }
 
-void Symbols::initializeCTX() {
-    CARD16 base  = offsetBase + ctxBlock->offset;
-    int    limit = base + ctxBlock->size;
+void Symbols::initializeCTX(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
 
     file->position(base);
 
@@ -326,9 +326,9 @@ void Symbols::initializeCTX() {
     }
 }
 
-void Symbols::initializeSE() {
-    CARD16 base  = offsetBase + seBlock->offset;
-    int    limit = base + seBlock->size;
+void Symbols::initializeSE(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
 
     file->position(base);
 

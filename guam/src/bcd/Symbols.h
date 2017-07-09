@@ -246,11 +246,11 @@ public:
      Symbols(BCD* bcd, int symbolBase);
 
 private:
-	void initializeSS();
-	void initializeHT();
-	void initializeMD();
-	void initializeCTX();
-	void initializeSE();
+	void initializeSS(BlockDescriptor* block);
+	void initializeHT(BlockDescriptor* block);
+	void initializeMD(BlockDescriptor* block);
+	void initializeCTX(BlockDescriptor* block);
+	void initializeSE(BlockDescriptor* block);
 };
 
 #endif
