@@ -38,6 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "MDRecord.h"
 #include "CTXRecord.h"
 #include "SERecord.h"
+#include "BodyRecord.h"
 
 
 BlockDescriptor::BlockDescriptor(BCD* bcd) {
@@ -171,7 +172,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     mdBlock         = new BlockDescriptor(bcd);
     logger.info("mdBlock        %s", mdBlock->toString().toLocal8Bit().constData());
     bodyBlock       = new BlockDescriptor(bcd);
-//    logger.info("bodyBlock      %s", bodyBlock->toString().toLocal8Bit().constData());
+    logger.info("bodyBlock      %s", bodyBlock->toString().toLocal8Bit().constData());
     extBlock        = new BlockDescriptor(bcd);
 //    logger.info("extBlock       %s", extBlock->toString().toLocal8Bit().constData());
     treeBlock       = new BlockDescriptor(bcd);
@@ -196,12 +197,14 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeMD(mdBlock);
     initializeCTX(ctxBlock);
     initializeSE(seBlock);
+    initializeBody(bodyBlock);
 
     // Resolve index
     HTIndex::resolve();
     MDIndex::resolve();
     CTXIndex::resolve();
     SEIndex::resolve();
+    BTIndex::resolve();
 
 	{
 		MDRecord* p = md[MDIndex::OWM_MDI];
@@ -341,6 +344,33 @@ void Symbols::initializeSE(BlockDescriptor* block) {
         se[index] = record;
 
 //        logger.info("se %s", record->toString().toLocal8Bit().constData());
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeBody(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        BodyRecord* record = new BodyRecord(this, index);
+        body[index] = record;
+
+        logger.info("body %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check

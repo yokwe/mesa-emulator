@@ -42,6 +42,7 @@ class MDRecord;
 class CTXRecord;
 class CTXIndex;
 class SERecord;
+class BodyRecord;
 
 //-- symbol segment headers
 //
@@ -238,7 +239,7 @@ public:
 	QMap<CARD16, HTRecord*>     ht;
 	QMap<CARD16, MDRecord*>     md;
 	QMap<CARD16, SERecord*>     se;
-//     QMap<CARD16, BodyRecord*>   body;
+    QMap<CARD16, BodyRecord*>   body;
 //     QMap<CARD16, ExtRecord*>    ext;
 //     QMap<CARD16, LTRecord*>     lt;
 //     QMap<CARD16, Tree.Node*>    tree;
@@ -251,6 +252,7 @@ private:
 	void initializeMD(BlockDescriptor* block);
 	void initializeCTX(BlockDescriptor* block);
 	void initializeSE(BlockDescriptor* block);
+	void initializeBody(BlockDescriptor* block);
 };
 
 #endif
