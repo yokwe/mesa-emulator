@@ -40,7 +40,31 @@ OF SUCH DAMAGE.
 
 class Symbols;
 class LTRecord;
+class LTIndex;
 
+//LitRecord: TYPE = RECORD [
+//  SELECT litTag(0:0..0): * FROM
+//    word => [index(0:1..13): LTIndex],
+//    string => [index(0:1..13): STIndex]
+//    ENDCASE];
+class LitRecord {
+public:
+	enum class LitTag {WORD, STRING};
+	static QString toString(LitTag value);
+
+	LitTag litTag;
+	union {
+		struct {
+			LTIndex* index;
+		} word;
+		struct {
+//			STIndex* index;
+			CARD16 index;
+		} string;
+	};
+
+	QString toString();
+};
 
 //LTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO LTRecord;
 //LTNull: LTIndex = LAST[LTIndex];
