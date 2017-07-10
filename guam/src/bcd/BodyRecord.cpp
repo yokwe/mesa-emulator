@@ -113,12 +113,15 @@ QString BodyRecord::toString(Nesting value) {
 BodyRecord::BodyRecord(Symbols* symbols, CARD16 index_) {
 	index = index_;
 
-    // IMPORTANT
-    // Length of BodyLink is 14 bit and right aligned.
-    // So bit 1 is used for "which" and bit 2-15 is used for index
+	// IMPORTANT
+	//   BodyLink: TYPE = RECORD [which(0:0..0): {sibling(0), parent(1)}, index(0:1..14): BTIndex];
+	//   Size of BodyLink is 15 bits.
+	//   So need to shift 1 bit before process u0.
 	CARD16 u0 = symbols->file->getCARD16();
-	link.which = (Which)bitField(u0, 1);
-	link.index = new BTIndex(symbols, bitField(u0, 2, 15));
+	u0 <<= 1;
+
+	link.which = (Which)bitField(u0, 0);
+	link.index = new BTIndex(symbols, bitField(u0, 1, 14));
 
 	firstSon    = new BTIndex(symbols, symbols->file->getCARD16());
 	type        = new SEIndex(symbols, symbols->file->getCARD16());

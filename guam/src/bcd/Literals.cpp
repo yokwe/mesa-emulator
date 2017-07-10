@@ -45,12 +45,17 @@ QString LitRecord::toString(LitTag value) {
 	TO_STRING_EPILOGUE
 }
 
-//LitRecord: TYPE = RECORD [
-//  SELECT litTag(0:0..0): * FROM
-//    word => [index(0:1..13): LTIndex],
-//    string => [index(0:1..13): STIndex]
-//    ENDCASE];
 LitRecord::LitRecord(Symbols* symbols, CARD16 u0) {
+	// IMPORTANT
+	//    LitRecord: TYPE = RECORD [
+	//      SELECT litTag(0:0..0): * FROM
+	//      word => [index(0:1..13): LTIndex],
+	//      string => [index(0:1..13): STIndex]
+	//      ENDCASE];
+	//   Size of LitRecord is 14 bits.
+	//   So need to shift 2 bit before process u0.
+	u0 <<= 2;
+
 	litTag = (LitTag)bitField(u0, 0);
 	switch(litTag) {
 	case LitTag::WORD:
@@ -59,6 +64,7 @@ LitRecord::LitRecord(Symbols* symbols, CARD16 u0) {
 	case LitTag::STRING:
 		string.index = bitField(u0, 1, 13);
 		logger.warn("st-%d", string.index);
+		ERROR();
 		break;
 	default:
 		ERROR();
