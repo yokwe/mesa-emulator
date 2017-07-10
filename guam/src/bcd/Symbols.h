@@ -45,6 +45,7 @@ class SERecord;
 class BodyRecord;
 class LTRecord;
 class ExtRecord;
+class TreeNode;
 
 //-- symbol segment headers
 //
@@ -244,7 +245,7 @@ public:
     QMap<CARD16, BodyRecord*>   body;
     QMap<CARD16, ExtRecord*>    ext;
     QMap<CARD16, LTRecord*>     lt;
-//     QMap<CARD16, Tree.Node*>    tree;
+    QMap<CARD16, TreeNode*>     tree;
 
      Symbols(BCD* bcd, int symbolBase);
 
@@ -257,6 +258,7 @@ private:
 	void initializeBody(BlockDescriptor* block);
 	void initializeLT(BlockDescriptor* block);
 	void initializeExt(BlockDescriptor* block);
+	void initializeTree(BlockDescriptor* block);
 };
 
 #endif

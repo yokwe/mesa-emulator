@@ -41,6 +41,7 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "BodyRecord.h"
 #include "Literals.h"
 #include "ExtRecord.h"
+#include "Tree.h"
 
 
 BlockDescriptor::BlockDescriptor(BCD* bcd) {
@@ -202,6 +203,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeBody(bodyBlock);
     initializeLT(litBlock);
     initializeExt(extBlock);
+    initializeTree(treeBlock);
 
     // Resolve index
     HTIndex::resolve();
@@ -211,6 +213,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     BTIndex::resolve();
     LTIndex::resolve();
     ExtIndex::resolve();
+    TreeIndex::resolve();
 
 	{
 		MDRecord* p = md[MDIndex::OWM_MDI];
@@ -431,6 +434,33 @@ void Symbols::initializeExt(BlockDescriptor* block) {
         ext[index] = record;
 
         logger.info("ext %s", record->toString().toLocal8Bit().constData());
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeTree(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        TreeNode* record = new TreeNode(this, index);
+        tree[index] = record;
+
+        logger.info("tree %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check
