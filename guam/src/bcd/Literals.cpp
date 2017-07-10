@@ -65,6 +65,17 @@ LitRecord::LitRecord(Symbols* symbols, CARD16 u0) {
 		break;
 	}
 }
+QString LitRecord::toString() {
+	switch(litTag) {
+	case LitTag::WORD:
+		return QString("%1 %2").arg(toString(litTag)).arg(word.index->toString());
+	case LitTag::STRING:
+		return QString("%1 %2").arg(toString(litTag)).arg(string.index);
+	default:
+		ERROR();
+		break;
+	}
+}
 
 
 QList<LTIndex*> LTIndex::all;
