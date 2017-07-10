@@ -39,7 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "CTXRecord.h"
 #include "SERecord.h"
 #include "BodyRecord.h"
-#include "LTRecord.h"
+#include "Literals.h"
 #include "ExtRecord.h"
 
 

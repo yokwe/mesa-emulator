@@ -32,7 +32,7 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("ltrecord");
 
-#include "LTRecord.h"
+#include "Literals.h"
 
 #include "Symbols.h"
 

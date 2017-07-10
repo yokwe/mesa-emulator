@@ -26,11 +26,11 @@ OF SUCH DAMAGE.
 
 
 //
-// LTRecord.h
+// Literals.h
 //
 
-#ifndef LTRECORD_H__
-#define LTRECORD_H__
+#ifndef LITERALS_H__
+#define LITERALS_H__
 
 #include "../util/Util.h"
 #include "../mesa/MesaBasic.h"
@@ -110,7 +110,5 @@ public:
 	}
 	QString toString();
 };
-
-
 
 #endif
