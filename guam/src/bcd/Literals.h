@@ -63,6 +63,8 @@ public:
 		} string;
 	};
 
+	LitRecord(Symbols* symbols, CARD16 u0);
+
 	QString toString();
 };
 

@@ -30,11 +30,41 @@ OF SUCH DAMAGE.
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("ltrecord");
+static log4cpp::Category& logger = Logger::getLogger("literals");
 
 #include "Literals.h"
 
 #include "Symbols.h"
+
+QString LitRecord::toString(LitTag value) {
+	TO_STRING_PROLOGUE(LitTag)
+
+	MAP_ENTRY(WORD)
+	MAP_ENTRY(STRING)
+
+	TO_STRING_EPILOGUE
+}
+
+//LitRecord: TYPE = RECORD [
+//  SELECT litTag(0:0..0): * FROM
+//    word => [index(0:1..13): LTIndex],
+//    string => [index(0:1..13): STIndex]
+//    ENDCASE];
+LitRecord::LitRecord(Symbols* symbols, CARD16 u0) {
+	litTag = (LitTag)bitField(u0, 0);
+	switch(litTag) {
+	case LitTag::WORD:
+		word.index = new LTIndex(symbols, bitField(u0, 1, 13));
+		break;
+	case LitTag::STRING:
+		string.index = bitField(u0, 1, 13);
+		logger.warn("st-%d", string.index);
+		break;
+	default:
+		ERROR();
+		break;
+	}
+}
 
 
 QList<LTIndex*> LTIndex::all;
