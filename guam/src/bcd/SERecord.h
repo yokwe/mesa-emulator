@@ -49,7 +49,15 @@ class SERecord;
 
 class SEIndex {
 public:
+    //SENull: SEIndex = FIRST[SEIndex];
     static const CARD16 SE_NULL = 0;
+    //-- the following two values are guaranteed by the compiler
+    //typeTYPE: CSEIndex = FIRST[CSEIndex] + SIZE[nil cons SERecord];
+    static const CARD16 TYPE_TYPE = 1;
+    //typeANY: CSEIndex = typeTYPE + SIZE[mode cons SERecord];
+    static const CARD16 TYPE_ANY = 2;
+
+
 	static void resolve();
 
 	Symbols*   symbols;
@@ -59,6 +67,23 @@ public:
 	SEIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();
+
+	bool isNull() {
+		return index == SE_NULL;
+	}
+	bool isTypeType() {
+		return index == TYPE_TYPE;
+	}
+	bool isTypeAny() {
+		return index == TYPE_ANY;
+	}
+	bool equals(SEIndex* that) {
+		return this->index == that->index;
+	}
+
+	SEIndex* underType();
+
+	static SEIndex* find(Symbols* symbols, CARD16 index);
 
 private:
 	static QList<SEIndex*> all;
@@ -214,7 +239,6 @@ public:
         FIXED_SEQUENCE,
     };
     static QString toString(TypeClass value);
-
 
 	CARD16 index;
 	SeTag  seTag;

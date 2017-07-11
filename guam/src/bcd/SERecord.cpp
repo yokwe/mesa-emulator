@@ -52,6 +52,46 @@ QString SEIndex::toString() {
 	return QString("se-%1").arg(index);
 //	return QString("se-%1-%2").arg(index).arg(value->toString());
 }
+
+
+SEIndex* SEIndex::find(Symbols* symbols, CARD16 index) {
+	for(SEIndex* p: all) {
+		if (p->symbols == symbols && p->index == index) return p;
+	}
+	logger.fatal("index = %d",index);
+	ERROR();
+}
+
+//UnderType: PROC [h: Handle, type: SEIndex] RETURNS [CSEIndex] = {
+//  sei: SEIndex � type;
+//  WHILE sei # SENull DO
+//    WITH se: h.seb[sei] SELECT FROM
+//      id => {IF se.idType # typeTYPE THEN ERROR; sei � SymbolOps.ToSei[se.idInfo]};
+//      ENDCASE => EXIT;
+//    ENDLOOP;
+//  RETURN [LOOPHOLE[sei, CSEIndex]]};
+SEIndex* SEIndex::underType() {
+	SEIndex* sei = this;
+	for(;;) {
+		if (sei->isNull()) break;
+		SERecord* se = sei->value;
+
+		switch(se->seTag) {
+		case SERecord::SeTag::ID:
+			if (!se->id.idType->isTypeType()) ERROR();
+			sei = find(sei->symbols, se->id.idInfo);
+			break;
+		case SERecord::SeTag::CONS:
+			goto exit;
+		default:
+			ERROR();
+			return 0;
+		}
+	}
+exit:
+	return sei;
+}
+
 void SEIndex::resolve() {
 	for(SEIndex *p: all) {
 		const CARD16 index = p->index;
@@ -162,6 +202,7 @@ QString SERecord::toString() {
 		ERROR();
 	}
 }
+
 
 SERecord::SERecord(Symbols* symbols, CARD16 index_) {
 	index = index_;

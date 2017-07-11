@@ -40,6 +40,7 @@ OF SUCH DAMAGE.
 class Symbols;
 class CTXRecord;
 class MDIndex;
+class SEIndex;
 
 //CTXIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO CTXRecord;
 // IncludedCTXIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO included CTXRecord;
@@ -60,6 +61,11 @@ public:
 	CTXIndex(Symbols* symbols, CARD16 index);
 
 	QString toString();
+
+	bool isNull() {
+		return index == CTX_NULL;
+	}
+
 
 private:
 	static QList<CTXIndex*> all;
@@ -104,12 +110,12 @@ public:
 	static QString toString(Closure value);
 
 
-	CARD16 index;
-	bool   mark;
-	bool   varUpdated;
-	CARD16 seList; // ISEIndex
-	CARD16 level;
-	CtxType ctxType;
+	CARD16   index;
+	bool     mark;
+	bool     varUpdated;
+	SEIndex* seList;
+	CARD16   level;
+	CtxType  ctxType;
 	union {
 		struct {
 			CTXIndex* ctxNew;

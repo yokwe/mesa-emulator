@@ -121,6 +121,61 @@ bool Symbols::isSymbolsFile(BCD* bcd) {
     return word0 == BCD::VersionID && word256 == Symbols::VersionID;
 }
 
+
+//FindExtension: PROC [h: Handle, sei: ISEIndex] RETURNS [type: ExtensionType, tree: Tree.Link] = {
+//  OPEN SymbolSegment;
+//  FOR exti: ExtIndex � FIRST[ExtIndex], exti + SIZE[ExtRecord] UNTIL exti = h.extLimit DO
+//    IF h.extb[exti].sei = sei THEN
+//      RETURN [h.extb[exti].type, h.extb[exti].tree];
+//    ENDLOOP;
+//  RETURN [none, Tree.Null]};
+ExtRecord* Symbols::findExtention(SEIndex *sei) {
+	for(ExtRecord* exti: ext) {
+		if (exti->sei->equals(sei)) return exti;
+	}
+	logger.fatal("index = %d", sei->index);
+	ERROR();
+	return 0;
+}
+
+
+//FirstCtxSe: PROC [h: Handle, ctx: CTXIndex] RETURNS [ISEIndex] = {
+//  RETURN [IF ctx = CTXNull THEN ISENull ELSE h.ctxb[ctx].seList]};
+SEIndex* Symbols::firstCtxSe(CTXIndex* ctx) {
+	if (ctx->isNull()) return SEIndex::find(ctx->symbols, SEIndex::SE_NULL);
+	return ctx->value->seList;
+}
+
+//NextSe: PROC [h: Handle, sei: ISEIndex] RETURNS [ISEIndex] = {
+//  RETURN [
+//    IF sei = SENull
+//	THEN ISENull
+//	ELSE
+//	  WITH id: h.seb[sei] SELECT FROM
+//	    terminal => ISENull,
+//	    sequential => sei + SIZE[sequential id SERecord],
+//	    linked => id.link,
+//	    ENDCASE => ISENull]};
+SEIndex* Symbols::nextSe(SEIndex* sei) {
+	if (sei->isNull()) {
+		return SEIndex::find(sei->symbols, CTXIndex::CTX_NULL);
+	} else {
+		SERecord* id = sei->value;
+		switch(id->id.linkTag) {
+		case SERecord::LinkTag::TERMINAL:
+			return SEIndex::find(sei->symbols, CTXIndex::CTX_NULL);
+		case SERecord::LinkTag::SEQUENTIAL:
+			// TODO Is this correct?
+			return SEIndex::find(sei->symbols, sei->index + 5);
+		case SERecord::LinkTag::LINKED:
+			return id->id.linked.link;
+		default:
+			ERROR();
+		}
+	}
+}
+
+
 Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 	bcd             = bcd_;
 	file            = bcd->file;
@@ -352,7 +407,7 @@ void Symbols::initializeSE(BlockDescriptor* block) {
         SERecord* record = new SERecord(this, index);
         se[index] = record;
 
-//        logger.info("se %s", record->toString().toLocal8Bit().constData());
+        logger.info("se %s", record->toString().toLocal8Bit().constData());
     }
 
     // sanity check

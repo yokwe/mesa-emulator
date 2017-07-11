@@ -36,6 +36,7 @@ static log4cpp::Category& logger = Logger::getLogger("extrecord");
 
 #include "Symbols.h"
 #include "SERecord.h"
+#include "Tree.h"
 
 
 QList<ExtIndex*> ExtIndex::all;
@@ -81,8 +82,8 @@ ExtRecord::ExtRecord(Symbols* symbols, CARD16 index_) {
 	CARD16 u0 = symbols->file->getCARD16();
 
 	type = (ExtensionType)bitField(u0, 0, 1);
-	sei = new SEIndex(symbols, bitField(2, 15));
-	tree = symbols->file->getCARD16();
+	sei  = new SEIndex(symbols, bitField(2, 15));
+	tree = new TreeLink(symbols);
 
 	// Sanity check
 	switch(type) {
@@ -100,5 +101,5 @@ ExtRecord::ExtRecord(Symbols* symbols, CARD16 index_) {
 }
 
 QString ExtRecord::toString() {
-	return QString("%1 %2 %3").arg(Symbols::toString(type)).arg(sei->toString()).arg(tree);
+	return QString("%1 %2 %3").arg(Symbols::toString(type)).arg(sei->toString()).arg(tree->toString());
 }

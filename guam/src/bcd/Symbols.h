@@ -41,6 +41,7 @@ class HTRecord;
 class MDRecord;
 class CTXRecord;
 class CTXIndex;
+class SEIndex;
 class SERecord;
 class BodyRecord;
 class LTRecord;
@@ -105,6 +106,9 @@ public:
     //codeANY: CARDINAL = 0;
     //codeINT: CARDINAL = 1;
     //codeCHAR: CARDINAL = 2;
+    static const CARD16 codeANY  = 0;
+    static const CARD16 codeINT  = 1;
+    static const CARD16 codeCHAR = 2;
 
     //WordCount: TYPE = LONG CARDINAL;  -- sizes in words
 
@@ -247,7 +251,12 @@ public:
     QMap<CARD16, LTRecord*>     lt;
     QMap<CARD16, TreeNode*>     tree;
 
-     Symbols(BCD* bcd, int symbolBase);
+    Symbols(BCD* bcd, int symbolBase);
+
+    ExtRecord* findExtention(SEIndex *index);
+    SEIndex* firstCtxSe(CTXIndex* index);
+    SEIndex* nextSe(SEIndex *index);
+
 
 private:
 	void initializeSS(BlockDescriptor* block);

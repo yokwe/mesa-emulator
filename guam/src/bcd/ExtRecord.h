@@ -40,6 +40,7 @@ OF SUCH DAMAGE.
 
 class ExtRecord;
 class SEIndex;
+class TreeLink;
 
 
 //ExtIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO ExtRecord;
@@ -76,8 +77,7 @@ public:
 
 	ExtensionType type;
 	SEIndex*      sei;
-	// TODO Type of tree should be Tree::Link
-	CARD16        tree;
+	TreeLink*     tree;
 
 	ExtRecord(Symbols* symbols, CARD16 index);
 

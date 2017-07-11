@@ -37,7 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("ctxrecord");
 #include "Symbols.h"
 
 #include "MDRecord.h"
-
+#include "SERecord.h"
 
 QList<CTXIndex*> CTXIndex::all;
 
@@ -116,7 +116,7 @@ CTXRecord::CTXRecord(Symbols* symbols, CARD16 index_) {
 	CARD16 u0 = symbols->file->getCARD16();
 	mark       = bitField(u0, 0);
 	varUpdated = bitField(u0, 1);
-	seList     = bitField(u0, 2, 15);
+	seList     = new SEIndex(symbols, bitField(u0, 2, 15));
 
 	CARD16 u1 = symbols->file->getCARD16();
 	level   = bitField(u1, 0, 2);
@@ -148,11 +148,10 @@ CTXRecord::CTXRecord(Symbols* symbols, CARD16 index_) {
 	default:
 		ERROR();
 	}
-
 }
 
 QString CTXRecord::toString() {
-	QString header = QString("%1 %2 %3 %4").arg(index, 4).arg(seList, 4).arg(level).arg(toString(ctxType));
+	QString header = QString("%1 %2 %3 %4").arg(index, 4).arg(seList->toString()).arg(level).arg(toString(ctxType));
 
 	switch(ctxType) {
 	case CtxType::SIMPLE:

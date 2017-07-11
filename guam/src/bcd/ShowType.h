@@ -35,7 +35,12 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 #include "../mesa/MesaBasic.h"
 
-class SEIndex;
+#include "SERecord.h"
+
+class CTXIndex;
+class TreeLink;
+
+// From AMesa/14.0/Sword/Private/ITShowType.mesa
 
 class ShowType {
 public:
@@ -55,7 +60,7 @@ public:
 		enum class Tag {
 			SIGNED, UNSIGNED, CHAR, ENUM, ARRAY, TRANSFER, REF, OTHER,
 		};
-		QString toString(Tag value);
+		static QString toString(Tag value);
 
 		static ValFormat Signed() {
 			return ValFormat(Tag::SIGNED);
@@ -67,10 +72,10 @@ public:
 			return ValFormat(Tag::CHAR);
 		}
 		static ValFormat Enum(SEIndex* index_) {
-			return ValFormat(Tag::ENUM, SEIndex* index_);
+			return ValFormat(Tag::ENUM, index_);
 		}
 		static ValFormat Array(SEIndex* index_) {
-			return ValFormat(Tag::ARRAY, SEIndex* index_);
+			return ValFormat(Tag::ARRAY, index_);
 		}
 		static ValFormat Transfer(SERecord::TransferMode mode) {
 			return ValFormat(Tag::TRANSFER, mode);
@@ -83,30 +88,6 @@ public:
 		}
 
 		ValFormat(const ValFormat& that);
-
-//		ValFormat(const ValFormat& that) {
-//			tag = that.tag;
-//			switch(tag) {
-//			case Tag::SIGNED:
-//			case Tag::UNSIGNED:
-//			case Tag::CHAR:
-//			case Tag::REF:
-//			case Tag::OTHER:
-//				break;
-//			case Tag::ENUM:
-//				enum_.esei = that.enum_.esei;
-//				break;
-//			case Tag::ARRAY:
-//				array.componentType = that.array.componentType;
-//				break;
-//			case Tag::TRANSFER:
-//				transfer.mode = that.transfer.mode;
-//				break;
-//			default:
-//				ERROR();
-//				break;
-//			}
-//		}
 
 		Tag tag;
 		union {
@@ -144,10 +125,10 @@ public:
     static void outArgType(QString& out, SEIndex* sei);
 
     //PrintDefaultValue: PROCEDURE [sei: Symbols.ISEIndex, vf: ValFormat] =
-	static void printDefaultValue(QString& out, SEIndex* sei, const ValFormat& vf);
+	static void printDefaultValue(QString& out, SEIndex* sei, ValFormat& vf);
 
     //PrintFieldCtx: PROCEDURE [ctx: Symbols.CTXIndex, md: BOOLEAN � FALSE] =
-    static void printFieldCtx(QString& out, CTXIndex* ctx, bool md);
+    static void printFieldCtx(QString& out, CTXIndex* ctx, bool md = false);
 
     //PrintHti: PROCEDURE [hti: Symbols.HTIndex] =
     static void printHti(QString& out, HTIndex* hti);
@@ -159,7 +140,7 @@ public:
 	static void printSym(QString& out, SEIndex* sei, QString colonString);
 
     //PrintTreeLink: PROCEDURE [tree: Tree.Link, vf: ValFormat, recur: CARDINAL, sonOfDot: BOOLEAN � FALSE] =
-    static void printTreeLink(QString& out, TreeLink* tree, ValFormat& vf, int recur, bool sonOfDot);
+    static void printTreeLink(QString& out, TreeLink* tree, ValFormat& vf, int recur, bool sonOfDot = false);
 
     //PrintType: PROCEDURE [tsei: Symbols.SEIndex, dosub: PROCEDURE] RETURNS [vf: ValFormat] =
     static ValFormat printType(QString& out, SEIndex* tsei /*, Runnable dosub*/);
@@ -181,10 +162,10 @@ public:
 
 private:
     //defaultPublic: BOOLEAN � TRUE;     --outer RECORD is public or private?
-    static bool defaultPublic = true;
+    static bool defaultPublic;
     //indent: CARDINAL;             --how many spaces to indent variants
     //showBits: BOOLEAN;  --if TRUE, show bit positions even if not MACHINE DEPENDENT
-    static bool showBits = true;
+    static bool showBits;
 };
 
 #endif
