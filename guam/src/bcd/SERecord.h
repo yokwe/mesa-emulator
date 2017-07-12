@@ -185,6 +185,8 @@ private:
 //    ENDCASE];
 class SERecord {
 public:
+	typedef Symbols::TransferMode TransferMode;
+
 	enum class SeTag {
 		ID, CONS,
 	};
@@ -199,12 +201,6 @@ public:
 		NOT_LINKED, LINKED,
 	};
 	static QString toString(LinkTag2 value);
-
-    //TransferMode: TYPE = {proc, port, signal, error, process, program, none};
-    enum class TransferMode {
-        PROC, PORT, SIGNAL, ERROR, PROCESS, PROGRAM, NONE,
-    };
-    static QString toString(TransferMode value);
 
 
     //-- semantic entry table declarations
@@ -383,6 +379,9 @@ public:
 	SERecord(Symbols* symbols, CARD16 index);
 
 	QString toString();
+
+	Symbols::TransferMode xferMode(SEIndex* type);
+
 
 private:
 	void initID(Symbols* symbols, CARD16 u0);

@@ -139,6 +139,12 @@ public:
     };
     static QString toString(RefClass value);
 
+    //TransferMode: TYPE = {proc, port, signal, error, process, program, none};
+    enum class TransferMode {
+        PROC, PORT, SIGNAL, ERROR, PROCESS, PROGRAM, NONE,
+    };
+    static QString toString(TransferMode value);
+
     //-- module table declarations
     //FileIndex: TYPE = [0..77777B];    -- internal file handle
     //NullFileIndex: FileIndex = LAST[FileIndex];
@@ -253,10 +259,10 @@ public:
 
     Symbols(BCD* bcd, int symbolBase);
 
-    ExtRecord* findExtention(SEIndex *index);
-    SEIndex* firstCtxSe(CTXIndex* index);
-    SEIndex* nextSe(SEIndex *index);
-
+    static ExtRecord* findExtention(SEIndex *index);
+    static SEIndex* firstCtxSe(CTXIndex* index);
+    static SEIndex* nextSe(SEIndex *index);
+    static TransferMode xferMode(SEIndex* type);
 
 private:
 	void initializeSS(BlockDescriptor* block);

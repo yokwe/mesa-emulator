@@ -112,6 +112,21 @@ QString Symbols::toString(VarTag value) {
 }
 
 
+QString Symbols::toString(TransferMode value) {
+	TO_STRING_PROLOGUE(TransferMode)
+
+	MAP_ENTRY(PROC)
+	MAP_ENTRY(PORT)
+	MAP_ENTRY(SIGNAL)
+	MAP_ENTRY(ERROR)
+	MAP_ENTRY(PROCESS)
+	MAP_ENTRY(PROGRAM)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
+}
+
+
 bool Symbols::isSymbolsFile(BCD* bcd) {
     bcd->file->position(0);
 	CARD16 word0 = bcd->file->getCARD16();
@@ -173,6 +188,15 @@ SEIndex* Symbols::nextSe(SEIndex* sei) {
 			ERROR();
 		}
 	}
+}
+
+//XferMode: PROC [h: Handle, type: SEIndex] RETURNS [TransferMode] = {
+//  sei: CSEIndex = UnderType[h, type];
+//  RETURN [WITH t: h.seb[sei] SELECT FROM transfer => t.mode, ENDCASE => none]};
+SERecord::TransferMode Symbols::xferMode(SEIndex* type) {
+	SEIndex* sei = type->underType();
+	if (sei->value->cons.typeTag == SERecord::TypeClass::TRANSFER) return sei->value->cons.transfer.mode;
+	return SERecord::TransferMode::NONE;
 }
 
 

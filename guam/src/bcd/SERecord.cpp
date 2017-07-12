@@ -176,21 +176,6 @@ QString SERecord::toString(TypeClass value) {
 	TO_STRING_EPILOGUE
 }
 
-QString SERecord::toString(TransferMode value) {
-	TO_STRING_PROLOGUE(TransferMode)
-
-	MAP_ENTRY(PROC)
-	MAP_ENTRY(PORT)
-	MAP_ENTRY(SIGNAL)
-	MAP_ENTRY(ERROR)
-	MAP_ENTRY(PROCESS)
-	MAP_ENTRY(PROGRAM)
-	MAP_ENTRY(NONE)
-
-	TO_STRING_EPILOGUE
-}
-
-
 QString SERecord::toString() {
 //	if (index == SEIndex::SE_NULL) return "#NULL#";
 	switch(seTag) {

@@ -65,6 +65,9 @@ public:
 	bool isNull() {
 		return index == CTX_NULL;
 	}
+	bool equals(CTXIndex* that) {
+		return this->index == that->index;
+	}
 
 
 private:

@@ -77,7 +77,7 @@ public:
 		static ValFormat Array(SEIndex* index_) {
 			return ValFormat(Tag::ARRAY, index_);
 		}
-		static ValFormat Transfer(SERecord::TransferMode mode) {
+		static ValFormat Transfer(Symbols::TransferMode mode) {
 			return ValFormat(Tag::TRANSFER, mode);
 		}
 		static ValFormat Ref() {
@@ -98,7 +98,7 @@ public:
 				SEIndex* componentType;
 			} array;
 			struct {
-				SERecord::TransferMode mode;
+				Symbols::TransferMode mode;
 			} transfer;
 		};
 
@@ -108,7 +108,7 @@ public:
             tag   = tag_;
         }
         ValFormat(Tag tag_, SEIndex* value);         // ENUM  ARRAY
-        ValFormat(Tag tag_, SERecord::TransferMode); // TRANSFER
+        ValFormat(Tag tag_, Symbols::TransferMode); // TRANSFER
 	};
 
 
@@ -154,7 +154,7 @@ public:
     static void putEnum(QString& out, int val, SEIndex* esei);
 
     //PutModeName: PROCEDURE [n: Symbols.TransferMode] =
-    static void putModeName(QString& out, SERecord::TransferMode n);
+    static void putModeName(QString& out, Symbols::TransferMode n);
 
     // PutWordSeq: PROCEDURE [seq: LONG DESCRIPTOR FOR ARRAY OF UNSPECIFIED] =
     static void putWordSeq(QString& out, CARD16 length, CARD16* seq);

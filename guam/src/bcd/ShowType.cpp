@@ -38,6 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("showtype");
 #include "SERecord.h"
 #include "CTXRecord.h"
 #include "ExtRecord.h"
+#include "HTRecord.h"
 
 
 // From AMesa/14.0/Sword/Private/ITShowType.mesa
@@ -98,7 +99,7 @@ QString ShowType::ValFormat::toString() {
 	case Tag::ARRAY:
 		return QString("%1 %2").arg(toString(tag)).arg(array.componentType->toString());
 	case Tag::TRANSFER:
-		return QString("%1 %2").arg(toString(tag)).arg(SERecord::toString(transfer.mode));
+		return QString("%1 %2").arg(toString(tag)).arg(Symbols::toString(transfer.mode));
 	default:
 		ERROR();
 		return "???";
@@ -271,7 +272,7 @@ void ShowType::outArgType(QString& out, SEIndex* sei) {
 //  PrintTreeLink[tree, vf, 0];
 //  END;
 void ShowType::printDefaultValue(QString& out, SEIndex* sei, ValFormat& vf) {
-	ExtRecord* record = sei->symbols->findExtention(sei);
+	ExtRecord* record = Symbols::findExtention(sei);
 	if (record->type != ExtRecord::ExtensionType::DEFAULT) return;
 	out.append(" = ");
 	printTreeLink(out, record->tree, vf, false);
@@ -281,30 +282,192 @@ void ShowType::printDefaultValue(QString& out, SEIndex* sei, ValFormat& vf) {
 //  BEGIN
 void ShowType::printFieldCtx(QString& out, CTXIndex* ctx, bool md) {
 //  isei: Symbols.ISEIndex � SymbolOps.FirstCtxSe[symbols, ctx];
+	SEIndex* isei = Symbols::firstCtxSe(ctx);
 //  bitspec: LONG STRING � [20];
+	QString bitspec;
 //  first: BOOLEAN � TRUE;
+	bool first = true;
 //  IF ~md THEN String.AppendString[bitspec, ": "L];
+	if (!md) bitspec.append(": ");
 //  IF isei # Symbols.ISENull AND symbols.seb[isei].idCtx # ctx THEN
+	if ((!isei->isNull()) && (!isei->value->id.idCtx->equals(ctx))) {
 //    isei � SymbolOps.NextSe[symbols, isei];
-//  PutChar['[];
-//  FOR isei � isei, SymbolOps.NextSe[symbols, isei] UNTIL isei = Symbols.ISENull DO
-//    IF first THEN first � FALSE ELSE out[", "L, cd];
-//    IF md THEN GetBitSpec[isei, bitspec];
-//    PrintSym[isei, bitspec];
-//    PrintDefaultValue[isei, GetValFormat[symbols.seb[isei].idType]];
-//    ENDLOOP;
-//  PutChar[']];
+		isei = Symbols::nextSe(isei);
+//    PutChar['[];
+		out.append("[");
+//    FOR isei � isei, SymbolOps.NextSe[symbols, isei] UNTIL isei = Symbols.ISENull DO
+		for(;; isei = Symbols::nextSe(isei)) {
+			if (isei->isNull()) break;
+//      IF first THEN first � FALSE ELSE out[", "L, cd];
+			if (first) {
+				first = false;
+			} else {
+				out.append(", ");
+			}
+//      IF md THEN GetBitSpec[isei, bitspec];
+			if (md) getBitSpec(isei, bitspec);
+//      PrintSym[isei, bitspec];
+			printSym(out, isei, bitspec);
+//      PrintDefaultValue[isei, GetValFormat[symbols.seb[isei].idType]];
+			ValFormat vf = getValFormat(isei->value->id.idType);
+			printDefaultValue(out, isei, vf);
+//      ENDLOOP;
+		}
+//    PutChar[']];
+		out.append("]");
 //  END;
+	}
 }
 
 //PrintHti: PROCEDURE [hti: Symbols.HTIndex] =
-void ShowType::printHti(QString& out, HTIndex* hti);
+void ShowType::printHti(QString& out, HTIndex* hti) {
+//  BEGIN
+//  desc: String.SubStringDescriptor;
+//  s: String.SubString = @desc;
+//  IF hti = Symbols.HTNull THEN out["(anonymous)"L, cd]
+	if (hti->isNull()) out.append("(anonymous)");
+//  ELSE {
+	else
+//    SymbolOps.SubStringForHash[symbols, s, hti]; Format.SubString[out, s, cd]};
+		out.append(hti->value->value);
+//  RETURN
+//  END;
+}
 
 //PrintSei: PROCEDURE [sei: Symbols.ISEIndex] = {
-void ShowType::printSei(QString& out, SEIndex* sei);
+void ShowType::printSei(QString& out, SEIndex* sei) {
+//  PrintHti[
+//    IF sei = Symbols.SENull
+//    THEN Symbols.HTNull
+//    ELSE symbols.seb[sei].hash]};
+	HTIndex null = HTIndex();
+	HTIndex* hti = sei->isNull() ? &null : sei->value->id.hash;
+	printHti(out, hti);
+}
 
+//  --"Constants" (initialized by mainline code)
 //PrintSym: PROCEDURE [sei: Symbols.ISEIndex, colonstring: LONG STRING] =
-void ShowType::printSym(QString& out, SEIndex* sei, QString colonString);
+void ShowType::printSym(QString& out, SEIndex* sei, QString colonString) {
+//  BEGIN
+//  savePublic: BOOLEAN � defaultPublic;
+	bool savedPublic = defaultPublic;
+//  typeSei: Symbols.SEIndex;
+//  IF symbols.seb[sei].hash # Symbols.HTNull THEN {
+	if (!sei->value->id.hash->isNull()) {
+//    PrintSei[sei]; out[colonstring, cd]};
+		out.append(colonString);
+	}
+//  IF symbols.seb[sei].public # defaultPublic THEN {
+	if (sei->value->id.public_ != defaultPublic) {
+//    defaultPublic � symbols.seb[sei].public;
+		defaultPublic = sei->value->id.public_;
+//    out[IF defaultPublic THEN "PUBLIC "L ELSE "PRIVATE "L, cd]};
+		out.append(defaultPublic ? "PUBLIC" : "PRIVATE");
+	}
+//  IF symbols.seb[sei].idType = Symbols.typeTYPE THEN
+	if (sei->value->id.idType->isTypeType()) {
+//    BEGIN
+//    vf: ValFormat;
+//    typeSei � SymbolOps.ToSei[symbols.seb[sei].idInfo];
+		SEIndex* typeSei = SEIndex::find(sei->symbols, sei->value->id.idInfo);
+//    out["TYPE"L, cd];
+		out.append("TYPE");
+//    WITH t: symbols.seb[typeSei] SELECT FROM
+		switch(typeSei->value->seTag) {
+//      cons => WITH t SELECT FROM
+		case SERecord::SeTag::CONS:
+			switch(typeSei->value->cons.typeTag) {
+//	      opaque => NULL;
+			case SERecord::TypeClass::OPAQUE:
+				break;
+//        ENDCASE => out[" = "L, cd];
+			default:
+				out.append(" = ");
+				break;
+			}
+//      ENDCASE => out[" = "L, cd];
+			break;
+		default:
+			out.append(" = ");
+			break;
+		}
+//    vf � PrintType[typeSei, NoSub];
+		ValFormat vf = printType(out, typeSei);
+//    PrintDefaultValue [sei, vf];
+		printDefaultValue(out, sei, vf);
+//    END
+	}
+//  ELSE
+	else {
+//    BEGIN
+//    vf: ValFormat;
+//    typeSei � symbols.seb[sei].idType;
+		SEIndex* typeSei = sei->value->id.idType;
+//    IF symbols.seb[sei].immutable
+//      AND NOT symbols.seb[sei].constant
+//	    AND (SELECT SymbolOps.XferMode[symbols, typeSei] FROM
+//	      none, process => TRUE, ENDCASE => FALSE)
+//	    --it's not a proc, signal, error, program, or port
+//      THEN out["READONLY "L, cd];
+		if (sei->value->id.immutable
+			&& (!sei->value->id.constant)) {
+			Symbols::TransferMode mode = Symbols::xferMode(typeSei);
+			switch(mode) {
+			case Symbols::TransferMode::NONE:
+			case Symbols::TransferMode::PROCESS:
+				out.append("READONLY ");
+				break;
+			default:
+				break;
+			}
+		}
+//    vf � PrintType[typeSei, NoSub];
+		ValFormat vf = printType(out, typeSei);
+//    IF symbols.seb[sei].constant THEN
+		if (sei->value->id.constant) {
+//	    WITH vf SELECT FROM
+			switch(vf.tag) {
+//	      transfer =>
+			case ValFormat::Tag::TRANSFER:
+//	        BEGIN
+			{
+//	        bti: Symbols.CBTIndex = SymbolOps.ToBti[symbols.seb[sei].idInfo];
+				BodyRecord* br = sei->symbols->body[sei->value->id.idInfo];
+//	        out[" = "L, cd];
+				out.append(" = ");
+//	        SELECT TRUE FROM
+//	          bti # Symbols.BTNull =>
+				if (br->index != BTIndex::BT_NULL) {
+//	            out[SELECT TRUE FROM
+//	    	      mode = signal, mode = error =>"CODE"L,
+//	    	      symbols.bb[bti].inline => "(INLINE)"L	,
+//	    	      ENDCASE => "(procedure body)"L, cd];
+				}
+//	          symbols.seb[sei].extended =>
+//	            out["(MACHINE CODE)"L, cd];
+//	          ENDCASE =>
+//	            PrintTypedVal[symbols.seb[sei].idValue, vf] --a hardcoded constant
+//	        END;
+			}
+			break;
+//	      ENDCASE =>
+//	        BEGIN
+//	        out[" = "L, cd];
+//	        IF symbols.seb[sei].extended
+//	          THEN PrintTreeLink[SymbolOps.FindExtension[symbols, sei].tree, vf, 0]
+//	          ELSE
+//	            BEGIN
+//	            underTypeSei: Symbols.CSEIndex = SymbolOps.UnderType[symbols, typeSei];
+//	            WITH symbols.seb[underTypeSei] SELECT FROM
+//	              subrange => PrintTypedVal[SymbolOps.ToCard[symbols.seb[sei].idValue] + origin, vf];
+//	    	     --normalize subrange
+//	              ENDCASE => PrintTypedVal[symbols.seb[sei].idValue, vf];
+//	    	END;
+//	    END;
+//    END;
+//  defaultPublic � savePublic;
+//  END;
+}
 
 //PrintTreeLink: PROCEDURE [tree: Tree.Link, vf: ValFormat, recur: CARDINAL, sonOfDot: BOOLEAN � FALSE] =
 void ShowType::printTreeLink(QString& out, TreeLink* tree, ValFormat& vf, int recur, bool sonOfDot);
