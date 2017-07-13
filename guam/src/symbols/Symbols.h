@@ -373,10 +373,10 @@ public:
 
 	static void resolve();
 
-	bool isNull() {
+	bool isNull() const {
 		return index == HT_NULL;
 	}
-	QString toString();
+	QString toString() const;
 
 	const HTRecord& getValue();
 private:
@@ -434,10 +434,10 @@ public:
 
 	static void resolve();
 
-	bool isNull() {
+	bool isNull() const {
 		return index == CTX_NULL;
 	}
-	QString toString();
+	QString toString() const;
 
 	const CTXRecord& getValue();
 private:
@@ -449,9 +449,81 @@ private:
 };
 
 
+//MDIndex: TYPE = Base RELATIVE ORDERED POINTER [0..Limit) TO MDRecord;
+//MDNull: MDIndex = LAST[MDIndex];
+//OwnMdi: MDIndex = FIRST[MDIndex];
+class MDIndex {
+private:
+	static const CARD16 MD_NULL = symbols::LIMIT - 1;
+	static const CARD16 MD_OWN  = 0;
+
+	Symbols*  symbols;
+	CARD16    index;
+	MDRecord* value;
+
+public:
+	static MDIndex* getNull();
+	static MDIndex* getInstance(Symbols* symbols_, CARD16 index_);
+
+	static void resolve();
+
+	bool isNull() const {
+		return index == MD_NULL;
+	}
+	QString toString() const;
+
+	const MDRecord& getValue();
+private:
+	static QList<MDIndex*> all;
+
+	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
+		all.append(this);
+	}
+};
+
+//
+// MDRecord
+//
+class MDRecord {
+private:
+	const Symbols*  symbols;
+	const CARD16    index;
+
+public:
+	static MDRecord* getInstance(Symbols* symbols, CARD16 index);
+
+	const Stamp*     stamp;
+	const HTIndex*   moduleId;
+	const HTIndex*   fileId;
+	const bool       shared;
+	const bool       exported;
+	const CTXIndex*  ctx;
+	const CTXIndex*  defaultImport;
+	const CARD16     file;
+
+	QString toString() const;
+
+private:
+	MDRecord(Symbols* symbols_, CARD16 index_, Stamp* stamp_, HTIndex* moduleId_, HTIndex* fileId_, bool shared_, bool exported_, CTXIndex* ctx_, CTXIndex* defaultImport_, CARD16 file_) :
+		symbols(symbols_), index(index_), stamp(stamp_), moduleId(moduleId_), fileId(fileId_), shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {}
+};
+
+
+//MDRecord: TYPE = RECORD [
+//  stamp: TimeStamp.Stamp,
+//  moduleId: HTIndex,		-- hash entry for module name
+//  fileId: HTIndex,		-- hash entry for file name
+//  shared: BOOLEAN,		-- overrides PRIVATE, etc.
+//  exported: BOOLEAN,
+//  ctx: IncludedCTXIndex,	-- context of copied entries
+//  defaultImport: CTXIndex,	-- unnamed imported instance
+//  file: FileIndex];		-- associated file
 
 
 
+//
+// Symbols
+//
 class Symbols {
 public:
 	// VersionID: CARDINAL = 08140; -- AMesa/14.0/Compiler/Friends/SymbolSegment.mesa

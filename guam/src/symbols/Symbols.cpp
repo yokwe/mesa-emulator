@@ -49,7 +49,6 @@ static const CARD16 WORDS_PER_PAGE = 256;
 // HTIndex
 //
 QList<HTIndex*> HTIndex::all;
-
 HTIndex* HTIndex::getNull() {
 	static HTIndex ret(0, HTIndex::HT_NULL);
 	return &ret;
@@ -72,8 +71,9 @@ void HTIndex::resolve() {
 			ERROR();
 		}
 	}
+	logger.info("HTIndex::resove %d", all.size());
 }
-QString HTIndex::toString() {
+QString HTIndex::toString() const {
 	if (isNull()) return "#NULL";
 	if (value == 0) return QString("ht-%1").arg(index);
 	return QString("ht-%1-[%2]").arg(index).arg(value->value);
@@ -81,30 +81,9 @@ QString HTIndex::toString() {
 
 
 //
-// HTRecord
-//
-HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex) {
-    // 0
-	CARD16 word = symbols->file->getCARD16();
-    bool   anyInternal = bitField(word, 0);
-    bool   anyPublic   = bitField(word, 1);
-    CARD16 link        = bitField(word, 2, 15);
-    // 1
-    CARD16 ssIndex     = symbols->file->getCARD16();
-    // ss.substring(lastSSIndex, data.ssIndex);
-    QString value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
-
-    return new HTRecord(symbols, index, anyInternal, anyPublic, link, ssIndex, value);
-}
-QString HTRecord::toString() const {
-	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
-}
-
-//
 // CTXIndex
 //
 QList<CTXIndex*> CTXIndex::all;
-
 CTXIndex* CTXIndex::getNull() {
 	static CTXIndex ret(0, CTXIndex::CTX_NULL);
 	return &ret;
@@ -127,15 +106,100 @@ void CTXIndex::resolve() {
 			ERROR();
 		}
 	}
+	logger.info("CTXIndex::resove %d", all.size());
 }
-
-QString CTXIndex::toString() {
+QString CTXIndex::toString() const {
 	if (isNull()) return "#NULL";
 	if (value == 0) return QString("ctx-%1").arg(index);
 	return QString("ctx-%1-[%2]").arg(index); // TODO
 //	return QString("ctx-%1-[%2]").arg(index).arg(value->toString(value));
 }
 
+
+//
+// MDIndex
+//
+QList<MDIndex*> MDIndex::all;
+MDIndex* MDIndex::getNull() {
+	static MDIndex ret(0, MDIndex::MD_NULL);
+	return &ret;
+}
+MDIndex* MDIndex::getInstance(Symbols* symbols_, CARD16 index_) {
+	return new MDIndex(symbols_, index_);
+}
+void MDIndex::resolve() {
+	for(MDIndex* p: all) {
+		if (p->isNull()) continue;
+		if (p->value)    continue;
+
+		QMap<CARD16, MDRecord*>& map(p->symbols->md);
+		CARD16 index = p->index;
+
+		if (map.contains(index)) {
+			p->value = map[index];
+		} else {
+			logger.fatal("Unknown index = %d", index);
+			ERROR();
+		}
+	}
+	logger.info("MDIndex::resove %d", all.size());
+}
+QString MDIndex::toString() const {
+	if (isNull()) return "#NULL";
+	if (value == 0) return QString("md-%1").arg(index);
+	return QString("md-%1-[%2]").arg(index); // TODO
+//	return QString("ctx-%1-[%2]").arg(index).arg(value->toString(value));
+}
+
+
+//
+// MDRecord
+//
+MDRecord* MDRecord::getInstance(Symbols* symbols, CARD16 index) {
+	Stamp*   stamp    = Stamp::getInstance(symbols->bcd);
+	HTIndex* moduleId = HTIndex::getInstance(symbols, symbols->file->getCARD16());
+
+	CARD16   word     = symbols->file->getCARD16();
+	HTIndex* fileId   = HTIndex::getInstance(symbols, bitField(word, 0, 12));
+    bool     shared   = bitField(word, 13);
+    bool     exported = bitField(word, 14, 15);
+
+    CTXIndex* ctx           = CTXIndex::getInstance(symbols, symbols->file->getCARD16());
+    CTXIndex* defaultImport = CTXIndex::getInstance(symbols, symbols->file->getCARD16());
+
+    CARD16 file = symbols->file->getCARD16();
+
+    return new MDRecord(symbols, index, stamp, moduleId, fileId, shared, exported, ctx, defaultImport, file);
+}
+QString MDRecord::toString() const {
+//	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
+//			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue()).arg(fileId->getValue()).
+//			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
+	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
+			arg(index, 4).arg(stamp->toString()).arg(moduleId->toString()).arg(fileId->toString()).
+			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
+}
+
+
+//
+// HTRecord
+//
+HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex) {
+    // 0
+	CARD16 word = symbols->file->getCARD16();
+    bool   anyInternal = bitField(word, 0);
+    bool   anyPublic   = bitField(word, 1);
+    CARD16 link        = bitField(word, 2, 15);
+    // 1
+    CARD16 ssIndex     = symbols->file->getCARD16();
+    // ss.substring(lastSSIndex, data.ssIndex);
+    QString value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
+
+    return new HTRecord(symbols, index, anyInternal, anyPublic, link, ssIndex, value);
+}
+QString HTRecord::toString() const {
+	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
+}
 
 
 //
@@ -238,7 +302,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     // Read block
     initializeSS(ssBlock);
     initializeHT(htBlock);
-//    initializeMD(mdBlock);
+    initializeMD(mdBlock);
 //    initializeCTX(ctxBlock);
 //    initializeSE(seBlock);
 //    initializeBody(bodyBlock);
@@ -247,8 +311,8 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 //    initializeTree(treeBlock);
 
     // Resolve index
-//    HTIndex::resolve();
-//    MDIndex::resolve();
+    HTIndex::resolve();
+    MDIndex::resolve();
 //    CTXIndex::resolve();
 //    SEIndex::resolve();
 //    BTIndex::resolve();
@@ -310,6 +374,34 @@ void Symbols::initializeHT(BlockDescriptor* block) {
         logger.info("ht %s", record->toString().toLocal8Bit().constData());
         index++;
         lastSSIndex = record->ssIndex;
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeMD(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    CARD16 index = 0;
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        MDRecord* record = MDRecord::getInstance(this, index);
+        md[index] = record;
+
+        logger.info("md %s", record->toString().toLocal8Bit().constData());
+        index++;
     }
 
     // sanity check
