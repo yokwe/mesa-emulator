@@ -57,6 +57,19 @@ class SERecord;
 class TreeNode;
 
 namespace symbols {
+	struct Key {
+		const Symbols* symbols;
+		const CARD16   index;
+
+		bool operator<(const Key &that) const {
+				if (symbols != that.symbols) return symbols < that.symbols;
+				return index < that.index;
+		}
+
+		Key(const Key& that) : symbols(that.symbols), index(that.index) {}
+		Key(const Symbols* symbols_, const CARD16 index_) : symbols(symbols_), index(index_) {}
+	};
+
 	//ByteLength: CARDINAL = 8;
 	static const CARD16 BYTE_LENGTH = 8;
 	//WordLength: CARDINAL = 16;
@@ -368,7 +381,7 @@ public:
 	}
 	QString toString() const;
 
-	const HTRecord& getValue();
+	const HTRecord& getValue() const;
 private:
 	static QList<HTIndex*> all;
 
@@ -389,6 +402,7 @@ private:
 
 public:
 	static HTRecord* getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex);
+	static HTRecord* find(Symbols* symbols, CARD16 index);
 
 	const bool    anyInternal;
 	const bool    anyPublic;
@@ -399,8 +413,14 @@ public:
 	QString toString() const;
 
 private:
+	typedef symbols::Key Key;
+	static QMap<Key, HTRecord*> all;
+
 	HTRecord(Symbols* symbols_, CARD16 index_, bool anyInternal_, bool anyPublic_, CARD16 link_, CARD16 ssIndex_, QString value_) :
-		symbols(symbols_), index(index_), anyInternal(anyInternal_), anyPublic(anyPublic_), link(link_), ssIndex(ssIndex_), value(value_) {}
+		symbols(symbols_), index(index_), anyInternal(anyInternal_), anyPublic(anyPublic_), link(link_), ssIndex(ssIndex_), value(value_) {
+		Key key(symbols, index);
+		all[key] = this;
+	}
 };
 
 

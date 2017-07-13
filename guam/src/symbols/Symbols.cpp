@@ -78,6 +78,11 @@ QString HTIndex::toString() const {
 	if (value == 0) return QString("ht-%1").arg(index);
 	return QString("ht-%1-[%2]").arg(index).arg(value->value);
 }
+const HTRecord& HTIndex::getValue() const {
+	HTRecord* ret = HTRecord::find(symbols, index);
+	return *ret;
+}
+
 
 
 //
@@ -176,7 +181,7 @@ QString MDRecord::toString() const {
 //			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue()).arg(fileId->getValue()).
 //			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
 	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
-			arg(index, 4).arg(stamp->toString()).arg(moduleId->toString()).arg(fileId->toString()).
+			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue().value).arg(fileId->getValue().value).
 			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
 }
 
@@ -184,6 +189,7 @@ QString MDRecord::toString() const {
 //
 // HTRecord
 //
+QMap<HTRecord::Key, HTRecord*> HTRecord::all;
 HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex) {
     // 0
 	CARD16 word = symbols->file->getCARD16();
@@ -196,6 +202,15 @@ HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSInd
     QString value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
 
     return new HTRecord(symbols, index, anyInternal, anyPublic, link, ssIndex, value);
+}
+HTRecord* HTRecord::find(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	HTRecord* ret = all.value(key, 0);
+	if (ret == 0) {
+		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
+		ERROR();
+	}
+	return ret;
 }
 QString HTRecord::toString() const {
 	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
