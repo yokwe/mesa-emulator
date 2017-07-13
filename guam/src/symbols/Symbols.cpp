@@ -54,7 +54,9 @@ HTIndex* HTIndex::getNull() {
 	static HTIndex ret(0, HTIndex::HT_NULL);
 	return &ret;
 }
-
+HTIndex* HTIndex::getInstance(Symbols* symbols_, CARD16 index_) {
+	return new HTIndex(symbols_, index_);
+}
 void HTIndex::resolve() {
 	for(HTIndex* p: all) {
 		if (p->isNull()) continue;
@@ -71,13 +73,32 @@ void HTIndex::resolve() {
 		}
 	}
 }
-
 QString HTIndex::toString() {
 	if (isNull()) return "#NULL";
 	if (value == 0) return QString("ht-%1").arg(index);
 	return QString("ht-%1-[%2]").arg(index).arg(value->value);
 }
 
+
+//
+// HTRecord
+//
+HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex) {
+    // 0
+	CARD16 word = symbols->file->getCARD16();
+    bool   anyInternal = bitField(word, 0);
+    bool   anyPublic   = bitField(word, 1);
+    CARD16 link        = bitField(word, 2, 15);
+    // 1
+    CARD16 ssIndex     = symbols->file->getCARD16();
+    // ss.substring(lastSSIndex, data.ssIndex);
+    QString value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
+
+    return new HTRecord(symbols, index, anyInternal, anyPublic, link, ssIndex, value);
+}
+QString HTRecord::toString() const {
+	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
+}
 
 //
 // CTXIndex
@@ -88,7 +109,9 @@ CTXIndex* CTXIndex::getNull() {
 	static CTXIndex ret(0, CTXIndex::CTX_NULL);
 	return &ret;
 }
-
+CTXIndex* CTXIndex::getInstance(Symbols* symbols_, CARD16 index_) {
+	return new CTXIndex(symbols_, index_);
+}
 void CTXIndex::resolve() {
 	for(CTXIndex* p: all) {
 		if (p->isNull()) continue;
@@ -166,11 +189,11 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     definitionsFile = bitField(word, 15);
     logger.info("definitionFile %d", definitionsFile);
 
-    directoryCtx    = new CTXIndex(this, bitField(word, 1, 15));
+    directoryCtx    = CTXIndex::getInstance(this, bitField(word, 1, 15));
     logger.info("directoryCtx   %s", directoryCtx->toString().toLocal8Bit().constData());
-    importCtx       = new CTXIndex(this, file->getCARD16());
+    importCtx       = CTXIndex::getInstance(this, file->getCARD16());
     logger.info("importCtx      %s", importCtx->toString().toLocal8Bit().constData());
-    outerCtx        = new CTXIndex(this, file->getCARD16());
+    outerCtx        = CTXIndex::getInstance(this, file->getCARD16());
     logger.info("outerCtx       %s", outerCtx->toString().toLocal8Bit().constData());
 
 
@@ -214,7 +237,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 
     // Read block
     initializeSS(ssBlock);
-//    initializeHT(htBlock);
+    initializeHT(htBlock);
 //    initializeMD(mdBlock);
 //    initializeCTX(ctxBlock);
 //    initializeSE(seBlock);
@@ -269,33 +292,33 @@ void Symbols::initializeSS(BlockDescriptor* block) {
 //    logger.info("ss = (%d)%s ... %s!", ss.length(), ss.left(10).toLatin1().constData(), ss.right(10).toLatin1().constData());
 }
 
-//void Symbols::initializeHT(BlockDescriptor* block) {
-//    CARD16 base  = offsetBase + block->offset;
-//    int    limit = base + block->size;
-//
-//    CARD16 lastSSIndex = 0;
-//    CARD16 index = 0;
-//    file->position(base);
-//
-//    for(;;) {
-//        int pos = file->position();
-//        if (limit <= pos) break;
-//
-//        HTRecord* record = new HTRecord(this, index, lastSSIndex);
-//        ht[index] = record;
-//
-////        logger.info("ht %s", record->toString().toLocal8Bit().constData());
-//        index++;
-//        lastSSIndex = record->ssIndex;
-//    }
-//
-//    // sanity check
-//    {
-//    	int pos = file->position();
-//        if (pos != limit) {
-//        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
-//            ERROR();
-//        }
-//    }
-//}
+void Symbols::initializeHT(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    CARD16 lastSSIndex = 0;
+    CARD16 index = 0;
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        HTRecord* record = HTRecord::getInstance(this, index, lastSSIndex);
+        ht[index] = record;
+
+        logger.info("ht %s", record->toString().toLocal8Bit().constData());
+        index++;
+        lastSSIndex = record->ssIndex;
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
 

@@ -369,12 +369,9 @@ private:
 
 public:
 	static HTIndex* getNull();
+	static HTIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
 	static void resolve();
-
-	HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
-		all.append(this);
-	}
 
 	bool isNull() {
 		return index == HT_NULL;
@@ -384,6 +381,10 @@ public:
 	const HTRecord& getValue();
 private:
 	static QList<HTIndex*> all;
+
+	HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
+		all.append(this);
+	}
 };
 
 
@@ -393,17 +394,19 @@ private:
 //  ssIndex: CARDINAL];
 class HTRecord {
 private:
-	Symbols*  symbols;
-	CARD16    index;
+	const Symbols*  symbols;
+	const CARD16    index;
 
 public:
-	static HTRecord* getInsance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex);
+	static HTRecord* getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex);
 
-	bool    anyInternal;
-	bool    anyPublic;
-	CARD16  link;
-	CARD16  ssIndex;
-	QString value;
+	const bool    anyInternal;
+	const bool    anyPublic;
+	const CARD16  link;
+	const CARD16  ssIndex;
+	const QString value;
+
+	QString toString() const;
 
 private:
 	HTRecord(Symbols* symbols_, CARD16 index_, bool anyInternal_, bool anyPublic_, CARD16 link_, CARD16 ssIndex_, QString value_) :
@@ -427,12 +430,9 @@ private:
 
 public:
 	static CTXIndex* getNull();
+	static CTXIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
 	static void resolve();
-
-	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
-		all.append(this);
-	}
 
 	bool isNull() {
 		return index == CTX_NULL;
@@ -442,6 +442,10 @@ public:
 	const CTXRecord& getValue();
 private:
 	static QList<CTXIndex*> all;
+
+	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
+		all.append(this);
+	}
 };
 
 
