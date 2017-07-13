@@ -30,12 +30,13 @@ all:
 	(cd src/mesa;          make all)
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
-	(cd src/bcd;           make all)
 	(cd src/util;          make all)
 	(cd src/test;          make all)
 	(cd src/guam-headless; make all)
 	(cd src/guam;          make all)
 	(cd src/floppy;        make all)
+	(cd src/bcd;           make all)
+	(cd src/symbols;       make all)
 
 qt4-default:
 	sudo apt-get install qt4-default
@@ -50,12 +51,13 @@ clean:
 	mkdir  tmp/build/mesa
 	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
-	mkdir  tmp/build/bcd
 	mkdir  tmp/build/util
 	mkdir  tmp/build/test
 	mkdir  tmp/build/guam-headless
 	mkdir  tmp/build/guam
 	mkdir  tmp/build/floppy
+	mkdir  tmp/build/bcd
+	mkdir  tmp/build/symbols
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -98,6 +100,16 @@ bcd:
 run-bcd: bcd
 	echo -n >tmp/debug.log
 	tmp/build/bcd/bcd tmp/GermOpsImpl.bcd
+
+symbols:
+	(cd src/mesa;          make all)
+	(cd src/util;          make all)
+	(cd src/symbols;       make all)
+
+run-symbols: symbols
+	echo -n >tmp/debug.log
+	tmp/build/symbols/symbols tmp/GermOpsImpl.bcd
+
 
 run-guam: guam
 	echo -n >tmp/debug.log
@@ -154,12 +166,13 @@ qmake:
 	(cd src/mesa;          qmake)
 	(cd src/simple-opcode; qmake)
 	(cd src/agent;         qmake)
-	(cd src/bcd;           qmake)
 	(cd src/util;          qmake)
 	(cd src/test;          qmake)
 	(cd src/guam-headless; qmake)
 	(cd src/guam;          qmake)
 	(cd src/floppy;        qmake)
+	(cd src/bcd;           qmake)
+	(cd src/symbols;       qmake)
 	qmake --version
 
 
