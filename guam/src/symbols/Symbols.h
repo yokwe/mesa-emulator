@@ -270,16 +270,6 @@ namespace symbols {
 	//FileIndex: TYPE = [0..77777B];	-- internal file handle
 	//NullFileIndex: FileIndex = LAST[FileIndex];
 	//
-	//MDRecord: TYPE = RECORD [
-	//  stamp: TimeStamp.Stamp,
-	//  moduleId: HTIndex,		-- hash entry for module name
-	//  fileId: HTIndex,		-- hash entry for file name
-	//  shared: BOOLEAN,		-- overrides PRIVATE, etc.
-	//  exported: BOOLEAN,
-	//  ctx: IncludedCTXIndex,	-- context of copied entries
-	//  defaultImport: CTXIndex,	-- unnamed imported instance
-	//  file: FileIndex];		-- associated file
-	//
 	//MDIndex: TYPE = Base RELATIVE ORDERED POINTER [0..Limit) TO MDRecord;
 	//MDNull: MDIndex = LAST[MDIndex];
 	//
@@ -354,8 +344,8 @@ namespace symbols {
 	//ctxType: Table.Selector = 4;
 	//mdType: Table.Selector = 5;
 	//bodyType: Table.Selector = 6;
-
 }
+
 
 //HTIndex: TYPE = CARDINAL [0..Limit/2);
 //HTNull: HTIndex = FIRST[HTIndex];
@@ -416,10 +406,7 @@ private:
 
 
 //CTXIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO CTXRecord;
-// IncludedCTXIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO included CTXRecord;
-//
 //CTXNull: CTXIndex = FIRST[CTXIndex];
-//  IncludedCTXNull: IncludedCTXIndex = LOOPHOLE[CTXNull];
 class CTXIndex {
 private:
 	static const CARD16 CTX_NULL = 0;
@@ -481,8 +468,16 @@ private:
 	}
 };
 
-//
-// MDRecord
+
+//MDRecord: TYPE = RECORD [
+//  stamp: TimeStamp.Stamp,
+//  moduleId: HTIndex,		-- hash entry for module name
+//  fileId: HTIndex,		-- hash entry for file name
+//  shared: BOOLEAN,		-- overrides PRIVATE, etc.
+//  exported: BOOLEAN,
+//  ctx: IncludedCTXIndex,	-- context of copied entries
+//  defaultImport: CTXIndex,	-- unnamed imported instance
+//  file: FileIndex];		-- associated file
 //
 class MDRecord {
 private:
@@ -507,18 +502,6 @@ private:
 	MDRecord(Symbols* symbols_, CARD16 index_, Stamp* stamp_, HTIndex* moduleId_, HTIndex* fileId_, bool shared_, bool exported_, CTXIndex* ctx_, CTXIndex* defaultImport_, CARD16 file_) :
 		symbols(symbols_), index(index_), stamp(stamp_), moduleId(moduleId_), fileId(fileId_), shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {}
 };
-
-
-//MDRecord: TYPE = RECORD [
-//  stamp: TimeStamp.Stamp,
-//  moduleId: HTIndex,		-- hash entry for module name
-//  fileId: HTIndex,		-- hash entry for file name
-//  shared: BOOLEAN,		-- overrides PRIVATE, etc.
-//  exported: BOOLEAN,
-//  ctx: IncludedCTXIndex,	-- context of copied entries
-//  defaultImport: CTXIndex,	-- unnamed imported instance
-//  file: FileIndex];		-- associated file
-
 
 
 //
