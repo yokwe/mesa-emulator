@@ -26,7 +26,7 @@ OF SUCH DAMAGE.
 
 
 //
-// md.cpp
+// MDIndex.cpp
 //
 
 #include "../util/Util.h"
