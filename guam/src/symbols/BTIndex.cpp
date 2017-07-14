@@ -69,8 +69,13 @@ BTRecord* BTRecord::find(Symbols* symbols, CARD16 index) {
 }
 
 
+//
+// BTRecord
+//
+QMap<BTRecord::Key, BTRecord*> BTRecord::all;
+
 BTRecord* BTRecord::getInstance(Symbols* symbols, CARD16 index) {
-	BodyLink* bodyLink = BodyLink::getInstance(symbols);
+	BodyLink* link = BodyLink::getInstance(symbols);
 	BTIndex*  firstSon = BTIndex::getInstance(symbols, symbols->file->getCARD16());
 	SEIndex*  type     = SEIndex::getInstance(symbols, symbols->file->getCARD16());
 
@@ -95,8 +100,40 @@ BTRecord* BTRecord::getInstance(Symbols* symbols, CARD16 index) {
 		ERROR();
 	}
 
-	return new BTRecord(symbols, index, bodyLink, firstSon, type, localCtx, level, sourceIndex, info, tag, tagValue);
+	return new BTRecord(symbols, index, link, firstSon, type, localCtx, level, sourceIndex, info, tag, tagValue);
 }
+QString BTRecord::toString(Tag value) {
+	TO_STRING_PROLOGUE(Tag)
+
+	MAP_ENTRY(CALLABLE)
+	MAP_ENTRY(OTHER)
+
+	TO_STRING_EPILOGUE
+}
+const BTRecord::Callable& BTRecord::getCallable() const {
+	if (tag != Tag::CALLABLE) ERROR();
+	if (tagValue == 0) ERROR();
+	Callable* ret = (Callable*)tagValue;
+	return *ret;
+}
+const BTRecord::Other& BTRecord::getOther() const {
+	if (tag != Tag::CALLABLE) ERROR();
+	if (tagValue == 0) ERROR();
+	Other* ret = (Other*)tagValue;
+	return *ret;
+}
+QString BTRecord::toString() const {
+	switch(tag) {
+	case Tag::CALLABLE:
+		return QString("%1 %2 %3 %4 %5").arg(link->toString()).arg(type->toString()).arg(level).arg(toString(tag)).arg(getCallable().toString());
+	case Tag::OTHER:
+		return QString("%1 %2 %3 %4 %5").arg(link->toString()).arg(type->toString()).arg(level).arg(toString(tag)).arg(getOther().toString());
+	default:
+		ERROR();
+		return "???";
+	}
+}
+
 
 
 //
@@ -166,6 +203,20 @@ BTRecord::BodyInfo* BTRecord::BodyInfo::getInstance(Symbols* symbols) {
 	}
 
 	return new BodyInfo(tag, tagValue);
+}
+QString BTRecord::BodyInfo::toString(Tag value) {
+	TO_STRING_PROLOGUE(Tag)
+
+	MAP_ENTRY(INTERNAL)
+	MAP_ENTRY(EXTERNAL)
+
+	TO_STRING_EPILOGUE
+}
+QString BTRecord::BodyInfo::Internal::toString() const {
+	return QString("%1 %2 %3").arg(bodyTree).arg(thread).arg(frameSize);
+}
+QString BTRecord::BodyInfo::External::toString() const {
+	return QString("%1 %2 %3").arg(bytes).arg(startIndex).arg(indexLength);
 }
 const BTRecord::BodyInfo::Internal&   BTRecord::BodyInfo::getInternal() const {
 	if (tag != Tag::INTERNAL) ERROR();
