@@ -177,6 +177,8 @@ public:
 		enum Which {SIBLING, PARENT};
 		static QString toString(Which);
 
+		static BodyLink* getInstance(Symbols* symbos);
+
 		const Which    which;
 		const BTIndex* index;
 
@@ -184,18 +186,6 @@ public:
 		BodyLink(Which which_, BTIndex* index_) : which(which_), index(index_) {}
 	};
 
-	//BodyInfo: TYPE = RECORD [
-	//  SELECT mark(0:0..0): * FROM
-	//    Internal => [
-	//      bodyTree(0:1..15): Base RELATIVE POINTER [0..Limit),
-	//        --Tree.Index--
-	//      thread(1:0..15): Base RELATIVE POINTER [0..Limit),
-	//        --Tree.Index / LitDefs.STIndex--
-	//      frameSize(2:0..15): [0..PrincOps.MaxFrameSize]],
-	//    External => [
-	//      bytes(0:1..15): [0..LAST[CARDINAL]/2],
-	//      startIndex(1:0..15), indexLength(2:0..15): CARDINAL]
-	//    ENDCASE];
 	class BodyInfo {
 	public:
 		enum Tag {INTERNAL, EXTERNAL};
@@ -220,6 +210,8 @@ public:
 			External(CARD16 bytes_, CARD16 startIndex_, CARD16 indexLength_) : bytes(bytes_), startIndex(startIndex_), indexLength(indexLength_) {}
 		};
 
+		static BodyInfo* getInstance(Symbols* symbos);
+
 		const Tag   tag;
 		const void* tagValue;
 
@@ -233,14 +225,6 @@ public:
 	static BTRecord* getInstance(Symbols* symbols, CARD16 index);
 	static BTRecord* find(Symbols* symbols, CARD16 index);
 
-	//  link(0:0..15): BodyLink,
-	//  firstSon(1:0..15): BTIndex,
-	//  type(2:0..15): RecordSEIndex,
-	//  localCtx(3:0..10): CTXIndex,
-	//  level(3:11..15): ContextLevel,
-	//  sourceIndex(4:0..15): CARDINAL,
-	//  info(5:0..47): BodyInfo,
-	//  extension(8:0..79): SELECT kind: * FROM
 	const BodyLink* link;
 	const BTIndex*  firstSon;
 	const SEIndex*  type; // RecordSEIndex

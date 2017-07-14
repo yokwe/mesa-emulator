@@ -55,13 +55,3 @@ QString BTIndex::toString() const {
 //	return *ret;
 //}
 
-//BTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO BodyRecord;
-//  CBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Callable BodyRecord;
-//    ICBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Inner Callable BodyRecord;
-//    OCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Outer Callable BodyRecord;
-//    CCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Catch Callable BodyRecord;
-//BTNull: BTIndex = LAST[BTIndex];
-//  CBTNull: CBTIndex = LOOPHOLE[BTNull];
-//  CCBTNull: CCBTIndex = LOOPHOLE[BTNull];
-//
-//RootBti: CBTIndex = FIRST[CBTIndex];
