@@ -42,18 +42,25 @@ class Symbols;
 
 class BTIndex;
 class BTRecord;
+
 class CTXIndex;
 class CTXRecord;
+
 class ExtIndex;
 class ExtRecord;
+
 class HTIndex;
 class HTRecord;
+
 class LTIndex;
 class LTRecord;
+
 class MDIndex;
 class MDRecord;
+
 class SEIndex;
 class SERecord;
+
 class TreeNode;
 
 namespace symbols {
@@ -79,9 +86,6 @@ namespace symbols {
 	//Limit: CARDINAL = Table.Limit;
 	static const CARD16 LIMIT = 040000;
 
-	//
-	//-- semantic entry table declarations
-	//
 	//TypeClass: TYPE = {
 	//  mode,
 	//  basic,
@@ -104,120 +108,21 @@ namespace symbols {
 	//  nil,
 	//  bits,
 	//  fixedSequence};
-	//
+	enum class TypeClass {
+        MODE, BASIC, ENUMERATED, RECORD, REF,
+        ARRAY, ARRAYDESC, TRANSFER, DEFINITION, UNION,
+        SEQUENCE, RELATIVE, SUBRANGE, LONG, REAL,
+        OPAQUE, ZONE, ANY, NIL, BITS,
+        FIXED_SEQUENCE
+	};
+	QString toString(TypeClass value);
+
 	//TransferMode: TYPE = {proc, port, signal, error, process, program, none};
-	//
-	//Unspec: TYPE [SIZE[CARDINAL]];
-	//
-	//SERecord: TYPE = RECORD [
-	//  mark3, mark4: BOOLEAN,
-	//  body: SELECT seTag: * FROM
-	//    id => [
-	//	extended: BOOLEAN,
-	//	public: BOOLEAN,
-	//	idCtx: CTXIndex,
-	//	immutable, constant: BOOLEAN,
-	//	idType: SEIndex,
-	//	idInfo: Unspec,
-	//	idValue: Unspec,
-	//	hash: HTIndex,
-	//	linkSpace: BOOLEAN,
-	//	ctxLink: SELECT linkTag: * FROM
-	//	  terminal => [],
-	//	  sequential => [],
-	//	  linked => [link: ISEIndex]
-	//	  ENDCASE],
-	//    cons => [
-	//	typeInfo: SELECT typeTag: TypeClass FROM
-	//	  mode => [],
-	//	  basic => [
-	//	    ordered: BOOLEAN,
-	//	    code: [0..16),
-	//	    length: BitLength],
-	//	  enumerated => [
-	//	    ordered, machineDep: BOOLEAN,
-	//	    unpainted: BOOLEAN,		-- un- for backward compatiblity
-	//	    sparse: BOOLEAN,
-	//	    valueCtx: CTXIndex,
-	//	    nValues: CARDINAL],
-	//	  record => [
-	//	    hints: RECORD [
-	//	      comparable, assignable: BOOLEAN,
-	//	      unifield, variant, privateFields: BOOLEAN,
-	//	      refField, default, voidable: BOOLEAN],
-	//	    length: BitLength,
-	//	    argument, monitored, machineDep: BOOLEAN,
-	//	    painted: BOOLEAN,
-	//	    fieldCtx: CTXIndex,
-	//	    linkPart: SELECT linkTag: * FROM
-	//	      notLinked => [],
-	//	      linked => [linkType: SEIndex]
-	//	      ENDCASE],
-	//	  ref => [
-	//	    counted, ordered, readOnly, list, var, basing: BOOLEAN,
-	//	    refType: SEIndex],
-	//	  array => [
-	//	    packed: BOOLEAN,
-	//	    indexType: SEIndex,
-	//	    componentType: SEIndex],
-	//	  arraydesc => [
-	//	    var, readOnly: BOOLEAN,
-	//	    describedType: SEIndex],
-	//	  transfer => [
-	//	    safe: BOOLEAN,
-	//	    mode: TransferMode,
-	//	    typeIn, typeOut: CSEIndex],
-	//	  definition => [
-	//	    named: BOOLEAN,
-	//	    defCtx: CTXIndex],
-	//	  union => [
-	//	    hints: RECORD [
-	//	      equalLengths: BOOLEAN,
-	//	      refField, default, voidable: BOOLEAN],
-	//	    overlaid, controlled, machineDep: BOOLEAN,
-	//	    caseCtx: CTXIndex,
-	//	    tagSei: ISEIndex],
-	//	  sequence => [
-	//	    packed: BOOLEAN,
-	//	    controlled, machineDep: BOOLEAN,
-	//	    tagSei: ISEIndex,
-	//	    componentType: SEIndex],
-	//	  relative => [
-	//	    baseType: SEIndex,
-	//	    offsetType: SEIndex,
-	//	    resultType: SEIndex],
-	//	  subrange => [
-	//	    filled, empty: BOOLEAN,
-	//	    rangeType: SEIndex,
-	//	    origin: INTEGER,
-	//	    range: CARDINAL],
-	//	  long, real => [rangeType: SEIndex],
-	//	  opaque => [
-	//	    lengthKnown: BOOLEAN,
-	//	    length: BitLength,
-	//	    id: ISEIndex],
-	//	  zone => [counted, mds: BOOLEAN],
-	//	  any => [],
-	//	  nil => [],
-	//	  bits => [length: BitCount],	-- placed here to avoid
-	//	  ENDCASE],			-- changing symbol version id's
-	//    ENDCASE];
-	//
-	//SEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO SERecord;
-	//
-	//ISEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO id SERecord;
-	//CSEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO cons SERecord;
-	//RecordSEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO record cons SERecord;
-	//RefSEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO ref cons SERecord;
-	//ArraySEIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO array cons SERecord;
-	//
-	//SENull: SEIndex = FIRST[SEIndex];
-	//ISENull: ISEIndex = LOOPHOLE[SENull];
-	//CSENull: CSEIndex = LOOPHOLE[SENull];
-	//  RecordSENull: RecordSEIndex = LOOPHOLE[SENull];
-	//  RefSENull: RefSEIndex = LOOPHOLE[SENull];
-	//  ArraySENull: ArraySEIndex = LOOPHOLE[SENull];
-	//
+	enum class TransferMode {
+		PROC, PORT, SIGNAL, ERROR, PROCESS, PROGRAM, NONE
+	};
+	QString toString(TransferMode value);
+
 	//-- the following two values are guaranteed by the compiler
 	//typeTYPE: CSEIndex = FIRST[CSEIndex] + SIZE[nil cons SERecord];
 	//typeANY: CSEIndex = typeTYPE + SIZE[mode cons SERecord];
@@ -239,114 +144,39 @@ namespace symbols {
 	//  bd: [0..WordLength)];   			-- bit displacement
 	//
 	//ExtensionType: TYPE = {value, form, default, none};
-	//
+	enum class ExtensionType {VALUE, FORM, DEFAULT, NONE};
+	QString toString(ExtensionType value);
+
 	//Linkage: TYPE = {val, ref, type, manifest, none};	-- for import/export
+	enum class Linkage {VAL, REF, TYPE, MANIFEST, NONE};
+	QString toString(Linkage value);
+
 	//
 	//RefClass: TYPE = {none, simple, composite};
-	//
-	//-- context table declarations
-	//
+	enum class RefClass {NONE, SIMPLE, COMPOSITE};
+	QString toString(RefClass value);
+
+
 	//ContextLevel: TYPE = [0..7];
 	//  lZ: ContextLevel = 0;	-- context level of non-frame records
 	//  lG: ContextLevel = 1;	-- context level of global frame
 	//  lL: ContextLevel = lG+1;	-- context level of outer procedures
+	static const CARD16 LZ = 0;
+	static const CARD16 LG = 1;
+	static const CARD16 LL = LG + 1;
 	//
 	//Closure: TYPE = {none, unit, rc, full};  -- completeness of copied contexts
-	//
-	//CTXRecord: TYPE = RECORD [
-	//  mark, varUpdated: BOOLEAN,
-	//  seList: ISEIndex,
-	//  level: ContextLevel,
-	//  extension: SELECT ctxType: * FROM
-	//    simple => [ctxNew: CTXIndex],	-- for DeSoto
-	//    included => [
-	//	chain: IncludedCTXIndex,
-	//	copied: Closure � none,
-	//	module: MDIndex,
-	//	map: CTXIndex,
-	//	closed, complete, restricted: BOOLEAN,
-	//	reset: BOOLEAN],
-	//    imported => [includeLink: IncludedCTXIndex],
-	//    nil => []
-	//    ENDCASE];
-	//
-	//CTXIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO CTXRecord;
-	// IncludedCTXIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO included CTXRecord;
-	//
-	//CTXNull: CTXIndex = FIRST[CTXIndex];
-	//  IncludedCTXNull: IncludedCTXIndex = LOOPHOLE[CTXNull];
-	//
-	//StandardContext: TYPE = CTXIndex[CTXNull+SIZE[simple CTXRecord]..CTXNull+6*SIZE[simple CTXRecord]];
-	//
-	//-- module table declarations
-	//
-	//FileIndex: TYPE = [0..77777B];	-- internal file handle
-	//NullFileIndex: FileIndex = LAST[FileIndex];
-	//
-	//MDIndex: TYPE = Base RELATIVE ORDERED POINTER [0..Limit) TO MDRecord;
-	//MDNull: MDIndex = LAST[MDIndex];
-	//
-	//OwnMdi: MDIndex = FIRST[MDIndex];
-	//
-	//-- body table declarations
-	//
-	//BodyLink: TYPE = RECORD [which: {sibling, parent}, index: BTIndex];
-	//
-	//CatchIndex: TYPE = NATURAL;
-	//BodyRecord: TYPE = RECORD [
-	//  link: BodyLink,
-	//  firstSon: BTIndex,
-	//  type: RecordSEIndex,
-	//  localCtx: CTXIndex,
-	//  level: ContextLevel,
-	//  sourceIndex: CARDINAL,
-	//  info: BodyInfo,
-	//  extension: SELECT kind: * FROM
-	//    Callable => [
-	//	inline: BOOLEAN,
-	//	id: ISEIndex,
-	//	ioType: CSEIndex,
-	//	monitored, noXfers, resident: BOOLEAN,
-	//	entry, internal: BOOLEAN,
-	//	entryIndex: [0..256),
-	//	hints: RECORD [safe, argUpdated, nameSafe, needsFixup: BOOLEAN],
-	//	closure: SELECT nesting: * FROM
-	//	  Outer => [],
-	//	  Inner => [frameOffset: [0..PrincOps.MaxFrameSize)],
-	//	  Catch => [index: CatchIndex]
-	//	  ENDCASE],
-	//    Other => [relOffset: [0..LAST[CARDINAL]/2]]
-	//    ENDCASE];
-	//
-	//  BodyInfo: TYPE = RECORD [
-	//    SELECT mark: * FROM
-	//	Internal => [
-	//	  bodyTree: Base RELATIVE POINTER [0..Limit),
-	//	    --Tree.Index--
-	//	  thread: Base RELATIVE POINTER [0..Limit),
-	//	    --Tree.Index / LitDefs.STIndex--
-	//	  frameSize: [0..PrincOps.MaxFrameSize]],
-	//	External => [
-	//	  bytes: [0..LAST[CARDINAL]/2],
-	//	  startIndex, indexLength: CARDINAL]
-	//	ENDCASE];
-	//
-	//BTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO BodyRecord;
-	//  CBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Callable BodyRecord;
-	//    ICBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Inner Callable BodyRecord;
-	//    OCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Outer Callable BodyRecord;
-	//    CCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Catch Callable BodyRecord;
-	//BTNull: BTIndex = LAST[BTIndex];
-	//  CBTNull: CBTIndex = LOOPHOLE[BTNull];
-	//  CCBTNull: CCBTIndex = LOOPHOLE[BTNull];
-	//
-	//RootBti: CBTIndex = FIRST[CBTIndex];
-	//
-	//-- until idValue big enough to hold a BcdDefs.Link
-	//
+	enum class Closure {NONE, UNIT, RC, FULL};
+	QString toString(Closure value);
+
 	//LinkTag: TYPE = {variable, procedure, type};
+	enum class LinkTag {VARIABLE, PROCEDURE, TYPE};
+	QString toString(LinkTag value);
+
 	//VarTag: TYPE = MACHINE DEPENDENT {var(0), proc0(1), type(2), proc1(3)};
-	//
+	enum class VarTag {VAR, PROC0, TYPE, PROC1};
+	QString toString(VarTag value);
+
 	//DummyLink: TYPE = RECORD [gfi, ep: [0..377B]];
 	//
 	//-- allocation codes for table components
@@ -364,17 +194,15 @@ namespace symbols {
 //HTNull: HTIndex = FIRST[HTIndex];
 class HTIndex {
 private:
-	static const CARD16 HT_NULL = 0;
+	static constexpr const char* PREFIX = "ht";
+	static const CARD16  HT_NULL = 0;
 
 	Symbols*  symbols;
 	CARD16    index;
-	HTRecord* value;
 
 public:
 	static HTIndex* getNull();
 	static HTIndex* getInstance(Symbols* symbols_, CARD16 index_);
-
-	static void resolve();
 
 	bool isNull() const {
 		return index == HT_NULL;
@@ -383,11 +211,7 @@ public:
 
 	const HTRecord& getValue() const;
 private:
-	static QList<HTIndex*> all;
-
-	HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
-		all.append(this);
-	}
+	HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
 };
 
 
@@ -429,76 +253,121 @@ private:
 //CTXNull: CTXIndex = FIRST[CTXIndex];
 class CTXIndex {
 private:
-	static const CARD16 CTX_NULL = 0;
+	static constexpr const char* PREFIX = "ctx";
+	static const CARD16  CTX_NULL = 0;
 
 	Symbols*   symbols;
 	CARD16     index;
-	CTXRecord* value;
 
 public:
 	static CTXIndex* getNull();
 	static CTXIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
-	static void resolve();
-
 	bool isNull() const {
 		return index == CTX_NULL;
 	}
 	QString toString() const;
+	const CTXRecord& getValue() const;
 
-	const CTXRecord& getValue();
 private:
-	static QList<CTXIndex*> all;
-
-	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
-		all.append(this);
-	}
+	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
 };
 
+class CTXRecord {
+private:
+	const Symbols*  symbols;
+	const CARD16    index;
+
+public:
+	typedef symbols::Closure Closure;
+
+	enum class Tag {SIMPLE, INCLUDED, IMPORTED, NIL};
+	static QString toString(Tag value);
+
+	class Simple {
+	public:
+		const CTXIndex* ctxNew;
+
+		QString toString() const;
+		Simple(CTXIndex* ctxNew_) : ctxNew(ctxNew_) {}
+	};
+	class Included {
+	public:
+		const CTXIndex* chain; // IncludedCTXIndex
+		const Closure   copied;
+		const MDIndex*  module;
+		const CTXIndex* map;
+		const bool      closed;
+		const bool      complete;
+		const bool      restricted;
+		const bool      reset;
+
+		QString toString() const;
+		Included(CTXIndex* chain_, Closure copied_, MDIndex* module_, CTXIndex* map_, bool closed_, bool complete_, bool restricted_, bool reset_) :
+			chain(chain_), copied(copied_), module(module_), map(map_), closed(closed_), complete(complete_), restricted(restricted_), reset(reset_) {}
+	};
+	class Imported {
+	public:
+		const CTXIndex* includeLink; // IncludedCTXIndex
+
+		QString toString() const;
+		Imported(CTXIndex* includeLink_) : includeLink(includeLink_) {}
+	};
+
+	static CTXRecord* getInstance(Symbols* symbols, CARD16 index);
+	static CTXRecord* find(Symbols* symbols, CARD16 index);
+
+//	bool   mark;
+//	bool   varUpdated;
+	const SEIndex* seList;
+	const CARD16   level;
+	const Tag      tag;
+	const void*    tagValue;
+
+	const Simple&   getSimple() const;
+	const Included& getIncluded() const;
+	const Imported& getImported() const;
+
+	QString toString() const;
+
+private:
+	typedef symbols::Key Key;
+	static QMap<Key, CTXRecord*> all;
+
+	CTXRecord(Symbols* symbols_, CARD16 index_, SEIndex* seList_, CARD16 level_, Tag tag_, void* tagValue_) :
+		symbols(symbols_), index(index_), seList(seList_), level(level_), tag(tag_), tagValue(tagValue_) {
+		Key key(symbols, index);
+		all[key] = this;
+	}
+};
 
 //MDIndex: TYPE = Base RELATIVE ORDERED POINTER [0..Limit) TO MDRecord;
 //MDNull: MDIndex = LAST[MDIndex];
 //OwnMdi: MDIndex = FIRST[MDIndex];
 class MDIndex {
 private:
-	static const CARD16 MD_NULL = symbols::LIMIT - 1;
-	static const CARD16 MD_OWN  = 0;
+	static constexpr const char* PREFIX = "md";
+	static const CARD16  MD_NULL = symbols::LIMIT - 1;
+	static const CARD16  MD_OWN  = 0;
 
 	Symbols*  symbols;
 	CARD16    index;
-	MDRecord* value;
 
 public:
 	static MDIndex* getNull();
 	static MDIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
-	static void resolve();
-
 	bool isNull() const {
 		return index == MD_NULL;
 	}
 	QString toString() const;
+	const MDRecord& getValue() const;
 
-	const MDRecord& getValue();
 private:
-	static QList<MDIndex*> all;
-
-	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_), value(0) {
-		all.append(this);
-	}
+	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
 };
 
 
-//MDRecord: TYPE = RECORD [
-//  stamp: TimeStamp.Stamp,
-//  moduleId: HTIndex,		-- hash entry for module name
-//  fileId: HTIndex,		-- hash entry for file name
-//  shared: BOOLEAN,		-- overrides PRIVATE, etc.
-//  exported: BOOLEAN,
-//  ctx: IncludedCTXIndex,	-- context of copied entries
-//  defaultImport: CTXIndex,	-- unnamed imported instance
-//  file: FileIndex];		-- associated file
-//
 class MDRecord {
 private:
 	const Symbols*  symbols;
@@ -506,6 +375,7 @@ private:
 
 public:
 	static MDRecord* getInstance(Symbols* symbols, CARD16 index);
+	static MDRecord* find(Symbols* symbols, CARD16 index);
 
 	const Stamp*     stamp;
 	const HTIndex*   moduleId;
@@ -519,8 +389,76 @@ public:
 	QString toString() const;
 
 private:
-	MDRecord(Symbols* symbols_, CARD16 index_, Stamp* stamp_, HTIndex* moduleId_, HTIndex* fileId_, bool shared_, bool exported_, CTXIndex* ctx_, CTXIndex* defaultImport_, CARD16 file_) :
-		symbols(symbols_), index(index_), stamp(stamp_), moduleId(moduleId_), fileId(fileId_), shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {}
+	typedef symbols::Key Key;
+	static QMap<Key, MDRecord*> all;
+
+	MDRecord(Symbols* symbols_, CARD16 index_, Stamp* stamp_, HTIndex* moduleId_, HTIndex* fileId_,
+			bool shared_, bool exported_, CTXIndex* ctx_, CTXIndex* defaultImport_, CARD16 file_) :
+		symbols(symbols_), index(index_), stamp(stamp_), moduleId(moduleId_), fileId(fileId_),
+		shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {
+		Key key(symbols, index);
+		all[key] = this;
+	}
+};
+
+
+//SEIndex: TYPE = Base RELATIVE ORDERED POINTER [0..Limit) TO SERecord;
+//MDNull: MDIndex = LAST[MDIndex];
+//OwnMdi: MDIndex = FIRST[MDIndex];
+class SEIndex {
+private:
+	static constexpr const char* PREFIX = "se";
+	static const CARD16  SE_NULL = 0;
+
+	Symbols*  symbols;
+	CARD16    index;
+
+public:
+	static SEIndex* getNull();
+	static SEIndex* getInstance(Symbols* symbols_, CARD16 index_);
+
+	bool isNull() const {
+		return index == SE_NULL;
+	}
+	QString toString() const;
+//	const SERecord& getValue() const;
+
+private:
+	SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+};
+
+
+//BTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO BodyRecord;
+//  CBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Callable BodyRecord;
+//    ICBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Inner Callable BodyRecord;
+//    OCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Outer Callable BodyRecord;
+//    CCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Catch Callable BodyRecord;
+//BTNull: BTIndex = LAST[BTIndex];
+//  CBTNull: CBTIndex = LOOPHOLE[BTNull];
+//  CCBTNull: CCBTIndex = LOOPHOLE[BTNull];
+//
+//RootBti: CBTIndex = FIRST[CBTIndex];
+class BTIndex {
+private:
+	static constexpr const char* PREFIX = "bt";
+	static const CARD16  BT_NULL = symbols::LIMIT - 1;
+	static const CARD16  BT_ROOT = 0;
+
+	Symbols*  symbols;
+	CARD16    index;
+
+public:
+	static BTIndex* getNull();
+	static BTIndex* getInstance(Symbols* symbols_, CARD16 index_);
+
+	bool isNull() const {
+		return index == BT_NULL;
+	}
+	QString toString() const;
+//	const BTRecord& getValue() const;
+
+private:
+	BTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
 };
 
 

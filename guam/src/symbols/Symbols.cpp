@@ -39,183 +39,132 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "BCDFile.h"
 
 
+
+QString symbols::toString(TypeClass value) {
+	TO_STRING_PROLOGUE(TypeClass)
+
+	MAP_ENTRY(MODE)
+	MAP_ENTRY(BASIC)
+	MAP_ENTRY(ENUMERATED)
+	MAP_ENTRY(RECORD)
+	MAP_ENTRY(REF)
+	//
+	MAP_ENTRY(ARRAY)
+	MAP_ENTRY(ARRAYDESC)
+	MAP_ENTRY(TRANSFER)
+	MAP_ENTRY(DEFINITION)
+	MAP_ENTRY(UNION)
+	//
+	MAP_ENTRY(SEQUENCE)
+	MAP_ENTRY(RELATIVE)
+	MAP_ENTRY(SUBRANGE)
+	MAP_ENTRY(LONG)
+	MAP_ENTRY(REAL)
+	//
+	MAP_ENTRY(OPAQUE)
+	MAP_ENTRY(ZONE)
+	MAP_ENTRY(ANY)
+	MAP_ENTRY(NIL)
+	MAP_ENTRY(BITS)
+	//
+	MAP_ENTRY(FIXED_SEQUENCE)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(TransferMode value) {
+	TO_STRING_PROLOGUE(TransferMode)
+
+	MAP_ENTRY(PROC)
+	MAP_ENTRY(PORT)
+	MAP_ENTRY(SIGNAL)
+	MAP_ENTRY(ERROR)
+	MAP_ENTRY(PROCESS)
+	MAP_ENTRY(PROGRAM)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(ExtensionType value) {
+	TO_STRING_PROLOGUE(ExtensionType)
+
+	MAP_ENTRY(VALUE)
+	MAP_ENTRY(FORM)
+	MAP_ENTRY(DEFAULT)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(Linkage value) {
+	TO_STRING_PROLOGUE(Linkage)
+
+	MAP_ENTRY(VAL)
+	MAP_ENTRY(REF)
+	MAP_ENTRY(TYPE)
+	MAP_ENTRY(MANIFEST)
+	MAP_ENTRY(NONE)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(RefClass value) {
+	TO_STRING_PROLOGUE(RefClass)
+
+	MAP_ENTRY(NONE)
+	MAP_ENTRY(SIMPLE)
+	MAP_ENTRY(COMPOSITE)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(Closure value) {
+	TO_STRING_PROLOGUE(Closure)
+
+	MAP_ENTRY(NONE)
+	MAP_ENTRY(UNIT)
+	MAP_ENTRY(RC)
+	MAP_ENTRY(FULL)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(LinkTag value) {
+	TO_STRING_PROLOGUE(LinkTag)
+
+	MAP_ENTRY(VARIABLE)
+	MAP_ENTRY(PROCEDURE)
+	MAP_ENTRY(TYPE)
+
+	TO_STRING_EPILOGUE
+}
+
+
+QString symbols::toString(VarTag value) {
+	TO_STRING_PROLOGUE(VarTag)
+
+	MAP_ENTRY(VAR)
+	MAP_ENTRY(PROC0)
+	MAP_ENTRY(TYPE)
+	MAP_ENTRY(PROC1)
+
+	TO_STRING_EPILOGUE
+}
+
+
+
+
 //  altoBias: CARDINAL = 1;  -- AMesa/14.0/Compiler/Friends/FilePack.mesa
 static const CARD16 ALTO_BIAS = 1;
 
 static const CARD16 WORDS_PER_PAGE = 256;
-
-
-//
-// HTIndex
-//
-QList<HTIndex*> HTIndex::all;
-HTIndex* HTIndex::getNull() {
-	static HTIndex ret(0, HTIndex::HT_NULL);
-	return &ret;
-}
-HTIndex* HTIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new HTIndex(symbols_, index_);
-}
-void HTIndex::resolve() {
-	for(HTIndex* p: all) {
-		if (p->isNull()) continue;
-		if (p->value)    continue;
-
-		QMap<CARD16, HTRecord*>& map(p->symbols->ht);
-		CARD16                   index   = p->index;
-
-		if (map.contains(index)) {
-			p->value = map[index];
-		} else {
-			logger.fatal("Unknown index = %d", index);
-			ERROR();
-		}
-	}
-	logger.info("HTIndex::resove %d", all.size());
-}
-QString HTIndex::toString() const {
-	if (isNull()) return "#NULL";
-	if (value == 0) return QString("ht-%1").arg(index);
-	return QString("ht-%1-[%2]").arg(index).arg(value->value);
-}
-const HTRecord& HTIndex::getValue() const {
-	HTRecord* ret = HTRecord::find(symbols, index);
-	return *ret;
-}
-
-
-
-//
-// CTXIndex
-//
-QList<CTXIndex*> CTXIndex::all;
-CTXIndex* CTXIndex::getNull() {
-	static CTXIndex ret(0, CTXIndex::CTX_NULL);
-	return &ret;
-}
-CTXIndex* CTXIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new CTXIndex(symbols_, index_);
-}
-void CTXIndex::resolve() {
-	for(CTXIndex* p: all) {
-		if (p->isNull()) continue;
-		if (p->value)    continue;
-
-		QMap<CARD16, CTXRecord*>& map(p->symbols->ctx);
-		CARD16 index = p->index;
-
-		if (map.contains(index)) {
-			p->value = map[index];
-		} else {
-			logger.fatal("Unknown index = %d", index);
-			ERROR();
-		}
-	}
-	logger.info("CTXIndex::resove %d", all.size());
-}
-QString CTXIndex::toString() const {
-	if (isNull()) return "#NULL";
-	if (value == 0) return QString("ctx-%1").arg(index);
-	return QString("ctx-%1-[%2]").arg(index); // TODO
-//	return QString("ctx-%1-[%2]").arg(index).arg(value->toString(value));
-}
-
-
-//
-// MDIndex
-//
-QList<MDIndex*> MDIndex::all;
-MDIndex* MDIndex::getNull() {
-	static MDIndex ret(0, MDIndex::MD_NULL);
-	return &ret;
-}
-MDIndex* MDIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new MDIndex(symbols_, index_);
-}
-void MDIndex::resolve() {
-	for(MDIndex* p: all) {
-		if (p->isNull()) continue;
-		if (p->value)    continue;
-
-		QMap<CARD16, MDRecord*>& map(p->symbols->md);
-		CARD16 index = p->index;
-
-		if (map.contains(index)) {
-			p->value = map[index];
-		} else {
-			logger.fatal("Unknown index = %d", index);
-			ERROR();
-		}
-	}
-	logger.info("MDIndex::resove %d", all.size());
-}
-QString MDIndex::toString() const {
-	if (isNull()) return "#NULL";
-	if (value == 0) return QString("md-%1").arg(index);
-	return QString("md-%1-[%2]").arg(index); // TODO
-//	return QString("ctx-%1-[%2]").arg(index).arg(value->toString(value));
-}
-
-
-//
-// MDRecord
-//
-MDRecord* MDRecord::getInstance(Symbols* symbols, CARD16 index) {
-	Stamp*   stamp    = Stamp::getInstance(symbols->bcd);
-	HTIndex* moduleId = HTIndex::getInstance(symbols, symbols->file->getCARD16());
-
-	CARD16   word     = symbols->file->getCARD16();
-	HTIndex* fileId   = HTIndex::getInstance(symbols, bitField(word, 0, 12));
-    bool     shared   = bitField(word, 13);
-    bool     exported = bitField(word, 14, 15);
-
-    CTXIndex* ctx           = CTXIndex::getInstance(symbols, symbols->file->getCARD16());
-    CTXIndex* defaultImport = CTXIndex::getInstance(symbols, symbols->file->getCARD16());
-
-    CARD16 file = symbols->file->getCARD16();
-
-    return new MDRecord(symbols, index, stamp, moduleId, fileId, shared, exported, ctx, defaultImport, file);
-}
-QString MDRecord::toString() const {
-//	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
-//			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue()).arg(fileId->getValue()).
-//			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
-	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
-			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue().value).arg(fileId->getValue().value).
-			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
-}
-
-
-//
-// HTRecord
-//
-QMap<HTRecord::Key, HTRecord*> HTRecord::all;
-HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex) {
-    // 0
-	CARD16 word = symbols->file->getCARD16();
-    bool   anyInternal = bitField(word, 0);
-    bool   anyPublic   = bitField(word, 1);
-    CARD16 link        = bitField(word, 2, 15);
-    // 1
-    CARD16 ssIndex     = symbols->file->getCARD16();
-    // ss.substring(lastSSIndex, data.ssIndex);
-    QString value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
-
-    return new HTRecord(symbols, index, anyInternal, anyPublic, link, ssIndex, value);
-}
-HTRecord* HTRecord::find(Symbols* symbols, CARD16 index) {
-	Key key(symbols, index);
-	HTRecord* ret = all.value(key, 0);
-	if (ret == 0) {
-		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
-		ERROR();
-	}
-	return ret;
-}
-QString HTRecord::toString() const {
-	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
-}
-
 
 //
 // Symbols
@@ -318,22 +267,12 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeSS(ssBlock);
     initializeHT(htBlock);
     initializeMD(mdBlock);
-//    initializeCTX(ctxBlock);
+    initializeCTX(ctxBlock);
 //    initializeSE(seBlock);
 //    initializeBody(bodyBlock);
 //    initializeLT(litBlock);
 //    initializeExt(extBlock);
 //    initializeTree(treeBlock);
-
-    // Resolve index
-    HTIndex::resolve();
-    MDIndex::resolve();
-//    CTXIndex::resolve();
-//    SEIndex::resolve();
-//    BTIndex::resolve();
-//    LTIndex::resolve();
-//    ExtIndex::resolve();
-//    TreeIndex::resolve();
 
 //	{
 //		MDRecord* p = md[MDIndex::OWM_MDI];
@@ -386,7 +325,7 @@ void Symbols::initializeHT(BlockDescriptor* block) {
         HTRecord* record = HTRecord::getInstance(this, index, lastSSIndex);
         ht[index] = record;
 
-        logger.info("ht %s", record->toString().toLocal8Bit().constData());
+        logger.info("ht %4d %s", index, record->toString().toLocal8Bit().constData());
         index++;
         lastSSIndex = record->ssIndex;
     }
@@ -415,7 +354,7 @@ void Symbols::initializeMD(BlockDescriptor* block) {
         MDRecord* record = MDRecord::getInstance(this, index);
         md[index] = record;
 
-        logger.info("md %s", record->toString().toLocal8Bit().constData());
+        logger.info("md %4d %s", index, record->toString().toLocal8Bit().constData());
         index++;
     }
 
@@ -429,3 +368,30 @@ void Symbols::initializeMD(BlockDescriptor* block) {
     }
 }
 
+void Symbols::initializeCTX(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    CARD16 index = 0;
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        CTXRecord* record = CTXRecord::getInstance(this, index);
+        ctx[index] = record;
+
+        logger.info("ctx %4d %s", index, record->toString().toLocal8Bit().constData());
+        index++;
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}

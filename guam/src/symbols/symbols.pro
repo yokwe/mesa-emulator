@@ -32,6 +32,8 @@ POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 HEADERS += BCD.h   BCDFile.h   Symbols.h
 SOURCES += BCD.cpp BCDFile.cpp Symbols.cpp
 
+SOURCES += bt.cpp ctx.cpp ht.cpp md.cpp se.cpp
+
 SOURCES += main.cpp
 
 
