@@ -130,10 +130,10 @@ public:
 
 		class Catch {
 		public:
-			const CARD16 frameOffset;
+			const CARD16 index;
 
 			QString toString() const;
-			Catch(CARD16 frameOffset_) : frameOffset(frameOffset_) {}
+			Catch(CARD16 index_) : index(index_) {}
 		};
 
 
@@ -224,7 +224,7 @@ public:
 		const Internal&   getInternal() const;
 		const External&   getExternal() const;
 
-		QString toString();
+		QString toString() const;
 		BodyInfo(Tag tag_, void* tagValue_) : tag(tag_), tagValue(tagValue_) {}
 	};
 

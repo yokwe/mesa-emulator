@@ -102,6 +102,104 @@ BTRecord* BTRecord::getInstance(Symbols* symbols, CARD16 index) {
 
 	return new BTRecord(symbols, index, link, firstSon, type, localCtx, level, sourceIndex, info, tag, tagValue);
 }
+//      inline(8:1..1): BOOLEAN,
+//      id(8:2..15): ISEIndex,
+//      ioType(9:0..13): CSEIndex,
+//      monitored(9:14..14), noXfers(9:15..15), resident(10:0..0): BOOLEAN,
+//      entry(10:1..1), internal(10:2..2): BOOLEAN,
+//      entryIndex(10:3..10): [0..256),
+//      hints(10:11..15): RECORD [safe(0:0..0), argUpdated(0:1..1), nameSafe(0:2..2), needsFixup(0:3..3): BOOLEAN],
+//      closure(11:0..31): SELECT nesting(11:0..1): * FROM
+//        Outer => [],
+//        Inner => [frameOffset(11:2..15): [0..PrincOps.MaxFrameSize)],
+//        Catch => [index(12:0..15): CatchIndex]
+//        ENDCASE],
+BTRecord::Callable* BTRecord::Callable::getInstance(Symbols* symbols, CARD16 u8) {
+	bool inline_ = bitField(u8, 1);
+	SEIndex* id = SEIndex::getInstance(symbols, bitField(u8, 2, 15));
+
+	CARD16 u9 = symbols->file->getCARD16();
+	SEIndex* ioType    = SEIndex::getInstance(symbols, bitField(u9, 0, 13));
+	bool     monitored = bitField(u9, 14);
+	bool     noXfers   = bitField(u9, 15);
+
+	CARD16 u10 = symbols->file->getCARD16();
+	bool resident = bitField(u10, 0);
+	bool entry = bitField(u10, 1);
+	bool internal = bitField(u10, 2);
+	CARD16 entryIndex = bitField(u10, 3, 10);
+
+	CARD16 u11 = symbols->file->getCARD16();
+	Tag tag = (Tag)bitField(u11, 0, 1);
+	void* tagValue = 0;
+	switch(tag) {
+	case Tag::OUTER:
+		tagValue = 0;
+		break;
+	case Tag::INNER:
+		tagValue = new Inner(bitField(u11, 2, 15));
+		break;
+	case Tag::CATCH:
+		tagValue = new Catch(symbols->file->getCARD16());
+		break;
+	default:
+		ERROR();
+		tagValue = 0;
+		break;
+	}
+
+	return new Callable(inline_, id, ioType, monitored, noXfers, resident, entry, internal, entryIndex, tag, tagValue);
+}
+const BTRecord::Callable::Inner& BTRecord::Callable::getInner() const {
+	if (tag != Tag::INNER) ERROR();
+	if (tagValue == 0) ERROR();
+	Inner* ret = (Inner*)tagValue;
+	return *ret;
+}
+const BTRecord::Callable::Catch& BTRecord::Callable::getCatch() const {
+	if (tag != Tag::INNER) ERROR();
+	if (tagValue == 0) ERROR();
+	Catch* ret = (Catch*)tagValue;
+	return *ret;
+}
+QString BTRecord::Callable::toString(Tag value) {
+	TO_STRING_PROLOGUE(Tag)
+
+	MAP_ENTRY(OUTER)
+	MAP_ENTRY(INNER)
+	MAP_ENTRY(CATCH)
+
+	TO_STRING_EPILOGUE
+}
+QString BTRecord::Callable::toString() const {
+	switch(tag) {
+	case Tag::OUTER:
+		return QString("%1 %2 %3 %4").arg(id->toString()).arg(ioType->toString()).arg(entryIndex).arg(toString(tag));
+	case Tag::INNER:
+		return QString("%1 %2 %3 %4 %5").arg(id->toString()).arg(ioType->toString()).arg(entryIndex).arg(toString(tag)).arg(getInner().toString());
+	case Tag::CATCH:
+		return QString("%1 %2 %3 %4 %5").arg(id->toString()).arg(ioType->toString()).arg(entryIndex).arg(toString(tag)).arg(getCatch().toString());
+	default:
+		ERROR();
+		return "???";
+	}
+}
+QString BTRecord::Callable::Inner::toString() const {
+	return QString("%1").arg(frameOffset);
+}
+QString BTRecord::Callable::Catch::toString() const {
+	return QString("%1").arg(index);
+}
+
+//    Other => [relOffset(8:1..15): [0..LAST[CARDINAL]/2]]
+BTRecord::Other* BTRecord::Other::getInstance(Symbols* /*symbols*/, CARD16 u8) {
+	CARD16 realOffset = bitField(u8, 1, 15);
+
+	return new Other(realOffset);
+}
+QString BTRecord::Other::toString() const {
+	return QString("%1").arg(realOffset);
+}
 QString BTRecord::toString(Tag value) {
 	TO_STRING_PROLOGUE(Tag)
 
@@ -117,7 +215,7 @@ const BTRecord::Callable& BTRecord::getCallable() const {
 	return *ret;
 }
 const BTRecord::Other& BTRecord::getOther() const {
-	if (tag != Tag::CALLABLE) ERROR();
+	if (tag != Tag::OTHER) ERROR();
 	if (tagValue == 0) ERROR();
 	Other* ret = (Other*)tagValue;
 	return *ret;
@@ -125,9 +223,9 @@ const BTRecord::Other& BTRecord::getOther() const {
 QString BTRecord::toString() const {
 	switch(tag) {
 	case Tag::CALLABLE:
-		return QString("%1 %2 %3 %4 %5").arg(link->toString()).arg(type->toString()).arg(level).arg(toString(tag)).arg(getCallable().toString());
+		return QString("%1 %2 %3 %4 %5 %6").arg(link->toString()).arg(type->toString()).arg(info->toString()).arg(level).arg(toString(tag)).arg(getCallable().toString());
 	case Tag::OTHER:
-		return QString("%1 %2 %3 %4 %5").arg(link->toString()).arg(type->toString()).arg(level).arg(toString(tag)).arg(getOther().toString());
+		return QString("%1 %2 %3 %4 %5 %6").arg(link->toString()).arg(type->toString()).arg(info->toString()).arg(level).arg(toString(tag)).arg(getOther().toString());
 	default:
 		ERROR();
 		return "???";
@@ -230,7 +328,7 @@ const BTRecord::BodyInfo::External&   BTRecord::BodyInfo::getExternal() const {
 	External* ret = (External*)tagValue;
 	return *ret;
 }
-QString BTRecord::BodyInfo::toString() {
+QString BTRecord::BodyInfo::toString() const {
 	switch(tag) {
 	case Tag::INTERNAL:
 		return QString("%1 %2").arg(toString(tag)).arg(getInternal().toString());
