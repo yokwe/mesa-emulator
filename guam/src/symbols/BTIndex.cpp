@@ -53,19 +53,13 @@ QString BTIndex::toString() const {
 	if (isNull()) return QString("%1-NULL").arg(PREFIX);
 	return QString("%1-%2").arg(PREFIX).arg(index);
 }
-//const BTRecord& BTIndex::getValue() const {
-//	BTRecord* ret = BTRecord::find(symbols, index);
-//	return *ret;
-//}
-
-BTRecord* BTRecord::find(Symbols* symbols, CARD16 index) {
-	Key key(symbols, index);
-	BTRecord* ret = all.value(key, 0);
+const BTRecord& BTIndex::getValue() const {
+	BTRecord* ret = BTRecord::find(symbols, index);
 	if (ret == 0) {
 		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
 		ERROR();
 	}
-	return ret;
+	return *ret;
 }
 
 
@@ -73,6 +67,10 @@ BTRecord* BTRecord::find(Symbols* symbols, CARD16 index) {
 // BTRecord
 //
 QMap<BTRecord::Key, BTRecord*> BTRecord::all;
+BTRecord* BTRecord::find(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	return all.value(key, 0);
+}
 
 BTRecord* BTRecord::getInstance(Symbols* symbols, CARD16 index) {
 	BodyLink* link = BodyLink::getInstance(symbols);

@@ -50,10 +50,14 @@ QString SEIndex::toString() const {
 	if (isNull()) return QString("%1-NULL").arg(PREFIX);
 	return QString("%1-%2").arg(PREFIX).arg(index);
 }
-//const SERecord& SEIndex::getValue() const {
-//	SERecord* ret = SERecord::find(symbols, index);
-//	return *ret;
-//}
+const SERecord& SEIndex::getValue() const {
+	SERecord* ret = SERecord::find(symbols, index);
+	if (ret == 0) {
+		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
+		ERROR();
+	}
+	return *ret;
+}
 
 
 //
@@ -154,4 +158,9 @@ QString SEIndex::toString() const {
 //        ENDCASE],         -- changing symbol version id's
 //    ENDCASE];
 
+QMap<SERecord::Key, SERecord*> SERecord::all;
+SERecord* SERecord::find(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	return all.value(key, 0);
+}
 

@@ -55,6 +55,10 @@ QString CTXIndex::toString() const {
 }
 const CTXRecord& CTXIndex::getValue() const {
 	CTXRecord* ret = CTXRecord::find(symbols, index);
+	if (ret == 0) {
+		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
+		ERROR();
+	}
 	return *ret;
 }
 
@@ -81,6 +85,11 @@ const CTXRecord& CTXIndex::getValue() const {
 //    ENDCASE];
 
 QMap<CTXRecord::Key, CTXRecord*> CTXRecord::all;
+CTXRecord* CTXRecord::find(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	return all.value(key, 0);
+}
+
 CTXRecord* CTXRecord::getInstance(Symbols* symbols, CARD16 index) {
  	CARD16 u0 = symbols->file->getCARD16();
     SEIndex* seList = SEIndex::getInstance(symbols, bitField(u0, 2, 15));
@@ -128,15 +137,6 @@ CTXRecord* CTXRecord::getInstance(Symbols* symbols, CARD16 index) {
  	}
 
     return new CTXRecord(symbols, index, seList, level, tag, tagValue);
-}
-CTXRecord* CTXRecord::find(Symbols* symbols, CARD16 index) {
-	Key key(symbols, index);
-	CTXRecord* ret = all.value(key, 0);
-	if (ret == 0) {
-		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
-		ERROR();
-	}
-	return ret;
 }
 const CTXRecord::Simple&   CTXRecord::getSimple() const {
 	if (tag != Tag::SIMPLE) ERROR();

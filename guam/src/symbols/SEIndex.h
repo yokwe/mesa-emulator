@@ -57,10 +57,26 @@ public:
 		return index == SE_NULL;
 	}
 	QString toString() const;
-//	const SERecord& getValue() const;
+	const SERecord& getValue() const;
 
 private:
 	SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+};
+
+
+class SERecord {
+private:
+	const Symbols*  symbols;
+	const CARD16    index;
+
+public:
+	static SERecord* find(Symbols* symbols, CARD16 index);
+
+private:
+	typedef Symbols::Key Key;
+	static QMap<Key, SERecord*> all;
+
+	SERecord(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
 };
 
 #endif

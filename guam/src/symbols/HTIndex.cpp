@@ -52,6 +52,10 @@ QString HTIndex::toString() const {
 }
 const HTRecord& HTIndex::getValue() const {
 	HTRecord* ret = HTRecord::find(symbols, index);
+	if (ret == 0) {
+		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
+		ERROR();
+	}
 	return *ret;
 }
 
@@ -60,6 +64,11 @@ const HTRecord& HTIndex::getValue() const {
 // HTRecord
 //
 QMap<HTRecord::Key, HTRecord*> HTRecord::all;
+HTRecord* HTRecord::find(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	return all.value(key, 0);
+}
+
 HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSIndex) {
     // 0
 	CARD16 word = symbols->file->getCARD16();
@@ -72,15 +81,6 @@ HTRecord* HTRecord::getInstance(Symbols* symbols, CARD16 index, CARD16 lastSSInd
     QString value       = symbols->ss.mid(lastSSIndex, ssIndex - lastSSIndex);
 
     return new HTRecord(symbols, index, anyInternal, anyPublic, link, ssIndex, value);
-}
-HTRecord* HTRecord::find(Symbols* symbols, CARD16 index) {
-	Key key(symbols, index);
-	HTRecord* ret = all.value(key, 0);
-	if (ret == 0) {
-		logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index);
-		ERROR();
-	}
-	return ret;
 }
 QString HTRecord::toString() const {
 	return QString("%1 %2%3 %4").arg(index, 4).arg(anyInternal ? "I" : " ").arg(anyPublic ? "P" : " ").arg(value);
