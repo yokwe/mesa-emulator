@@ -43,8 +43,8 @@ SEIndex* SEIndex::getNull() {
 	static SEIndex ret(0, SEIndex::SE_NULL);
 	return &ret;
 }
-SEIndex* SEIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new SEIndex(symbols_, index_);
+SEIndex* SEIndex::getInstance(Symbols* symbols, CARD16 index) {
+	return new SEIndex(symbols, index);
 }
 QString SEIndex::toString() const {
 	if (isNull()) return QString("%1-NULL").arg(PREFIX);
