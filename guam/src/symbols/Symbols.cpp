@@ -164,12 +164,6 @@ QString Symbols::toString(VarTag value) {
 
 
 
-
-//  altoBias: CARDINAL = 1;  -- AMesa/14.0/Compiler/Friends/FilePack.mesa
-static const CARD16 ALTO_BIAS = 1;
-
-static const CARD16 WORDS_PER_PAGE = 256;
-
 //
 // Symbols
 //
@@ -273,7 +267,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeMD(mdBlock);
     initializeCTX(ctxBlock);
 //    initializeSE(seBlock);
-//    initializeBody(bodyBlock);
+//    initializeBT(bodyBlock);
 //    initializeLT(litBlock);
 //    initializeExt(extBlock);
 //    initializeTree(treeBlock);
@@ -399,3 +393,31 @@ void Symbols::initializeCTX(BlockDescriptor* block) {
         }
     }
 }
+
+//void Symbols::initializeBT(BlockDescriptor* block) {
+//    CARD16 base  = offsetBase + block->offset;
+//    int    limit = base + block->size;
+//
+//    CARD16 index = 0;
+//    file->position(base);
+//
+//    for(;;) {
+//        int pos = file->position();
+//        if (limit <= pos) break;
+//
+//        BTRecord* record = BTRecord::getInstance(this, index);
+//        bt[index] = record;
+//
+//        logger.info("bt %4d %s", index, record->toString().toLocal8Bit().constData());
+//        index++;
+//    }
+//
+//    // sanity check
+//    {
+//    	int pos = file->position();
+//        if (pos != limit) {
+//        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+//            ERROR();
+//        }
+//    }
+//}

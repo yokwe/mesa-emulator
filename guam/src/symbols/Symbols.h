@@ -82,6 +82,11 @@ public:
 		Key(const Symbols* symbols_, const CARD16 index_) : symbols(symbols_), index(index_) {}
 	};
 
+	//  altoBias: CARDINAL = 1;  -- AMesa/14.0/Compiler/Friends/FilePack.mesa
+	static const CARD16 ALTO_BIAS = 1;
+
+	static const CARD16 WORDS_PER_PAGE = 256;
+
 	//ByteLength: CARDINAL = 8;
 	static const CARD16 BYTE_LENGTH = 8;
 	//WordLength: CARDINAL = 16;
