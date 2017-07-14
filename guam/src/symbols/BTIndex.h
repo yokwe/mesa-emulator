@@ -66,6 +66,208 @@ private:
 };
 
 
+//BodyLink: TYPE = RECORD [which(0:0..0): {sibling(0), parent(1)}, index(0:1..14): BTIndex];
+//
+//BodyInfo: TYPE = RECORD [
+//  SELECT mark(0:0..0): * FROM
+//    Internal => [
+//      bodyTree(0:1..15): Base RELATIVE POINTER [0..Limit),
+//        --Tree.Index--
+//      thread(1:0..15): Base RELATIVE POINTER [0..Limit),
+//        --Tree.Index / LitDefs.STIndex--
+//      frameSize(2:0..15): [0..PrincOps.MaxFrameSize]],
+//    External => [
+//      bytes(0:1..15): [0..LAST[CARDINAL]/2],
+//      startIndex(1:0..15), indexLength(2:0..15): CARDINAL]
+//    ENDCASE];
+//
+//CatchIndex: TYPE = NATURAL;
+//BodyRecord: TYPE = RECORD [
+//  link(0:0..15): BodyLink,
+//  firstSon(1:0..15): BTIndex,
+//  type(2:0..15): RecordSEIndex,
+//  localCtx(3:0..10): CTXIndex,
+//  level(3:11..15): ContextLevel,
+//  sourceIndex(4:0..15): CARDINAL,
+//  info(5:0..47): BodyInfo,
+//  extension(8:0..79): SELECT kind: * FROM
+//    Callable => [
+//      inline(8:1..1): BOOLEAN,
+//      id(8:2..15): ISEIndex,
+//      ioType(9:0..13): CSEIndex,
+//      monitored(9:14..14), noXfers(9:15..15), resident(10:0..0): BOOLEAN,
+//      entry(10:1..1), internal(10:2..2): BOOLEAN,
+//      entryIndex(10:3..10): [0..256),
+//      hints(10:11..15): RECORD [safe(0:0..0), argUpdated(0:1..1), nameSafe(0:2..2), needsFixup(0:3..3): BOOLEAN],
+//      closure(11:0..31): SELECT nesting(11:0..1): * FROM
+//        Outer => [],
+//        Inner => [frameOffset(11:2..15): [0..PrincOps.MaxFrameSize)],
+//        Catch => [index(12:0..15): CatchIndex]
+//        ENDCASE],
+//    Other => [relOffset(8:1..15): [0..LAST[CARDINAL]/2]]
+//    ENDCASE];
+class BTRecord {
+private:
+	const Symbols*  symbols;
+	const CARD16    index;
+
+public:
+	enum class Tag {CALLABLE, OTHER};
+	static QString toString(Tag value);
+
+	class Callable {
+	public:
+		enum class Tag {OUTER, INNER, CATCH};
+		static QString toString(Tag value);
+
+		class Inner {
+		public:
+			const CARD16 frameOffset;
+
+			QString toString() const;
+			Inner(CARD16 frameOffset_) : frameOffset(frameOffset_) {}
+		};
+
+		class Catch {
+		public:
+			const CARD16 frameOffset;
+
+			QString toString() const;
+			Catch(CARD16 frameOffset_) : frameOffset(frameOffset_) {}
+		};
+
+		const bool     inline_;
+		const SEIndex* id;
+		const SEIndex* ioType;
+		const bool     monitored;
+		const bool     noXfers;
+		const bool     resident;
+		const bool     entry;
+		const bool     internal;
+		const CARD16   entryIndex;
+//		struct {
+//			bool safe;
+//			bool argUpdated;
+//			bool nameSafe;
+//			bool needsFixup;
+//		} hints;
+
+		const Tag   tag;
+		const void* tagValue;
+
+		const Inner&   getInner() const;
+		const Catch&   getCatch() const;
+
+		QString toString() const;
+		Callable(bool inline__, SEIndex* id_, SEIndex* ioType_, bool monitored_, bool noXfers_,
+				bool resident_, bool entry_, bool internal_, CARD16 entryIndex_, Tag tag_, void* tagValue_) :
+			inline_(inline__), id(id_), ioType(ioType_), monitored(monitored_), noXfers(noXfers_),
+			resident(resident_), entry(entry_), internal(internal_), entryIndex(entryIndex_), tag(tag_), tagValue(tagValue_) {}
+	};
+	class Other {
+	public:
+		const CARD16 realOffset;
+
+		QString toString() const;
+		Other(CARD16 realOffset_) : realOffset(realOffset_) {}
+	};
+
+	class BodyLink {
+	public:
+		enum Which {SIBLING, PARENT};
+		static QString toString(Which);
+
+		const Which    which;
+		const BTIndex* index;
+
+		QString toString() const;
+		BodyLink(Which which_, BTIndex* index_) : which(which_), index(index_) {}
+	};
+
+	//BodyInfo: TYPE = RECORD [
+	//  SELECT mark(0:0..0): * FROM
+	//    Internal => [
+	//      bodyTree(0:1..15): Base RELATIVE POINTER [0..Limit),
+	//        --Tree.Index--
+	//      thread(1:0..15): Base RELATIVE POINTER [0..Limit),
+	//        --Tree.Index / LitDefs.STIndex--
+	//      frameSize(2:0..15): [0..PrincOps.MaxFrameSize]],
+	//    External => [
+	//      bytes(0:1..15): [0..LAST[CARDINAL]/2],
+	//      startIndex(1:0..15), indexLength(2:0..15): CARDINAL]
+	//    ENDCASE];
+	class BodyInfo {
+	public:
+		enum Tag {INTERNAL, EXTERNAL};
+		static QString toString(Tag);
+
+		class Internal {
+		public:
+			const CARD16 bodyTree; // Tree.Index
+			const CARD16 thread;   // Tree.Index
+			const CARD16 frameSize;
+
+			QString toString();
+			Internal(CARD16 bodyTree_, CARD16 thread_, CARD16 frameSize_) : bodyTree(bodyTree_), thread(thread_), frameSize(frameSize_) {}
+		};
+
+		class External {
+			const CARD16 bytes;
+			const CARD16 startIndex;
+			const CARD16 indexLength;
+
+			QString toString();
+			External(CARD16 bytes_, CARD16 startIndex_, CARD16 indexLength_) : bytes(bytes_), startIndex(startIndex_), indexLength(indexLength_) {}
+		};
+
+		const Tag   tag;
+		const void* tagValue;
+
+		const Internal&   getInternal() const;
+		const External&   getExernl() const;
+
+		QString toString();
+		BodyInfo(Tag tag_, void* tagValue_) : tag(tag_), tagValue(tagValue_) {}
+	};
+
+	static BTRecord* getInstance(Symbols* symbols, CARD16 index);
+	static BTRecord* find(Symbols* symbols, CARD16 index);
+
+	//  link(0:0..15): BodyLink,
+	//  firstSon(1:0..15): BTIndex,
+	//  type(2:0..15): RecordSEIndex,
+	//  localCtx(3:0..10): CTXIndex,
+	//  level(3:11..15): ContextLevel,
+	//  sourceIndex(4:0..15): CARDINAL,
+	//  info(5:0..47): BodyInfo,
+	//  extension(8:0..79): SELECT kind: * FROM
+	const BodyLink* link;
+	const BTIndex*  firstSon;
+	const SEIndex*  type; // RecordSEIndex
+	const CTXIndex* localCtx;
+	const CARD16    level;
+	const CARD16    sourceIndex;
+	const BodyInfo* info;
+	const Tag       tag;
+	const void*     tagValue;
+
+	const Callable& getCallable() const;
+	const Other   & getOther() const;
+
+	QString toString() const;
+
+private:
+	typedef Symbols::Key Key;
+	static QMap<Key, BTRecord*> all;
+
+	BTRecord(Symbols* symbols_, CARD16 index_, BodyLink* link_, BTIndex* firstSon_,SEIndex* type_,
+			CTXIndex* localCtx_, CARD16 level_, CARD16 sourceIndex_, BodyInfo* info_, Tag tag_, void* tagValue_) :
+		symbols(symbols_), index(index_), link(link_), firstSon(firstSon_), type(type_),
+		localCtx(localCtx_), level(level_), sourceIndex(sourceIndex_), info(info_), tag(tag_), tagValue(tagValue_) {
+		Key key(symbols, index);
+		all[key] = this;
+	}
+};
 
 
 #endif
