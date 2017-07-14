@@ -136,6 +136,9 @@ public:
 			Catch(CARD16 frameOffset_) : frameOffset(frameOffset_) {}
 		};
 
+
+		static Callable* getInstance(Symbols* symbols, CARD16 u0);
+
 		const bool     inline_;
 		const SEIndex* id;
 		const SEIndex* ioType;
@@ -166,6 +169,8 @@ public:
 	};
 	class Other {
 	public:
+		static Other* getInstance(Symbols* symbols, CARD16 u0);
+
 		const CARD16 realOffset;
 
 		QString toString() const;
@@ -177,7 +182,7 @@ public:
 		enum Which {SIBLING, PARENT};
 		static QString toString(Which);
 
-		static BodyLink* getInstance(Symbols* symbos);
+		static BodyLink* getInstance(Symbols* symbols);
 
 		const Which    which;
 		const BTIndex* index;
@@ -197,26 +202,27 @@ public:
 			const CARD16 thread;   // Tree.Index
 			const CARD16 frameSize;
 
-			QString toString();
+			QString toString() const;
 			Internal(CARD16 bodyTree_, CARD16 thread_, CARD16 frameSize_) : bodyTree(bodyTree_), thread(thread_), frameSize(frameSize_) {}
 		};
 
 		class External {
+		public:
 			const CARD16 bytes;
 			const CARD16 startIndex;
 			const CARD16 indexLength;
 
-			QString toString();
+			QString toString() const;
 			External(CARD16 bytes_, CARD16 startIndex_, CARD16 indexLength_) : bytes(bytes_), startIndex(startIndex_), indexLength(indexLength_) {}
 		};
 
-		static BodyInfo* getInstance(Symbols* symbos);
+		static BodyInfo* getInstance(Symbols* symbols);
 
 		const Tag   tag;
 		const void* tagValue;
 
 		const Internal&   getInternal() const;
-		const External&   getExernl() const;
+		const External&   getExternal() const;
 
 		QString toString();
 		BodyInfo(Tag tag_, void* tagValue_) : tag(tag_), tagValue(tagValue_) {}
