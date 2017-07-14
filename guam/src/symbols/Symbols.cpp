@@ -267,7 +267,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeMD(mdBlock);
     initializeCTX(ctxBlock);
 //    initializeSE(seBlock);
-//    initializeBT(bodyBlock);
+    initializeBT(bodyBlock);
 //    initializeLT(litBlock);
 //    initializeExt(extBlock);
 //    initializeTree(treeBlock);
@@ -342,13 +342,13 @@ void Symbols::initializeMD(BlockDescriptor* block) {
     CARD16 base  = offsetBase + block->offset;
     int    limit = base + block->size;
 
-    CARD16 index = 0;
     file->position(base);
 
     for(;;) {
         int pos = file->position();
         if (limit <= pos) break;
 
+        int index = pos - base;
         MDRecord* record = MDRecord::getInstance(this, index);
         md[index] = record;
 
@@ -370,13 +370,13 @@ void Symbols::initializeCTX(BlockDescriptor* block) {
     CARD16 base  = offsetBase + block->offset;
     int    limit = base + block->size;
 
-    CARD16 index = 0;
     file->position(base);
 
     for(;;) {
         int pos = file->position();
         if (limit <= pos) break;
 
+        int index = pos - base;
         CTXRecord* record = CTXRecord::getInstance(this, index);
         ctx[index] = record;
 
@@ -398,13 +398,13 @@ void Symbols::initializeBT(BlockDescriptor* block) {
     CARD16 base  = offsetBase + block->offset;
     int    limit = base + block->size;
 
-    CARD16 index = 0;
     file->position(base);
 
     for(;;) {
         int pos = file->position();
         if (limit <= pos) break;
 
+        int index = pos - base;
         BTRecord* record = BTRecord::getInstance(this, index);
         bt[index] = record;
 
