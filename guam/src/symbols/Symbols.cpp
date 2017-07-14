@@ -35,12 +35,16 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "../mesa/Memory.h"
 
 #include "Symbols.h"
-
 #include "BCDFile.h"
 
+#include "BTIndex.h"
+#include "CTXIndex.h"
+#include "HTIndex.h"
+#include "MDIndex.h"
+#include "SEIndex.h"
 
 
-QString symbols::toString(TypeClass value) {
+QString Symbols::toString(TypeClass value) {
 	TO_STRING_PROLOGUE(TypeClass)
 
 	MAP_ENTRY(MODE)
@@ -73,7 +77,7 @@ QString symbols::toString(TypeClass value) {
 }
 
 
-QString symbols::toString(TransferMode value) {
+QString Symbols::toString(TransferMode value) {
 	TO_STRING_PROLOGUE(TransferMode)
 
 	MAP_ENTRY(PROC)
@@ -88,7 +92,7 @@ QString symbols::toString(TransferMode value) {
 }
 
 
-QString symbols::toString(ExtensionType value) {
+QString Symbols::toString(ExtensionType value) {
 	TO_STRING_PROLOGUE(ExtensionType)
 
 	MAP_ENTRY(VALUE)
@@ -100,7 +104,7 @@ QString symbols::toString(ExtensionType value) {
 }
 
 
-QString symbols::toString(Linkage value) {
+QString Symbols::toString(Linkage value) {
 	TO_STRING_PROLOGUE(Linkage)
 
 	MAP_ENTRY(VAL)
@@ -113,7 +117,7 @@ QString symbols::toString(Linkage value) {
 }
 
 
-QString symbols::toString(RefClass value) {
+QString Symbols::toString(RefClass value) {
 	TO_STRING_PROLOGUE(RefClass)
 
 	MAP_ENTRY(NONE)
@@ -124,7 +128,7 @@ QString symbols::toString(RefClass value) {
 }
 
 
-QString symbols::toString(Closure value) {
+QString Symbols::toString(Closure value) {
 	TO_STRING_PROLOGUE(Closure)
 
 	MAP_ENTRY(NONE)
@@ -136,7 +140,7 @@ QString symbols::toString(Closure value) {
 }
 
 
-QString symbols::toString(LinkTag value) {
+QString Symbols::toString(LinkTag value) {
 	TO_STRING_PROLOGUE(LinkTag)
 
 	MAP_ENTRY(VARIABLE)
@@ -147,7 +151,7 @@ QString symbols::toString(LinkTag value) {
 }
 
 
-QString symbols::toString(VarTag value) {
+QString Symbols::toString(VarTag value) {
 	TO_STRING_PROLOGUE(VarTag)
 
 	MAP_ENTRY(VAR)

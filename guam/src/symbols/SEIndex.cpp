@@ -26,15 +26,14 @@ OF SUCH DAMAGE.
 
 
 //
-// se.cpp
+// SEIndex.cpp
 //
 
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("se");
 
+#include "SEIndex.h"
 #include "BCDFile.h"
-#include "BCD.h"
-#include "Symbols.h"
 
 
 //

@@ -26,17 +26,17 @@ OF SUCH DAMAGE.
 
 
 //
-// ctx.cpp
+// CTXIndex.cpp
 //
 
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("ctx");
 
+#include "CTXIndex.h"
 #include "BCDFile.h"
-#include "BCD.h"
-#include "Symbols.h"
 
-
+#include "MDIndex.h"
+#include "SEIndex.h"
 
 //
 // CTXIndex
@@ -173,7 +173,7 @@ QString CTXRecord::Simple::toString() const {
 	return QString("%1").arg(this->ctxNew->toString());
 }
 QString CTXRecord::Included::toString() const {
-	return QString("%1 %2 %3").arg(symbols::toString(copied)).arg(module->toString()).arg(map->toString());
+	return QString("%1 %2 %3").arg(Symbols::toString(copied)).arg(module->toString()).arg(map->toString());
 }
 QString CTXRecord::Imported::toString() const {
 	return QString("%1").arg(this->includeLink->toString());

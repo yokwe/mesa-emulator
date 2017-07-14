@@ -32,10 +32,11 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("md");
 
+#include "MDIndex.h"
 #include "BCDFile.h"
-#include "BCD.h"
-#include "Symbols.h"
 
+#include "CTXIndex.h"
+#include "HTIndex.h"
 
 //
 // MDIndex

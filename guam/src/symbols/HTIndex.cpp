@@ -26,15 +26,14 @@ OF SUCH DAMAGE.
 
 
 //
-// ht.cpp
+// HTIndex.cpp
 //
 
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("ht");
 
+#include "HTIndex.h"
 #include "BCDFile.h"
-#include "BCD.h"
-#include "Symbols.h"
 
 
 //

@@ -26,43 +26,46 @@ OF SUCH DAMAGE.
 
 
 //
-// se.cpp
+// BTIndex.h
 //
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("bt");
+#ifndef BTINDEX_H__
+#define BTINDEX_H__
 
-#include "BCDFile.h"
+#include "../util/Util.h"
+#include "../mesa/MesaBasic.h"
+
 #include "BCD.h"
 #include "Symbols.h"
 
 
-//
-// BTIndex
-//
-BTIndex* BTIndex::getNull() {
-	static BTIndex ret(0, BTIndex::BT_NULL);
-	return &ret;
-}
-BTIndex* BTIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new BTIndex(symbols_, index_);
-}
-QString BTIndex::toString() const {
-	if (isNull()) return QString("%1-NULL").arg(PREFIX);
-	return QString("%1-%2").arg(PREFIX).arg(index);
-}
-//const BTRecord& BTIndex::getValue() const {
-//	BTRecord* ret = BTRecord::find(symbols, index);
-//	return *ret;
-//}
-
 //BTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO BodyRecord;
-//  CBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Callable BodyRecord;
-//    ICBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Inner Callable BodyRecord;
-//    OCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Outer Callable BodyRecord;
-//    CCBTIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO Catch Callable BodyRecord;
 //BTNull: BTIndex = LAST[BTIndex];
-//  CBTNull: CBTIndex = LOOPHOLE[BTNull];
-//  CCBTNull: CCBTIndex = LOOPHOLE[BTNull];
-//
 //RootBti: CBTIndex = FIRST[CBTIndex];
+class BTIndex {
+private:
+	static constexpr const char* PREFIX = "bt";
+	static const CARD16  BT_NULL = Symbols::LIMIT - 1;
+	static const CARD16  BT_ROOT = 0;
+
+	Symbols*   symbols;
+	CARD16     index;
+
+public:
+	static BTIndex* getNull();
+	static BTIndex* getInstance(Symbols* symbols_, CARD16 index_);
+
+	bool isNull() const {
+		return index == BT_NULL;
+	}
+	QString toString() const;
+	const BTRecord& getValue() const;
+
+private:
+	BTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+};
+
+
+
+
+#endif
