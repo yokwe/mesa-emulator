@@ -38,6 +38,8 @@ OF SUCH DAMAGE.
 #include "BCD.h"
 #include "Symbols.h"
 
+class TreeLink;
+
 
 //ExtIndex: TYPE = Base RELATIVE POINTER [0..Limit) TO ExtRecord;
 //ExtNull: ExtIndex = LAST[ExtIndex];
@@ -85,7 +87,7 @@ public:
 
 	const ExtensionType type; // value..default
 	const SEIndex*      sei;
-	const CARD16        tree; // TODO TreeLink
+	const TreeLink*     tree;
 
 	QString toString() const;
 
@@ -93,7 +95,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, ExtRecord*> all;
 
-	ExtRecord(Symbols* symbols_, CARD16 index_, ExtensionType type_, SEIndex* sei_, CARD16 tree_) :
+	ExtRecord(Symbols* symbols_, CARD16 index_, ExtensionType type_, SEIndex* sei_, TreeLink* tree_) :
 		symbols(symbols_), index(index_), type(type_), sei(sei_), tree(tree_) {
 		Key key(symbols, index);
 		all[key] = this;

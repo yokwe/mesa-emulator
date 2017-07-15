@@ -51,7 +51,7 @@ private:
 
 public:
 	static LTIndex* getNull();
-	static LTIndex* getInstance(Symbols* symbols_, CARD16 index_);
+	static LTIndex* getInstance(Symbols* symbols, CARD16 index);
 
 	bool isNull() const {
 		return index == LT_NULL;

@@ -44,6 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 #include "LTIndex.h"
 #include "MDIndex.h"
 #include "SEIndex.h"
+#include "Tree.h"
 
 
 QString Symbols::toString(TypeClass value) {
@@ -272,12 +273,12 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeBT(bodyBlock);
     initializeLT(litBlock);
     initializeExt(extBlock);
-//    initializeTree(treeBlock);
+    initializeTree(treeBlock);
 
-//	{
-//		MDRecord* p = md[MDIndex::OWM_MDI];
-//		logger.info("MD %s", p->toString().toLocal8Bit().constData());
-//	}
+	{
+		MDRecord* p = md[0];
+		logger.info("MD %s", p->toString().toLocal8Bit().constData());
+	}
 };
 
 void Symbols::initializeSS(BlockDescriptor* block) {
@@ -495,6 +496,34 @@ void Symbols::initializeLT(BlockDescriptor* block) {
         lt[index] = record;
 
         logger.info("lt %4d %s", index, record->toString().toLocal8Bit().constData());
+        index++;
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeTree(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        TreeNode* record = TreeNode::getInstance(this, index);
+        tree[index] = record;
+
+        logger.info("tree %4d %s", index, record->toString().toLocal8Bit().constData());
         index++;
     }
 

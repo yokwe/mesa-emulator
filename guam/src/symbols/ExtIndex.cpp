@@ -36,6 +36,7 @@ static log4cpp::Category& logger = Logger::getLogger("etx");
 #include "BCDFile.h"
 
 #include "SEIndex.h"
+#include "Tree.h"
 
 //
 // ExtIndex
@@ -81,12 +82,12 @@ ExtRecord* ExtRecord::getInstance(Symbols* symbols, CARD16 index) {
  	CARD16 u0 = symbols->file->getCARD16();
  	ExtensionType type = (ExtensionType)bitField(u0, 0, 1);
     SEIndex*      sei  = SEIndex::getInstance(symbols, bitField(u0, 2, 15));
-    CARD16        tree = symbols->file->getCARD16();
+    TreeLink*     tree = TreeLink::getInstance(symbols);
 
     return new ExtRecord(symbols, index, type, sei, tree);
 }
 
 QString ExtRecord::toString() const {
-	return QString("%1 %2 %3").arg(toString(type)).arg(sei->toString()).arg(tree);
+	return QString("%1 %2 %3").arg(toString(type)).arg(sei->toString()).arg(tree->toString());
 }
 

@@ -29,8 +29,8 @@ POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input
-HEADERS += BCD.h   BCDFile.h   BTIndex.h   CTXIndex.h   ExtIndex.h   HTIndex.h   LTIndex.h   MDIndex.h   SEIndex.h   Symbols.h
-SOURCES += BCD.cpp BCDFile.cpp BTIndex.cpp CTXIndex.cpp ExtIndex.cpp HTIndex.cpp LTIndex.cpp MDIndex.cpp SEIndex.cpp Symbols.cpp
+HEADERS += BCD.h   BCDFile.h   BTIndex.h   CTXIndex.h   ExtIndex.h   HTIndex.h   LTIndex.h   MDIndex.h   SEIndex.h   Symbols.h   Tree.h
+SOURCES += BCD.cpp BCDFile.cpp BTIndex.cpp CTXIndex.cpp ExtIndex.cpp HTIndex.cpp LTIndex.cpp MDIndex.cpp SEIndex.cpp Symbols.cpp Tree.cpp
 
 SOURCES += main.cpp
 
