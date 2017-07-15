@@ -40,6 +40,16 @@ static log4cpp::Category& logger = Logger::getLogger("lt");
 //
 // LTIndex
 //
+QList<LTIndex*> LTIndex::all;
+void LTIndex::checkAll() {
+	for(LTIndex* e: all) {
+		if (e->isNull()) continue;
+		LTRecord* value = LTRecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
 
 LTIndex* LTIndex::getNull() {
 	static LTIndex ret(0, LTIndex::LT_NULL);

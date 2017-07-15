@@ -50,6 +50,7 @@ private:
 	CARD16     index;
 
 public:
+	static void checkAll();
 	static CTXIndex* getNull();
 	static CTXIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
@@ -60,7 +61,10 @@ public:
 	const CTXRecord& getValue() const;
 
 private:
-	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+	static QList<CTXIndex*> all;
+	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+		all.append(this);
+	}
 };
 
 class CTXRecord {

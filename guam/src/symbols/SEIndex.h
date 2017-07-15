@@ -38,7 +38,6 @@ OF SUCH DAMAGE.
 #include "BCD.h"
 #include "Symbols.h"
 
-
 //SEIndex: TYPE = Base RELATIVE ORDERED POINTER [0..3777B] TO SERecord;
 //SENull: SEIndex = FIRST[SEIndex];
 class SEIndex {
@@ -50,6 +49,8 @@ private:
 	CARD16    index;
 
 public:
+	static void checkAll();
+
 	static SEIndex* getNull();
 	static SEIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
@@ -60,7 +61,10 @@ public:
 	const SERecord& getValue() const;
 
 private:
-	SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+	static QList<SEIndex*> all;
+	SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+		all.append(this);
+	}
 };
 
 
@@ -525,7 +529,10 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, SERecord*> all;
 
-	SERecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) : symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {}
+	SERecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) : symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {
+		Key key(symbols, index);
+		all[key] = this;
+	}
 };
 
 #endif

@@ -39,6 +39,17 @@ static log4cpp::Category& logger = Logger::getLogger("ht");
 //
 // HTIndex
 //
+QList<HTIndex*> HTIndex::all;
+void HTIndex::checkAll() {
+	for(HTIndex* e: all) {
+		if (e->isNull()) continue;
+		HTRecord* value = HTRecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
+
 HTIndex* HTIndex::getNull() {
 	static HTIndex ret(0, HTIndex::HT_NULL);
 	return &ret;

@@ -39,9 +39,11 @@ OF SUCH DAMAGE.
 #include "Symbols.h"
 
 
+class TreeIndex;
 class TreeNode;
 class TreeLink;
 class LitRecord;
+
 
 //Index: TYPE = Base RELATIVE POINTER [0..Limit) TO Tree.Node;
 //NullIndex: Tree.Index = FIRST[Tree.Index];
@@ -53,7 +55,9 @@ private:
 	Symbols*  symbols;
 	CARD16    index;
 
+
 public:
+	static void checkAll();
 	static TreeIndex* getNull();
 	static TreeIndex* getInstance(Symbols* symbols, CARD16 index);
 
@@ -64,7 +68,10 @@ public:
 
 	const TreeNode& getValue() const;
 private:
-	TreeIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+	static QList<TreeIndex*> all;
+	TreeIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+		all.append(this);
+	}
 };
 
 
@@ -190,7 +197,10 @@ private:
 	static QMap<Key, TreeNode*> all;
 
 	TreeNode(Symbols* symbols_, CARD16 index_, NodeName name_, bool shared_, CARD16 nSons_, CARD16 info_, TreeLink* son_[]) :
-		symbols(symbols_), index(index_), name(name_), shared(shared_), nSons(nSons_), info(info_), son(son_) {}
+		symbols(symbols_), index(index_), name(name_), shared(shared_), nSons(nSons_), info(info_), son(son_) {
+		Key key(symbols, index);
+		all[key] = this;
+	}
 };
 
 

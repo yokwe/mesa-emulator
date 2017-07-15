@@ -42,6 +42,17 @@ static log4cpp::Category& logger = Logger::getLogger("bt");
 //
 // BTIndex
 //
+QList<BTIndex*> BTIndex::all;
+void BTIndex::checkAll() {
+	for(BTIndex* e: all) {
+		if (e->isNull()) continue;
+		BTRecord* value = BTRecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
+
 BTIndex* BTIndex::getNull() {
 	static BTIndex ret(0, BTIndex::BT_NULL);
 	return &ret;

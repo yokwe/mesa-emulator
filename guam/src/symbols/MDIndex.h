@@ -52,6 +52,7 @@ private:
 	CARD16    index;
 
 public:
+	static void checkAll();
 	static MDIndex* getNull();
 	static MDIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
@@ -62,7 +63,10 @@ public:
 	const MDRecord& getValue() const;
 
 private:
-	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+	static QList<MDIndex*> all;
+	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+		all.append(this);
+	}
 };
 
 

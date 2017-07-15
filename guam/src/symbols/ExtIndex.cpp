@@ -41,6 +41,16 @@ static log4cpp::Category& logger = Logger::getLogger("etx");
 //
 // ExtIndex
 //
+QList<ExtIndex*> ExtIndex::all;
+void ExtIndex::checkAll() {
+	for(ExtIndex* e: all) {
+		if (e->isNull()) continue;
+		ExtRecord* value = ExtRecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
 
 ExtIndex* ExtIndex::getNull() {
 	static ExtIndex ret(0, ExtIndex::EXT_NULL);

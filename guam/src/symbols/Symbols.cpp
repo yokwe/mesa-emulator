@@ -275,6 +275,14 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeExt(extBlock);
     initializeTree(treeBlock);
 
+    BTIndex::checkAll();
+    CTXIndex::checkAll();
+    ExtIndex::checkAll();
+    HTIndex::checkAll();
+    LTIndex::checkAll();
+    MDIndex::checkAll();
+    SEIndex::checkAll();
+    TreeIndex::checkAll();
 	{
 		MDRecord* p = md[0];
 		logger.info("MD %s", p->toString().toLocal8Bit().constData());

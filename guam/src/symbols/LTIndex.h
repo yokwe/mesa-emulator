@@ -50,6 +50,7 @@ private:
 	CARD16     index;
 
 public:
+	static void checkAll();
 	static LTIndex* getNull();
 	static LTIndex* getInstance(Symbols* symbols, CARD16 index);
 
@@ -60,7 +61,10 @@ public:
 	const LTRecord& getValue() const;
 
 private:
-	LTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+	static QList<LTIndex*> all;
+	LTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+		all.append(this);
+	}
 };
 
 
@@ -100,6 +104,7 @@ public:
 
 		Long(CARD16 codeIndex_, CARD16 length_, CARD16* value_) : codeIndex(codeIndex_), length(length_), value(value_) {}
 	};
+
 	static LTRecord* getInstance(Symbols* symbols, CARD16 index);
 	static LTRecord* find(Symbols* symbols, CARD16 index);
 

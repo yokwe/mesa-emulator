@@ -52,6 +52,7 @@ private:
 	CARD16     index;
 
 public:
+	static void checkAll();
 	static ExtIndex* getNull();
 	static ExtIndex* getInstance(Symbols* symbols_, CARD16 index_);
 
@@ -62,7 +63,10 @@ public:
 	const ExtRecord& getValue() const;
 
 private:
-	ExtIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {}
+	static QList<ExtIndex*> all;
+	ExtIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+		all.append(this);
+	}
 };
 
 

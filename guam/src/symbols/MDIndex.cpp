@@ -41,6 +41,17 @@ static log4cpp::Category& logger = Logger::getLogger("md");
 //
 // MDIndex
 //
+QList<MDIndex*> MDIndex::all;
+void MDIndex::checkAll() {
+	for(MDIndex* e: all) {
+		if (e->isNull()) continue;
+		MDRecord* value = MDRecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
+
 MDIndex* MDIndex::getNull() {
 	static MDIndex ret(0, MDIndex::MD_NULL);
 	return &ret;

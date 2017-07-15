@@ -41,6 +41,17 @@ static log4cpp::Category& logger = Logger::getLogger("se");
 //
 // SEIndex
 //
+QList<SEIndex*> SEIndex::all;
+void SEIndex::checkAll() {
+	for(SEIndex* e: all) {
+		if (e->isNull()) continue;
+		SERecord* value = SERecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
+
 SEIndex* SEIndex::getNull() {
 	static SEIndex ret(0, SEIndex::SE_NULL);
 	return &ret;

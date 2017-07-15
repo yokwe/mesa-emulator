@@ -44,6 +44,17 @@ static log4cpp::Category& logger = Logger::getLogger("tree");
 // TreeIndex
 //
 
+QList<TreeIndex*> TreeIndex::all;
+void TreeIndex::checkAll() {
+	for(TreeIndex* e: all) {
+		if (e->isNull()) continue;
+		TreeNode* value = TreeNode::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
+
 TreeIndex* TreeIndex::getNull() {
 	static TreeIndex ret(0, TreeIndex::TREE_NULL);
 	return &ret;

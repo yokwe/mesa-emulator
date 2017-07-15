@@ -41,6 +41,16 @@ static log4cpp::Category& logger = Logger::getLogger("ctx");
 //
 // CTXIndex
 //
+QList<CTXIndex*> CTXIndex::all;
+void CTXIndex::checkAll() {
+	for(CTXIndex* e: all) {
+		if (e->isNull()) continue;
+		CTXRecord* value = CTXRecord::find(e->symbols, e->index);
+		if (value == 0) {
+			logger.warn("Bogus %s", e->toString().toLocal8Bit().constData());
+		}
+	}
+}
 
 CTXIndex* CTXIndex::getNull() {
 	static CTXIndex ret(0, CTXIndex::CTX_NULL);
