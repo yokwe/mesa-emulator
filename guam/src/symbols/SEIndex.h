@@ -322,6 +322,9 @@ public:
 		class Transfer {
 		public:
 			typedef Symbols::TransferMode TransferMode;
+			static QString toString(TransferMode value) {
+				return Symbols::toString(value);
+			}
 			static Transfer* getInstance(Symbols* symbols, CARD16 u0);
 
 			const bool         safe;
