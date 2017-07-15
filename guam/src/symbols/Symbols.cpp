@@ -266,7 +266,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeHT(htBlock);
     initializeMD(mdBlock);
     initializeCTX(ctxBlock);
-//    initializeSE(seBlock);
+    initializeSE(seBlock);
     initializeBT(bodyBlock);
 //    initializeLT(litBlock);
 //    initializeExt(extBlock);
@@ -381,6 +381,34 @@ void Symbols::initializeCTX(BlockDescriptor* block) {
         ctx[index] = record;
 
         logger.info("ctx %4d %s", index, record->toString().toLocal8Bit().constData());
+        index++;
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeSE(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        SERecord* record = SERecord::getInstance(this, index);
+        se[index] = record;
+
+        logger.info("se %4d %s", index, record->toString().toLocal8Bit().constData());
         index++;
     }
 
