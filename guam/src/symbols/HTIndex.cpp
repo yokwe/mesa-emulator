@@ -43,8 +43,8 @@ HTIndex* HTIndex::getNull() {
 	static HTIndex ret(0, HTIndex::HT_NULL);
 	return &ret;
 }
-HTIndex* HTIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new HTIndex(symbols_, index_);
+HTIndex* HTIndex::getInstance(Symbols* symbols, CARD16 index) {
+	return new HTIndex(symbols, index);
 }
 QString HTIndex::toString() const {
 	if (isNull()) return QString("%1-NULL").arg(PREFIX);

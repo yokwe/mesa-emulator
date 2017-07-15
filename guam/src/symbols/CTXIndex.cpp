@@ -46,8 +46,8 @@ CTXIndex* CTXIndex::getNull() {
 	static CTXIndex ret(0, CTXIndex::CTX_NULL);
 	return &ret;
 }
-CTXIndex* CTXIndex::getInstance(Symbols* symbols_, CARD16 index_) {
-	return new CTXIndex(symbols_, index_);
+CTXIndex* CTXIndex::getInstance(Symbols* symbols, CARD16 index) {
+	return new CTXIndex(symbols, index);
 }
 QString CTXIndex::toString() const {
 	if (isNull()) return QString("%1-NULL").arg(PREFIX);

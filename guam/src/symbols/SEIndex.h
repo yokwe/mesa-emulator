@@ -477,6 +477,8 @@ public:
 			return Symbols::toString(value);
 		}
 
+		static Cons* getInstance(Symbols* symbols, CARD16 u0);
+
 		const Tag   tag;
 		const void* tagValue;
 
@@ -499,6 +501,8 @@ public:
 		const Bits&       getBits()       const;
 
 		QString toString() const;
+
+		Cons(Tag tag_, void* tagValue_) : tag(tag_), tagValue(tagValue_) {}
 	};
 
 
