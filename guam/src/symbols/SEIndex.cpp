@@ -35,6 +35,8 @@ static log4cpp::Category& logger = Logger::getLogger("se");
 #include "SEIndex.h"
 #include "BCDFile.h"
 
+#include "CTXIndex.h"
+#include "HTIndex.h"
 
 //
 // SEIndex
@@ -163,4 +165,231 @@ SERecord* SERecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);
 }
+
+
+QString SERecord::toString() const {
+	switch(tag) {
+	case Tag::ID:
+		return QString("%1 %2").arg(toString(tag)).arg(getId().toString());
+	case Tag::CONS:
+		return QString("%1 %2").arg(toString(tag)).arg(getCons().toString());
+	default:
+		ERROR();
+		return "???";
+	}
+}
+
+QString SERecord::toString(Tag value) {
+	TO_STRING_PROLOGUE(Tag)
+
+	MAP_ENTRY(ID)
+	MAP_ENTRY(CONS)
+
+	TO_STRING_EPILOGUE
+}
+QString SERecord::Id::toString(Tag value) {
+	TO_STRING_PROLOGUE(Tag)
+
+	MAP_ENTRY(TERMINAL)
+	MAP_ENTRY(SEQUENTIAL)
+	MAP_ENTRY(LINKED)
+
+	TO_STRING_EPILOGUE
+}
+
+const SERecord::Id&   SERecord::getId() const {
+	if (tag != Tag::ID) ERROR();
+	if (tagValue == 0) ERROR();
+	Id* ret = (Id*)tagValue;
+	return *ret;
+}
+const SERecord::Cons&   SERecord::getCons() const {
+	if (tag != Tag::ID) ERROR();
+	if (tagValue == 0) ERROR();
+	Cons* ret = (Cons*)tagValue;
+	return *ret;
+}
+const SERecord::Id::Linked&   SERecord::Id::getLinked() const {
+	if (tag != Tag::LINKED) ERROR();
+	if (tagValue == 0) ERROR();
+	Linked* ret = (Linked*)tagValue;
+	return *ret;
+}
+QString SERecord::Id::Linked::toString() const {
+	return QString("%1").arg(this->linked->toString());
+}
+
+QString SERecord::Id::toString() const {
+	switch(tag) {
+	case Tag::TERMINAL:
+	case Tag::SEQUENTIAL:
+		return QString("%1 %2 %3 %4 %5 %6").arg(idCtx->toString()).arg(idType->toString()).
+				arg(idInfo).arg(idValue).arg(hash->getValue().value).arg(toString(tag));
+	case Tag::LINKED:
+		return QString("%1 %2 %3 %4 %5 %6 %7").arg(idCtx->toString()).arg(idType->toString()).
+				arg(idInfo).arg(idValue).arg(hash->getValue().value).arg(toString(tag)).arg(getLinked().toString());
+		break;
+	default:
+		ERROR();
+		return "???";
+	}
+}
+
+
+
+const SERecord::Cons::Basic&      SERecord::Cons::getBasic()      const {
+	if (tag != Tag::BASIC) ERROR();
+	if (tagValue == 0) ERROR();
+	Basic* ret = (Basic*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Enumerated& SERecord::Cons::getEnumerated() const {
+	if (tag != Tag::ENUMERATED) ERROR();
+	if (tagValue == 0) ERROR();
+	Enumerated* ret = (Enumerated*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Record&     SERecord::Cons::getRecord()     const {
+	if (tag != Tag::RECORD) ERROR();
+	if (tagValue == 0) ERROR();
+	Record* ret = (Record*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Ref&        SERecord::Cons::getRef()        const {
+	if (tag != Tag::REF) ERROR();
+	if (tagValue == 0) ERROR();
+	Ref* ret = (Ref*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Array&      SERecord::Cons::getArray()      const {
+	if (tag != Tag::ARRAY) ERROR();
+	if (tagValue == 0) ERROR();
+	Array* ret = (Array*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::ArrayDesc&  SERecord::Cons::getArrayDesc()  const {
+	if (tag != Tag::ARRAYDESC) ERROR();
+	if (tagValue == 0) ERROR();
+	ArrayDesc* ret = (ArrayDesc*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Transfer&   SERecord::Cons::getTransfer()   const {
+	if (tag != Tag::TRANSFER) ERROR();
+	if (tagValue == 0) ERROR();
+	Transfer* ret = (Transfer*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Definition& SERecord::Cons::getDefinition() const {
+	if (tag != Tag::DEFINITION) ERROR();
+	if (tagValue == 0) ERROR();
+	Definition* ret = (Definition*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Union&      SERecord::Cons::getUnion()      const {
+	if (tag != Tag::UNION) ERROR();
+	if (tagValue == 0) ERROR();
+	Union* ret = (Union*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Sequence&   SERecord::Cons::getSequence()   const {
+	if (tag != Tag::SEQUENCE) ERROR();
+	if (tagValue == 0) ERROR();
+	Sequence* ret = (Sequence*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Relative&   SERecord::Cons::getRelative()   const {
+	if (tag != Tag::RELATIVE) ERROR();
+	if (tagValue == 0) ERROR();
+	Relative* ret = (Relative*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Subrange&   SERecord::Cons::getSubrange()   const {
+	if (tag != Tag::SUBRANGE) ERROR();
+	if (tagValue == 0) ERROR();
+	Subrange* ret = (Subrange*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Long&       SERecord::Cons::getLong()       const {
+	if (tag != Tag::LONG) ERROR();
+	if (tagValue == 0) ERROR();
+	Long* ret = (Long*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Real&       SERecord::Cons::getReal()       const {
+	if (tag != Tag::REAL) ERROR();
+	if (tagValue == 0) ERROR();
+	Real* ret = (Real*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Opaque&     SERecord::Cons::getOpaque()     const {
+	if (tag != Tag::OPAQUE) ERROR();
+	if (tagValue == 0) ERROR();
+	Opaque* ret = (Opaque*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Zone&       SERecord::Cons::getZone()       const {
+	if (tag != Tag::ZONE) ERROR();
+	if (tagValue == 0) ERROR();
+	Zone* ret = (Zone*)tagValue;
+	return *ret;
+}
+const SERecord::Cons::Bits&       SERecord::Cons::getBits()       const {
+	if (tag != Tag::BITS) ERROR();
+	if (tagValue == 0) ERROR();
+	Bits* ret = (Bits*)tagValue;
+	return *ret;
+}
+
+QString SERecord::Cons::toString() const {
+	switch(tag) {
+	case Tag::MODE:
+		return QString("%1").arg(toString(tag));
+	case Tag::BASIC:
+		return QString("%1 %2").arg(toString(tag)).arg(getBasic().toString());
+	case Tag::ENUMERATED:
+		return QString("%1 %2").arg(toString(tag)).arg(getEnumerated().toString());
+	case Tag::RECORD:
+		return QString("%1 %2").arg(toString(tag)).arg(getRecord().toString());
+	case Tag::REF:
+		return QString("%1 %2").arg(toString(tag)).arg(getRef().toString());
+	case Tag::ARRAY:
+		return QString("%1 %2").arg(toString(tag)).arg(getArray().toString());
+	case Tag::ARRAYDESC:
+		return QString("%1 %2").arg(toString(tag)).arg(getArrayDesc().toString());
+	case Tag::TRANSFER:
+		return QString("%1 %2").arg(toString(tag)).arg(getTransfer().toString());
+	case Tag::DEFINITION:
+		return QString("%1 %2").arg(toString(tag)).arg(getDefinition().toString());
+	case Tag::UNION:
+		return QString("%1 %2").arg(toString(tag)).arg(getUnion().toString());
+	case Tag::SEQUENCE:
+		return QString("%1 %2").arg(toString(tag)).arg(getSequence().toString());
+	case Tag::RELATIVE:
+		return QString("%1 %2").arg(toString(tag)).arg(getRelative().toString());
+	case Tag::SUBRANGE:
+		return QString("%1 %2").arg(toString(tag)).arg(getSubrange().toString());
+	case Tag::LONG:
+		return QString("%1 %2").arg(toString(tag)).arg(getLong().toString());
+	case Tag::REAL:
+		return QString("%1 %2").arg(toString(tag)).arg(getReal().toString());
+	case Tag::OPAQUE:
+		return QString("%1 %2").arg(toString(tag)).arg(getOpaque().toString());
+	case Tag::ZONE:
+		return QString("%1 %2").arg(toString(tag)).arg(getZone().toString());
+	case Tag::ANY:
+		return QString("%1").arg(toString(tag));
+	case Tag::NIL:
+		return QString("%1").arg(toString(tag));
+	case Tag::BITS:
+		return QString("%1 %2").arg(toString(tag)).arg(getBits().toString());
+	case Tag::FIXED_SEQUENCE:
+		return QString("%1").arg(toString(tag));
+	default:
+		ERROR();
+		return "???";
+	}
+}
+
+
+
 

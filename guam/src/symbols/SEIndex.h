@@ -176,7 +176,7 @@ public:
 			Linked(SEIndex* linked_) : linked(linked_) {}
 		};
 
-		enum class Tag {ID, CONS};
+		enum class Tag {TERMINAL, SEQUENTIAL, LINKED};
 		static QString toString(Tag value);
 
 		static Id* getInstance(Symbols* symbols, CARD16 u0);
@@ -294,6 +294,7 @@ public:
 		};
 
 		class Array {
+		public:
 			static Array* getInstance(Symbols* symbols, CARD16 u0);
 
 			const bool     packed;
@@ -463,11 +464,15 @@ public:
 
 			const CARD32 length; // BitCount
 
+			QString toString() const;
+
 			Bits(CARD32 length_) : length(length_) {}
 		};
 
 		typedef Symbols::TypeClass Tag;
-		static QString toString(Tag value);
+		static QString toString(Tag value) {
+			return Symbols::toString(value);
+		}
 
 		const Tag   tag;
 		const void* tagValue;
@@ -478,7 +483,7 @@ public:
 		const Ref&        getRef()        const;
 		const Array&      getArray()      const;
 		const ArrayDesc&  getArrayDesc()  const;
-		const Transfer&   getTransfe()    const;
+		const Transfer&   getTransfer()   const;
 		const Definition& getDefinition() const;
 		const Union&      getUnion()      const;
 		const Sequence&   getSequence()   const;
