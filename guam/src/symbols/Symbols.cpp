@@ -39,6 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("symbols");
 
 #include "BTIndex.h"
 #include "CTXIndex.h"
+#include "ExtIndex.h"
 #include "HTIndex.h"
 #include "MDIndex.h"
 #include "SEIndex.h"
@@ -269,7 +270,7 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     initializeSE(seBlock);
     initializeBT(bodyBlock);
 //    initializeLT(litBlock);
-//    initializeExt(extBlock);
+    initializeExt(extBlock);
 //    initializeTree(treeBlock);
 
 //	{
@@ -437,6 +438,34 @@ void Symbols::initializeBT(BlockDescriptor* block) {
         bt[index] = record;
 
         logger.info("bt %4d %s", index, record->toString().toLocal8Bit().constData());
+        index++;
+    }
+
+    // sanity check
+    {
+    	int pos = file->position();
+        if (pos != limit) {
+        	logger.fatal("pos != limit  pos = %d  limit = %d", pos, limit);
+            ERROR();
+        }
+    }
+}
+
+void Symbols::initializeExt(BlockDescriptor* block) {
+    CARD16 base  = offsetBase + block->offset;
+    int    limit = base + block->size;
+
+    file->position(base);
+
+    for(;;) {
+        int pos = file->position();
+        if (limit <= pos) break;
+
+        int index = pos - base;
+        ExtRecord* record = ExtRecord::getInstance(this, index);
+        ext[index] = record;
+
+        logger.info("ext %4d %s", index, record->toString().toLocal8Bit().constData());
         index++;
     }
 
