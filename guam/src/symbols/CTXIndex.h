@@ -71,9 +71,6 @@ private:
 public:
 	typedef Symbols::Closure Closure;
 
-	enum class Tag {SIMPLE, INCLUDED, IMPORTED, NIL};
-	static QString toString(Tag value);
-
 	class Simple {
 	public:
 		const CTXIndex* ctxNew;
@@ -107,14 +104,18 @@ public:
 	static CTXRecord* getInstance(Symbols* symbols, CARD16 index);
 	static CTXRecord* find(Symbols* symbols, CARD16 index);
 
+	enum class Tag {SIMPLE, INCLUDED, IMPORTED, NIL};
+	static QString toString(Tag value);
+
 //	bool   mark;
 //	bool   varUpdated;
 	const SEIndex* seList;
 	const CARD16   level;
+
 	const Tag      tag;
 	const void*    tagValue;
 
-	const Simple&   getSimple() const;
+	const Simple&   getSimple()   const;
 	const Included& getIncluded() const;
 	const Imported& getImported() const;
 

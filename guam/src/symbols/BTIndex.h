@@ -112,14 +112,8 @@ private:
 	const CARD16    index;
 
 public:
-	enum class Tag {CALLABLE, OTHER};
-	static QString toString(Tag value);
-
 	class Callable {
 	public:
-		enum class Tag {OUTER, INNER, CATCH};
-		static QString toString(Tag value);
-
 		class Inner {
 		public:
 			const CARD16 frameOffset;
@@ -136,8 +130,10 @@ public:
 			Catch(CARD16 index_) : index(index_) {}
 		};
 
-
 		static Callable* getInstance(Symbols* symbols, CARD16 u0);
+
+		enum class Tag {OUTER, INNER, CATCH};
+		static QString toString(Tag value);
 
 		const bool     inline_;
 		const SEIndex* id;
@@ -193,9 +189,6 @@ public:
 
 	class BodyInfo {
 	public:
-		enum Tag {INTERNAL, EXTERNAL};
-		static QString toString(Tag);
-
 		class Internal {
 		public:
 			const CARD16 bodyTree; // Tree.Index
@@ -218,6 +211,9 @@ public:
 
 		static BodyInfo* getInstance(Symbols* symbols);
 
+		enum Tag {INTERNAL, EXTERNAL};
+		static QString toString(Tag);
+
 		const Tag   tag;
 		const void* tagValue;
 
@@ -230,6 +226,9 @@ public:
 
 	static BTRecord* getInstance(Symbols* symbols, CARD16 index);
 	static BTRecord* find(Symbols* symbols, CARD16 index);
+
+	enum class Tag {CALLABLE, OTHER};
+	static QString toString(Tag value);
 
 	const BodyLink* link;
 	const BTIndex*  firstSon;
