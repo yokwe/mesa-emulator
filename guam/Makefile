@@ -35,7 +35,6 @@ all:
 	(cd src/guam-headless; make all)
 	(cd src/guam;          make all)
 	(cd src/floppy;        make all)
-	(cd src/bcd;           make all)
 	(cd src/symbols;       make all)
 
 qt4-default:
@@ -56,7 +55,6 @@ clean:
 	mkdir  tmp/build/guam-headless
 	mkdir  tmp/build/guam
 	mkdir  tmp/build/floppy
-	mkdir  tmp/build/bcd
 	mkdir  tmp/build/symbols
 
 distclean: clean
@@ -91,15 +89,6 @@ floppy:
 	(cd src/util;          make all)
 	(cd src/agent;         make all)
 	(cd src/floppy;        make all)
-
-bcd:
-	(cd src/mesa;          make all)
-	(cd src/util;          make all)
-	(cd src/bcd;           make all)
-
-run-bcd: bcd
-	echo -n >tmp/debug.log
-	tmp/build/bcd/bcd tmp/GermOpsImpl.bcd
 
 symbols:
 	(cd src/mesa;          make all)
@@ -171,7 +160,6 @@ qmake:
 	(cd src/guam-headless; qmake)
 	(cd src/guam;          qmake)
 	(cd src/floppy;        qmake)
-	(cd src/bcd;           qmake)
 	(cd src/symbols;       qmake)
 	qmake --version
 
