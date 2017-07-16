@@ -72,6 +72,13 @@ const CTXRecord& CTXIndex::getValue() const {
 	return *ret;
 }
 
+//FirstCtxSe: PROC [h: Handle, ctx: CTXIndex] RETURNS [ISEIndex] = {
+//  RETURN [IF ctx = CTXNull THEN ISENull ELSE h.ctxb[ctx].seList]};
+const SEIndex* CTXIndex::firstCtxSe() const {
+    return isNull() ? SEIndex::getNull() : getValue().seList;
+}
+
+
 
 //
 // CTXRecord

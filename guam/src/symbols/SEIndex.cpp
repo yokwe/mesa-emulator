@@ -112,6 +112,33 @@ const SEIndex* SEIndex::underType() const {
 	return sei;
 }
 
+//NextSe: PROC [h: Handle, sei: ISEIndex] RETURNS [ISEIndex] = {
+//  RETURN [
+//    IF sei = SENull
+//	    THEN ISENull
+//	    ELSE
+//	      WITH id: h.seb[sei] SELECT FROM
+//	        terminal => ISENull,
+//	        sequential => sei + SIZE[sequential id SERecord],
+//	       linked => id.link,
+//	       ENDCASE => ISENull]};
+const SEIndex* SEIndex::nextSe() const {
+	if (isNull()) {
+		return SEIndex::getNull();
+	} else {
+		const SERecord::Id& id(getValue().getId());
+		switch(getValue().getId().tag) {
+		case SERecord::Id::Tag::TERMINAL:
+			return SEIndex::getNull();
+		case SERecord::Id::Tag::SEQUENTIAL:
+			return SEIndex::find(index + 5); // Is this correct?
+		case SERecord::Id::Tag::LINKED:
+			return id.getLinked().linked;
+		default:
+			return SEIndex::getNull();
+		}
+	}
+}
 
 
 //

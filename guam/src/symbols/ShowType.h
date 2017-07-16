@@ -152,10 +152,10 @@ public:
     static void outArgType(QTextStream& out, const SEIndex* sei);
 
     //PrintFieldCtx: PROCEDURE [ctx: Symbols.CTXIndex, md: BOOLEAN � FALSE] =
-    static void printFieldCtx(QTextStream& out, CTXIndex* ctx, bool md = false);
+    static void printFieldCtx(QTextStream& out, const CTXIndex* ctx, bool md = false);
 
     //PrintHti: PROCEDURE [hti: Symbols.HTIndex] =
-    static void printHti(QTextStream& out, HTIndex* hti);
+    static void printHti(QTextStream& out, const HTIndex* hti);
 
     //PrintSei: PROCEDURE [sei: Symbols.ISEIndex] = {
     static void printSei(QTextStream& out, const SEIndex* sei);

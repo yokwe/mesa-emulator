@@ -57,8 +57,15 @@ public:
 	bool isNull() const {
 		return index == CTX_NULL;
 	}
+	bool equals(const CTXIndex* that) const {
+		return this->index == that->index;
+	}
 	QString toString() const;
 	const CTXRecord& getValue() const;
+
+    //FirstCtxSe: PROC [h: Handle, ctx: CTXIndex] RETURNS [ISEIndex] = {
+    //  RETURN [IF ctx = CTXNull THEN ISENull ELSE h.ctxb[ctx].seList]};
+    const SEIndex* firstCtxSe() const;
 
 private:
 	static QList<CTXIndex*> all;
