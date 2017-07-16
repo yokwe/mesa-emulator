@@ -32,6 +32,9 @@ POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 HEADERS += BCD.h   BCDFile.h   BTIndex.h   CTXIndex.h   ExtIndex.h   HTIndex.h   LTIndex.h   MDIndex.h   SEIndex.h   Symbols.h   Tree.h
 SOURCES += BCD.cpp BCDFile.cpp BTIndex.cpp CTXIndex.cpp ExtIndex.cpp HTIndex.cpp LTIndex.cpp MDIndex.cpp SEIndex.cpp Symbols.cpp Tree.cpp
 
+HEADERS += ShowType.h
+SOURCES += ShowType.cpp
+
 SOURCES += main.cpp
 
 

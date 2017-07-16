@@ -44,21 +44,45 @@ class SEIndex {
 private:
 	static constexpr const char* PREFIX = "se";
 	static const CARD16  SE_NULL = 0;
+	//-- the following two values are guaranteed by the compiler
+	//typeTYPE: CSEIndex = FIRST[CSEIndex] + SIZE[nil cons SERecord];
+	//typeANY: CSEIndex = typeTYPE + SIZE[mode cons SERecord];
+	static const CARD16 TYPE_TYPE = 1;
+	static const CARD16 TYPE_ANY  = 2;
 
 	Symbols*  symbols;
 	CARD16    index;
 
 public:
+	typedef Symbols::TransferMode TransferMode;
 	static void checkAll();
 
 	static SEIndex* getNull();
-	static SEIndex* getInstance(Symbols* symbols_, CARD16 index_);
+	static SEIndex* getInstance(Symbols* symbols, CARD16 index);
 
 	bool isNull() const {
 		return index == SE_NULL;
 	}
+	bool isTypeType() const {
+		return index == TYPE_TYPE;
+	}
+	bool isTypeAny() const {
+		return index == TYPE_ANY;
+	}
+	bool equals(const SEIndex* that) const {
+		return this->index == that->index;
+	}
+	Symbols* getSymbols() const {
+		return symbols;
+	}
 	QString toString() const;
 	const SERecord& getValue() const;
+
+	SEIndex* find(CARD16 index) const;
+
+	//
+	TransferMode xferMode() const;
+	const SEIndex*     underType() const;
 
 private:
 	static QList<SEIndex*> all;

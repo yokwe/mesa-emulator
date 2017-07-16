@@ -72,6 +72,47 @@ const SERecord& SEIndex::getValue() const {
 	return *ret;
 }
 
+SEIndex* SEIndex::find(CARD16 index_) const {
+	for(SEIndex* e: all) {
+		if (e->symbols == this->symbols && e->index == index_) return e;
+	}
+	logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index_);
+	ERROR();
+}
+
+//XferMode: PROC [h: Handle, type: SEIndex] RETURNS [TransferMode] = {
+//  sei: CSEIndex = UnderType[h, type];
+//  RETURN [WITH t: h.seb[sei] SELECT FROM transfer => t.mode, ENDCASE => none]};
+SEIndex::TransferMode SEIndex::xferMode() const {
+	const SEIndex* sei = underType();
+	sei->getValue().getCons().tag;
+	return sei->getValue().getCons().tag == SERecord::Cons::Tag::TRANSFER ? sei->getValue().getCons().getTransfer().mode : SEIndex::TransferMode::NONE;
+}
+
+//UnderType: PROC [h: Handle, type: SEIndex] RETURNS [CSEIndex] = {
+//  sei: SEIndex � type;
+//  WHILE sei # SENull DO
+//    WITH se: h.seb[sei] SELECT FROM
+//      id => {IF se.idType # typeTYPE THEN ERROR; sei � SymbolOps.ToSei[se.idInfo]};
+//      ENDCASE => EXIT;
+//    ENDLOOP;
+//  RETURN [LOOPHOLE[sei, CSEIndex]]};
+const SEIndex* SEIndex::underType() const {
+	const SEIndex* sei = this;
+	while(!sei->isNull()) {
+		const SERecord& se(sei->getValue());
+		if (se.tag == SERecord::Tag::ID) {
+			const SERecord::Id& id = se.getId();
+			if (!id.idType->isTypeType()) ERROR();
+			sei = sei->find(id.idInfo);
+		} else {
+			break;
+		}
+	}
+	return sei;
+}
+
+
 
 //
 // SERecord

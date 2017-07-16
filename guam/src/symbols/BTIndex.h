@@ -54,7 +54,7 @@ private:
 public:
 	static void checkAll();
 	static BTIndex* getNull();
-	static BTIndex* getInstance(Symbols* symbols_, CARD16 index_);
+	static BTIndex* getInstance(Symbols* symbols, CARD16 index);
 
 	bool isNull() const {
 		return index == BT_NULL;

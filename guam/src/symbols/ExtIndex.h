@@ -83,6 +83,8 @@ private:
 public:
 	static ExtRecord* getInstance(Symbols* symbols, CARD16 index);
 	static ExtRecord* find(Symbols* symbols, CARD16 index);
+	static ExtRecord* find(const SEIndex* sei);
+
 
 	typedef Symbols::ExtensionType ExtensionType;
 	static QString toString(ExtensionType value) {

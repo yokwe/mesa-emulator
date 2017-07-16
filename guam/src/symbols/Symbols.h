@@ -61,6 +61,7 @@ class MDRecord;
 class SEIndex;
 class SERecord;
 
+class TreeLink;
 class TreeNode;
 
 

@@ -87,6 +87,22 @@ ExtRecord* ExtRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);
 }
+//  FindExtension: PROC [h: Handle, sei: ISEIndex] RETURNS [type: ExtensionType, tree: Tree.Link] = {
+//	OPEN SymbolSegment;
+//	FOR exti: ExtIndex � FIRST[ExtIndex], exti + SIZE[ExtRecord] UNTIL exti = h.extLimit DO
+//	  IF h.extb[exti].sei = sei THEN
+//		RETURN [h.extb[exti].type, h.extb[exti].tree];
+//	  ENDLOOP;
+//	RETURN [none, Tree.Null]};
+ExtRecord* ExtRecord::find(const SEIndex* sei) {
+	for(ExtRecord* e: all) {
+		if (sei->equals(e->sei)) return e;
+	}
+	logger.fatal("Cannot find  sei = %s", sei->toString().toLocal8Bit().constData());
+	ERROR();
+	return 0;
+}
+
 
 ExtRecord* ExtRecord::getInstance(Symbols* symbols, CARD16 index) {
  	CARD16 u0 = symbols->file->getCARD16();
