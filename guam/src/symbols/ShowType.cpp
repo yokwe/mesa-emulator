@@ -44,6 +44,20 @@ static log4cpp::Category& logger = Logger::getLogger("showtype");
 //
 // ValFormat
 //
+QString ValFormat::toString(Tag value) {
+	TO_STRING_PROLOGUE(Tag)
+
+	MAP_ENTRY(SIGNED)
+	MAP_ENTRY(UNSIGNED)
+	MAP_ENTRY(CHAR)
+	MAP_ENTRY(ENUM)
+	MAP_ENTRY(ARRAY)
+	MAP_ENTRY(TRANSFER)
+	MAP_ENTRY(REF)
+	MAP_ENTRY(OTHER)
+
+	TO_STRING_EPILOGUE
+}
 QString ValFormat::Enum::toString() const {
 	return QString("%1").arg(esei->toString());
 }
@@ -409,7 +423,7 @@ void ShowType::printFieldCtx(QTextStream& out, const CTXIndex* ctx, bool md) {
 //    SymbolOps.SubStringForHash[symbols, s, hti]; Format.SubString[out, s, cd]};
 //  RETURN
 //  END;
-void printHti(QTextStream& out, const HTIndex* hti) {
+void ShowType::printHti(QTextStream& out, const HTIndex* hti) {
 	if (hti->isNull()) out << "(anonymous)";
 	else out << hti->getValue().value;
 }
@@ -420,7 +434,7 @@ void printHti(QTextStream& out, const HTIndex* hti) {
 //    IF sei = Symbols.SENull
 //    THEN Symbols.HTNull
 //    ELSE symbols.seb[sei].hash]};
-void printSei(QTextStream& out, const SEIndex* sei) {
+void ShowType::printSei(QTextStream& out, const SEIndex* sei) {
 	printHti(out, sei->isNull() ? HTIndex::getNull() : sei->getValue().getId().hash);
 }
 
@@ -524,5 +538,109 @@ ValFormat ShowType::getValFormat(const SEIndex* tsei) {
 }
 
 
+//PrintType: PROCEDURE [tsei: Symbols.SEIndex, dosub: PROCEDURE] RETURNS [vf: ValFormat] =
+// TODO ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosub)() = 0);
 
 
+//IsVar: PROC [tsei: Symbols.SEIndex] RETURNS [BOOLEAN] =
+//  BEGIN
+//  WITH t: symbols.seb[tsei] SELECT FROM
+//    id => RETURN [FALSE];
+//    cons => WITH t2: t SELECT FROM
+//      ref => RETURN [t2.var]
+//	    ENDCASE => RETURN [FALSE];
+//    ENDCASE => RETURN [FALSE];
+//  END;
+bool ShowType::isVar(const SEIndex* tsei) {
+	switch(tsei->getValue().tag) {
+	case SERecord::Tag::ID:
+		return false;
+	case SERecord::Tag::CONS:
+		switch(tsei->getValue().getCons().tag) {
+		case SERecord::Cons::Tag::REF:
+			return tsei->getValue().getCons().getRef().var;
+		default:
+			return false;
+		}
+		break;
+	default:
+		return false;
+	}
+}
+
+//PutModeName: PROCEDURE [n: Symbols.TransferMode] =
+//  BEGIN
+//  ModePrintName: ARRAY Symbols.TransferMode OF LONG STRING =
+//    ["PROCEDURE"L, "PORT"L, "SIGNAL"L, "ERROR"L, "PROCESS"L, "PROGRAM"L,
+//	"NONE"L];
+//  out[ModePrintName[n], cd];
+//  END;
+void ShowType::putModeName(QTextStream& out, Symbols::TransferMode n) {
+	switch(n) {
+	case Symbols::TransferMode::PROC:
+		out << "PROCEDURE";
+		break;
+	case Symbols::TransferMode::PORT:
+		out << "PORT";
+		break;
+	case Symbols::TransferMode::SIGNAL:
+		out << "SIGNAL";
+		break;
+	case Symbols::TransferMode::ERROR:
+		out << "ERROR";
+		break;
+	case Symbols::TransferMode::PROCESS:
+		out << "PROCESS";
+		break;
+	case Symbols::TransferMode::PROGRAM:
+		out << "PROGRAM";
+		break;
+	case Symbols::TransferMode::NONE:
+		out << "NONE";
+		break;
+	default:
+		ERROR();
+	}
+}
+
+
+//PrintDefaultValue: PROCEDURE [sei: Symbols.ISEIndex, vf: ValFormat] =
+//  BEGIN
+//  extType: Symbols.ExtensionType;
+//  tree: Tree.Link;
+//  [extType, tree] � SymbolOps.FindExtension[symbols, sei];
+//  IF extType # default THEN RETURN;
+//  out[" � "L, cd];
+//  PrintTreeLink[tree, vf, 0];
+//  END;
+void ShowType::printDefaultValue(QTextStream& out, const SEIndex* sei, ValFormat vf) {
+	ExtRecord* ext = ExtRecord::find(sei);
+	if (ext == 0) ERROR();
+	if (ext->type != ExtRecord::ExtensionType::DEFAULT) return;
+	out << " = ";
+	printTreeLink(out, ext->tree, vf, 0);
+}
+
+
+//PrintTreeLink: PROCEDURE [tree: Tree.Link, vf: ValFormat, recur: CARDINAL, sonOfDot: BOOLEAN � FALSE] =
+// TODO void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat vf, int recur, bool sonOfDot = false);
+
+
+//PutWordSeq: PROCEDURE [seq: LONG DESCRIPTOR FOR ARRAY OF UNSPECIFIED] =
+//  BEGIN
+//  PutChar['[];
+//  FOR i: CARDINAL IN [0..LENGTH[seq]-1) DO
+//    PutUnsigned[seq[i]];
+//    out[", "L, cd];
+//    ENDLOOP;
+//  PutUnsigned[seq[LENGTH[seq]-1]];
+//  PutChar[']];
+//  END;
+void ShowType::putWordSeq(QTextStream& out, CARD16 length, CARD16* value) {
+	out << "[";
+	for(CARD16 i = 0; i < length; i++) {
+		if (i) out << ", ";
+		out << value[i];
+	}
+	out << "]";
+}

@@ -81,7 +81,7 @@ public:
 	SEIndex* find(CARD16 index) const;
 
 	TransferMode xferMode() const;
-	const SEIndex*     underType() const;
+	const SEIndex* underType() const;
 	const SEIndex* nextSe() const;
 
 
