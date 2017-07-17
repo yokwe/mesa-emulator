@@ -141,6 +141,28 @@ const SEIndex* SEIndex::nextSe() const {
 }
 
 
+//  TypeLink: PROC [h: Handle, type: SEIndex] RETURNS [SEIndex] = {
+//	sei: CSEIndex = UnderType[h, type];
+//	RETURN [WITH se: h.seb[sei] SELECT FROM
+//	  record => WITH se SELECT FROM linked => linkType, ENDCASE => SENull,
+//	  ENDCASE => SENull]};
+const SEIndex* SEIndex::typeLink() const {
+	const SEIndex* sei = underType();
+	switch(sei->getValue().getCons().tag) {
+	case SERecord::Cons::Tag::RECORD:
+		switch (sei->getValue().getCons().getRecord().tag) {
+		case SERecord::Cons::Record::Tag::LINKED:
+			return sei->getValue().getCons().getRecord().getLinked().linkType;
+		default:
+			return SEIndex::getNull();
+		}
+		break;
+	default:
+		return SEIndex::getNull();
+	}
+}
+
+
 //
 // SERecord
 //
@@ -777,7 +799,7 @@ SERecord::Cons::Enumerated* SERecord::Cons::Enumerated::getInstance(Symbols* sym
 	return new Enumerated(ordered, machineDep, unpainted, sparse, valueCtx, nValues);
 }
 
-SERecord::Cons::Record* SERecord::Cons::Record::getInstance(Symbols* symbols, CARD16 /*u0*/) {
+SERecord::Cons::Record* SERecord::Cons::Record::getInstance(Symbols* symbols, CARD16 u0) {
 	//          hints(0:8..15): RECORD [
 	//            comparable(0:0..0), assignable(0:1..1): BOOLEAN,
 	//            unifield(0:2..2), variant(0:3..3), privateFields(0:4..4): BOOLEAN,
@@ -790,7 +812,9 @@ SERecord::Cons::Record* SERecord::Cons::Record::getInstance(Symbols* symbols, CA
 	//            notLinked => [],
 	//            linked => [linkType(3:0..15): SEIndex]
 	//            ENDCASE],
-	CARD16 length = symbols->file->getCARD16();
+	bool   privateFields = bitField(u0, 4);
+
+	CARD16 length        = symbols->file->getCARD16();
 
 	CARD16 u2 = symbols->file->getCARD16();
 	bool      argumented = bitField(u2, 0);
@@ -816,7 +840,7 @@ SERecord::Cons::Record* SERecord::Cons::Record::getInstance(Symbols* symbols, CA
 		tagValue = 0;
 	}
 
-	return new Record(length, argumented, monitored, machineDep, painted, fieldCtx, tag, tagValue);
+	return new Record(privateFields, length, argumented, monitored, machineDep, painted, fieldCtx, tag, tagValue);
 }
 
 SERecord::Cons::Ref* SERecord::Cons::Ref::getInstance(Symbols* symbols, CARD16 u0) {

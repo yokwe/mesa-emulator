@@ -83,7 +83,11 @@ public:
 	TransferMode xferMode() const;
 	const SEIndex* underType() const;
 	const SEIndex* nextSe() const;
+	const SEIndex* typeLink() const;
 
+	QList<BTRecord*> getBTRecordList() const {
+		return symbols->bt.values();
+	}
 
 private:
 	static QList<SEIndex*> all;
@@ -284,6 +288,7 @@ public:
 
 			static Record* getInstance(Symbols* symbols, CARD16 u0);
 
+			const bool      privateFields;
 			const CARD16    length;
 			const bool      argument;
 			const bool      monitored;
@@ -298,9 +303,9 @@ public:
 
 			QString toString() const;
 
-			Record(CARD16 length_, bool argument_, bool monitored_, bool machineDep_,
+			Record(bool privateFields_, CARD16 length_, bool argument_, bool monitored_, bool machineDep_,
 				bool painted_, CTXIndex* fieldCtx_, Tag tag_, void* tagValue_) :
-				length(length_), argument(argument_), monitored(monitored_), machineDep(machineDep_),
+				privateFields(privateFields_), length(length_), argument(argument_), monitored(monitored_), machineDep(machineDep_),
 				painted(painted_), fieldCtx(fieldCtx_), tag(tag_), tagValue(tagValue_) {}
 		};
 

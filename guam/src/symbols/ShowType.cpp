@@ -38,6 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("showtype");
 #include "CTXIndex.h"
 #include "ExtIndex.h"
 #include "HTIndex.h"
+#include "MDIndex.h"
 #include "SEIndex.h"
 #include "Tree.h"
 
@@ -539,7 +540,395 @@ ValFormat ShowType::getValFormat(const SEIndex* tsei) {
 
 
 //PrintType: PROCEDURE [tsei: Symbols.SEIndex, dosub: PROCEDURE] RETURNS [vf: ValFormat] =
-// TODO ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosub)() = 0);
+ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosub)()) {
+//  BEGIN
+//  bitspec: LONG STRING = [20];
+//  vf � GetValFormat[tsei];
+	ValFormat vf = getValFormat(tsei);
+//  WITH t: symbols.seb[tsei] SELECT FROM
+	switch (tsei->getValue().tag) {
+//    id =>
+	case SERecord::Tag::ID:
+	{
+		const SERecord::Id& t(tsei->getValue().getId());
+//  	BEGIN
+//	    --print adjectives, if any
+//      tseiNext: Symbols.SEIndex;
+//    	UNTIL (tseiNext � SymbolOps.TypeLink[symbols, tsei]) = Symbols.SENull DO
+		for(;;) {
+			const SEIndex* tseiNext = tsei->typeLink();
+			if (tseiNext->isNull()) break;
+//    	  WITH symbols.seb[tsei] SELECT FROM
+			switch(tsei->getValue().tag) {
+//    	    id => {PrintSei[LOOPHOLE[tsei]]; PutBlanks[1]};
+			case SERecord::Tag::ID:
+				printSei(out, tsei);
+				out << " ";
+				break;
+//    	    ENDCASE;
+			default:
+				break;
+			}
+//    	  tsei � tseiNext;
+			tsei = tseiNext;
+//    	  ENDLOOP;
+		}
+//
+//    	--print module qualification of last ID in chain
+//    	IF t.idCtx NOT IN Symbols.StandardContext THEN
+		if (!t.idCtx->isStandardContext()) {
+//    	  WITH c: symbols.ctxb[t.idCtx] SELECT FROM
+			const CTXRecord& c(t.idCtx->getValue());
+			switch(t.idCtx->getValue().tag) {
+//    	    included =>
+			case CTXRecord::Tag::INCLUDED:
+			{
+//    	      BEGIN
+//    	      hti: Symbols.HTIndex = symbols.mdb[c.module].moduleId;
+				const HTIndex* hti = c.getIncluded().module->getValue().moduleId;
+//    	      PrintHti[hti]; --interface name
+				printHti(out, hti);
+//    	      PutChar['.]; -- dot qualification
+				out << ".";
+//    	      END;
+			}
+				break;
+//    	    simple =>
+			case CTXRecord::Tag::SIMPLE:
+//    	      PutCurrentModuleDot[];
+				break;
+//    	    ENDCASE;
+			default:
+				break;
+			}
+		}
+//
+//    	--finally print that last ID
+//    	PrintSei[LOOPHOLE[tsei]];
+		printSei(out, tsei);
+//    	dosub[];
+		if (dosub) dosub();
+//    	END;
+	}
+		break;
+//
+//    cons =>
+	case SERecord::Tag::CONS:
+	{
+		const SERecord::Cons& cons(tsei->getValue().getCons());
+//    	WITH t SELECT FROM
+		switch(cons.tag) {
+//    	  --basic =>  won't see one, see the id first.
+//    	  enumerated =>
+		case SERecord::Cons::Tag::ENUMERATED:
+		{
+//    	    BEGIN
+			const SERecord::Cons::Enumerated& t(tsei->getValue().getCons().getEnumerated());
+
+//    	    isei: Symbols.ISEIndex;
+//    	    v: CARDINAL � 0;
+			CARD16 v = 0;
+//    	    sv: CARDINAL;
+//    	    first: BOOLEAN � TRUE;
+			bool first = true;
+//    	    IF machineDep THEN out["MACHINE DEPENDENT "L, cd];
+			if (t.machineDep) out << "MACHINE DEPENDENT ";
+//    	    PutChar['{];
+			out << "{";
+//    	    FOR isei � SymbolOps.FirstCtxSe[symbols, valueCtx], SymbolOps.NextSe[symbols, isei]
+//    	      UNTIL isei = Symbols.ISENull DO
+			for(const SEIndex* isei = t.valueCtx->firstCtxSe(); !isei->isNull(); isei = isei->nextSe()) {
+//    	      IF first THEN first � FALSE ELSE out[", "L, cd];
+				if (first) {
+					first = false;
+				} else {
+					out << ", ";
+				}
+//    	      IF machineDep OR showBits THEN {
+				if (t.machineDep || showBits) {
+//    	        hti: Symbols.HTIndex = symbols.seb[isei].hash;
+					const HTIndex* hti = isei->getValue().getId().hash;
+//    		    sv � SymbolOps.ToCard[symbols.seb[isei].idValue];
+					CARD16 sv = isei->getValue().getId().idValue;
+//    	    	IF hti # Symbols.HTNull THEN PrintSei[isei];
+					if (!hti->isNull()) printSei(out, isei);
+//    		    IF sv # v OR hti = Symbols.HTNull OR showBits
+					if (sv != v || hti->isNull() || showBits) {
+//    		       THEN {
+//    		         PutChar['(];
+//    		         PutUnsigned[sv];
+//    		         PutChar[')]};
+						out << "(" << sv << ")";
+					}
+//    		v � sv + 1}
+					v = sv + 1;
+				}
+//    	      ELSE PrintSei[isei];
+				else printSei(out, isei);
+//    	      IF Abort[] THEN {
+//    	        PutLine["  ...aborted}"L]; RETURN};
+//    	      ENDLOOP;
+			}
+//    	    PutChar['}];
+			out << "}";
+//    	    END;
+		}
+			break;
+//    	  record =>
+		case SERecord::Cons::Tag::RECORD:
+		{
+			const SERecord::Cons::Record& t(tsei->getValue().getCons().getRecord());
+//    	    BEGIN
+//    	    IF symbols.ctxb[fieldCtx].level # Symbols.lZ THEN
+			if (t.fieldCtx->getValue().level != Symbols::LZ) {
+//    	      BEGIN
+//    	      fctx: Symbols.CTXIndex = fieldCtx;
+				const CTXIndex* fctx = t.fieldCtx;
+//    	      bti: Symbols.BTIndex � FIRST[Symbols.BTIndex];
+//    	      btlimit: Symbols.BTIndex = bti + symbols.stHandle.bodyBlock.size;
+//    	      out["FRAME ["L, cd];
+				out << "FRAME [";
+//    	      UNTIL LOOPHOLE[bti, CARDINAL] >= LOOPHOLE[btlimit, CARDINAL] DO
+				for(BTRecord* e: tsei->getBTRecordList()) {
+//    		    WITH entry: symbols.bb[bti] SELECT FROM
+//    		      Callable =>
+					if (e->tag == BTRecord::Tag::CALLABLE) {
+//    		        BEGIN
+//    		        IF entry.localCtx = fctx THEN {
+						if (e->localCtx == fctx) {
+//    		          PrintSei[entry.id]; PutChar[']]; EXIT};
+							printSei(out, e->getCallable().id);
+							out << "]";
+							break;
+						}
+//    		        bti �
+//    	    	      bti +
+//    			      (WITH entry SELECT FROM
+//    		  	         Inner => SIZE[Inner Callable Symbols.BodyRecord],
+//    			         Catch => SIZE[Catch Callable Symbols.BodyRecord],
+//    			         ENDCASE => SIZE[Outer Callable Symbols.BodyRecord]);
+//    		        END;
+//    		      ENDCASE => bti � bti + SIZE[Other Symbols.BodyRecord];
+					}
+//    		    ENDLOOP;
+				}
+//    	      END
+			}
+//    	    ELSE
+			else {
+//    	      BEGIN
+//    	      dp: BOOLEAN � defaultPublic;
+				bool dp = defaultPublic;
+//    	      IF defaultPublic AND hints.privateFields THEN {
+//    	        out["PRIVATE "L, cd];
+//    		    defaultPublic � FALSE};
+				if (defaultPublic && t.privateFields) {
+					out << "PRIVATE ";
+					defaultPublic = false;
+				}
+//    	      IF monitored THEN out["MONITORED "L, cd];
+				if (t.monitored) out << "MONITORED ";
+//    	      IF machineDep THEN out["MACHINE DEPENDENT "L, cd];
+				if (t.machineDep) out << "MACHINE DEPENDENT ";
+//    	      out["RECORD "L, cd];
+				out << "RECORD ";
+//    	      PrintFieldCtx[fieldCtx, machineDep OR showBits];
+				printFieldCtx(out, t.fieldCtx, t.machineDep || showBits);
+//    	      defaultPublic � dp;
+				defaultPublic = dp;
+//    	      END;
+			}
+//    	    END;
+		}
+			break;
+//    	  ref =>
+		case SERecord::Cons::Tag::REF:
+		{
+			const SERecord::Cons::Ref& t(tsei->getValue().getCons().getRef());
+//    	    BEGIN
+//    	    IF var
+			if (t.var) {
+//    	      THEN IF readOnly
+//    	        THEN out ["READONLY "L, cd]
+//    		    ELSE out ["VAR "L, cd]
+				if (t.readOnly) out << "READONLY ";
+				else out << "VAR ";
+			} else {
+//    	      ELSE
+//    	        BEGIN
+//    		    IF ordered THEN out["ORDERED "L, cd];
+				if (t.ordered) out << "ORDERED ";
+//    		    IF basing THEN out["BASE "L, cd];
+				if (t.basing) out << "BASE ";
+//    		    out["POINTER"L, cd];
+				out << "POINTER";
+//    		    IF dosub # NoSub THEN {PutBlanks[1]; dosub[]};
+				if (dosub) {
+					out << "";
+					dosub();
+				}
+//    		    WITH symbols.seb[SymbolOps.UnderType[symbols, refType]] SELECT FROM
+//    	           basic => IF code = Symbols.codeANY AND ~readOnly THEN
+//    	             GO TO noprint;
+//    	           ENDCASE;
+//    	        out[" TO "L, cd];
+//    	        IF readOnly THEN out["READONLY "L, cd];
+//    		    END;
+			}
+//    	    [] � PrintType[refType, NoSub];
+//    	    EXITS noprint => NULL;
+//    	    END;
+		}
+			break;
+//    	  array =>
+//    	    BEGIN
+//    	    IF packed THEN out["PACKED "L, cd];
+//    	    out["ARRAY "L, cd];
+//    	    [] � PrintType[indexType, NoSub];
+//    	    out[" OF "L, cd];
+//    	    [] � PrintType[componentType, NoSub];
+//    	    END;
+//    	  arraydesc =>
+//    	    BEGIN
+//    	    out["DESCRIPTOR FOR "L, cd];
+//    	    IF readOnly THEN out["READONLY "L, cd];
+//    	    [] � PrintType[describedType, NoSub];
+//    	    END;
+//    	  transfer =>
+//    	    BEGIN
+//    	    PutModeName[mode];
+//    	    IF typeIn # Symbols.RecordSENull THEN {
+//    	      PutBlanks[1]; OutArgType[typeIn]};
+//    	    IF typeOut # Symbols.RecordSENull THEN
+//    	      BEGIN
+//    	      out[" RETURNS "L, cd];
+//    	      OutArgType[typeOut];
+//    	      END;
+//    	    END;
+//    	  union =>
+//    	    BEGIN
+//    	    tagType: Symbols.SEIndex;
+//    	    NewLine: PROCEDURE = {
+//    	      Format.CR[out, cd];
+//    	      PutBlanks[indent]};
+//    	    indent � indent + 2;
+//    	    out["SELECT "L, cd];
+//    	    IF ~controlled THEN
+//    	      IF overlaid THEN out["OVERLAID "L, cd]
+//    	      ELSE out["COMPUTED "L, cd]
+//    	    ELSE
+//    	      BEGIN
+//    	      PrintSei[tagSei];
+//    	      IF machineDep OR showBits THEN {
+//    	        GetBitSpec[tagSei, bitspec]; out[bitspec, cd]}
+//    	      ELSE out[": "L, cd];
+//    	      END;
+//    	    tagType � symbols.seb[tagSei].idType;
+//    	    IF symbols.seb[tagSei].public # defaultPublic THEN
+//    	      out[
+//    		IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
+//    	    WITH symbols.seb[tagType] SELECT FROM
+//    	      id => [] � PrintType[tagType, NoSub];
+//    	      cons => PutChar['*];
+//    	      ENDCASE;
+//    	    out[" FROM "L, cd];
+//    	    BEGIN
+//    	    temp, isei: Symbols.ISEIndex;
+//    	    varRec: Symbols.RecordSEIndex;
+//    	    FOR isei � SymbolOps.FirstCtxSe[symbols, caseCtx], temp
+//    	      UNTIL isei = Symbols.ISENull DO
+//    	      NewLine[];
+//    	      PrintSei[isei];
+//    	      varRec � LOOPHOLE[SymbolOps.UnderType[symbols, SymbolOps.ToSei[symbols.seb[isei].idInfo]]];
+//    	      FOR temp � SymbolOps.NextSe[symbols, isei], SymbolOps.NextSe[symbols, temp]
+//    		  UNTIL temp = Symbols.ISENull
+//    		    OR SymbolOps.ToSei[symbols.seb[temp].idInfo] # isei DO
+//    	        out[", "L, cd];
+//    	        PrintSei[temp];
+//    	        ENDLOOP;
+//    	      out[" => "L, cd];
+//    	      PrintFieldCtx[symbols.seb[varRec].fieldCtx, machineDep OR showBits];
+//    	      PutChar[',]; --comma
+//    	      ENDLOOP;
+//    	    NewLine[];
+//    	    out["ENDCASE"L, cd];
+//    	    indent � indent - 2;
+//    	    END;
+//    	    END;
+//    	  relative =>
+//    	    BEGIN
+//    	    IF baseType # Symbols.SENull THEN [] � PrintType[baseType, NoSub];
+//    	    out[" RELATIVE "L, cd];
+//    	    [] � PrintType[offsetType, dosub];
+//    	    END;
+//    	  sequence =>
+//    	    BEGIN
+//    	    tagType: Symbols.SEIndex;
+//    	    IF packed THEN out["PACKED "L, cd];
+//    	    out["SEQUENCE "L, cd];
+//    	    IF ~controlled THEN out["COMPUTED "L, cd]
+//    	    ELSE
+//    	      BEGIN
+//    	      PrintSei[tagSei];
+//    	      IF machineDep OR showBits THEN {
+//    	        GetBitSpec[tagSei, bitspec]; out[bitspec, cd]}
+//    	      ELSE out[": "L, cd];
+//    	      END;
+//    	    tagType � symbols.seb[tagSei].idType;
+//    	    IF symbols.seb[tagSei].public # defaultPublic THEN
+//    	      out[
+//    		IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
+//    	    [] � PrintType[tagType, NoSub];
+//    	    out[" OF "L, cd];
+//    	    [] � PrintType[componentType, NoSub];
+//    	    END;
+//    	  subrange =>
+//    	    BEGIN
+//    	    org: INTEGER � origin;
+//    	    size: CARDINAL � range;
+//
+//    	    doit: PROCEDURE =
+//    	      BEGIN
+//                vfSub: ValFormat = SELECT TRUE FROM
+//                  vf.tag = enum => vf,
+//    	        org < 0 => [signed[]]
+//    	        ENDCASE => [unsigned[]];
+//    	      PutChar['[];
+//    	      PrintTypedVal[org, vfSub];
+//    	      out[".."L, cd];
+//    	      IF empty THEN {
+//    		PrintTypedVal[org, vfSub]; PutChar[')]}
+//    	      ELSE {
+//    	        PrintTypedVal[org + size, vfSub]; PutChar[']]};
+//    	      END;
+//
+//    	    [] � PrintType[rangeType, doit];
+//    	    END;
+//    	  zone => SELECT TRUE FROM
+//    	    counted => out["ZONE"L, cd];
+//    	    mds => out["MDSZone"L, cd];
+//    	    ENDCASE => out["UNCOUNTED ZONE"L, cd];
+//    	  opaque => {
+//    	    IF lengthKnown THEN {
+//    	      PutChar['[];
+//    	      PutUnsigned[length/Environment.bitsPerWord];
+//    	      PutChar[']]}};
+//    	  long =>
+//    	    {IF NOT IsVar [rangeType] THEN out["LONG "L, cd];
+//    	    [] � PrintType[rangeType, NoSub]};
+//    	  real => out["REAL"L, cd];
+//    	  ENDCASE => out["(? unknown TYPE)"L, cd];
+		}
+	}
+		break;
+//    ENDCASE;
+	default:
+		ERROR();
+		break;
+	}
+//  END;
+}
+
 
 
 //IsVar: PROC [tsei: Symbols.SEIndex] RETURNS [BOOLEAN] =
@@ -644,3 +1033,7 @@ void ShowType::putWordSeq(QTextStream& out, CARD16 length, CARD16* value) {
 	}
 	out << "]";
 }
+
+
+
+

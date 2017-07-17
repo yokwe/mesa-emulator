@@ -67,6 +67,12 @@ public:
     //  RETURN [IF ctx = CTXNull THEN ISENull ELSE h.ctxb[ctx].seList]};
     const SEIndex* firstCtxSe() const;
 
+    //StandardContext: TYPE = CTXIndex[CTXNull+SIZE[simple CTXRecord]..CTXNull+6*SIZE[simple CTXRecord]];
+    //StandardContext: TYPE = CTXIndex[2..12];
+    bool isStandardContext() const {
+        return 2 <= index && index <= 12;
+    }
+
 private:
 	static QList<CTXIndex*> all;
 	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
