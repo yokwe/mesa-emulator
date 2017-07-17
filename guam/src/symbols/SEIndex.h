@@ -72,6 +72,9 @@ public:
 	bool equals(const SEIndex* that) const {
 		return this->index == that->index;
 	}
+	bool equals(const CARD16 that) const {
+		return this->index == that;
+	}
 	Symbols* getSymbols() const {
 		return symbols;
 	}
