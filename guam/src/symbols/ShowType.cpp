@@ -770,42 +770,85 @@ ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosu
 //    		    WITH symbols.seb[SymbolOps.UnderType[symbols, refType]] SELECT FROM
 //    	           basic => IF code = Symbols.codeANY AND ~readOnly THEN
 //    	             GO TO noprint;
+				if (t.refType->underType()->getValue().getCons().tag == SERecord::Cons::Tag::BASIC) {
+					const SERecord::Cons::Basic& basic(t.refType->underType()->getValue().getCons().getBasic());
+					if (basic.code == Symbols::CODE_ANY && t.readOnly) goto noprint;
+				}
 //    	           ENDCASE;
 //    	        out[" TO "L, cd];
+				out << " TO ";
 //    	        IF readOnly THEN out["READONLY "L, cd];
+				if (t.readOnly) out << "READONLY ";
 //    		    END;
 			}
 //    	    [] � PrintType[refType, NoSub];
+			printType(out, t.refType, 0);
 //    	    EXITS noprint => NULL;
+noprint:;
 //    	    END;
 		}
 			break;
 //    	  array =>
+		case SERecord::Cons::Tag::ARRAY:
+		{
+			const SERecord::Cons::Array& t(tsei->getValue().getCons().getArray());
 //    	    BEGIN
 //    	    IF packed THEN out["PACKED "L, cd];
+			if (t.packed) out << "PACKED ";
 //    	    out["ARRAY "L, cd];
+			out << "ARRAY ";
 //    	    [] � PrintType[indexType, NoSub];
+			printType(out, t.indexType, 0);
 //    	    out[" OF "L, cd];
+			out << " OF ";
 //    	    [] � PrintType[componentType, NoSub];
+			printType(out, t.componentType, 0);
 //    	    END;
+		}
+			break;
 //    	  arraydesc =>
+		case SERecord::Cons::Tag::ARRAYDESC:
+		{
+			const SERecord::Cons::ArrayDesc& t(tsei->getValue().getCons().getArrayDesc());
 //    	    BEGIN
 //    	    out["DESCRIPTOR FOR "L, cd];
+			out << "DESCRIPTOR FOR ";
 //    	    IF readOnly THEN out["READONLY "L, cd];
+			if (t.readOnly) out << "READONLY ";
 //    	    [] � PrintType[describedType, NoSub];
+			printType(out, t.describedType, 0);
 //    	    END;
+		}
+			break;
 //    	  transfer =>
+		case SERecord::Cons::Tag::TRANSFER:
+		{
+			const SERecord::Cons::Transfer& t(tsei->getValue().getCons().getTransfer());
 //    	    BEGIN
 //    	    PutModeName[mode];
+			putModeName(out, t.mode);
 //    	    IF typeIn # Symbols.RecordSENull THEN {
 //    	      PutBlanks[1]; OutArgType[typeIn]};
+			if (!t.typeIn->isNull()) {
+				out << " ";
+				outArgType(out, t.typeIn);
+			}
 //    	    IF typeOut # Symbols.RecordSENull THEN
 //    	      BEGIN
 //    	      out[" RETURNS "L, cd];
 //    	      OutArgType[typeOut];
 //    	      END;
+			if (!t.typeOut->isNull()) {
+				out << " RETURNS ";
+				outArgType(out, t.typeOut);
+			}
 //    	    END;
+		}
+			break;
 //    	  union =>
+		case SERecord::Cons::Tag::UNION:
+		{
+			const SERecord::Cons::Union& t(tsei->getValue().getCons().getUnion());
 //    	    BEGIN
 //    	    tagType: Symbols.SEIndex;
 //    	    NewLine: PROCEDURE = {
@@ -813,111 +856,245 @@ ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosu
 //    	      PutBlanks[indent]};
 //    	    indent � indent + 2;
 //    	    out["SELECT "L, cd];
+			out << "SELECT ";
 //    	    IF ~controlled THEN
+			if (!t.controlled) {
 //    	      IF overlaid THEN out["OVERLAID "L, cd]
 //    	      ELSE out["COMPUTED "L, cd]
+				out << (t.overlaid ? "OVERLAID " : "COMPUTED");
 //    	    ELSE
+			} else {
 //    	      BEGIN
 //    	      PrintSei[tagSei];
+				printSei(out, t.tagSei);
 //    	      IF machineDep OR showBits THEN {
 //    	        GetBitSpec[tagSei, bitspec]; out[bitspec, cd]}
 //    	      ELSE out[": "L, cd];
+				if (t.machineDep || showBits) {
+					QString bitspec;
+					getBitSpec(t.tagSei, bitspec);
+					out << bitspec;
+				} else {
+					out << ": ";
+				}
 //    	      END;
+			}
 //    	    tagType � symbols.seb[tagSei].idType;
+			const SEIndex* tagType = t.tagSei->getValue().getId().idType;
 //    	    IF symbols.seb[tagSei].public # defaultPublic THEN
-//    	      out[
-//    		IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
+//    	      out[IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
+			if (t.tagSei->getValue().getId().public_ != defaultPublic) {
+				out << (defaultPublic ? "PRIVATE " : "PUBLIC ");
+			}
 //    	    WITH symbols.seb[tagType] SELECT FROM
 //    	      id => [] � PrintType[tagType, NoSub];
 //    	      cons => PutChar['*];
 //    	      ENDCASE;
+			switch(tagType->getValue().tag) {
+			case SERecord::Tag::ID:
+				printType(out, tagType, 0);
+				break;
+			case SERecord::Tag::CONS:
+				out << "*";
+				break;
+			default:
+				ERROR();
+			}
 //    	    out[" FROM "L, cd];
+			out << " FROM ";
 //    	    BEGIN
 //    	    temp, isei: Symbols.ISEIndex;
 //    	    varRec: Symbols.RecordSEIndex;
 //    	    FOR isei � SymbolOps.FirstCtxSe[symbols, caseCtx], temp
 //    	      UNTIL isei = Symbols.ISENull DO
+			for(const SEIndex* isei = t.caseCtx->firstCtxSe(); !isei->isNull();) {
 //    	      NewLine[];
+				out << endl;
 //    	      PrintSei[isei];
+				printSei(out, isei);
 //    	      varRec � LOOPHOLE[SymbolOps.UnderType[symbols, SymbolOps.ToSei[symbols.seb[isei].idInfo]]];
+				const SEIndex* varRec = isei->find(isei->getValue().getId().idInfo)->underType();
 //    	      FOR temp � SymbolOps.NextSe[symbols, isei], SymbolOps.NextSe[symbols, temp]
+				const SEIndex* temp = isei->nextSe();
+				for(;;) {
 //    		  UNTIL temp = Symbols.ISENull
 //    		    OR SymbolOps.ToSei[symbols.seb[temp].idInfo] # isei DO
+					if (temp->isNull()) break;
+					if (isei->equals(temp->getValue().getId().idInfo)) break;
 //    	        out[", "L, cd];
+					out << ", ";
 //    	        PrintSei[temp];
-//    	        ENDLOOP;
+					printSei(out, temp);
+//    	        ENDLOOP
+				}
+				isei = temp;
 //    	      out[" => "L, cd];
+				out << " => ";
 //    	      PrintFieldCtx[symbols.seb[varRec].fieldCtx, machineDep OR showBits];
+				printFieldCtx(out, varRec->getValue().getCons().getRecord().fieldCtx, t.machineDep || showBits);
 //    	      PutChar[',]; --comma
+				out << ",";
 //    	      ENDLOOP;
+			}
 //    	    NewLine[];
+			out << endl;
 //    	    out["ENDCASE"L, cd];
+			out << "ENDCASE";
 //    	    indent � indent - 2;
 //    	    END;
 //    	    END;
+		}
+			break;
 //    	  relative =>
+		case SERecord::Cons::Tag::RELATIVE:
+		{
+			const SERecord::Cons::Relative& t(tsei->getValue().getCons().getRelative());
 //    	    BEGIN
 //    	    IF baseType # Symbols.SENull THEN [] � PrintType[baseType, NoSub];
+			if (!t.baseType->isNull()) printType(out, t.baseType, 0);
 //    	    out[" RELATIVE "L, cd];
+			out << " RELATIVE ";
 //    	    [] � PrintType[offsetType, dosub];
+			printType(out, t.offsetType, 0);
 //    	    END;
+		}
+			break;
 //    	  sequence =>
+		case SERecord::Cons::Tag::SEQUENCE:
+		{
+			const SERecord::Cons::Sequence& t(tsei->getValue().getCons().getSequence());
 //    	    BEGIN
 //    	    tagType: Symbols.SEIndex;
 //    	    IF packed THEN out["PACKED "L, cd];
+			if (t.packed) out << "PACKED ";
 //    	    out["SEQUENCE "L, cd];
+			out << "SEQUENCE ";
 //    	    IF ~controlled THEN out["COMPUTED "L, cd]
+			if (!t.controlled) out << "COMPUTED ";
 //    	    ELSE
+			else {
 //    	      BEGIN
 //    	      PrintSei[tagSei];
+				printSei(out, t.tagSei);
 //    	      IF machineDep OR showBits THEN {
 //    	        GetBitSpec[tagSei, bitspec]; out[bitspec, cd]}
+				if (t.machineDep || showBits) {
+					QString bitspec;
+					getBitSpec(t.tagSei, bitspec);
+					out << bitspec;
+				}
 //    	      ELSE out[": "L, cd];
+				else out << ": ";
 //    	      END;
+			}
 //    	    tagType � symbols.seb[tagSei].idType;
+			const SEIndex* tagType = t.tagSei->getValue().getId().idType;
 //    	    IF symbols.seb[tagSei].public # defaultPublic THEN
-//    	      out[
-//    		IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
+			if (t.tagSei->getValue().getId().public_ != defaultPublic)
+//    	      out[IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
+				out << (defaultPublic ? "PRIVATE " : "PUBLIC ");
 //    	    [] � PrintType[tagType, NoSub];
+			printType(out, tagType, 0);
 //    	    out[" OF "L, cd];
+			out << " OF ";
 //    	    [] � PrintType[componentType, NoSub];
+			printType(out, t.componentType, 0);
 //    	    END;
+		}
+			break;
 //    	  subrange =>
+		case SERecord::Cons::Tag::SUBRANGE:
+		{
+			const SERecord::Cons::Subrange& t(tsei->getValue().getCons().getSubrange());
 //    	    BEGIN
 //    	    org: INTEGER � origin;
 //    	    size: CARDINAL � range;
+			INT16  org  = t.origin;
+			CARD16 size = t.range;
 //
 //    	    doit: PROCEDURE =
 //    	      BEGIN
-//                vfSub: ValFormat = SELECT TRUE FROM
-//                  vf.tag = enum => vf,
-//    	        org < 0 => [signed[]]
-//    	        ENDCASE => [unsigned[]];
-//    	      PutChar['[];
-//    	      PrintTypedVal[org, vfSub];
-//    	      out[".."L, cd];
-//    	      IF empty THEN {
-//    		PrintTypedVal[org, vfSub]; PutChar[')]}
-//    	      ELSE {
-//    	        PrintTypedVal[org + size, vfSub]; PutChar[']]};
+//              vfSub: ValFormat = SELECT TRUE FROM
+//                vf.tag = enum => vf,
+//    	          org < 0 => [signed[]]
+//    	          ENDCASE => [unsigned[]];
+//    	        PutChar['[];
+//    	        PrintTypedVal[org, vfSub];
+//    	        out[".."L, cd];
+//    	        IF empty THEN {
+//    		      PrintTypedVal[org, vfSub]; PutChar[')]}
+//    	        ELSE {
+//    	          PrintTypedVal[org + size, vfSub]; PutChar[']]};
 //    	      END;
+			class callback {
+			public:
+				static void doit() {
+					ValFormat vfSub;
+					if (vf.tag == ValFormat::Tag::ENUM) vfSub = vf;
+					else if (org < 0) vfSub = ValFormat::SIGNED();
+					else vfSub = ValFormat::UNSIGNED();
+					out << "[";
+					printTypedVal(out, org, vfSub);
+					out << "..";
+					if (t.empty) {
+						printTypedVal(out, org, vfSub);
+						out << ")";
+					} else {
+						printTypedVal(out, org + size, vfSub);
+						out << "]";
+					}
+				}
+			};
 //
 //    	    [] � PrintType[rangeType, doit];
+			printType(out, t.rangeType, callback::doit);
 //    	    END;
+		}
+			break;
 //    	  zone => SELECT TRUE FROM
+		case SERecord::Cons::Tag::ZONE:
+		{
+			const SERecord::Cons::Zone& t(tsei->getValue().getCons().getZone());
 //    	    counted => out["ZONE"L, cd];
+			if (t.counted) out << "ZONE";
 //    	    mds => out["MDSZone"L, cd];
+			else if (t.mds) out << "MDSZone";
 //    	    ENDCASE => out["UNCOUNTED ZONE"L, cd];
+			else out << "UNCOUNTED ZONE";
+		}
+			break;
 //    	  opaque => {
+		case SERecord::Cons::Tag::OPAQUE:
+		{
+			const SERecord::Cons::Opaque& t(tsei->getValue().getCons().getOpaque());
 //    	    IF lengthKnown THEN {
+			if (t.lengthKnown) {
 //    	      PutChar['[];
 //    	      PutUnsigned[length/Environment.bitsPerWord];
+
 //    	      PutChar[']]}};
+				out << "[" << (t.length/16) << "]";
+			}
+		}
+			break;
 //    	  long =>
+		case SERecord::Cons::Tag::LONG:
+		{
+			const SERecord::Cons::Long& t(tsei->getValue().getCons().getLong());
 //    	    {IF NOT IsVar [rangeType] THEN out["LONG "L, cd];
+			if (!isVar(t.rangeType)) out << "LONG ";
 //    	    [] � PrintType[rangeType, NoSub]};
+			printType(out, t.rangeType, 0);
+		}
+			break;
 //    	  real => out["REAL"L, cd];
+		case SERecord::Cons::Tag::REAL:
+			out << "REAL";
+			break;
 //    	  ENDCASE => out["(? unknown TYPE)"L, cd];
+		default:
+			ERROR();
+			break;
 		}
 	}
 		break;
@@ -927,6 +1104,7 @@ ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosu
 		break;
 	}
 //  END;
+	return vf;
 }
 
 
