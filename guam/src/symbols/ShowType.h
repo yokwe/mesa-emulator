@@ -186,7 +186,7 @@ public:
     static void printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat vf, int recur, bool sonOfDot = false);
 
     // PutWordSeq: PROCEDURE [seq: LONG DESCRIPTOR FOR ARRAY OF UNSPECIFIED] =
-    static void putWordSeq(QTextStream& out, CARD16 length, CARD16* value);
+    static void putWordSeq(QTextStream& out, CARD16 length, const CARD16* value);
 
     // for debug
     static void dump(QString path);

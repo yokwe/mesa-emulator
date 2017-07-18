@@ -38,6 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("showtype");
 #include "CTXIndex.h"
 #include "ExtIndex.h"
 #include "HTIndex.h"
+#include "LTIndex.h"
 #include "MDIndex.h"
 #include "SEIndex.h"
 #include "Tree.h"
@@ -207,7 +208,7 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 //	            bti # Symbols.BTNull =>
 				if (bt) {
 //	              out[SELECT TRUE FROM
-//                  mode = signal, mode = error =>"CODE"L,
+//                      mode = signal, mode = error =>"CODE"L,
 					if (vf.getTransfer().mode == ValFormat::TransferMode::SIGNAL) {
 						out << "CODE";
 					} else if (vf.getTransfer().mode == ValFormat::TransferMode::ERROR) {
@@ -1189,65 +1190,148 @@ void ShowType::printDefaultValue(QTextStream& out, const SEIndex* sei, ValFormat
 
 
 //PrintTreeLink: PROCEDURE [tree: Tree.Link, vf: ValFormat, recur: CARDINAL, sonOfDot: BOOLEAN � FALSE] =
-void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat vf, int recur, bool sonOfDot = false) {
+void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat vf, int recur, bool /*sonOfDot*/) {
 //  BEGIN
 //  IF tree = Tree.Null THEN RETURN;
+	if (tree->isNull()) return;
 //  IF Abort[] THEN {PutLine["  ...aborted"L]; RETURN};
 //  IF recur > 30
 //     THEN {out["(Bug: Tree too deep!)"L, cd]; RETURN};
+	if (30 < recur) ERROR();
 //  WITH t: tree SELECT FROM
+	switch(tree->tag) {
 //    subtree =>
+	case TreeLink::Tag::SUBTREE:
+	{
+		const TreeLink::Subtree& t(tree->getSubtree());
 //      BEGIN
 //      node: NodePointer = @symbols.tb[t.index];
+		const TreeNode& node(t.index->getValue());
 //      SELECT node.name FROM
+		switch(node.name) {
 //        all =>
+		case TreeNode::NodeName::ALL:
+		{
 //          BEGIN
 //          out["ALL["L, cd];
+			out << "ALL[";
 //          WITH v: vf SELECT FROM
+			switch(vf.tag) {
 //            array => PrintTreeLink[
 //              node.son[1], GetValFormat[v.componentType], recur+1];
+			case ValFormat::Tag::ARRAY:
+			{
+				const ValFormat::Array& v(vf.getArray());
+				printTreeLink(out, node.son[0], getValFormat(v.componentType), recur + 1);
+			}
+				break;
 //            ENDCASE =>
+			default:
 //              IF node.nSons = 1 THEN PrintTreeLink[node.son[1], vf, recur+1]
-//          ELSE out["(Bug: not an array?)"L, cd];
+//              ELSE out["(Bug: not an array?)"L, cd];
+				if (node.nSons == 1) printTreeLink(out, node.son[0], vf, recur + 1);
+				else ERROR();
+			}
 //          PutChar[']];
+			out << "]";
 //          END;
+		}
+			break;
 //        mwconst, cast, loophole => PrintTreeLink[node.son[1], vf, recur+1];
+		case TreeNode::NodeName::MWCONST:
+		case TreeNode::NodeName::CAST:
+		case TreeNode::NodeName::LOOPHOLE:
+			printTreeLink(out, node.son[0], vf, recur + 1);
+			break;
 //        nil => out["NIL"L, cd];
+		case TreeNode::NodeName::NIL:
+			out << "NIL";
+			break;
 //        void => out["NULL"L, cd];
+		case TreeNode::NodeName::VOID:
+			out << "NULL";
+			break;
 //        dot, cdot =>
+		case TreeNode::NodeName::DOT:
+		case TreeNode::NodeName::CDOT:
+		{
 //          BEGIN
 //          IF node.nSons # 2 THEN {
 //            out["(Bug: Dot node with other than two sons!)"L, cd];
 //            RETURN};
+			if (node.nSons != 2) ERROR();
 //          PrintTreeLink[node.son[1], [other[]], recur+1, TRUE];
+			printTreeLink(out, node.son[0], ValFormat::OTHER(), recur + 1, true);
 //          PutChar['.]; --dot
+			out << ".";
 //          PrintTreeLink[node.son[2], [other[]], recur+1, TRUE];
+			printTreeLink(out, node.son[1], ValFormat::OTHER(), recur + 1, true);
 //          END;
+		}
+			break;
 //        first, last, size, lengthen =>
+		case TreeNode::NodeName::FIRST:
+		case TreeNode::NodeName::LAST:
+		case TreeNode::NodeName::SIZE:
+		case TreeNode::NodeName::LENGTHEN:
+		{
 //          BEGIN
 //          out[
 //            SELECT node.name FROM
 //              first => "FIRST["L,
-//          last => "LAST["L,
-//          size => "SIZE["L,
-//          ENDCASE => "LONG["L, cd];
+//              last => "LAST["L,
+//              size => "SIZE["L,
+//              ENDCASE => "LONG["L, cd];
+			switch(node.name) {
+			case TreeNode::NodeName::FIRST:
+				out << "FIRST[";
+				break;
+			case TreeNode::NodeName::LAST:
+				out << "LAST[";
+				break;
+			case TreeNode::NodeName::SIZE:
+				out << "SIZE[";
+				break;
+			case TreeNode::NodeName::LENGTHEN:
+				out << "LONG[";
+				break;
+			default:
+				ERROR();
+				break;
+			}
 //          PrintTreeLink[node.son[1], vf, recur+1];
+			printTreeLink(out, node.son[0], vf, recur + 1);
 //          PutChar[']];
+			out << "]";
 //          END;
+		}
+			break;
 //        construct =>
+		case TreeNode::NodeName::CONSTRUCT:
 //          BEGIN
 //          PutChar['[];
+			out << "[";
 //          IF node.nSons = 2 THEN PrintTreeLink[node.son[2], vf, recur+1];
+			if (node.nSons == 2) printTreeLink(out, node.son[1], vf, recur + 1);
 //          PutChar[']];
+			out << "]";
 //          END;
+			break;
 //        union =>
+		case TreeNode::NodeName::UNION:
 //          BEGIN
 //          PrintTreeLink[node.son[1], vf, recur+1];
+			printTreeLink(out, node.son[0], vf, recur + 1);
 //          PutChar['[];
+			out << "[";
 //          PrintTreeLink[node.son[2], vf, recur+1];
+			printTreeLink(out, node.son[1], vf, recur + 1);
 //          PutChar[']];
+			out << "]";
 //          END;
+			break;
 //        list =>
+		case TreeNode::NodeName::LIST:
 //          BEGIN
 //          FOR j: CARDINAL IN [1..node.nSons) DO
 //            PrintTreeLink[node.son[j], [other[]], recur+1];
@@ -1255,20 +1339,30 @@ void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat v
 //            ENDLOOP;
 //          IF node.nSons # 0
 //            THEN PrintTreeLink[node.son[node.nSons], [other[]], recur+1];
+			for(CARD16 j = 0; j < node.nSons; j++) {
+				if (j) out << ", ";
+				printTreeLink(out, node.son[j], ValFormat::OTHER(), recur + 1);
+			}
 //          END;
+			break;
 //        longTC =>
+		case TreeNode::NodeName::LONG_TC:
 //          BEGIN
 //          out["LONG "L, cd];
+			out << "LONG ";
 //          PrintTreeLink[node.son[1], vf, recur+1];
+			printTreeLink(out, node.son[0], vf, recur + 1);
 //          END;
+			break;
 //        uparrow =>
+		case TreeNode::NodeName::UPARROW:
 //          BEGIN
 //          ptr: Tree.Link = node.son[1];
 //          type: Symbols.CSEIndex;
 //          WITH p: ptr SELECT FROM
 //            symbol =>
 //              type � SymbolOps.NormalType [symbols, SymbolOps.UnderType[symbols,
-//            symbols.seb[p.index].idType]];
+//                symbols.seb[p.index].idType]];
 //            subtree => type � TreeOps.DecodeCSei[symbols.tb[p.index].info];
 //            ENDCASE => type � Symbols.typeANY;
 //          PrintTreeLink[node.son[1], [other[]], recur+1];
@@ -1276,45 +1370,124 @@ void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat v
 //            ref => IF ~q.var THEN PutChar['�];
 //            ENDCASE => PutChar['�];
 //          END;
+			logger.warn("## UPARROW");
+			printTreeLink(out, node.son[0], ValFormat::OTHER(), recur + 1);
+			break;
 //        ENDCASE => out["(complicated expression)"L, cd];
+		default:
+			ERROR();
+			break;
+		}
 //      END;
+		break;
+	}
 //    hash => PrintHti[t.index];
+	case TreeLink::Tag::HASH:
+	{
+		const TreeLink::Hash& t(tree->getHash());
+		printHti(out, t.index);
+	}
+		break;
 //    symbol =>
+	case TreeLink::Tag::SYMBOL:
+	{
+//		const TreeLink::Symbol& t(tree->getSymbol());
 //      {IF NOT sonOfDot
 //      AND symbols.seb[t.index].idCtx = symbols.stHandle.outerCtx
 //        THEN PutCurrentModuleDot[];
 //      PrintSei[t.index]};
+	}
+		break;
 //    literal =>
+	case TreeLink::Tag::LITERAL:
+	{
+		const TreeLink::Literal& t(tree->getLiteral());
 //      BEGIN
 //      WITH lr: t.info SELECT FROM
+		switch(t.info->tag) {
 //        word =>
+		case LitRecord::Tag::WORD:
+		{
+			const LitRecord::Word& lt(t.info->getWord());
 //          WITH symbols.ltb[lr.index] SELECT FROM
+			switch(lt.index->getValue().tag) {
 //            short => PrintTypedVal[value, vf];
+			case LTRecord::Tag::SHORT:
+				printTypedVal(out, lt.index->getValue().getShort().value, vf);
+				break;
 //            long =>
+			case LTRecord::Tag::LONG: {
 //              SELECT length FROM
+				const LTRecord::Long& ltLong(lt.index->getValue().getLong());
+				switch(ltLong.length) {
 //                2 =>
-//              BEGIN
-//              loophole: BOOLEAN � FALSE;
-//              SELECT vf.tag FROM
-//                signed => PutLongSigned[LOOPHOLE[@value, LUP]�];
-//                unsigned => PutLongUnsigned[LOOPHOLE[@value, LUP]�];
-//                transfer, ref =>
-//                  IF LOOPHOLE[@value, LUP]� = 0
-//                THEN out ["NIL"L, cd]
-//                ELSE loophole � TRUE;
-//                ENDCASE => loophole � TRUE;
-//              IF loophole THEN
-//                BEGIN
-//                out["LOOPHOLE["L, cd];
-//                PutLongUnsigned[LOOPHOLE[@value, LUP]�];
-//                PutChar[']];
-//                END;
-//              END;
-//            ENDCASE => PutWordSeq[DESCRIPTOR[@value, length]];
+				case 2:
+				{
+//                  BEGIN
+//                  loophole: BOOLEAN � FALSE;
+					bool loophole = false;
+					CARD32 v = ((CARD32)ltLong.value[1]) << 16 | (CARD32)ltLong.value[1];
+//                  SELECT vf.tag FROM
+					switch(vf.tag) {
+//                    signed => PutLongSigned[LOOPHOLE[@value, LUP]�];
+					case ValFormat::Tag::SIGNED:
+						out << (INT32)v;
+						break;
+//                    unsigned => PutLongUnsigned[LOOPHOLE[@value, LUP]�];
+					case ValFormat::Tag::UNSIGNED:
+						out << v;
+						break;
+//                    transfer, ref =>
+					case ValFormat::Tag::TRANSFER:
+					case ValFormat::Tag::REF:
+//                      IF LOOPHOLE[@value, LUP]� = 0
+//                        THEN out ["NIL"L, cd]
+//                        ELSE loophole � TRUE;
+						if (v == 0) out<< "NIL";
+						else loophole = true;
+						break;
+//                    ENDCASE => loophole � TRUE;
+					default:
+						loophole = true;
+					}
+//                  IF loophole THEN
+//                    BEGIN
+//                    out["LOOPHOLE["L, cd];
+//                    PutLongUnsigned[LOOPHOLE[@value, LUP]�];
+//                    PutChar[']];
+//                    END;
+					if (loophole) {
+						out << "LOOPHOLE[" << v << "]";
+					}
+//                  END;
+				}
+					break;
+//                ENDCASE => PutWordSeq[DESCRIPTOR[@value, length]];
+				default:
+					putWordSeq(out, ltLong.length, ltLong.value);
+					break;
+				}
+			}
+				break;
 //          ENDCASE; --shouldn't happen!
+			default:
+				ERROR();
+				break;
+			}
+		}
+			break;
 //        ENDCASE --string-- => out["(LONG STRING)"L, cd];
+		default:
+			out << "(LONG STRING)";
+			break;
+		}
 //      END;
+	}
+		break;
 //    ENDCASE; --shouldn't happen!
+	default:
+		ERROR();
+	}
 //  END;
 }
 
@@ -1330,7 +1503,7 @@ void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat v
 //  PutUnsigned[seq[LENGTH[seq]-1]];
 //  PutChar[']];
 //  END;
-void ShowType::putWordSeq(QTextStream& out, CARD16 length, CARD16* value) {
+void ShowType::putWordSeq(QTextStream& out, CARD16 length, const CARD16* value) {
 	out << "[";
 	for(CARD16 i = 0; i < length; i++) {
 		if (i) out << ", ";
