@@ -66,10 +66,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, BTIndex*> all;
 
-	BTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols, index);
-		all[key] = this;
-	}
+	BTIndex(Symbols* symbols, CARD16 index);
 };
 
 
@@ -256,15 +253,8 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, BTRecord*> all;
 
-	BTRecord(Symbols* symbols_, CARD16 index_, BodyLink* link_, BTIndex* firstSon_,SEIndex* type_,
-			CTXIndex* localCtx_, CARD16 level_, CARD16 sourceIndex_, BodyInfo* info_, Tag tag_, void* tagValue_) :
-		symbols(symbols_), index(index_), link(link_), firstSon(firstSon_), type(type_),
-		localCtx(localCtx_), level(level_), sourceIndex(sourceIndex_), info(info_), tag(tag_), tagValue(tagValue_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		BTIndex::getInstance(symbols_, index);
-	}
+	BTRecord(Symbols* symbols, CARD16 index, BodyLink* link, BTIndex* firstSon,SEIndex* type,
+			CTXIndex* localCtx, CARD16 level, CARD16 sourceIndex, BodyInfo* info, Tag tag, void* tagValue);
 };
 
 

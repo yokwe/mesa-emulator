@@ -64,10 +64,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, HTIndex*> all;
 
-	HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols_, index);
-		all[key] = this;
-	}
+	HTIndex(Symbols* symbols, CARD16 index);
 };
 
 
@@ -96,13 +93,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, HTRecord*> all;
 
-	HTRecord(Symbols* symbols_, CARD16 index_, bool anyInternal_, bool anyPublic_, CARD16 link_, CARD16 ssIndex_, QString value_) :
-		symbols(symbols_), index(index_), anyInternal(anyInternal_), anyPublic(anyPublic_), link(link_), ssIndex(ssIndex_), value(value_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		HTIndex::getInstance(symbols_, index_);
-	}
+	HTRecord(Symbols* symbols, CARD16 index, bool anyInternal, bool anyPublic, CARD16 link, CARD16 ssIndex, QString value);
 };
 
 #endif

@@ -42,6 +42,10 @@ static log4cpp::Category& logger = Logger::getLogger("se");
 // SEIndex
 //
 QMap<SEIndex::Key, SEIndex*> SEIndex::all;
+SEIndex::SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols, index_);
+	all[key] = this;
+}
 void SEIndex::checkAll() {
 	for(SEIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -51,10 +55,8 @@ void SEIndex::checkAll() {
 		}
 	}
 }
-
 SEIndex* SEIndex::getNull() {
-	static SEIndex ret(0, SEIndex::SE_NULL);
-	return &ret;
+	return SEIndex::getInstance(0, SEIndex::SE_NULL);
 }
 SEIndex* SEIndex::getInstance(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
@@ -165,12 +167,17 @@ const SEIndex* SEIndex::typeLink() const {
 }
 
 
+
 //
 // SERecord
 //
-
-
 QMap<SERecord::Key, SERecord*> SERecord::all;
+SERecord::SERecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) : symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+	// register SEIndex::all
+	SEIndex::getInstance(symbols_, index_);
+}
 SERecord* SERecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

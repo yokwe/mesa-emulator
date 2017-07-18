@@ -96,10 +96,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, SEIndex*> all;
 
-	SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols, index);
-		all[key] = this;
-	}
+	SEIndex(Symbols* symbols, CARD16 index);
 };
 
 
@@ -565,12 +562,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, SERecord*> all;
 
-	SERecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) : symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {
-		Key key(symbols, index);
-		all[key] = this;
-		// register SEIndex::all
-		SEIndex::getInstance(symbols_, index_);
-	}
+	SERecord(Symbols* symbols, CARD16 index, Tag tag, void* tagValue);
 };
 
 #endif

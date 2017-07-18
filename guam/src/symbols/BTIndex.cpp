@@ -43,6 +43,10 @@ static log4cpp::Category& logger = Logger::getLogger("bt");
 // BTIndex
 //
 QMap<BTIndex::Key, BTIndex*> BTIndex::all;
+BTIndex::BTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void BTIndex::checkAll() {
 	for(BTIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -79,6 +83,15 @@ const BTRecord& BTIndex::getValue() const {
 // BTRecord
 //
 QMap<BTRecord::Key, BTRecord*> BTRecord::all;
+BTRecord::BTRecord(Symbols* symbols_, CARD16 index_, BodyLink* link_, BTIndex* firstSon_,SEIndex* type_,
+		CTXIndex* localCtx_, CARD16 level_, CARD16 sourceIndex_, BodyInfo* info_, Tag tag_, void* tagValue_) :
+	symbols(symbols_), index(index_), link(link_), firstSon(firstSon_), type(type_),
+	localCtx(localCtx_), level(level_), sourceIndex(sourceIndex_), info(info_), tag(tag_), tagValue(tagValue_) {
+	Key key(symbols, index);
+	all[key] = this;
+
+	BTIndex::getInstance(symbols_, index);
+}
 BTRecord* BTRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

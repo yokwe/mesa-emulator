@@ -41,6 +41,10 @@ static log4cpp::Category& logger = Logger::getLogger("lt");
 // LTIndex
 //
 QMap<LTIndex::Key, LTIndex*> LTIndex::all;
+LTIndex::LTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void LTIndex::checkAll() {
 	for(LTIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -90,6 +94,13 @@ const LTRecord& LTIndex::getValue() const {
 //    ENDCASE];
 
 QMap<LTRecord::Key, LTRecord*> LTRecord::all;
+LTRecord::LTRecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) :
+	symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+
+	LTIndex::getInstance(symbols_, index_);
+}
 LTRecord* LTRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

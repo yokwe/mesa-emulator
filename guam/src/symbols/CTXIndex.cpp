@@ -42,6 +42,10 @@ static log4cpp::Category& logger = Logger::getLogger("ctx");
 // CTXIndex
 //
 QMap<CTXIndex::Key, CTXIndex*> CTXIndex::all;
+CTXIndex::CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void CTXIndex::checkAll() {
 	for(CTXIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -103,6 +107,13 @@ const SEIndex* CTXIndex::firstCtxSe() const {
 //    ENDCASE];
 
 QMap<CTXRecord::Key, CTXRecord*> CTXRecord::all;
+CTXRecord::CTXRecord(Symbols* symbols_, CARD16 index_, SEIndex* seList_, CARD16 level_, Tag tag_, void* tagValue_) :
+	symbols(symbols_), index(index_), seList(seList_), level(level_), tag(tag_), tagValue(tagValue_) {
+	Key key(symbols, index);
+	all[key] = this;
+
+	CTXIndex::getInstance(symbols_, index);
+}
 CTXRecord* CTXRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

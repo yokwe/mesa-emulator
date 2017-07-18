@@ -54,7 +54,7 @@ private:
 public:
 	static void checkAll();
 	static ExtIndex* getNull();
-	static ExtIndex* getInstance(Symbols* symbols_, CARD16 index_);
+	static ExtIndex* getInstance(Symbols* symbols, CARD16 index);
 
 	bool isNull() const {
 		return index == EXT_NULL;
@@ -66,10 +66,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, ExtIndex*> all;
 
-	ExtIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols_, index);
-		all[key] = this;
-	}
+	ExtIndex(Symbols* symbols, CARD16 index_);
 };
 
 
@@ -104,13 +101,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, ExtRecord*> all;
 
-	ExtRecord(Symbols* symbols_, CARD16 index_, ExtensionType type_, SEIndex* sei_, TreeLink* tree_) :
-		symbols(symbols_), index(index_), type(type_), sei(sei_), tree(tree_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		ExtIndex::getInstance(symbols_, index_);
-	}
+	ExtRecord(Symbols* symbols, CARD16 index, ExtensionType type, SEIndex* sei, TreeLink* tree);
 };
 
 #endif

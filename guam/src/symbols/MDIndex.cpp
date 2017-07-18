@@ -42,6 +42,10 @@ static log4cpp::Category& logger = Logger::getLogger("md");
 // MDIndex
 //
 QMap<MDIndex::Key, MDIndex*> MDIndex::all;
+MDIndex::MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void MDIndex::checkAll() {
 	for(MDIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -78,6 +82,15 @@ const MDRecord& MDIndex::getValue() const {
 // MDRecord
 //
 QMap<MDRecord::Key, MDRecord*> MDRecord::all;
+MDRecord::MDRecord(Symbols* symbols_, CARD16 index_, Stamp* stamp_, HTIndex* moduleId_, HTIndex* fileId_,
+		bool shared_, bool exported_, CTXIndex* ctx_, CTXIndex* defaultImport_, CARD16 file_) :
+	symbols(symbols_), index(index_), stamp(stamp_), moduleId(moduleId_), fileId(fileId_),
+	shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+
+	MDIndex::getInstance(symbols_, index_);
+}
 MDRecord* MDRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

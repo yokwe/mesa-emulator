@@ -66,10 +66,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, MDIndex*> all;
 
-	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols_, index);
-		all[key] = this;
-	}
+	MDIndex(Symbols* symbols, CARD16 index);
 };
 
 
@@ -97,15 +94,8 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, MDRecord*> all;
 
-	MDRecord(Symbols* symbols_, CARD16 index_, Stamp* stamp_, HTIndex* moduleId_, HTIndex* fileId_,
-			bool shared_, bool exported_, CTXIndex* ctx_, CTXIndex* defaultImport_, CARD16 file_) :
-		symbols(symbols_), index(index_), stamp(stamp_), moduleId(moduleId_), fileId(fileId_),
-		shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		MDIndex::getInstance(symbols_, index_);
-	}
+	MDRecord(Symbols* symbols, CARD16 index, Stamp* stamp, HTIndex* moduleId, HTIndex* fileId,
+			bool shared, bool exported, CTXIndex* ctx, CTXIndex* defaultImport, CARD16 file);
 };
 
 #endif

@@ -64,10 +64,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, LTIndex*> all;
 
-	LTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols_, index);
-		all[key] = this;
-	}
+	LTIndex(Symbols* symbols, CARD16 index);
 };
 
 
@@ -130,13 +127,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, LTRecord*> all;
 
-	LTRecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) :
-		symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		LTIndex::getInstance(symbols_, index_);
-	}
+	LTRecord(Symbols* symbols, CARD16 index, Tag tag, void* tagValue);
 };
 
 

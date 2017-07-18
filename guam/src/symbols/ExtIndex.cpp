@@ -42,6 +42,10 @@ static log4cpp::Category& logger = Logger::getLogger("etx");
 // ExtIndex
 //
 QMap<ExtIndex::Key, ExtIndex*> ExtIndex::all;
+ExtIndex::ExtIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void ExtIndex::checkAll() {
 	for(ExtIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -84,6 +88,13 @@ const ExtRecord& ExtIndex::getValue() const {
 //  tree (1:0..15): Tree.Link]
 
 QMap<ExtRecord::Key, ExtRecord*> ExtRecord::all;
+ExtRecord::ExtRecord(Symbols* symbols_, CARD16 index_, ExtensionType type_, SEIndex* sei_, TreeLink* tree_) :
+	symbols(symbols_), index(index_), type(type_), sei(sei_), tree(tree_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+
+	ExtIndex::getInstance(symbols_, index_);
+}
 ExtRecord* ExtRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

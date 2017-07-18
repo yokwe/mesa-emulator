@@ -71,10 +71,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, TreeIndex*> all;
 
-	TreeIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols_, index_);
-		all[key] = this;
-	}
+	TreeIndex(Symbols* symbols, CARD16 index);
 };
 
 
@@ -199,13 +196,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, TreeNode*> all;
 
-	TreeNode(Symbols* symbols_, CARD16 index_, NodeName name_, bool shared_, CARD16 nSons_, CARD16 info_, TreeLink* son_[]) :
-		symbols(symbols_), index(index_), name(name_), shared(shared_), nSons(nSons_), info(info_), son(son_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		TreeIndex::getInstance(symbols_, index_);
-	}
+	TreeNode(Symbols* symbols, CARD16 index, NodeName name, bool shared, CARD16 nSons, CARD16 info, TreeLink** son);
 };
 
 

@@ -52,7 +52,7 @@ private:
 public:
 	static void checkAll();
 	static CTXIndex* getNull();
-	static CTXIndex* getInstance(Symbols* symbols_, CARD16 index_);
+	static CTXIndex* getInstance(Symbols* symbols, CARD16 index_);
 
 	bool isNull() const {
 		return index == CTX_NULL;
@@ -76,10 +76,7 @@ public:
 private:
 	typedef Symbols::Key Key;
 	static QMap<Key, CTXIndex*> all;
-	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		Key key(symbols_, index);
-		all[key] = this;
-	}
+	CTXIndex(Symbols* symbols, CARD16 index);
 };
 
 class CTXRecord {
@@ -144,13 +141,7 @@ private:
 	typedef Symbols::Key Key;
 	static QMap<Key, CTXRecord*> all;
 
-	CTXRecord(Symbols* symbols_, CARD16 index_, SEIndex* seList_, CARD16 level_, Tag tag_, void* tagValue_) :
-		symbols(symbols_), index(index_), seList(seList_), level(level_), tag(tag_), tagValue(tagValue_) {
-		Key key(symbols, index);
-		all[key] = this;
-
-		CTXIndex::getInstance(symbols_, index);
-	}
+	CTXRecord(Symbols* symbols, CARD16 index, SEIndex* seList, CARD16 level, Tag tag, void* tagValue);
 };
 
 #endif

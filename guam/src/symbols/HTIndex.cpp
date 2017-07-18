@@ -40,6 +40,10 @@ static log4cpp::Category& logger = Logger::getLogger("ht");
 // HTIndex
 //
 QMap<HTIndex::Key, HTIndex*> HTIndex::all;
+HTIndex::HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void HTIndex::checkAll() {
 	for(HTIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -76,6 +80,13 @@ const HTRecord& HTIndex::getValue() const {
 // HTRecord
 //
 QMap<HTRecord::Key, HTRecord*> HTRecord::all;
+HTRecord::HTRecord(Symbols* symbols_, CARD16 index_, bool anyInternal_, bool anyPublic_, CARD16 link_, CARD16 ssIndex_, QString value_) :
+	symbols(symbols_), index(index_), anyInternal(anyInternal_), anyPublic(anyPublic_), link(link_), ssIndex(ssIndex_), value(value_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+
+	HTIndex::getInstance(symbols_, index_);
+}
 HTRecord* HTRecord::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);

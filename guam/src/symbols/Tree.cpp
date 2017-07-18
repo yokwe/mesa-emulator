@@ -43,8 +43,11 @@ static log4cpp::Category& logger = Logger::getLogger("tree");
 //
 // TreeIndex
 //
-
 QMap<TreeIndex::Key, TreeIndex*> TreeIndex::all;
+TreeIndex::TreeIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+}
 void TreeIndex::checkAll() {
 	for(TreeIndex* e: all.values()) {
 		if (e->isNull()) continue;
@@ -54,7 +57,6 @@ void TreeIndex::checkAll() {
 		}
 	}
 }
-
 TreeIndex* TreeIndex::getNull() {
 	return getInstance(0, TREE_NULL);
 }
@@ -94,6 +96,13 @@ const TreeNode& TreeIndex::getValue() const {
 //  son (2): ARRAY [1..1) OF Link];
 
 QMap<TreeNode::Key, TreeNode*> TreeNode::all;
+TreeNode::TreeNode(Symbols* symbols_, CARD16 index_, NodeName name_, bool shared_, CARD16 nSons_, CARD16 info_, TreeLink** son_) :
+	symbols(symbols_), index(index_), name(name_), shared(shared_), nSons(nSons_), info(info_), son(son_) {
+	Key key(symbols_, index_);
+	all[key] = this;
+
+	TreeIndex::getInstance(symbols_, index_);
+}
 TreeNode* TreeNode::find(Symbols* symbols, CARD16 index) {
 	Key key(symbols, index);
 	return all.value(key, 0);
