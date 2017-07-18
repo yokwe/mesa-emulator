@@ -1189,7 +1189,135 @@ void ShowType::printDefaultValue(QTextStream& out, const SEIndex* sei, ValFormat
 
 
 //PrintTreeLink: PROCEDURE [tree: Tree.Link, vf: ValFormat, recur: CARDINAL, sonOfDot: BOOLEAN � FALSE] =
-// TODO void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat vf, int recur, bool sonOfDot = false);
+void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat vf, int recur, bool sonOfDot = false) {
+//  BEGIN
+//  IF tree = Tree.Null THEN RETURN;
+//  IF Abort[] THEN {PutLine["  ...aborted"L]; RETURN};
+//  IF recur > 30
+//     THEN {out["(Bug: Tree too deep!)"L, cd]; RETURN};
+//  WITH t: tree SELECT FROM
+//    subtree =>
+//      BEGIN
+//      node: NodePointer = @symbols.tb[t.index];
+//      SELECT node.name FROM
+//        all =>
+//          BEGIN
+//          out["ALL["L, cd];
+//          WITH v: vf SELECT FROM
+//            array => PrintTreeLink[
+//              node.son[1], GetValFormat[v.componentType], recur+1];
+//            ENDCASE =>
+//              IF node.nSons = 1 THEN PrintTreeLink[node.son[1], vf, recur+1]
+//          ELSE out["(Bug: not an array?)"L, cd];
+//          PutChar[']];
+//          END;
+//        mwconst, cast, loophole => PrintTreeLink[node.son[1], vf, recur+1];
+//        nil => out["NIL"L, cd];
+//        void => out["NULL"L, cd];
+//        dot, cdot =>
+//          BEGIN
+//          IF node.nSons # 2 THEN {
+//            out["(Bug: Dot node with other than two sons!)"L, cd];
+//            RETURN};
+//          PrintTreeLink[node.son[1], [other[]], recur+1, TRUE];
+//          PutChar['.]; --dot
+//          PrintTreeLink[node.son[2], [other[]], recur+1, TRUE];
+//          END;
+//        first, last, size, lengthen =>
+//          BEGIN
+//          out[
+//            SELECT node.name FROM
+//              first => "FIRST["L,
+//          last => "LAST["L,
+//          size => "SIZE["L,
+//          ENDCASE => "LONG["L, cd];
+//          PrintTreeLink[node.son[1], vf, recur+1];
+//          PutChar[']];
+//          END;
+//        construct =>
+//          BEGIN
+//          PutChar['[];
+//          IF node.nSons = 2 THEN PrintTreeLink[node.son[2], vf, recur+1];
+//          PutChar[']];
+//          END;
+//        union =>
+//          BEGIN
+//          PrintTreeLink[node.son[1], vf, recur+1];
+//          PutChar['[];
+//          PrintTreeLink[node.son[2], vf, recur+1];
+//          PutChar[']];
+//          END;
+//        list =>
+//          BEGIN
+//          FOR j: CARDINAL IN [1..node.nSons) DO
+//            PrintTreeLink[node.son[j], [other[]], recur+1];
+//            out[", "L, cd];
+//            ENDLOOP;
+//          IF node.nSons # 0
+//            THEN PrintTreeLink[node.son[node.nSons], [other[]], recur+1];
+//          END;
+//        longTC =>
+//          BEGIN
+//          out["LONG "L, cd];
+//          PrintTreeLink[node.son[1], vf, recur+1];
+//          END;
+//        uparrow =>
+//          BEGIN
+//          ptr: Tree.Link = node.son[1];
+//          type: Symbols.CSEIndex;
+//          WITH p: ptr SELECT FROM
+//            symbol =>
+//              type � SymbolOps.NormalType [symbols, SymbolOps.UnderType[symbols,
+//            symbols.seb[p.index].idType]];
+//            subtree => type � TreeOps.DecodeCSei[symbols.tb[p.index].info];
+//            ENDCASE => type � Symbols.typeANY;
+//          PrintTreeLink[node.son[1], [other[]], recur+1];
+//          WITH q: symbols.seb[type] SELECT FROM
+//            ref => IF ~q.var THEN PutChar['�];
+//            ENDCASE => PutChar['�];
+//          END;
+//        ENDCASE => out["(complicated expression)"L, cd];
+//      END;
+//    hash => PrintHti[t.index];
+//    symbol =>
+//      {IF NOT sonOfDot
+//      AND symbols.seb[t.index].idCtx = symbols.stHandle.outerCtx
+//        THEN PutCurrentModuleDot[];
+//      PrintSei[t.index]};
+//    literal =>
+//      BEGIN
+//      WITH lr: t.info SELECT FROM
+//        word =>
+//          WITH symbols.ltb[lr.index] SELECT FROM
+//            short => PrintTypedVal[value, vf];
+//            long =>
+//              SELECT length FROM
+//                2 =>
+//              BEGIN
+//              loophole: BOOLEAN � FALSE;
+//              SELECT vf.tag FROM
+//                signed => PutLongSigned[LOOPHOLE[@value, LUP]�];
+//                unsigned => PutLongUnsigned[LOOPHOLE[@value, LUP]�];
+//                transfer, ref =>
+//                  IF LOOPHOLE[@value, LUP]� = 0
+//                THEN out ["NIL"L, cd]
+//                ELSE loophole � TRUE;
+//                ENDCASE => loophole � TRUE;
+//              IF loophole THEN
+//                BEGIN
+//                out["LOOPHOLE["L, cd];
+//                PutLongUnsigned[LOOPHOLE[@value, LUP]�];
+//                PutChar[']];
+//                END;
+//              END;
+//            ENDCASE => PutWordSeq[DESCRIPTOR[@value, length]];
+//          ENDCASE; --shouldn't happen!
+//        ENDCASE --string-- => out["(LONG STRING)"L, cd];
+//      END;
+//    ENDCASE; --shouldn't happen!
+//  END;
+}
+
 
 
 //PutWordSeq: PROCEDURE [seq: LONG DESCRIPTOR FOR ARRAY OF UNSPECIFIED] =
@@ -1210,7 +1338,3 @@ void ShowType::putWordSeq(QTextStream& out, CARD16 length, CARD16* value) {
 	}
 	out << "]";
 }
-
-
-
-
