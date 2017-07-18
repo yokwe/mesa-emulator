@@ -189,7 +189,7 @@ public:
     static void putWordSeq(QTextStream& out, CARD16 length, const CARD16* value);
 
     // for debug
-    static void dump(QString path);
+    static void dump(Symbols* symbols);
 
 private:
     //defaultPublic: BOOLEAN � TRUE;     --outer RECORD is public or private?

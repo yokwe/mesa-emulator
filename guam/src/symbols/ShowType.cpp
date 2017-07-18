@@ -43,6 +43,7 @@ static log4cpp::Category& logger = Logger::getLogger("showtype");
 #include "SEIndex.h"
 #include "Tree.h"
 
+
 //
 // ValFormat
 //
@@ -119,6 +120,10 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 //    savePublic: BOOLEAN � defaultPublic;
 	bool savePublic = defaultPublic;
 	const SERecord::Id id(sei->getValue().getId());
+
+	out << "id " << id.toString() << endl;
+
+
 //    typeSei: Symbols.SEIndex;
 //    IF symbols.seb[sei].hash # Symbols.HTNull THEN {
 	if (!id.hash->isNull()) {
@@ -1492,7 +1497,6 @@ void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat v
 }
 
 
-
 //PutWordSeq: PROCEDURE [seq: LONG DESCRIPTOR FOR ARRAY OF UNSPECIFIED] =
 //  BEGIN
 //  PutChar['[];
@@ -1511,3 +1515,36 @@ void ShowType::putWordSeq(QTextStream& out, CARD16 length, const CARD16* value) 
 	}
 	out << "]";
 }
+
+
+void ShowType::dump(Symbols* symbols) {
+	QString path = "tmp/showType.log";
+
+	QFile file(path);
+	if (!file.exists()) {
+		logger.fatal("File does not exist. path = %s", path.toLocal8Bit().constData());
+		ERROR();
+	}
+	bool result = file.open(QIODevice::OpenModeFlag::WriteOnly | QIODevice::OpenModeFlag::Truncate);
+	if (!result) {
+		logger.fatal("File open error %s", file.errorString().toLocal8Bit().constData());
+		ERROR();
+	}
+
+	QTextStream out(&file);
+
+    const CTXIndex* outerCtx = symbols->outerCtx;
+    logger.info("dump %s", outerCtx->toString().toLocal8Bit().constData());
+    out << "dump " << outerCtx->toString() << endl;
+    out.flush();
+    const SEIndex* sei = outerCtx->getValue().seList;
+    for(;;) {
+        logger.info("sei %s", sei->toString().toLocal8Bit().constData());
+        out.flush();
+        printSym(out, sei, ": ");
+        out.flush();
+        sei = sei->nextSe();
+        if (sei->isNull()) break;
+    }
+}
+

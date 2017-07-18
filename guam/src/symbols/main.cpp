@@ -35,6 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 #include "BCDFile.h"
 #include "BCD.h"
 #include "Symbols.h"
+#include "ShowType.h"
 
 int main(int argc, char** argv) {
 	logger.info("START");
@@ -67,6 +68,7 @@ int main(int argc, char** argv) {
 		}
 
 		Symbols symbols(bcd, symbolBase);
+		ShowType::dump(&symbols);
 	}
 	
 	logger.info("STOP");

@@ -100,11 +100,10 @@ SEIndex::TransferMode SEIndex::xferMode() const {
 const SEIndex* SEIndex::underType() const {
 	const SEIndex* sei = this;
 	while(!sei->isNull()) {
-		const SERecord& se(sei->getValue());
-		if (se.tag == SERecord::Tag::ID) {
-			const SERecord::Id& id = se.getId();
-			if (!id.idType->isTypeType()) ERROR();
-			sei = sei->find(id.idInfo);
+		if (sei->getValue().tag == SERecord::Tag::ID) {
+			const SERecord::Id& se(sei->getValue().getId());
+			if (!se.idType->isTypeType()) ERROR();
+			sei = sei->find(se.idInfo);
 		} else {
 			break;
 		}
