@@ -63,9 +63,12 @@ public:
 	const MDRecord& getValue() const;
 
 private:
-	static QList<MDIndex*> all;
+	typedef Symbols::Key Key;
+	static QMap<Key, MDIndex*> all;
+
 	MDIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		all.append(this);
+		Key key(symbols_, index);
+		all[key] = this;
 	}
 };
 
@@ -100,6 +103,8 @@ private:
 		shared(shared_), exported(exported_), ctx(ctx_), defaultImport(defaultImport_), file(file_) {
 		Key key(symbols, index);
 		all[key] = this;
+
+		MDIndex::getInstance(symbols_, index_);
 	}
 };
 

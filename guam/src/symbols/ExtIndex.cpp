@@ -41,9 +41,9 @@ static log4cpp::Category& logger = Logger::getLogger("etx");
 //
 // ExtIndex
 //
-QList<ExtIndex*> ExtIndex::all;
+QMap<ExtIndex::Key, ExtIndex*> ExtIndex::all;
 void ExtIndex::checkAll() {
-	for(ExtIndex* e: all) {
+	for(ExtIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		ExtRecord* value = ExtRecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -51,12 +51,13 @@ void ExtIndex::checkAll() {
 		}
 	}
 }
-
 ExtIndex* ExtIndex::getNull() {
-	static ExtIndex ret(0, ExtIndex::EXT_NULL);
-	return &ret;
+	return getInstance(0, EXT_NULL);
 }
 ExtIndex* ExtIndex::getInstance(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	if (all.contains(key)) return all[key];
+
 	return new ExtIndex(symbols, index);
 }
 QString ExtIndex::toString() const {
@@ -95,7 +96,7 @@ ExtRecord* ExtRecord::find(Symbols* symbols, CARD16 index) {
 //	  ENDLOOP;
 //	RETURN [none, Tree.Null]};
 ExtRecord* ExtRecord::find(const SEIndex* sei) {
-	for(ExtRecord* e: all) {
+	for(ExtRecord* e: all.values()) {
 		if (sei->equals(e->sei)) return e;
 	}
 	logger.fatal("Cannot find  sei = %s", sei->toString().toLocal8Bit().constData());

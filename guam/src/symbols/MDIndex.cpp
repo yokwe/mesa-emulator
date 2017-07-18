@@ -41,9 +41,9 @@ static log4cpp::Category& logger = Logger::getLogger("md");
 //
 // MDIndex
 //
-QList<MDIndex*> MDIndex::all;
+QMap<MDIndex::Key, MDIndex*> MDIndex::all;
 void MDIndex::checkAll() {
-	for(MDIndex* e: all) {
+	for(MDIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		MDRecord* value = MDRecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -51,12 +51,13 @@ void MDIndex::checkAll() {
 		}
 	}
 }
-
 MDIndex* MDIndex::getNull() {
-	static MDIndex ret(0, MDIndex::MD_NULL);
-	return &ret;
+	return getInstance(0, MD_NULL);
 }
 MDIndex* MDIndex::getInstance(Symbols* symbols_, CARD16 index_) {
+	Key key(symbols_, index_);
+	if (all.contains(key)) return all[key];
+
 	return new MDIndex(symbols_, index_);
 }
 QString MDIndex::toString() const {

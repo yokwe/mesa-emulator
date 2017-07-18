@@ -44,9 +44,9 @@ static log4cpp::Category& logger = Logger::getLogger("tree");
 // TreeIndex
 //
 
-QList<TreeIndex*> TreeIndex::all;
+QMap<TreeIndex::Key, TreeIndex*> TreeIndex::all;
 void TreeIndex::checkAll() {
-	for(TreeIndex* e: all) {
+	for(TreeIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		TreeNode* value = TreeNode::find(e->symbols, e->index);
 		if (value == 0) {
@@ -56,10 +56,12 @@ void TreeIndex::checkAll() {
 }
 
 TreeIndex* TreeIndex::getNull() {
-	static TreeIndex ret(0, TreeIndex::TREE_NULL);
-	return &ret;
+	return getInstance(0, TREE_NULL);
 }
 TreeIndex* TreeIndex::getInstance(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	if (all.contains(key)) return all[key];
+
 	return new TreeIndex(symbols, index);
 }
 QString TreeIndex::toString() const {

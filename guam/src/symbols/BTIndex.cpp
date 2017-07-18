@@ -42,9 +42,9 @@ static log4cpp::Category& logger = Logger::getLogger("bt");
 //
 // BTIndex
 //
-QList<BTIndex*> BTIndex::all;
+QMap<BTIndex::Key, BTIndex*> BTIndex::all;
 void BTIndex::checkAll() {
-	for(BTIndex* e: all) {
+	for(BTIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		BTRecord* value = BTRecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -52,12 +52,13 @@ void BTIndex::checkAll() {
 		}
 	}
 }
-
 BTIndex* BTIndex::getNull() {
-	static BTIndex ret(0, BTIndex::BT_NULL);
-	return &ret;
+	return getInstance(0, BT_NULL);
 }
 BTIndex* BTIndex::getInstance(Symbols* symbols_, CARD16 index_) {
+	Key key(symbols_, index_);
+	if (all.contains(key)) return all[key];
+
 	return new BTIndex(symbols_, index_);
 }
 QString BTIndex::toString() const {

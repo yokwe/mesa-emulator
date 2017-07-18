@@ -93,9 +93,12 @@ public:
 	}
 
 private:
-	static QList<SEIndex*> all;
+	typedef Symbols::Key Key;
+	static QMap<Key, SEIndex*> all;
+
 	SEIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		all.append(this);
+		Key key(symbols, index);
+		all[key] = this;
 	}
 };
 
@@ -565,6 +568,8 @@ private:
 	SERecord(Symbols* symbols_, CARD16 index_, Tag tag_, void* tagValue_) : symbols(symbols_), index(index_), tag(tag_), tagValue(tagValue_) {
 		Key key(symbols, index);
 		all[key] = this;
+		// register SEIndex::all
+		SEIndex::getInstance(symbols_, index_);
 	}
 };
 

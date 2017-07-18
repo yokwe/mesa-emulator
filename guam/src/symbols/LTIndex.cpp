@@ -40,9 +40,9 @@ static log4cpp::Category& logger = Logger::getLogger("lt");
 //
 // LTIndex
 //
-QList<LTIndex*> LTIndex::all;
+QMap<LTIndex::Key, LTIndex*> LTIndex::all;
 void LTIndex::checkAll() {
-	for(LTIndex* e: all) {
+	for(LTIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		LTRecord* value = LTRecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -50,12 +50,13 @@ void LTIndex::checkAll() {
 		}
 	}
 }
-
 LTIndex* LTIndex::getNull() {
-	static LTIndex ret(0, LTIndex::LT_NULL);
-	return &ret;
+	return getInstance(0, LT_NULL);
 }
 LTIndex* LTIndex::getInstance(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	if (all.contains(key)) return all[key];
+
 	return new LTIndex(symbols, index);
 }
 QString LTIndex::toString() const {

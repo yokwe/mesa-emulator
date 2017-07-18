@@ -41,9 +41,9 @@ static log4cpp::Category& logger = Logger::getLogger("ctx");
 //
 // CTXIndex
 //
-QList<CTXIndex*> CTXIndex::all;
+QMap<CTXIndex::Key, CTXIndex*> CTXIndex::all;
 void CTXIndex::checkAll() {
-	for(CTXIndex* e: all) {
+	for(CTXIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		CTXRecord* value = CTXRecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -51,12 +51,13 @@ void CTXIndex::checkAll() {
 		}
 	}
 }
-
 CTXIndex* CTXIndex::getNull() {
-	static CTXIndex ret(0, CTXIndex::CTX_NULL);
-	return &ret;
+	return getInstance(0, CTX_NULL);
 }
 CTXIndex* CTXIndex::getInstance(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	if (all.contains(key)) return all[key];
+
 	return new CTXIndex(symbols, index);
 }
 QString CTXIndex::toString() const {

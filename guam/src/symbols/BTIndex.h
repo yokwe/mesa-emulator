@@ -63,9 +63,12 @@ public:
 	const BTRecord& getValue() const;
 
 private:
-	static QList<BTIndex*> all;
+	typedef Symbols::Key Key;
+	static QMap<Key, BTIndex*> all;
+
 	BTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		all.append(this);
+		Key key(symbols, index);
+		all[key] = this;
 	}
 };
 
@@ -259,6 +262,8 @@ private:
 		localCtx(localCtx_), level(level_), sourceIndex(sourceIndex_), info(info_), tag(tag_), tagValue(tagValue_) {
 		Key key(symbols, index);
 		all[key] = this;
+
+		BTIndex::getInstance(symbols_, index);
 	}
 };
 

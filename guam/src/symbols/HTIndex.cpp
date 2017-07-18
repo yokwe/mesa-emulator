@@ -39,9 +39,9 @@ static log4cpp::Category& logger = Logger::getLogger("ht");
 //
 // HTIndex
 //
-QList<HTIndex*> HTIndex::all;
+QMap<HTIndex::Key, HTIndex*> HTIndex::all;
 void HTIndex::checkAll() {
-	for(HTIndex* e: all) {
+	for(HTIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		HTRecord* value = HTRecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -49,12 +49,13 @@ void HTIndex::checkAll() {
 		}
 	}
 }
-
 HTIndex* HTIndex::getNull() {
-	static HTIndex ret(0, HTIndex::HT_NULL);
-	return &ret;
+	return getInstance(0, HT_NULL);
 }
 HTIndex* HTIndex::getInstance(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	if (all.contains(key)) return all[key];
+
 	return new HTIndex(symbols, index);
 }
 QString HTIndex::toString() const {

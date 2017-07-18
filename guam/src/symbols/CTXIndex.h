@@ -74,9 +74,11 @@ public:
     }
 
 private:
-	static QList<CTXIndex*> all;
+	typedef Symbols::Key Key;
+	static QMap<Key, CTXIndex*> all;
 	CTXIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		all.append(this);
+		Key key(symbols_, index);
+		all[key] = this;
 	}
 };
 
@@ -146,6 +148,8 @@ private:
 		symbols(symbols_), index(index_), seList(seList_), level(level_), tag(tag_), tagValue(tagValue_) {
 		Key key(symbols, index);
 		all[key] = this;
+
+		CTXIndex::getInstance(symbols_, index);
 	}
 };
 

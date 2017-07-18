@@ -68,9 +68,12 @@ public:
 
 	const TreeNode& getValue() const;
 private:
-	static QList<TreeIndex*> all;
+	typedef Symbols::Key Key;
+	static QMap<Key, TreeIndex*> all;
+
 	TreeIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		all.append(this);
+		Key key(symbols_, index_);
+		all[key] = this;
 	}
 };
 
@@ -200,6 +203,8 @@ private:
 		symbols(symbols_), index(index_), name(name_), shared(shared_), nSons(nSons_), info(info_), son(son_) {
 		Key key(symbols, index);
 		all[key] = this;
+
+		TreeIndex::getInstance(symbols_, index_);
 	}
 };
 

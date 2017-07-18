@@ -61,9 +61,12 @@ public:
 
 	const HTRecord& getValue() const;
 private:
-	static QList<HTIndex*> all;
+	typedef Symbols::Key Key;
+	static QMap<Key, HTIndex*> all;
+
 	HTIndex(Symbols* symbols_, CARD16 index_) : symbols(symbols_), index(index_) {
-		all.append(this);
+		Key key(symbols_, index);
+		all[key] = this;
 	}
 };
 
@@ -97,6 +100,8 @@ private:
 		symbols(symbols_), index(index_), anyInternal(anyInternal_), anyPublic(anyPublic_), link(link_), ssIndex(ssIndex_), value(value_) {
 		Key key(symbols, index);
 		all[key] = this;
+
+		HTIndex::getInstance(symbols_, index_);
 	}
 };
 

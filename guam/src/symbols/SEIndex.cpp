@@ -41,9 +41,9 @@ static log4cpp::Category& logger = Logger::getLogger("se");
 //
 // SEIndex
 //
-QList<SEIndex*> SEIndex::all;
+QMap<SEIndex::Key, SEIndex*> SEIndex::all;
 void SEIndex::checkAll() {
-	for(SEIndex* e: all) {
+	for(SEIndex* e: all.values()) {
 		if (e->isNull()) continue;
 		SERecord* value = SERecord::find(e->symbols, e->index);
 		if (value == 0) {
@@ -57,6 +57,9 @@ SEIndex* SEIndex::getNull() {
 	return &ret;
 }
 SEIndex* SEIndex::getInstance(Symbols* symbols, CARD16 index) {
+	Key key(symbols, index);
+	if (all.contains(key)) return all[key];
+
 	return new SEIndex(symbols, index);
 }
 QString SEIndex::toString() const {
@@ -73,9 +76,9 @@ const SERecord& SEIndex::getValue() const {
 }
 
 SEIndex* SEIndex::find(CARD16 index_) const {
-	for(SEIndex* e: all) {
-		if (e->symbols == this->symbols && e->index == index_) return e;
-	}
+	Key key(symbols, index_);
+	if (all.contains(key)) return all[key];
+
 	logger.fatal("Cannot find  symbols = %p  index = %d", symbols, index_);
 	ERROR();
 }
