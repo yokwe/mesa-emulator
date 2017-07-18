@@ -319,5 +319,10 @@ TreeLink* TreeLink::getInstance(Symbols* symbols) {
 
 	return new TreeLink(tag, tagValue);
 }
-
+//Null: Tree.Link = [subtree[index: Tree.NullIndex]];
+TreeLink* TreeLink::getNull() {
+	static TreeLink::Subtree subtree(TreeIndex::getNull());
+	static TreeLink ret(Tag::SUBTREE, &subtree);
+	return &ret;
+}
 

@@ -249,6 +249,7 @@ public:
 	};
 
 	static TreeLink* getInstance(Symbols* symbols);
+	static TreeLink* getNull();
 
 	const Tag   tag;
 	const void* tagValue;

@@ -120,10 +120,6 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 //    savePublic: BOOLEAN � defaultPublic;
 	bool savePublic = defaultPublic;
 	const SERecord::Id id(sei->getValue().getId());
-
-	out << "id " << id.toString() << endl;
-
-
 //    typeSei: Symbols.SEIndex;
 //    IF symbols.seb[sei].hash # Symbols.HTNull THEN {
 	if (!id.hash->isNull()) {
@@ -249,7 +245,8 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 				if (id.extended) {
 //	            THEN PrintTreeLink[SymbolOps.FindExtension[symbols, sei].tree, vf, 0]
 					ExtRecord* ext = ExtRecord::find(sei);
-					printTreeLink(out, ext->tree, vf, 0);
+					const TreeLink* tree = ext ? ext->tree : TreeLink::getNull();
+					printTreeLink(out, tree, vf, 0);
 				}
 //	            ELSE
 				else {
@@ -1187,10 +1184,11 @@ void ShowType::putModeName(QTextStream& out, Symbols::TransferMode n) {
 //  END;
 void ShowType::printDefaultValue(QTextStream& out, const SEIndex* sei, ValFormat vf) {
 	ExtRecord* ext = ExtRecord::find(sei);
-	if (ext == 0) ERROR();
-	if (ext->type != ExtRecord::ExtensionType::DEFAULT) return;
+	Symbols::ExtensionType type = ext ? ext->type : Symbols::ExtensionType::NONE;
+	const TreeLink* tree(ext ? ext->tree : TreeLink::getNull());
+	if (type != ExtRecord::ExtensionType::DEFAULT) return;
 	out << " = ";
-	printTreeLink(out, ext->tree, vf, 0);
+	printTreeLink(out, tree, vf, 0);
 }
 
 
@@ -1539,10 +1537,9 @@ void ShowType::dump(Symbols* symbols) {
     out.flush();
     const SEIndex* sei = outerCtx->getValue().seList;
     for(;;) {
-        logger.info("sei %s", sei->toString().toLocal8Bit().constData());
-        out.flush();
         printSym(out, sei, ": ");
-        out.flush();
+        out << endl;
+
         sei = sei->nextSe();
         if (sei->isNull()) break;
     }

@@ -110,8 +110,6 @@ ExtRecord* ExtRecord::find(const SEIndex* sei) {
 	for(ExtRecord* e: all.values()) {
 		if (sei->equals(e->sei)) return e;
 	}
-	logger.fatal("Cannot find  sei = %s", sei->toString().toLocal8Bit().constData());
-	ERROR();
 	return 0;
 }
 
