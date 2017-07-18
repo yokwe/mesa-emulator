@@ -110,6 +110,8 @@ QString ValFormat::toString() const {
 bool ShowType::defaultPublic = true;
 bool ShowType::showBits = true;
 
+//static std::function<void()> nosub = []{};
+
 //PrintSym: PROCEDURE [sei: Symbols.ISEIndex, colonstring: LONG STRING] =
 void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonString) {
 //    BEGIN
@@ -157,7 +159,7 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 			break;
 		}
 //      vf � PrintType[typeSei, NoSub];
-	    ValFormat vf = printType(out, typeSei, 0);
+	    ValFormat vf = printType(out, typeSei, {});
 //      PrintDefaultValue [sei, vf];
 	    printDefaultValue(out, sei, vf);
 //      END
@@ -187,7 +189,7 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 			}
 		}
 //      vf � PrintType[typeSei, NoSub];
-		ValFormat vf = printType(out, typeSei);
+		ValFormat vf = printType(out, typeSei, {});
 //      IF symbols.seb[sei].constant THEN
 		if (id.constant) {
 //        WITH vf SELECT FROM
@@ -540,7 +542,7 @@ ValFormat ShowType::getValFormat(const SEIndex* tsei) {
 
 
 //PrintType: PROCEDURE [tsei: Symbols.SEIndex, dosub: PROCEDURE] RETURNS [vf: ValFormat] =
-ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosub)()) {
+ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, std::function<void()> dosub) {
 //  BEGIN
 //  bitspec: LONG STRING = [20];
 //  vf � GetValFormat[tsei];
@@ -764,7 +766,7 @@ ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosu
 				out << "POINTER";
 //    		    IF dosub # NoSub THEN {PutBlanks[1]; dosub[]};
 				if (dosub) {
-					out << "";
+					out << " ";
 					dosub();
 				}
 //    		    WITH symbols.seb[SymbolOps.UnderType[symbols, refType]] SELECT FROM
@@ -782,7 +784,7 @@ ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, void (*dosu
 //    		    END;
 			}
 //    	    [] � PrintType[refType, NoSub];
-			printType(out, t.refType, 0);
+			printType(out, t.refType, {});
 //    	    EXITS noprint => NULL;
 noprint:;
 //    	    END;
@@ -798,11 +800,11 @@ noprint:;
 //    	    out["ARRAY "L, cd];
 			out << "ARRAY ";
 //    	    [] � PrintType[indexType, NoSub];
-			printType(out, t.indexType, 0);
+			printType(out, t.indexType, {});
 //    	    out[" OF "L, cd];
 			out << " OF ";
 //    	    [] � PrintType[componentType, NoSub];
-			printType(out, t.componentType, 0);
+			printType(out, t.componentType, {});
 //    	    END;
 		}
 			break;
@@ -816,7 +818,7 @@ noprint:;
 //    	    IF readOnly THEN out["READONLY "L, cd];
 			if (t.readOnly) out << "READONLY ";
 //    	    [] � PrintType[describedType, NoSub];
-			printType(out, t.describedType, 0);
+			printType(out, t.describedType, {});
 //    	    END;
 		}
 			break;
@@ -892,7 +894,7 @@ noprint:;
 //    	      ENDCASE;
 			switch(tagType->getValue().tag) {
 			case SERecord::Tag::ID:
-				printType(out, tagType, 0);
+				printType(out, tagType, {});
 				break;
 			case SERecord::Tag::CONS:
 				out << "*";
@@ -951,11 +953,11 @@ noprint:;
 			const SERecord::Cons::Relative& t(tsei->getValue().getCons().getRelative());
 //    	    BEGIN
 //    	    IF baseType # Symbols.SENull THEN [] � PrintType[baseType, NoSub];
-			if (!t.baseType->isNull()) printType(out, t.baseType, 0);
+			if (!t.baseType->isNull()) printType(out, t.baseType, {});
 //    	    out[" RELATIVE "L, cd];
 			out << " RELATIVE ";
 //    	    [] � PrintType[offsetType, dosub];
-			printType(out, t.offsetType, 0);
+			printType(out, t.offsetType, dosub);
 //    	    END;
 		}
 			break;
@@ -994,11 +996,11 @@ noprint:;
 //    	      out[IF defaultPublic THEN "PRIVATE "L ELSE "PUBLIC "L, cd];
 				out << (defaultPublic ? "PRIVATE " : "PUBLIC ");
 //    	    [] � PrintType[tagType, NoSub];
-			printType(out, tagType, 0);
+			printType(out, tagType, {});
 //    	    out[" OF "L, cd];
 			out << " OF ";
 //    	    [] � PrintType[componentType, NoSub];
-			printType(out, t.componentType, 0);
+			printType(out, t.componentType, {});
 //    	    END;
 		}
 			break;
@@ -1026,28 +1028,25 @@ noprint:;
 //    	        ELSE {
 //    	          PrintTypedVal[org + size, vfSub]; PutChar[']]};
 //    	      END;
-			class callback {
-			public:
-				static void doit() {
-					ValFormat vfSub;
-					if (vf.tag == ValFormat::Tag::ENUM) vfSub = vf;
-					else if (org < 0) vfSub = ValFormat::SIGNED();
-					else vfSub = ValFormat::UNSIGNED();
-					out << "[";
+			std::function<void()> doit = [&] {
+				ValFormat vfSub;
+				if (vf.tag == ValFormat::Tag::ENUM) vfSub = vf;
+				else if (org < 0) vfSub = ValFormat::SIGNED();
+				else vfSub = ValFormat::UNSIGNED();
+				out << "[";
+				printTypedVal(out, org, vfSub);
+				out << "..";
+				if (t.empty) {
 					printTypedVal(out, org, vfSub);
-					out << "..";
-					if (t.empty) {
-						printTypedVal(out, org, vfSub);
-						out << ")";
-					} else {
-						printTypedVal(out, org + size, vfSub);
-						out << "]";
-					}
+					out << ")";
+				} else {
+					printTypedVal(out, org + size, vfSub);
+					out << "]";
 				}
 			};
 //
 //    	    [] � PrintType[rangeType, doit];
-			printType(out, t.rangeType, callback::doit);
+			printType(out, t.rangeType, doit);
 //    	    END;
 		}
 			break;
@@ -1084,7 +1083,7 @@ noprint:;
 //    	    {IF NOT IsVar [rangeType] THEN out["LONG "L, cd];
 			if (!isVar(t.rangeType)) out << "LONG ";
 //    	    [] � PrintType[rangeType, NoSub]};
-			printType(out, t.rangeType, 0);
+			printType(out, t.rangeType, {});
 		}
 			break;
 //    	  real => out["REAL"L, cd];

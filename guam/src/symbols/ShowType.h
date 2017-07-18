@@ -39,6 +39,9 @@ OF SUCH DAMAGE.
 
 #include <QTextStream>
 
+#include <functional>
+
+
 //EnumeratedSEIndex: TYPE = Table.Base RELATIVE POINTER [0..Table.Limit)
 //  TO enumerated cons Symbols.SERecord;
 //
@@ -90,9 +93,6 @@ public:
 		Transfer(const TransferMode mode_) : mode(mode_) {}
 	};
 
-	ValFormat() : tag(Tag::OTHER), tagValue(0) {}
-	ValFormat(const ValFormat& that) : tag(that.tag), tagValue(that.tagValue) {}
-
 	static ValFormat SIGNED() {
 		ValFormat ret(Tag::SIGNED, 0);
 		return ret;
@@ -126,15 +126,19 @@ public:
 		return ret;
 	}
 
-	const Tag   tag;
-	const void* tagValue;
+	ValFormat() : tag(Tag::OTHER), tagValue(0) {}
+	ValFormat(const ValFormat& that) : tag(that.tag), tagValue(that.tagValue) {}
+
+	Tag   tag;
+	void* tagValue;
+
 	const Enum&     getEnum()     const;
 	const Array&    getArray()    const;
 	const Transfer& getTransfer() const;
 
 	QString toString() const;
 private:
-	ValFormat(const Tag tag_, const void* tagValue_) : tag(tag_), tagValue(tagValue_) {}
+	ValFormat(Tag tag_, void* tagValue_) : tag(tag_), tagValue(tagValue_) {}
 };
 
 class ShowType {
@@ -167,7 +171,7 @@ public:
     static ValFormat getValFormat(const SEIndex* tsei);
 
     //PrintType: PROCEDURE [tsei: Symbols.SEIndex, dosub: PROCEDURE] RETURNS [vf: ValFormat] =
-    static ValFormat printType(QTextStream& out, const SEIndex* tsei, void (*dosub)() = 0);
+    static ValFormat printType(QTextStream& out, const SEIndex* tsei, std::function<void()> dosub);
 
     //IsVar: PROC [tsei: Symbols.SEIndex] RETURNS [BOOLEAN] =
     static bool isVar(const SEIndex* tsei);
