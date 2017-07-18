@@ -261,6 +261,11 @@ public:
 	const Hash&    getHash()    const;
 	const Symbol&  getSymbol()  const;
 	const Literal& getLiteral() const;
+	
+	//Null: Tree.Link = [subtree[index: Tree.NullIndex]];
+	bool isNull() const {
+		return tag == Tag::SUBTREE && getSubtree().index->isNull();
+	}
 
 	QString toString() const;
 
