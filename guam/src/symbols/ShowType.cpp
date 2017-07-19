@@ -351,7 +351,7 @@ void ShowType::getBitSpec(const SEIndex* isei, QString& bitspec) {
 	bitspec.clear();
 	bitspec.append(QString(" (%1").arg(wd));
 	if (s) {
-		bitspec.append(QString(":%1..%2")).arg(bd).arg(bd + s - 1);
+		bitspec.append(QString(":%1..%2").arg(bd).arg(bd + s - 1));
 	}
 	bitspec.append("): ");
 }
@@ -909,10 +909,12 @@ noprint:;
 			out << " FROM ";
 //    	    BEGIN
 //    	    temp, isei: Symbols.ISEIndex;
+			const SEIndex* temp;
 //    	    varRec: Symbols.RecordSEIndex;
 //    	    FOR isei � SymbolOps.FirstCtxSe[symbols, caseCtx], temp
 //    	      UNTIL isei = Symbols.ISENull DO
-			for(const SEIndex* isei = t.caseCtx->firstCtxSe(); !isei->isNull();) {
+			for(const SEIndex* isei = t.caseCtx->firstCtxSe();; isei = temp) {
+				if (isei->isNull()) break;
 //    	      NewLine[];
 				out << endl;
 //    	      PrintSei[isei];
@@ -920,19 +922,17 @@ noprint:;
 //    	      varRec � LOOPHOLE[SymbolOps.UnderType[symbols, SymbolOps.ToSei[symbols.seb[isei].idInfo]]];
 				const SEIndex* varRec = isei->find(isei->getValue().getId().idInfo)->underType();
 //    	      FOR temp � SymbolOps.NextSe[symbols, isei], SymbolOps.NextSe[symbols, temp]
-				const SEIndex* temp = isei->nextSe();
-				for(;;) {
+				for(temp = isei->nextSe();; temp = temp->nextSe()) {
 //    		  UNTIL temp = Symbols.ISENull
 //    		    OR SymbolOps.ToSei[symbols.seb[temp].idInfo] # isei DO
 					if (temp->isNull()) break;
-					if (isei->equals(temp->getValue().getId().idInfo)) break;
+					if (!isei->equals(temp->getValue().getId().idInfo)) break;
 //    	        out[", "L, cd];
 					out << ", ";
 //    	        PrintSei[temp];
 					printSei(out, temp);
 //    	        ENDLOOP
 				}
-				isei = temp;
 //    	      out[" => "L, cd];
 				out << " => ";
 //    	      PrintFieldCtx[symbols.seb[varRec].fieldCtx, machineDep OR showBits];
