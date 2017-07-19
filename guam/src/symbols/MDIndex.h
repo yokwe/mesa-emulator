@@ -70,6 +70,15 @@ private:
 };
 
 
+//MDRecord: TYPE = RECORD [
+//  stamp: TimeStamp.Stamp,
+//  moduleId: HTIndex,		-- hash entry for module name
+//  fileId: HTIndex,		-- hash entry for file name
+//  shared: BOOLEAN,		-- overrides PRIVATE, etc.
+//  exported: BOOLEAN,
+//  ctx: IncludedCTXIndex,	-- context of copied entries
+//  defaultImport: CTXIndex,	-- unnamed imported instance
+//  file: FileIndex];		-- associated file
 class MDRecord {
 private:
 	const Symbols*  symbols;
