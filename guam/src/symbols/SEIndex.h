@@ -70,7 +70,7 @@ public:
 		return index == TYPE_ANY;
 	}
 	bool equals(const SEIndex* that) const {
-		return this->index == that->index;
+		return this->symbols == that->symbols && this->index == that->index;
 	}
 	bool equals(const CARD16 that) const {
 		return this->index == that;

@@ -58,7 +58,7 @@ public:
 		return index == CTX_NULL;
 	}
 	bool equals(const CTXIndex* that) const {
-		return this->index == that->index;
+		return this->symbols == that->symbols && this->index == that->index;
 	}
 	QString toString() const;
 	const CTXRecord& getValue() const;
