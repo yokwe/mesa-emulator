@@ -79,6 +79,31 @@ private:
 	CTXIndex(Symbols* symbols, CARD16 index);
 };
 
+
+
+//
+// CTXRecord
+//
+
+//Closure: TYPE = {none, unit, rc, full};  -- completeness of copied contexts
+//
+//CTXRecord: TYPE = RECORD [
+//  mark, varUpdated: BOOLEAN,
+//  seList: ISEIndex,
+//  level: ContextLevel,
+//  extension: SELECT ctxType: * FROM
+//    simple => [ctxNew: CTXIndex],	-- for DeSoto
+//    included => [
+//	    chain: IncludedCTXIndex,
+//	    copied: Closure � none,
+//	    module: MDIndex,
+//	    map: CTXIndex,
+//	    closed, complete, restricted: BOOLEAN,
+//	    reset: BOOLEAN],
+//    imported => [includeLink: IncludedCTXIndex],
+//    nil => []
+//    ENDCASE];
+
 class CTXRecord {
 private:
 	const Symbols*  symbols;
