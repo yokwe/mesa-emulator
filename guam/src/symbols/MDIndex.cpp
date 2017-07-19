@@ -115,8 +115,8 @@ QString MDRecord::toString() const {
 //	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
 //			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue()).arg(fileId->getValue()).
 //			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
-	return QString("%1 %2 %3 %4 %5 %6 %7 %8").
-			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue().value).arg(fileId->getValue().value).
+	return QString("%1 %2 %3 %4 %5 %6 %7").
+			arg(index, 4).arg(stamp->toString()).arg(moduleId->getValue().value, -20).
 			arg(shared ? "S" : " ").arg(exported ? "E" : " ").arg(ctx->toString()).arg(defaultImport->toString());
 }
 
