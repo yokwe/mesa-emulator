@@ -1394,11 +1394,12 @@ void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat v
 //    symbol =>
 	case TreeLink::Tag::SYMBOL:
 	{
-//		const TreeLink::Symbol& t(tree->getSymbol());
+		const TreeLink::Symbol& t(tree->getSymbol());
 //      {IF NOT sonOfDot
 //      AND symbols.seb[t.index].idCtx = symbols.stHandle.outerCtx
 //        THEN PutCurrentModuleDot[];
 //      PrintSei[t.index]};
+		printSei(out, t.index);
 	}
 		break;
 //    literal =>
@@ -1537,6 +1538,7 @@ void ShowType::dump(Symbols* symbols) {
     out.flush();
     const SEIndex* sei = outerCtx->getValue().seList;
     for(;;) {
+    	out << QString("%1: ").arg(sei->toString());
         printSym(out, sei, ": ");
         out << endl;
 
