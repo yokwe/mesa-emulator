@@ -35,7 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 #include "BCDFile.h"
 #include "BCD.h"
 #include "Symbols.h"
-#include "ShowType.h"
+#include "DumpSymbol.h"
 
 int main(int argc, char** argv) {
 	logger.info("START");
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 		QString filePath = argv[i];
 		logger.info("path = %s", filePath.toLocal8Bit().constData());
 
-		ShowType::dumpSymbol(filePath, outDirPath);
+		DumpSymbol::dumpSymbol(filePath, outDirPath);
 	}
 	
 	logger.info("STOP");
