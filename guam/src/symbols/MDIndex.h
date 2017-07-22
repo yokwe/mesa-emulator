@@ -46,12 +46,13 @@ class MDIndex {
 private:
 	static constexpr const char* PREFIX = "md";
 	static const CARD16  MD_NULL = Symbols::LIMIT - 1;
-	static const CARD16  MD_OWN  = 0;
 
 	Symbols*  symbols;
 	CARD16    index;
 
 public:
+	static const CARD16  MD_OWN  = 0;
+
 	static void checkAll();
 	static MDIndex* getNull();
 	static MDIndex* getInstance(Symbols* symbols_, CARD16 index_);
