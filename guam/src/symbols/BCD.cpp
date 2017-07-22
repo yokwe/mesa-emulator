@@ -51,7 +51,7 @@ Stamp* Stamp::getNull() {
 }
 QString Stamp::toString() const {
 	if (isNull()) return "#NULL#";
-	return QString("%1#%2#%3%4").arg(dateTime.toString("yyyyMMdd")).arg(dateTime.toString("HHmmss")).arg(net, 2, 16, QChar('0')).arg(host, 2, 16, QChar('0'));
+	return QString("%1#%2#%3%4").arg(dateTime.toString("yyyyMMdd")).arg(dateTime.toString("HHmmss")).arg(net, 2, 16, QChar('0')).arg(host, 2, 16, QChar('0')).toUpper();
 }
 
 QString NameRecord::toString() {
