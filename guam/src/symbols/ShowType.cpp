@@ -34,6 +34,8 @@ static log4cpp::Category& logger = Logger::getLogger("showtype");
 
 #include "ShowType.h"
 
+#include "BCDFile.h"
+
 #include "BTIndex.h"
 #include "CTXIndex.h"
 #include "ExtIndex.h"
@@ -1547,3 +1549,66 @@ void ShowType::dump(Symbols* symbols) {
     }
 }
 
+void ShowType::dumpSymbol(QString filePath, QString outDirPath) {
+	// Prepare output file
+	QString outFilePath;
+	{
+		QDir outDir(outDirPath);
+		if (!outDir.exists()) {
+			logger.fatal("outDirPath does not exist. outDirPath = %s", outDir.absolutePath().toLocal8Bit().constData());
+			ERROR();
+		}
+
+		QString fileName(QFileInfo(filePath).baseName() + ".log");
+		outFilePath = outDir.absoluteFilePath(fileName);
+		logger.info("outFilePath = %s", outFilePath.toLocal8Bit().constData());
+	}
+
+	QFile outFile(outFilePath);
+	{
+		bool result = outFile.open(QIODevice::OpenModeFlag::WriteOnly | QIODevice::OpenModeFlag::Truncate);
+		if (!result) {
+			logger.fatal("File open error %s", outFile.errorString().toLocal8Bit().constData());
+			ERROR();
+		}
+	}
+	QTextStream out(&outFile);
+
+
+	// Check existence of file
+	if (!QFile::exists(filePath)) {
+		logger.fatal("File does not exist. pathFile = %s", filePath.toLocal8Bit().constData());
+		ERROR();
+	}
+	BCDFile* file = BCDFile::getInstance(filePath);
+
+	// Read bcd file
+	BCD* bcd = new BCD(file);
+
+	// Locate target segment
+	int symbolBase = -1;
+	if (Symbols::isSymbolsFile(bcd)) {
+		logger.info("file is symbol file");
+		symbolBase = 2;
+	} else {
+	   for (SGRecord* p : bcd->sg.values()) {
+			if (p->segClass != SGRecord::SegClass::SYMBOLS)
+				continue;
+			if (p->file->isSelf()) {
+				logger.info("found symbol segment  %s", p->toString().toLocal8Bit().constData());
+				symbolBase = p->base;
+				break;
+			}
+		}
+	}
+	if (symbolBase == -1) {
+		logger.fatal("No Symbol Segment");
+		ERROR();
+	}
+
+	// Read symbols
+	Symbols symbols(bcd, symbolBase);
+
+
+	//
+}

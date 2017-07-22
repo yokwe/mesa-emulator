@@ -190,6 +190,7 @@ public:
 
     // for debug
     static void dump(Symbols* symbols);
+    static void dumpSymbol(QString filePath, QString outDirPath);
 
 private:
     //defaultPublic: BOOLEAN � TRUE;     --outer RECORD is public or private?

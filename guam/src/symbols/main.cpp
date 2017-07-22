@@ -40,36 +40,58 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 int main(int argc, char** argv) {
 	logger.info("START");
 
+	QString outDirPath("tmp/symbol");
+	logger.info("outDirPath %s", outDirPath.toLocal8Bit().constData());
+	if (!QFile::exists(outDirPath)) {
+		logger.fatal("outDirPath does not exist. outDirPath = %s", outDirPath.toLocal8Bit().constData());
+		ERROR();
+	}
+
 	for(int i = 1; i < argc; i++) {
-		QString path = argv[i];
-		logger.info("path = %s", path.toLocal8Bit().constData());
-		BCDFile* file = BCDFile::getInstance(path);
-		BCD* bcd = new BCD(file);
+		QString filePath = argv[i];
+		logger.info("path = %s", filePath.toLocal8Bit().constData());
 
-		int symbolBase = -1;
-		if (Symbols::isSymbolsFile(bcd)) {
-			logger.info("file is symbol file");
-			symbolBase = 2;
-		} else {
-		   for (SGRecord* p : bcd->sg.values()) {
-				if (p->segClass != SGRecord::SegClass::SYMBOLS)
-					continue;
-				if (!p->file->isSelf())
-					continue;
-
-				logger.info("found symbol segment  %s", p->toString().toLocal8Bit().constData());
-				symbolBase = p->base;
-				break;
-			}
-		}
-		if (symbolBase == -1) {
-			logger.fatal("No Symbol Segment");
-			ERROR();
-		}
-
-		Symbols symbols(bcd, symbolBase);
-		ShowType::dump(&symbols);
+		ShowType::dumpSymbol(filePath, outDirPath);
 	}
 	
 	logger.info("STOP");
+	return 0;
 }
+
+
+//int main(int argc, char** argv) {
+//	logger.info("START");
+//
+//	for(int i = 1; i < argc; i++) {
+//		QString path = argv[i];
+//		logger.info("path = %s", path.toLocal8Bit().constData());
+//		BCDFile* file = BCDFile::getInstance(path);
+//		BCD* bcd = new BCD(file);
+//
+//		int symbolBase = -1;
+//		if (Symbols::isSymbolsFile(bcd)) {
+//			logger.info("file is symbol file");
+//			symbolBase = 2;
+//		} else {
+//		   for (SGRecord* p : bcd->sg.values()) {
+//				if (p->segClass != SGRecord::SegClass::SYMBOLS)
+//					continue;
+//				if (!p->file->isSelf())
+//					continue;
+//
+//				logger.info("found symbol segment  %s", p->toString().toLocal8Bit().constData());
+//				symbolBase = p->base;
+//				break;
+//			}
+//		}
+//		if (symbolBase == -1) {
+//			logger.fatal("No Symbol Segment");
+//			ERROR();
+//		}
+//
+//		Symbols symbols(bcd, symbolBase);
+//		ShowType::dump(&symbols);
+//	}
+//
+//	logger.info("STOP");
+//}
