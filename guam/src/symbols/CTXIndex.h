@@ -162,6 +162,10 @@ public:
 
 	QString toString() const;
 
+	CARD16 getIndex() const {
+		return index;
+	}
+
 private:
 	typedef Symbols::Key Key;
 	static QMap<Key, CTXRecord*> all;
