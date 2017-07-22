@@ -1549,6 +1549,20 @@ void ShowType::dump(Symbols* symbols) {
     }
 }
 
+
+static int indentWidth = 4;
+static int indentLevel = 0;
+static void nest() {
+	indentLevel++;
+}
+static void unnest() {
+	indentLevel--;
+	if (indentLevel < 0) ERROR();
+}
+static QString indent() {
+	return QString("%1").arg("", indentWidth * indentLevel);
+}
+
 void ShowType::dumpSymbol(QString filePath, QString outDirPath) {
 	// Prepare output file
 	QString outFilePath;
@@ -1606,9 +1620,65 @@ void ShowType::dumpSymbol(QString filePath, QString outDirPath) {
 		ERROR();
 	}
 
+//	int indentWidth = 4;
+//	int indentLevel = 0;
+
 	// Read symbols
 	Symbols symbols(bcd, symbolBase);
 
+	// Print Header
+	{
+		MDRecord* self = symbols.md[MDIndex::MD_OWN];
+		//FTRecord* self = bcd->ft[FTRecord::FT_SELF];
 
-	//
+		QFileInfo info(filePath);
+
+		out << "--" << endl;
+		out << QString("-- File   %1 %2").arg(self->stamp->toString()).arg(self->fileId->getValue().value) << endl;
+		if (bcd->sourceFile) out << QString("-- Source %1 %2").arg(bcd->sourceFile->version->toString()).arg(bcd->sourceFile->name) << endl;
+		out << "--" << endl;
+		out << endl;
+	}
+
+	// Print Directory
+	{
+		int mdSize = symbols.md.size();
+		if (1 < mdSize) {
+			out << "DIRECTORY" << endl;
+			nest();
+			QListIterator<CARD16> i(symbols.md.keys());
+			for(;;) {
+				if (!i.hasNext()) {
+					break;
+				} else {
+					CARD16 index = i.next();
+					if (index == MDIndex::MD_OWN) continue;
+	                MDRecord* e = symbols.md[index];
+
+	                out << indent() << QString("%1 %2%3").arg(e->moduleId->getValue().value, -30).arg(e->stamp->toString()).arg(i.hasNext() ? "," : ";") << endl;
+				}
+			}
+		}
+		unnest();
+	}
+
+	// Module body
+    {
+		MDRecord* self = symbols.md[MDIndex::MD_OWN];
+
+		out << indent() << QString("%1 %2 = BEGIN").arg(self->moduleId->getValue().value).arg(self->stamp->toString()) << endl;
+    }
+    nest();
+
+    const CTXRecord& outerCtx = symbols.outerCtx->getValue();
+    logger.info(QString::asprintf("ctx %3d - %d", outerCtx.getIndex(), outerCtx.level).toLocal8Bit().constData());
+
+    for (const SEIndex* sei = outerCtx.seList; !sei->isNull(); sei = sei->nextSe()) {
+    	out << indent();
+    	printSym(out, sei, ": ");
+    	out << ";" << endl;
+    }
+
+    unnest();
+    out << "END." << endl;
 }
