@@ -38,6 +38,8 @@ OF SUCH DAMAGE.
 #include "BCD.h"
 #include "Symbols.h"
 
+#include "ShowType.h"
+
 class DumpSymbol {
 public:
 	static void nest();
@@ -47,6 +49,16 @@ public:
 	static void dumpSymbol(QString filePath, QString outDirPath);
 
     static void printSym(QTextStream& out, const SEIndex* sei, QString colonString);
+
+    static ValFormat printType(QTextStream& out, const SEIndex* tsei, std::function<void()> dosub);
+
+    static void printFieldCtx(QTextStream& out, const CTXIndex* ctx);
+
+    static QString getBitSpec(const SEIndex* isei);
+
+    static void printDefaultValue(QTextStream& out, const SEIndex* sei, ValFormat vf);
+
+    static void outArgType(QTextStream& out, const SEIndex* sei);
 };
 
 #endif
