@@ -779,7 +779,7 @@ ValFormat ShowType::printType(QTextStream& out, const SEIndex* tsei, std::functi
 //    	             GO TO noprint;
 				if (t.refType->underType()->getValue().getCons().tag == SERecord::Cons::Tag::BASIC) {
 					const SERecord::Cons::Basic& basic(t.refType->underType()->getValue().getCons().getBasic());
-					if (basic.code == Symbols::CODE_ANY && t.readOnly) goto noprint;
+					if (basic.code == Symbols::CODE_ANY && (!t.readOnly)) goto noprint;
 				}
 //    	           ENDCASE;
 //    	        out[" TO "L, cd];
@@ -1149,7 +1149,7 @@ bool ShowType::isVar(const SEIndex* tsei) {
 void ShowType::putModeName(QTextStream& out, Symbols::TransferMode n) {
 	switch(n) {
 	case Symbols::TransferMode::PROC:
-		out << "PROCEDURE";
+		out << "PROC";
 		break;
 	case Symbols::TransferMode::PORT:
 		out << "PORT";
@@ -1432,7 +1432,7 @@ void ShowType::printTreeLink(QTextStream& out, const TreeLink* tree, ValFormat v
 //                  BEGIN
 //                  loophole: BOOLEAN � FALSE;
 					bool loophole = false;
-					CARD32 v = ((CARD32)ltLong.value[1]) << 16 | (CARD32)ltLong.value[1];
+					CARD32 v = ((CARD32)ltLong.value[1]) << 16 | (CARD32)ltLong.value[0];
 //                  SELECT vf.tag FROM
 					switch(vf.tag) {
 //                    signed => PutLongSigned[LOOPHOLE[@value, LUP]�];
