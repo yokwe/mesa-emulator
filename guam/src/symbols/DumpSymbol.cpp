@@ -432,9 +432,7 @@ noprint:;
                 out << endl;
                 nest();
                 out << indent() << "RETURNS";
-                nest();
                 outArgType(out, t.typeOut);
-                unnest();
                 unnest();
 			}
 		}
