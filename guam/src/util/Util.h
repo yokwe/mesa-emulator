@@ -142,5 +142,10 @@ public:
 		return QString("%1").arg((int)value); \
 	}
 
+// bitFiled is used in symbols
+quint16 bitField(quint16 word, int startBit, int stopBit);
+__attribute__((always_inline)) static inline quint16 bitField(quint16 word, int startBit) {
+	return bitField(word, startBit, startBit);
+}
 
 #endif

@@ -200,3 +200,19 @@ void Util::fromBigEndian(quint16* source, quint16* dest, int size) {
 		dest[i] = qFromBigEndian(source[i]);
 	}
 }
+
+
+quint16 bitField(quint16 word, int startBit, int stopBit) {
+	const int MAX_BIT = 15;
+
+	if (startBit < 0)        ERROR();
+	if (stopBit  < 0)        ERROR();
+	if (stopBit  < startBit) ERROR();
+	if (MAX_BIT  < startBit) ERROR();
+	if (MAX_BIT  < stopBit)  ERROR();
+
+	int shift  = MAX_BIT - stopBit;
+	int mask   = ((int)(1L << (stopBit - startBit + 1)) - 1) << shift;
+
+	return (quint16)((word & mask) >> shift);
+}

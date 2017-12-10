@@ -62,23 +62,4 @@ typedef CARD32 LONG_CARDINAL;
 //#define OFFSET(s,m) (offsetof(s,m) / sizeof(CARD16))
 #define ELEMENTSOF(t) ((CARD32)(sizeof(t) / sizeof(t[0])))
 
-
-__attribute__((always_inline)) static inline CARD16 bitField(CARD16 word, int startBit, int stopBit) {
-	const int MAX_BIT = 15;
-
-	if (startBit < 0)        ERROR();
-	if (stopBit  < 0)        ERROR();
-	if (stopBit  < startBit) ERROR();
-	if (MAX_BIT  < startBit) ERROR();
-	if (MAX_BIT  < stopBit)  ERROR();
-
-	int shift  = MAX_BIT - stopBit;
-	int mask   = ((int)(1L << (stopBit - startBit + 1)) - 1) << shift;
-
-	return (CARD16)((word & mask) >> shift);
-}
-__attribute__((always_inline)) static inline CARD16 bitField(CARD16 word, int startBit) {
-	return bitField(word, startBit, startBit);
-}
-
 #endif
