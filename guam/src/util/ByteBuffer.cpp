@@ -29,9 +29,6 @@ OF SUCH DAMAGE.
 // ByteBuffer.cpp
 //
 
-#include "Util.h"
-static log4cpp::Category& logger = Logger::getLogger("bytebuffer");
-
 #include "ByteBuffer.h"
 
 log4cpp::Category& ByteBuffer::logger(Logger::getLogger("bytebuffer"));

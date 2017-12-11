@@ -30,7 +30,7 @@ OF SUCH DAMAGE.
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("pilot");
+//static log4cpp::Category& logger = Logger::getLogger("pilot");
 
 #include "Pilot.h"
 
