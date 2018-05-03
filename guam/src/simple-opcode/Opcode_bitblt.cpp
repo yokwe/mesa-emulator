@@ -60,11 +60,11 @@ public:
 	}
 
 	static inline void FetchBitBltTable(POINTER ptr, ColorBlt::ColorBltTable* arg) {
-		if (ptr & 0x0f) ERROR(); // ptr must be 16 word aligned
 		BitBltArg bltarg;
-		CARD16* p = (CARD16*)&bltarg;
-		for(CARD32 i = 0; i < SIZE(bltarg); i++) {
-			p[i] = *FetchMds(ptr + i);
+		{
+			if (ptr & 0x0f) ERROR(); // ptr must be 16 word aligned
+			BitBltArg* p = (BitBltArg*)FetchMds(ptr);
+			bltarg = *p;
 		}
 
 		// convert from BitBltArg to ColorBltTable
