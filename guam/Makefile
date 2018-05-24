@@ -73,6 +73,7 @@ guam:
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
+	(cd src/symbols;       make all)
 	(cd src/guam;          make all)
 
 guam-headless:
@@ -80,6 +81,7 @@ guam-headless:
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
+	(cd src/symbols;       make all)
 	(cd src/guam-headless; make all)
 
 test:
