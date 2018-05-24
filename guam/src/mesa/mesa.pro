@@ -13,8 +13,8 @@ HEADERS += Constant.h Function.h MesaBasic.h Variable.h
 HEADERS += Memory.h   MesaProcessor.h   MesaThread.h   Pilot.h   Type.h
 SOURCES += Memory.cpp MesaProcessor.cpp MesaThread.cpp Pilot.cpp Type.cpp
 
-HEADERS += ExternalStateVector.h
-SOURCES += ExternalStateVector.cpp
+HEADERS += LoadState.h
+SOURCES += LoadState.cpp
 
 ###############################################
 

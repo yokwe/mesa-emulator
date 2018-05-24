@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Yasuhiro Hasegawa
+Copyright (c) 2018, Yasuhiro Hasegawa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,14 +26,17 @@ OF SUCH DAMAGE.
 
 
 //
-// ExternalStateVector.cpp
+// LoadState.h
 //
 
-//#include "../util/Util.h"
-//static log4cpp::Category& logger = Logger::getLogger("esv");
-//
-//#include "Memory.h"
-//#include "ExternalStateVector.h"
-//
+#ifndef LOADSTATE_H__
+#define LOADSTATE_H__ 1
 
-// Temporary moved to OpcodeEsc.cpp
+//
+// Trace XFER with module name
+//   Hook write access to esv.loadStateDirty and collect module info.
+
+void dumpLoadState();
+
+
+#endif
