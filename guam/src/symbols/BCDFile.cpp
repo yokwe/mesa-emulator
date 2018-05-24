@@ -110,12 +110,12 @@ BCDFile* BCDFile::getInstance(QString path) {
 // BCDFileMesaMemory
 //
 
-void PageFault(CARD32 ptr) {
-	logger.fatal("%s %X", __FUNCTION__, ptr);
-}
-void WriteProtectFault(CARD32 ptr) {
-	logger.fatal("%s %X", __FUNCTION__, ptr);
-}
+//void PageFault(CARD32 ptr) {
+//	logger.fatal("%s %X", __FUNCTION__, ptr);
+//}
+//void WriteProtectFault(CARD32 ptr) {
+//	logger.fatal("%s %X", __FUNCTION__, ptr);
+//}
 
 class BCDFileMesaMemory : public BCDFile {
 public:

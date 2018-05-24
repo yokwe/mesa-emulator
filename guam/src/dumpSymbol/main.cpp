@@ -37,6 +37,13 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 #include "../symbols/Symbols.h"
 #include "../symbols/DumpSymbol.h"
 
+void PageFault(CARD32 ptr) {
+	logger.fatal("%s %X", __FUNCTION__, ptr);
+}
+void WriteProtectFault(CARD32 ptr) {
+	logger.fatal("%s %X", __FUNCTION__, ptr);
+}
+
 int main(int argc, char** argv) {
 	logger.info("START");
 
