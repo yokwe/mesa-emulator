@@ -149,6 +149,31 @@ private:
 		index(index_), fileIndex(fileIndex_), file(file_), base(base_), pages(pages_), extraPages(extraPages_), segClass(segClass_) {}
 };
 
+
+//-- Entry Vector Table
+//
+//ENRecord: TYPE = RECORD [
+//   nEntries: CARDINAL, initialPC: ARRAY [0..0) OF PrincOps.BytePC];
+//
+//ENIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO ENRecord;
+//ENNull: ENIndex = LAST[ENIndex];
+class ENRecord {
+public:
+	static const CARD16 EN_NULL = bcd::T_LIMIT;
+
+	static ENRecord* getInstance(BCD* bcd, CARD16 index);
+	static ENRecord* getNull();
+
+	const CARD16          index;
+	const QVector<CARD16> initialPC;
+
+	QString toString() const;
+
+private:
+	ENRecord(CARD16 index_, QVector<CARD16> initialPC_) : index(index_), initialPC(initialPC_) {}
+};
+
+
 class BCD {
 public:
 	//VersionID: CARDINAL = 6103
@@ -262,7 +287,7 @@ public:
 	QMap<CARD16, SGRecord*>   sg;
 //	QMap<CARD16, TYPRecord*>  typ;
 //	QMap<CARD16, LinkFrag*>   lf;
-//	QMap<CARD16, ENRecord*>   en;
+	QMap<CARD16, ENRecord*>   en;
 //	QMap<CARD16, ATRecord*>   at;
 //	QMap<CARD16, MTRecord*>   mt;
 
@@ -270,6 +295,7 @@ private:
 	void initializeNameRecord();
 	void initializeFTRecord();
 	void initializeSGRecord();
+	void initializeENRecord();
 };
 
 #endif

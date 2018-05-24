@@ -120,6 +120,35 @@ QString SGRecord::toString() const {
 }
 
 
+ENRecord* ENRecord::getInstance(BCD* bcd, CARD16 index_) {
+	CARD16 n = bcd->file->getCARD16();
+	QVector<CARD16> initialPC_(n);
+
+	for(CARD16 i = 0; i < n; i++) {
+		initialPC_[i] = bcd->file->getCARD16();
+	}
+
+	return new ENRecord(index_, initialPC_);
+}
+ENRecord* ENRecord::getNull() {
+	QVector<CARD16> initialPC_(0);
+	return new ENRecord(EN_NULL, initialPC_);
+}
+QString ENRecord::toString() const {
+	if (index == EN_NULL) return "#NULL#";
+
+	QString ret;
+	ret.append(QString("(%1)[").arg(initialPC.size()));
+	for(CARD16 i = 0; i < initialPC.size(); i++) {
+		if (0 < i) ret.append(", ");
+		ret.append(QString("%1").arg(initialPC[i]));
+	}
+	ret.append(']');
+
+	return ret;
+}
+
+
 BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	versionIdent = file->getCARD16();
 	if (versionIdent != VersionID) {
@@ -185,6 +214,7 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	initializeNameRecord();
 	initializeFTRecord();
 	initializeSGRecord();
+	initializeENRecord();
 
 	sourceFile     = ft[sourceFileIndex];
 	unpackagedFile = ft[unpackagedFileIndex];
@@ -229,12 +259,13 @@ void BCD::initializeNameRecord() {
 		NameRecord* record = new NameRecord(index, value);
 		ss[index] = record;
 
-		logger.info("ss %4d %s!", index, record->toString().toLocal8Bit().constData());
+//		logger.info("ss %4d %s!", index, record->toString().toLocal8Bit().constData());
 	}
 
 	// Add special
 	ss[NameRecord::NullName] = new NameRecord();
 }
+
 
 void BCD::initializeFTRecord() {
 	int offset = ftOffset;
@@ -249,7 +280,7 @@ void BCD::initializeFTRecord() {
 		FTRecord* record = FTRecord::getInstance(this, index);
 		ft[index] = record;
 
-		logger.info("ft %3d %s", index, record->toString().toLocal8Bit().constData());
+//		logger.info("ft %3d %s", index, record->toString().toLocal8Bit().constData());
 	}
 
 	// Add special
@@ -271,9 +302,31 @@ void BCD::initializeSGRecord() {
 		SGRecord* record = SGRecord::getInstance(this, index);
 		sg[index] = record;
 
-		logger.info("sg %3d %s", index, record->toString().toLocal8Bit().constData());
+//		logger.info("sg %3d %s", index, record->toString().toLocal8Bit().constData());
 	}
 
 	// Add special
 	sg[SGRecord::SG_NULL] = SGRecord::getNull();
 }
+
+
+void BCD::initializeENRecord() {
+	int offset = enOffset;
+	int limit  = enLimit;
+
+	file->position(offset);
+	for(;;) {
+		int pos = file->position();
+		if ((offset + limit) <= pos) break; // position exceed limit
+
+		int index = pos - offset;
+		ENRecord* record = ENRecord::getInstance(this, index);
+		en[index] = record;
+
+		logger.info("en %3d %s", index, record->toString().toLocal8Bit().constData());
+	}
+
+	// Add special
+	en[ENRecord::EN_NULL] = ENRecord::getNull();
+}
+
