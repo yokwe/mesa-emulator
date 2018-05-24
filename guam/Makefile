@@ -36,6 +36,8 @@ all:
 	(cd src/guam;          make all)
 	(cd src/floppy;        make all)
 	(cd src/symbols;       make all)
+	(cd src/dumpSymbol;    make all)
+	(cd src/showType;      make all)
 
 qt4-default:
 	sudo apt-get install qt4-default
@@ -56,6 +58,8 @@ clean:
 	mkdir  tmp/build/guam
 	mkdir  tmp/build/floppy
 	mkdir  tmp/build/symbols
+	mkdir  tmp/build/dumpSymbol
+	mkdir  tmp/build/showType
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -90,14 +94,25 @@ floppy:
 	(cd src/agent;         make all)
 	(cd src/floppy;        make all)
 
-symbols:
+dumpSymbol:
 	(cd src/mesa;          make all)
 	(cd src/util;          make all)
 	(cd src/symbols;       make all)
+	(cd src/dumpSymbol;    make all)
 
-run-symbols: symbols
+showType:
+	(cd src/mesa;          make all)
+	(cd src/util;          make all)
+	(cd src/symbols;       make all)
+	(cd src/showType;      make all)
+
+run-dumpSymbol: dumpSymbol
 	echo -n >tmp/debug.log
-	tmp/build/symbols/symbols tmp/GermOpsImpl.bcd
+	tmp/build/dumpSymbol/dumpSymbol tmp/GermOpsImpl.bcd
+
+run-showType: showType
+	echo -n >tmp/debug.log
+	tmp/build/showType/showType tmp/GermOpsImpl.bcd
 
 
 run-guam: guam
@@ -161,6 +176,8 @@ qmake:
 	(cd src/guam;          qmake)
 	(cd src/floppy;        qmake)
 	(cd src/symbols;       qmake)
+	(cd src/dumpSymbol;    qmake)
+	(cd src/showType;      qmake)
 	qmake --version
 
 

@@ -375,6 +375,7 @@ void ShowType::outArgType(QTextStream& out, const SEIndex* sei) {
 			break;
 		case SERecord::Cons::Tag::ANY:
 			out << ": ANY";
+			break;
 		default:
 			break;
 		}
