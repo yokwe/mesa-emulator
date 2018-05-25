@@ -76,7 +76,7 @@ FTRecord* FTRecord::getNull() {
 QString FTRecord::toString() const {
 	if (index == FT_NULL) return "#NULL#";
 	if (index == FT_SELF) return "#SELF#";
-	return QString("%1 %2").arg(this->version->toString()).arg(name);
+	return QString("[%1 %2]").arg(this->version->toString()).arg(name);
 }
 
 
@@ -98,14 +98,14 @@ QString SGRecord::toString(SegClass value) {
 SGRecord* SGRecord::getInstance(BCD* bcd, CARD16 index_) {
 	CARD16 index = index_;
 
-	CARD16 fileIndex = bcd->file->getCARD16();
-	FTRecord* file      = bcd->ft[fileIndex];
+	CARD16    fileIndex  = bcd->file->getCARD16();
+	FTRecord* file       = bcd->ft[fileIndex];
 
-	CARD16 base = bcd->file->getCARD16();
+	CARD16    base       = bcd->file->getCARD16();
 
-	CARD16 word = bcd->file->getCARD16();
-	CARD16 pages      = bitField(word, 0, 7);
-	CARD16 extraPages = bitField(word, 8, 13);
+	CARD16    word       = bcd->file->getCARD16();
+	CARD16    pages      = bitField(word, 0, 7);
+	CARD16    extraPages = bitField(word, 8, 13);
 
 	SegClass segClass   = (SegClass)bitField(word, 14, 15);
 
@@ -116,7 +116,7 @@ SGRecord* SGRecord::getNull() {
 }
 QString SGRecord::toString() const {
 	if (index == SG_NULL) return "#NULL#";
-	return QString("%1+%2+%3 %4 %5").arg(base, 4).arg(pages, 4).arg(extraPages, 4).arg(toString(segClass), -7).arg(file->toString());
+	return QString("[%1+%2+%3 %4 %5]").arg(base, 4).arg(pages, 4).arg(extraPages, 4).arg(toString(segClass), -7).arg(file->toString());
 }
 
 
@@ -146,6 +146,49 @@ QString ENRecord::toString() const {
 	ret.append(']');
 
 	return ret;
+}
+
+
+CodeDesc* CodeDesc::getInstance(BCD* bcd) {
+	CARD16    sgiIndex = bcd->file->getCARD16();
+	SGRecord* sgi      = bcd->sg[sgiIndex];
+	CARD16    offset   = bcd->file->getCARD16();
+	CARD16    length   = bcd->file->getCARD16();
+
+	return new CodeDesc(sgi, offset, length);
+}
+QString CodeDesc::toString() const {
+	return QString("[%1 %2 %3]").arg(sgi->toString()).arg(offset).arg(length);
+}
+
+
+MTRecord* MTRecord::getInstance(BCD* bcd, CARD16 index_) {
+	CARD16    index        = index_;
+	CARD16    nameIndex    = bcd->file->getCARD16();
+	QString   name         = bcd->ss[nameIndex]->toString();
+	CARD16    fileIndex    = bcd->file->getCARD16();
+	FTRecord* file         = bcd->ft[fileIndex];
+	CARD16    config       = bcd->file->getCARD16();
+	CodeDesc* code         = CodeDesc::getInstance(bcd);
+	CARD16    ssegIndex    = bcd->file->getCARD16();
+	SGRecord* sseg         = bcd->sg[ssegIndex];
+	CARD16    links        = bcd->file->getCARD16();
+//	CARD16    u6           = bcd->file->getCARD16();
+	bcd->file->getCARD16();
+	CARD16    framesize    = bcd->file->getCARD16();
+	CARD16    entriesIndex = bcd->file->getCARD16();
+	ENRecord* entries      = bcd->en[entriesIndex];
+	CARD16    atoms        = bcd->file->getCARD16();
+
+	return new MTRecord(index, name, file, config, code, sseg, links, framesize, entries, atoms);
+}
+MTRecord* MTRecord::getNull() {
+	QVector<CARD16> initialPC_(0);
+	return new MTRecord(MT_NULL, "", 0, 0, 0, 0, 0, 0, 0, 0);
+}
+QString MTRecord::toString() const {
+	if (index == MT_NULL) return "#NULL#";
+	return QString("[%1 %2 %3 %4 %5 %6 %7]").arg(index, 4).arg(name).arg(file->toString()).arg(code->toString()).arg(sseg->toString()).arg(framesize).arg(entries->toString());
 }
 
 
@@ -215,6 +258,7 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	initializeFTRecord();
 	initializeSGRecord();
 	initializeENRecord();
+	initializeMTRecord();
 
 	sourceFile     = ft[sourceFileIndex];
 	unpackagedFile = ft[unpackagedFileIndex];
@@ -323,10 +367,29 @@ void BCD::initializeENRecord() {
 		ENRecord* record = ENRecord::getInstance(this, index);
 		en[index] = record;
 
-		logger.info("en %3d %s", index, record->toString().toLocal8Bit().constData());
+//		logger.info("en %3d %s", index, record->toString().toLocal8Bit().constData());
 	}
 
 	// Add special
 	en[ENRecord::EN_NULL] = ENRecord::getNull();
 }
 
+void BCD::initializeMTRecord() {
+	int offset = mtOffset;
+	int limit  = mtLimit;
+
+	file->position(offset);
+	for(;;) {
+		int pos = file->position();
+		if ((offset + limit) <= pos) break; // position exceed limit
+
+		int index = pos - offset;
+		MTRecord* record = MTRecord::getInstance(this, index);
+		mt[index] = record;
+
+		logger.info("mt %3d %s", index, record->toString().toLocal8Bit().constData());
+	}
+
+	// Add special
+	mt[MTRecord::MT_NULL] = MTRecord::getNull();
+}

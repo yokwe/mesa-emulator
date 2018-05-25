@@ -174,6 +174,101 @@ private:
 };
 
 
+//CodeDesc: TYPE = RECORD [
+//  sgi: SGIndex, offset, length: CARDINAL];
+class CodeDesc {
+public:
+	static CodeDesc* getInstance(BCD* bcd);
+
+	const SGRecord* sgi;
+	const CARD16    offset;
+	const CARD16    length;
+
+	QString toString() const;
+private:
+	CodeDesc(SGRecord* sgi_, CARD16 offset_, CARD16 length_) : sgi(sgi_), offset(offset_), length(length_) {}
+};
+
+
+// LinkLocation: TYPE = {frame, code, dontcare};
+//enum class LinkLocation {
+//	FRAME, CODE, DONTCARE,
+//};
+//QString toString(LinkLocation value);
+
+
+//MTRecord: TYPE = --MACHINE DEPENDENT-- RECORD [
+//  name: NameRecord,
+//  file: FTIndex,
+//  config: CTIndex,
+//  code: CodeDesc,
+//  sseg: SGIndex,
+//  links: LFIndex,
+//  linkLoc: LinkLocation,
+//  namedInstance, initial: BOOLEAN,
+//  boundsChecks, nilChecks: BOOLEAN,
+//  tableCompiled, residentFrame, crossJumped, packageable: BOOLEAN,
+//  packed: BOOLEAN, linkspace: BOOLEAN,
+//  spare: PACKED ARRAY [0..4) OF BOOLEAN,
+//  framesize: [0..PrincOps.MaxFrameSize),
+//  entries: ENIndex,
+//  atoms: ATIndex];
+//
+//MTIndex: TYPE = Table.Base RELATIVE POINTER [0..tLimit] TO MTRecord;
+//MTNull: MTIndex = LAST[MTIndex];
+class MTRecord {
+public:
+	static const CARD16 MT_NULL = bcd::T_LIMIT;
+
+	static MTRecord* getInstance(BCD* bcd, CARD16 index);
+	static MTRecord* getNull();
+
+	const CARD16    index;
+	const QString   name;
+	const FTRecord* file;
+	const CARD16    config;
+	const CodeDesc* code;
+	const SGRecord* sseg;
+	const CARD16    links;
+//	const CARD16    linkLoc;
+//	const bool      namedInstance;
+//	const bool      initial;
+//	const bool      boundsChecks;
+//	const bool      nilChecks;
+//	const bool      tableCompiled;
+//	const bool      residentFrame;
+//	const bool      crossJumped;
+//	const bool      packageable;
+//	const bool      packed;
+//	const bool      linkspace;
+//	const bool      spare0;
+//	const bool      spare1;
+//	const bool      spare2;
+//	const bool      spare3;
+	const CARD16    framesize;
+	const ENRecord* entries;
+	const CARD16    atoms;
+
+	QString toString() const;
+private:
+	MTRecord(
+		CARD16 index_, QString name_, FTRecord* file_, CARD16 config_,
+		CodeDesc* code_, SGRecord* sseg_, CARD16 links_,
+//		CARD16 linkLoc_,
+//		bool namedInstance_, bool initial_, bool boundsChecks_, bool nilChecks_,
+//		bool tableCompiled_, bool residentFrame_, bool crossJumped_, bool packageable_, bool packed_, bool linkspace_,
+//		bool spare0_, bool spare1_, bool spare2_, bool spare3_,
+		CARD16 framesize_, ENRecord* entries_, CARD16 atoms_) :
+			index(index_), name(name_), file(file_), config(config_),
+			code(code_), sseg(sseg_), links(links_),
+//			linkLoc(linkLoc_),
+//			namedInstance(namedInstance_), initial(initial_), boundsChecks(boundsChecks_), nilChecks(nilChecks_), tableCompiled(tableCompiled_),
+//			residentFrame(residentFrame_), crossJumped(crossJumped_), packageable(packageable_), packed(packed_), linkspace(linkspace_),
+//			spare0(spare0_), spare1(spare1_), spare2(spare2_), spare3(spare3_),
+			framesize(framesize_), entries(entries_), atoms(atoms_) {}
+};
+
+
 class BCD {
 public:
 	//VersionID: CARDINAL = 6103
@@ -289,13 +384,14 @@ public:
 //	QMap<CARD16, LinkFrag*>   lf;
 	QMap<CARD16, ENRecord*>   en;
 //	QMap<CARD16, ATRecord*>   at;
-//	QMap<CARD16, MTRecord*>   mt;
+	QMap<CARD16, MTRecord*>   mt;
 
 private:
 	void initializeNameRecord();
 	void initializeFTRecord();
 	void initializeSGRecord();
 	void initializeENRecord();
+	void initializeMTRecord();
 };
 
 #endif
