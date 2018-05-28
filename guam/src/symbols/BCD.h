@@ -143,7 +143,9 @@ public:
 	const SegClass  segClass;
 
 	QString toString() const;
-
+	bool isNull() const {
+		return index == SG_NULL;
+	}
 private:
 	SGRecord(CARD16 index_, CARD16 fileIndex_, FTRecord* file_, CARD16 base_, CARD16 pages_, CARD16 extraPages_, SegClass segClass_) :
 		index(index_), fileIndex(fileIndex_), file(file_), base(base_), pages(pages_), extraPages(extraPages_), segClass(segClass_) {}
@@ -168,7 +170,9 @@ public:
 	const QVector<CARD16> initialPC;
 
 	QString toString() const;
-
+	bool isNull() const {
+		return index == EN_NULL;
+	}
 private:
 	ENRecord(CARD16 index_, QVector<CARD16> initialPC_) : index(index_), initialPC(initialPC_) {}
 };
@@ -250,6 +254,9 @@ public:
 	const CARD16    atoms;
 
 	QString toString() const;
+	bool isNull() const {
+		return index == MT_NULL;
+	}
 private:
 	MTRecord(
 		CARD16 index_, QString name_, FTRecord* file_, CARD16 config_,
