@@ -354,9 +354,9 @@ const BTRecord::BodyInfo::External&   BTRecord::BodyInfo::getExternal() const {
 QString BTRecord::BodyInfo::toString() const {
 	switch(tag) {
 	case Tag::INTERNAL:
-		return QString("%1 %2").arg(toString(tag)).arg(getInternal().toString());
+		return QString("[%1 %2]").arg(toString(tag)).arg(getInternal().toString());
 	case Tag::EXTERNAL:
-		return QString("%1 %2").arg(toString(tag)).arg(getExternal().toString());
+		return QString("[%1 %2]").arg(toString(tag)).arg(getExternal().toString());
 	default:
 		ERROR();
 		return "???";
