@@ -37,6 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("loadState");
 
 #include "../symbols/BCD.h"
 #include "../symbols/BCDFile.h"
+#include "../symbols/Symbols.h"
 
 class ModuleInfo;
 class BCDInfo;
@@ -76,8 +77,44 @@ public:
 		for(MTRecord* mt: bcd->mt.values()) {
 			if (mt->isNull()) continue;
 
-			const CodeDesc* code     = mt->code;
-			logger.info("bcdInfo %6X %s %-32s %-32s  %s", base, bcd->version->toString().toLocal8Bit().constData(), bcd->sourceFile->name.toLocal8Bit().constData(), mt->name.toLocal8Bit().constData(), code->toString().toLocal8Bit().constData());
+			const SGRecord* cseg(mt->code->sgi);
+			if (cseg->isNull()) continue;
+
+			const SGRecord* sseg(mt->sseg);
+			if (sseg->isNull()) continue;
+
+//			logger.info("bcdInfo %6X %s %-32s %-32s  %s", base, bcd->version->toString().toLocal8Bit().constData(), bcd->sourceFile->name.toLocal8Bit().constData(), mt->name.toLocal8Bit().constData(), code->toString().toLocal8Bit().constData());
+
+			if (sseg->file->isSelf()) {
+				// symbols is in bcd
+				logger.info("bcdInfo AA %6X %-24s %-48s %-48s",
+						base,
+						mt->name.toLocal8Bit().constData(),
+						mt->file->toString().toLocal8Bit().constData(),
+						sseg->file->toString().toLocal8Bit().constData());
+
+				if (Symbols::isSymbolsSegment(bcd, sseg->base)) {
+					Symbols symbols(bcd, sseg->base);
+				}
+			} else if (FTRecord::equals(mt->file, sseg->file)) {
+				// symbols is in bcd
+				logger.info("bcdInfo XX %6X %-24s %-48s %-48s",
+						base,
+						mt->name.toLocal8Bit().constData(),
+						mt->file->toString().toLocal8Bit().constData(),
+						sseg->file->toString().toLocal8Bit().constData());
+
+				if (Symbols::isSymbolsSegment(bcd, sseg->base)) {
+					Symbols symbols(bcd, sseg->base);
+				}
+			} else {
+				// symbols is not in bcd
+				logger.info("bcdInfo BB %6X %-24s %-48s %-48s",
+						base,
+						mt->name.toLocal8Bit().constData(),
+						mt->file->toString().toLocal8Bit().constData(),
+						sseg->file->toString().toLocal8Bit().constData());
+			}
 		}
 	}
 };
