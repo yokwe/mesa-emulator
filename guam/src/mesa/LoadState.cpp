@@ -38,6 +38,54 @@ static log4cpp::Category& logger = Logger::getLogger("loadState");
 #include "../symbols/BCD.h"
 #include "../symbols/BCDFile.h"
 
+class ModuleInfo;
+class BCDInfo;
+
+class EntryInfo {
+public:
+	ModuleInfo* moduleInfo;
+
+	CARD16 entryIndex;
+	CARD16 pc;
+
+	QString name;
+};
+
+class ModuleInfo {
+public:
+	BCDInfo*  bcdInfo;
+	MTRecord* mtRecord;
+
+	CARD32    codebase;
+
+	QVector<EntryInfo*> entries;
+
+	ModuleInfo(BCDInfo* bcdInfo_, MTRecord* mtRecord_, CARD32 codebase_) : bcdInfo(bcdInfo_), mtRecord(mtRecord_), codebase(codebase_) {
+
+	}
+};
+
+class BCDInfo {
+public:
+	CARD32 base;
+	BCD*   bcd;
+
+	QVector<ModuleInfo*> modules;
+
+	BCDInfo(CARD32 base_, BCD* bcd_) : base(base_), bcd(bcd_) {
+		for(MTRecord* mt: bcd->mt.values()) {
+			if (mt->isNull()) continue;
+
+			const CodeDesc* code     = mt->code;
+			logger.info("bcdInfo %6X %s %-32s %-32s  %s", base, bcd->version->toString().toLocal8Bit().constData(), bcd->sourceFile->name.toLocal8Bit().constData(), mt->name.toLocal8Bit().constData(), code->toString().toLocal8Bit().constData());
+		}
+	}
+};
+
+static QMap<CARD32, BCDInfo*> bcdInfoMap;
+
+
+
 void dumpLoadState() {
 	CARD32 pesv = ReadDbl(CPSwapDefs::PSEV);
 
@@ -81,19 +129,14 @@ void dumpLoadState() {
 		ERROR();
 	}
 
-	logger.info("loadState.nModules     %5d", loadState.nModules);
-	logger.info("loadState.maxModules   %5d", loadState.maxModules);
-	logger.info("loadState.nBcds        %5d", loadState.nBcds);
-	logger.info("loadState.maxBcds      %5d", loadState.maxBcds);
-	logger.info("loadState.nextID       %5d", loadState.nextID);
-	logger.info("loadState.moduleInfo   %5d", loadState.moduleInfo);
-	logger.info("loadState.bcdInfo      %5d", loadState.bcdInfo);
+//	logger.info("loadState.nModules     %5d", loadState.nModules);
+//	logger.info("loadState.maxModules   %5d", loadState.maxModules);
+//	logger.info("loadState.nBcds        %5d", loadState.nBcds);
+//	logger.info("loadState.maxBcds      %5d", loadState.maxBcds);
+//	logger.info("loadState.nextID       %5d", loadState.nextID);
+//	logger.info("loadState.moduleInfo   %5d", loadState.moduleInfo);
+//	logger.info("loadState.bcdInfo      %5d", loadState.bcdInfo);
 
-	//BcdInfo: TYPE = MACHINE DEPENDENT RECORD [
-	//  exports(0:0..0), typeExported(0:1..1): BOOLEAN,
-	//  pages(0:2..15): [1..256],
-	//  base(1): LONG BASE POINTER TO BcdDefs.BCD,
-	//  id(3): ID];
 //	struct BcdInfo {
 //		union {
 //			CARD16 u0;
@@ -114,21 +157,19 @@ void dumpLoadState() {
 			bcdInfo.u0   = *Fetch(bcdInfoBase  + OFFSET(LoadStateFormat::BcdInfo, u0));
 			bcdInfo.base = ReadDbl(bcdInfoBase + OFFSET(LoadStateFormat::BcdInfo, base));
 			bcdInfo.id   = *Fetch(bcdInfoBase  + OFFSET(LoadStateFormat::BcdInfo, id));
-			logger.info("----");
-			logger.info("bcdInfo %4d %8X+%4d", i, bcdInfo.base, bcdInfo.pages);
+//			logger.info("----");
+//			logger.info("bcdInfo %4d %8X+%4d", i, bcdInfo.base, bcdInfo.pages);
 
-//			BcdDefs::BCD bcd;
-//			bcd.versionIdent = *Fetch(bcdInfo.base  + OFFSET(BcdDefs::BCD, versionIdent));
-//			logger.info("bcd.versionIdent %d", bcd.versionIdent);
-//			if (bcd.versionIdent != BcdDefs::VersionID) {
-//				logger.warn("Bogus bcd version  %d", bcd.versionIdent);
-//				break;
-//			}
 			if (Memory::isVacant(bcdInfo.base)) {
 				logger.info("VACANT");
 			} else {
-				BCDFile* bcdFile = BCDFile::getInstance(bcdInfo.base);
-				BCD bcd(bcdFile);
+				if (!bcdInfoMap.contains(bcdInfo.base)) {
+					CARD32 bcdBase = bcdInfo.base;
+					BCDFile* bcdFile = BCDFile::getInstance(bcdBase);
+					BCD* bcd = new BCD(bcdFile);
+
+					bcdInfoMap[bcdInfo.base] = new BCDInfo(bcdBase, bcd);
+				}
 			}
 		}
 	}
