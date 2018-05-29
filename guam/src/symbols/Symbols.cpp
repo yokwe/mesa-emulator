@@ -191,6 +191,13 @@ bool Symbols::isSymbolsFile(BCD* bcd) {
     return word0 == BCD::VersionID && word256 == Symbols::VersionID;
 }
 
+bool Symbols::isSymbolsSegment(BCD* bcd, int symbolBase) {
+    bcd->file->position((symbolBase - ALTO_BIAS) * WORDS_PER_PAGE);
+	CARD16 versionIdent = bcd->file->getCARD16();
+
+    return versionIdent == VersionID;
+}
+
 Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 	bcd             = bcd_;
 	file            = bcd->file;

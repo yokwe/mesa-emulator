@@ -216,6 +216,7 @@ public:
 	};
 
    static bool isSymbolsFile(BCD* bcd);
+   static bool isSymbolsSegment(BCD* bcd, int symbolBase);
 
 	//STHeader: TYPE = RECORD [
 	//  versionIdent: CARDINAL,
