@@ -62,6 +62,9 @@ public:
 	bool isNull() const {
 		return net == 0 && host == 0 && time == 0;
 	}
+	static bool equals(const Stamp* a, const Stamp* b) {
+		return a->net == b->net && a->host == b->host && a->time == b->time;
+	}
 
 private:
 	Stamp(CARD16 net_, CARD16 host_, CARD32 time_, QDateTime dateTime_) :
@@ -107,6 +110,9 @@ public:
 	}
 	bool isSelf() const {
 		return index == FT_SELF;
+	}
+	static bool equals(const FTRecord* a, const FTRecord* b) {
+		return QString::compare(a->name, b->name) == 0 && Stamp::equals(a->version, b->version);
 	}
 	QString toString() const;
 
