@@ -158,7 +158,7 @@ CodeDesc* CodeDesc::getInstance(BCD* bcd) {
 	return new CodeDesc(sgi, offset, length);
 }
 QString CodeDesc::toString() const {
-	return QString("[%1 %2 %3]").arg(sgi->toString()).arg(offset).arg(length);
+	return QString("[%1 %2+ %3]").arg(sgi->toString()).arg(offset, 5).arg(length, 5);
 }
 
 
