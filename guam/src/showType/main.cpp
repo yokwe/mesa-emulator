@@ -47,35 +47,41 @@ void WriteProtectFault(CARD32 ptr) {
 int main(int argc, char** argv) {
 	logger.info("START");
 
-	for(int i = 1; i < argc; i++) {
-		QString path = argv[i];
-		logger.info("path = %s", path.toLocal8Bit().constData());
-		BCDFile* file = BCDFile::getInstance(path);
-		BCD* bcd = new BCD(file);
+	try {
+		for(int i = 1; i < argc; i++) {
+			QString path = argv[i];
+			logger.info("path = %s", path.toLocal8Bit().constData());
+			BCDFile* file = BCDFile::getInstance(path);
+			BCD* bcd = new BCD(file);
 
-		int symbolBase = -1;
-		if (Symbols::isSymbolsFile(bcd)) {
-			logger.info("file is symbol file");
-			symbolBase = 2;
-		} else {
-		   for (SGRecord* p : bcd->sg.values()) {
-				if (p->segClass != SGRecord::SegClass::SYMBOLS)
-					continue;
-				if (!p->file->isSelf())
-					continue;
+			int symbolBase = -1;
+			if (Symbols::isSymbolsFile(bcd)) {
+				logger.info("file is symbol file");
+				symbolBase = 2;
 
-				logger.info("found symbol segment  %s", p->toString().toLocal8Bit().constData());
-				symbolBase = p->base;
-				break;
+				Symbols symbols(bcd, symbolBase);
+				ShowType::dump(&symbols);
+			} else {
+			   for (SGRecord* p : bcd->sg.values()) {
+				   if (p->isNull()) continue;
+				   if (p->segClass == SGRecord::SegClass::SYMBOLS) {
+				       if (p->file->isSelf()) {
+				    	   logger.info("found internal symbol segment  %s", p->toString().toLocal8Bit().constData());
+				    	   symbolBase = p->base;
+
+				    	   Symbols symbols(bcd, symbolBase);
+				    	   ShowType::dump(&symbols);
+					   } else {
+				    	   logger.info("found external symbol segment  %s", p->toString().toLocal8Bit().constData());
+					   }
+				   }
+				}
 			}
 		}
-		if (symbolBase == -1) {
-			logger.fatal("No Symbol Segment");
-			ERROR();
-		}
-
-		Symbols symbols(bcd, symbolBase);
-		ShowType::dump(&symbols);
+	} catch (Error& e) {
+		logger.info("Error %s %d %s", e.file, e.line, e.func);
+	} catch (...) {
+		logger.info("Unknown exception");
 	}
 
 	logger.info("STOP");
