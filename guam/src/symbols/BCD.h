@@ -57,18 +57,25 @@ public:
 	const CARD16    host;
 	const CARD32    time;
 	const QDateTime dateTime;
+	const quint64   value;
 
 	QString toString() const;
 	bool isNull() const {
 		return net == 0 && host == 0 && time == 0;
 	}
 	static bool equals(const Stamp* a, const Stamp* b) {
-		return a->net == b->net && a->host == b->host && a->time == b->time;
+		return a->value == b->value;
 	}
+    bool operator==(const Stamp& that) {
+        return this->value == that.value;
+    }
+    bool operator<(const Stamp& that) {
+    	return this->value < that.value;
+    }
 
 private:
-	Stamp(CARD16 net_, CARD16 host_, CARD32 time_, QDateTime dateTime_) :
-		net(net_), host(host_), time(time_), dateTime(dateTime_) {}
+	Stamp(CARD16 net_, CARD16 host_, CARD32 time_, QDateTime dateTime_, quint64 value_) :
+		net(net_), host(host_), time(time_), dateTime(dateTime_), value(value_) {}
 };
 
 // NameRecord: TYPE = RECORD [CARDINAL];

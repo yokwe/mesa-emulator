@@ -44,10 +44,12 @@ Stamp* Stamp::getInstance(BCD* bcd) {
 	//	logger.info("VersionStamp  %02X %02X %08X", net, host, time);
 
 	QDateTime dateTime = QDateTime::fromTime_t(Util::toUnixTime(time));
-	return new Stamp(net, host, time, dateTime);
+	quint64 value = ((quint64)time << 32) | ((quint64)net << 16) | ((quint64)host << 0);
+
+	return new Stamp(net, host, time, dateTime, value);
 }
 Stamp* Stamp::getNull() {
-	return new Stamp(0, 0, 0, QDateTime());
+	return new Stamp(0, 0, 0, QDateTime(), 0);
 }
 QString Stamp::toString() const {
 	if (isNull()) return "#NULL#";
