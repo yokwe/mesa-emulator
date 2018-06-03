@@ -88,15 +88,8 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			logger.info("bcdInfo %4d %8X not mapped first", bcdIndex, bcdInfo.base);
 			continue;
 		}
-		//   check last page
-		if (Memory::isVacant(bcdInfo.base + (Environment::wordsPerPage * bcdInfo.pages) - 1)) {
-			logger.info("bcdInfo %4d %8X not mapped last", bcdIndex, bcdInfo.base);
-			continue;
-		}
-		// TODO last page of bcdInfo 0 is not mapped.
 
 		if (done.contains(bcdInfo.id)) continue;
-		done.insert(bcdInfo.id);
 
 		logger.info("bcdInfo %4d %8X+%4d %4d", bcdIndex, bcdInfo.base, bcdInfo.pages, bcdInfo.id);
 
@@ -104,8 +97,19 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 
 		BCDFile* bcdFile = BCDFile::getInstance(base);
 		logger.info("BEFORE new BCD");
-		BCD*     bcd     = new BCD(bcdFile);
+		BCD* bcd;
+		try {
+			bcd = new BCD(bcdFile);
+		} catch (Abort& e) {
+			bcd = 0;
+		}
+		if (bcd == 0) {
+			logger.info("retry page is not mapped");
+			continue;
+		}
 		logger.info("AFTER  new BCD");
+
+		done.insert(bcdInfo.id);
 
 		QList<MTRecord*> mtList = bcd->mt.values();
 
@@ -115,7 +119,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 
 			const QString   name(mt->name);
 			const FTRecord* code(mt->code->sgi->file);
-//			const FTRecord* symbol(mt->sseg->file);
+			const FTRecord* symbol(mt->sseg->file);
 
 			if (!code->isSelf()) {
 				logger.fatal("Unexpected code is not self");
@@ -134,7 +138,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			logger.info("MODULE %5d %5d %8X %-24s %-48s %s",
 					bcdIndex, moduleIndex, codebase,
 					name.toLocal8Bit().constData(),
-					code->toString().toLocal8Bit().constData(),
+					symbol->toString().toLocal8Bit().constData(),
 					mt->entries->toString().toLocal8Bit().constData());
 
 			moduleIndex++;
