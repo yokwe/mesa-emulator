@@ -141,6 +141,7 @@ public:
 		CARD32 p = ptr + (pos / 2);
 		if (Memory::isVacant(p)) {
 			logger.fatal("p is not mapped. p = %X", p);
+			logBackTrace();
 			ERROR_Abort();
 		}
 		BytePair word = {*Fetch(p)};
