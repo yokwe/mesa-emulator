@@ -36,7 +36,7 @@ OF SUCH DAMAGE.
 // Trace XFER with module name
 //   Hook write access to esv.loadStateDirty and collect module info.
 
-void dumpLoadState();
+void scanLoadState();
 
 
 #endif
