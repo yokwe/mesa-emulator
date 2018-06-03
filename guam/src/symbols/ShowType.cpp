@@ -221,7 +221,7 @@ void ShowType::printSym(QTextStream& out, const SEIndex* sei, QString colonStrin
 						out << "(INLINE)";
 //		            ENDCASE => "(procedure body)"L, cd];
 					} else {
-						out << "(procedure body)";
+						out << "(procedure body " << bt->getCallable().entryIndex << ")";
 					}
 				}
 //	            symbols.seb[sei].extended =>
