@@ -73,7 +73,6 @@ static QMap<BCDModuleInfo, CARD32>codebaseMap;
 
 static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState) {
 	static QSet<CARD16> done;
-	logger.info("%s START", __FUNCTION__);
 	for(CARD16 bcdIndex = 0; bcdIndex < loadState.nBcds; bcdIndex++) {
 		CARD32 bcdInfoBase = loadStateAddress + loadState.bcdInfo + SIZE(LoadStateFormat::BcdInfo) * bcdIndex;
 
@@ -96,7 +95,6 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 		CARD32 base = bcdInfo.base;
 
 		BCDFile* bcdFile = BCDFile::getInstance(base);
-		logger.info("BEFORE new BCD");
 		BCD* bcd;
 		try {
 			bcd = new BCD(bcdFile);
@@ -104,10 +102,9 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			bcd = 0;
 		}
 		if (bcd == 0) {
-			logger.info("retry page is not mapped");
+			logger.info("BCD page is not mapped");
 			continue;
 		}
-		logger.info("AFTER  new BCD");
 
 		done.insert(bcdInfo.id);
 
@@ -144,12 +141,10 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			moduleIndex++;
 		}
 	}
-	logger.info("%s STOP", __FUNCTION__);
 }
 
 static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadState) {
 	static QSet<CARD16> done;
-	logger.info("%s START", __FUNCTION__);
 
 	for(CARD16 i = 0; i < loadState.nModules; i++) {
 		CARD32 moduleBase = loadStateAddress + loadState.moduleInfo + SIZE(LoadStateFormat::ModuleInfo) * i;
@@ -172,7 +167,6 @@ static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadSta
 //		logger.info("module %4d %d %5d %5d %4X  %8X", i, moduleInfo.resolved, moduleInfo.cgfi, moduleInfo.index, moduleInfo.globalFrame, codebase);
 		logger.info("module %5d %5d %8X", bcdIndex, moduleIndex, codebase);
 	}
-	logger.info("%s STOP", __FUNCTION__);
 }
 
 static void scan(CARD32 loadStateAddress) {
@@ -192,7 +186,7 @@ static void scan(CARD32 loadStateAddress) {
 		return;
 	}
 
-//	logger.info("loadState %5d %5d %5d", loadState.nModules, loadState.nBcds, loadState.nextID);
+	logger.info("loadState %5d %5d %5d", loadState.nModules, loadState.nBcds, loadState.nextID);
 	scanModule(loadStateAddress, loadState);
 	scanBCD(loadStateAddress, loadState);
 }
