@@ -45,6 +45,9 @@ static log4cpp::Category& logger = Logger::getLogger("mesathread");
 #include "Function.h"
 #include "Memory.h"
 
+#include "LoadState.h"
+
+
 //
 // ProcessorThread
 //
@@ -109,6 +112,8 @@ void ProcessorThread::run() {
 				for(;;) {
 					// break if OP_STOPEMULATOR is called
 					if (stopThread) goto exitLoop;
+
+					scanLoadState();
 
 					// If not running, wait someone wake me up.
 					if (!getRunning()) {
