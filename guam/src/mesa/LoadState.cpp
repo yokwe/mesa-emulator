@@ -181,9 +181,8 @@ static void scan(CARD32 loadStateAddress) {
 	loadState.bcdInfo      = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, bcdInfo));
 
 	if (loadState.versionident != LoadStateFormat::VersionID) {
-//		logger.warn("loadState.versionident != LoadStateFormat::VersionID");
-		logger.warn("loadState.versionident %5d %5d", loadState.versionident, LoadStateFormat::VersionID);
-		return;
+		logger.fatal("loadState.versionident %5d %5d", loadState.versionident, LoadStateFormat::VersionID);
+		ERROR();
 	}
 
 	logger.info("loadState %5d %5d %5d", loadState.nModules, loadState.nBcds, loadState.nextID);
@@ -193,43 +192,45 @@ static void scan(CARD32 loadStateAddress) {
 
 void scanLoadState() {
 	try {
+		// Sanity check
 		CARD32 pesv = ReadDbl(CPSwapDefs::PSEV);
 		if (pesv == 0) return;
-//		logger.info("scanLoadState pesv %8X", pesv);
 
-		CPSwapDefs::ExternalStateVector esv;
-		esv.version = *Fetch(pesv + OFFSET(CPSwapDefs::ExternalStateVector, version));
-//		logger.info("esv.version            %5d", esv.version);
-		if (esv.version != CPSwapDefs::currentVersion) {
-			logger.warn("wrong esv.version");
-			return;
+		{
+			CPSwapDefs::ExternalStateVector esv;
+			esv.version = *Fetch(pesv + OFFSET(CPSwapDefs::ExternalStateVector, version));
+			if (esv.version != CPSwapDefs::currentVersion) {
+				logger.fatal("Wrong esv.version  %5d", esv.version);
+				ERROR();
+			}
+			CARD16* p27 = Store(pesv + OFFSET(CPSwapDefs::ExternalStateVector, u27));
+
+			esv.u27 = *p27;
+			// Return if load state is changing
+			if (esv.loadStateChanging) {
+	  			// logger.warn("loadStateChanging");
+				return;
+			}
+			// Return if load state is clean (not changed)
+			if (!esv.loadStateDirty) {
+				// logger.warn("loadStateClean");
+				return;
+			}
+
+			esv.loadState = ReadDbl(pesv + OFFSET(CPSwapDefs::ExternalStateVector, loadState));
+			// Return if load state is null
+			if (esv.loadState == 0) {
+				logger.fatal("loadState == 0");
+				ERROR();
+			}
+
+			// Scan load state
+			scan(esv.loadState);
+
+			// Reset load state dirty flag
+			esv.loadStateDirty = false;
+			*p27 = esv.u27;
 		}
-
-		CARD16* p27 = Store(pesv + OFFSET(CPSwapDefs::ExternalStateVector, u27));
-
-		esv.u27 = *p27;
-		// loadStateDirty
-	    //	logger.info("esv.loadStateDirty     %5d", esv.loadStateDirty);
-		// loadStateChanging
-	    //	logger.info("esv.loadStateChanging  %5d", esv.loadStateChanging);
-		if (esv.loadStateChanging) {
-//			logger.warn("loadStateChanging");
-			return;
-		}
-		if (!esv.loadStateDirty) {
-//			logger.warn("loadStateClean");
-			return;
-		}
-
-		esv.loadState = ReadDbl(pesv + OFFSET(CPSwapDefs::ExternalStateVector, loadState));
-		if (esv.loadState == 0) {
-//			logger.warn("loadState == 0");
-			return;
-		}
-		scan(esv.loadState);
-
-		esv.loadStateDirty = false;
-		*p27 = esv.u27;
 	} catch (Error& e) {
 		logger.fatal("Error %s %d %s", e.file, e.line, e.func);
 		throw;
