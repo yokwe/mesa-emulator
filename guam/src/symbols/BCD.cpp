@@ -67,7 +67,7 @@ FTRecord* FTRecord::getInstance(BCD* bcd, CARD16 index_) {
 	Stamp*  version    = Stamp::getInstance(bcd) ;
 
 	CARD16  index   = index_;
-	QString name    = bcd->ss[nameRecord]->toString();
+	QString name    = bcd->getNameRecord(nameRecord)->toString();
 	//	logger.info("%s  %3d  %s!", "FTReord", nameRecord, name.toLocal8Bit().constData());
 	return new FTRecord(index, name, version);
 }
@@ -101,7 +101,7 @@ SGRecord* SGRecord::getInstance(BCD* bcd, CARD16 index_) {
 	CARD16 index = index_;
 
 	CARD16    fileIndex  = bcd->file->getCARD16();
-	FTRecord* file       = bcd->ft[fileIndex];
+	FTRecord* file       = bcd->getFTRecord(fileIndex);
 
 	CARD16    base       = bcd->file->getCARD16();
 
@@ -153,7 +153,7 @@ QString ENRecord::toString() const {
 
 CodeDesc* CodeDesc::getInstance(BCD* bcd) {
 	CARD16    sgiIndex = bcd->file->getCARD16();
-	SGRecord* sgi      = bcd->sg[sgiIndex];
+	SGRecord* sgi      = bcd->getSGRecord(sgiIndex);
 	CARD16    offset   = bcd->file->getCARD16();
 	CARD16    length   = bcd->file->getCARD16();
 
@@ -167,19 +167,19 @@ QString CodeDesc::toString() const {
 MTRecord* MTRecord::getInstance(BCD* bcd, CARD16 index_) {
 	CARD16    index        = index_;
 	CARD16    nameIndex    = bcd->file->getCARD16();
-	QString   name         = bcd->ss[nameIndex]->toString();
+	QString   name         = bcd->getNameRecord(nameIndex)->toString();
 	CARD16    fileIndex    = bcd->file->getCARD16();
-	FTRecord* file         = bcd->ft[fileIndex];
+	FTRecord* file         = bcd->getFTRecord(fileIndex);
 	CARD16    config       = bcd->file->getCARD16();
 	CodeDesc* code         = CodeDesc::getInstance(bcd);
 	CARD16    ssegIndex    = bcd->file->getCARD16();
-	SGRecord* sseg         = bcd->sg[ssegIndex];
+	SGRecord* sseg         = bcd->getSGRecord(ssegIndex);
 	CARD16    links        = bcd->file->getCARD16();
 //	CARD16    u6           = bcd->file->getCARD16();
 	bcd->file->getCARD16();
 	CARD16    framesize    = bcd->file->getCARD16();
 	CARD16    entriesIndex = bcd->file->getCARD16();
-	ENRecord* entries      = bcd->en[entriesIndex];
+	ENRecord* entries      = bcd->getENRecord(entriesIndex);
 	CARD16    atoms        = bcd->file->getCARD16();
 
 	return new MTRecord(index, name, file, config, code, sseg, links, framesize, entries, atoms);
@@ -262,8 +262,8 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	initializeENRecord();
 	initializeMTRecord();
 
-	sourceFile     = ft[sourceFileIndex];
-	unpackagedFile = ft[unpackagedFileIndex];
+	sourceFile     = getFTRecord(sourceFileIndex);
+	unpackagedFile = getFTRecord(unpackagedFileIndex);
 
 	//
 	logger.info("version        %s", version->toString().toLocal8Bit().constData());
@@ -277,6 +277,32 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	logger.info("nExports       %d", nExports);
 	logger.info("nPages         %d", nPages);
 	logger.info("flags          %s%s%s%s", definitions ? "definitions " : "", repackaged ? "repackaged " : "", typeExported ? "typeExported" : "", tableCompiled ? "tableCompiled " : "");
+}
+
+NameRecord* BCD::getNameRecord(CARD16 index) {
+	if (ss.contains(index)) return ss[index];
+	logger.fatal("Unknown index = %d", index);
+	ERROR();
+}
+FTRecord*   BCD::getFTRecord(CARD16 index) {
+	if (ft.contains(index)) return ft[index];
+	logger.fatal("Unknown index = %d", index);
+	ERROR();
+}
+SGRecord*   BCD::getSGRecord(CARD16 index) {
+	if (sg.contains(index)) return sg[index];
+	logger.fatal("Unknown index = %d", index);
+	ERROR();
+}
+ENRecord*   BCD::getENRecord(CARD16 index) {
+	if (en.contains(index)) return en[index];
+	logger.fatal("Unknown index = %d", index);
+	ERROR();
+}
+MTRecord*   BCD::getMTRecord(CARD16 index) {
+	if (mt.contains(index)) return mt[index];
+	logger.fatal("Unknown index = %d", index);
+	ERROR();
 }
 
 void BCD::initializeNameRecord() {

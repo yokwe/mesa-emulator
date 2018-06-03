@@ -406,6 +406,12 @@ public:
 //	QMap<CARD16, ATRecord*>   at;
 	QMap<CARD16, MTRecord*>   mt;
 
+	NameRecord* getNameRecord(CARD16 index);
+	FTRecord*   getFTRecord(CARD16 index);
+	SGRecord*   getSGRecord(CARD16 index);
+	ENRecord*   getENRecord(CARD16 index);
+	MTRecord*   getMTRecord(CARD16 index);
+
 private:
 	void initializeNameRecord();
 	void initializeFTRecord();
