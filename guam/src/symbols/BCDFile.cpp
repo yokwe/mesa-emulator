@@ -138,7 +138,14 @@ public:
 		pos = (CARD32)newPosition;
 	}
 	CARD8 getCARD8() {
-		CARD8 data = FetchByte(ptr, pos);
+		CARD32 p = ptr + (pos / 2);
+		if (Memory::isVacant(p)) {
+			logger.fatal("p is not mapped. p = %X", p);
+			ERROR_Abort();
+		}
+		BytePair word = {*Fetch(p)};
+		CARD8 data =  ((pos % 2) == 0) ? (BYTE)word.left : (BYTE)word.right;
+
 		pos++;
 		return data;
 	}
