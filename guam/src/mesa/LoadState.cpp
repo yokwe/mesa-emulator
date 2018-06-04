@@ -84,7 +84,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 		// Skip if bcdInfo is not mapped
 		//   check first page
 		if (Memory::isVacant(bcdInfo.base)) {
-			logger.info("bcdInfo %4d %8X not mapped first", bcdIndex, bcdInfo.base);
+			logger.info("bcdInfo %4d %8X first bcd page is not mapped", bcdIndex, bcdInfo.base);
 			continue;
 		}
 
@@ -102,8 +102,8 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			bcd = 0;
 		}
 		if (bcd == 0) {
-			logger.info("BCD page is not mapped");
-			continue;
+			logger.fatal("BCD page is not mapped");
+			ERROR();
 		}
 
 		done.insert(bcdInfo.id);
