@@ -91,9 +91,8 @@ QString SGRecord::toString(SegClass value) {
 	if (map.contains(value)) {
 		return map[value];
 	} else {
-		logger.error("Unknown value = %d", (int)value);
+		logger.fatal("Unknown value = %d", (int)value);
 		ERROR();
-		return QString("%1").arg((int)value);
 	}
 };
 SGRecord* SGRecord::getInstance(BCD* bcd, CARD16 index_) {
