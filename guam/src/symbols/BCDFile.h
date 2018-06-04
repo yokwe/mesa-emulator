@@ -52,6 +52,9 @@ public:
 	int  position() {
 		return getPosition() / BYTES_PER_WORD;
 	}
+	void bytePosition(int newPositon) {
+		setPosition(newPositon);
+	}
 	void position(int newPositon) {
 		setPosition(newPositon * BYTES_PER_WORD);
 	}
