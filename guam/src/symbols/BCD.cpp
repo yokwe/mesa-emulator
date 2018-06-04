@@ -360,7 +360,8 @@ QString BCD::getName(CARD16 index) {
 	    	value.append(c);
 		}
 	} catch(Abort &e) {
-		value.append(QString("#SS-%1#").arg(index));
+		logger.warn("BCD::getName failed %5d", index);
+		value.append(QString("#NAME-%1#").arg(index));
 	}
 
 	file->bytePosition(oldBytePosition);
