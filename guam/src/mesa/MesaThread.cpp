@@ -158,7 +158,7 @@ void ProcessorThread::run() {
 	} catch (Error& e) {
 		logger.fatal("Error %-20s %4d %s", e.func, e.line, e.file);
 		// Output for postmortem  examination
-		logger.fatal("GFI %4X  CB %8X  PC %4X", GFI, CodeCache::CB(), PC);
+		logger.fatal("GFI %4X  CB %8X  PC %d", GFI, CodeCache::CB(), PC);
 	}
 
 exitLoop:
