@@ -396,7 +396,7 @@ public:
 	CARD16    apOffset; // atom printname table
 	CARD16    apLimit;
 
-	QMap<CARD16, NameRecord*> ss;
+//	QMap<CARD16, NameRecord*> ss;
 	QMap<CARD16, FTRecord*>   ft;
 //	QMap<CARD16, CTRecord*>   ct;
 	QMap<CARD16, SGRecord*>   sg;
@@ -406,14 +406,16 @@ public:
 //	QMap<CARD16, ATRecord*>   at;
 	QMap<CARD16, MTRecord*>   mt;
 
-	NameRecord* getNameRecord(CARD16 index);
+//	NameRecord* getNameRecord(CARD16 index);
 	FTRecord*   getFTRecord(CARD16 index);
 	SGRecord*   getSGRecord(CARD16 index);
 	ENRecord*   getENRecord(CARD16 index);
 	MTRecord*   getMTRecord(CARD16 index);
 
+	QString getName(CARD16 index);
+
 private:
-	void initializeNameRecord();
+//	void initializeNameRecord();
 	void initializeFTRecord();
 	void initializeSGRecord();
 	void initializeENRecord();

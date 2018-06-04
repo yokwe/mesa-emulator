@@ -67,8 +67,7 @@ FTRecord* FTRecord::getInstance(BCD* bcd, CARD16 index_) {
 	Stamp*  version    = Stamp::getInstance(bcd) ;
 
 	CARD16  index   = index_;
-	QString name    = bcd->getNameRecord(nameRecord)->toString();
-	//	logger.info("%s  %3d  %s!", "FTReord", nameRecord, name.toLocal8Bit().constData());
+	QString name    = bcd->getName(nameRecord);
 	return new FTRecord(index, name, version);
 }
 FTRecord* FTRecord::getNull() {
@@ -167,7 +166,7 @@ QString CodeDesc::toString() const {
 MTRecord* MTRecord::getInstance(BCD* bcd, CARD16 index_) {
 	CARD16    index        = index_;
 	CARD16    nameIndex    = bcd->file->getCARD16();
-	QString   name         = bcd->getNameRecord(nameIndex)->toString();
+	QString   name         = bcd->getName(nameIndex);
 	CARD16    fileIndex    = bcd->file->getCARD16();
 	FTRecord* file         = bcd->getFTRecord(fileIndex);
 	CARD16    config       = bcd->file->getCARD16();
@@ -256,7 +255,7 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	apLimit    = file->getCARD16();
 
 	//
-	initializeNameRecord();
+	//initializeNameRecord();
 	initializeFTRecord();
 	initializeSGRecord();
 	initializeENRecord();
@@ -279,11 +278,11 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	logger.info("flags          %s%s%s%s", definitions ? "definitions " : "", repackaged ? "repackaged " : "", typeExported ? "typeExported" : "", tableCompiled ? "tableCompiled " : "");
 }
 
-NameRecord* BCD::getNameRecord(CARD16 index) {
-	if (ss.contains(index)) return ss[index];
-	logger.fatal("Unknown index = %d", index);
-	ERROR();
-}
+//NameRecord* BCD::getNameRecord(CARD16 index) {
+//	if (ss.contains(index)) return ss[index];
+//	logger.fatal("Unknown index = %d", index);
+//	ERROR();
+//}
 FTRecord*   BCD::getFTRecord(CARD16 index) {
 	if (ft.contains(index)) return ft[index];
 	logger.fatal("Unknown index = %d", index);
@@ -305,37 +304,68 @@ MTRecord*   BCD::getMTRecord(CARD16 index) {
 	ERROR();
 }
 
-void BCD::initializeNameRecord() {
+//void BCD::initializeNameRecord() {
+//	int offset = ssOffset;
+//	int limit  = ssLimit;
+//
+//	if (limit == 0) return;
+//
+//	file->position(offset + 2);
+//	file->getCARD8();
+//	for(;;) {
+//		int bytePos = file->bytePosition();
+//		int pos = file->position();
+//
+//		if ((offset + limit) <= pos) break; // position exceed limit
+//
+//		int length = file->getCARD8();
+//		QString value;
+//		for(int i = 0; i < length; i++) {
+//	     	char data = file->getCARD8();
+//	    	QChar c(data);
+//	    	value.append(c);
+//		}
+//
+//		int index = bytePos - (offset * 2) - 3;
+//		NameRecord* record = new NameRecord(index, value);
+//		ss[index] = record;
+//
+//		logger.info("ss %4d %s!", index, record->toString().toLocal8Bit().constData());
+//	}
+//
+//	// Add special
+//	ss[NameRecord::NullName] = new NameRecord();
+//}
+QString BCD::getName(CARD16 index) {
+	int oldBytePosition = file->bytePosition();
+
 	int offset = ssOffset;
 	int limit  = ssLimit;
 
-	if (limit == 0) return;
+	int bytePos = index + (offset * 2) + 3;
+	file->bytePosition(bytePos);
 
-	file->position(offset + 2);
-	file->getCARD8();
-	for(;;) {
-		int bytePos = file->bytePosition();
-		int pos = file->position();
+	int pos = file->position();
+	if ((offset + limit) <= pos) {
+		logger.fatal("position exceed limit"); // position exceed limit
+		logger.fatal("index = %d  offset = %d  limit = %d  pos = %d", index, offset, limit, pos);
+		ERROR();
+	}
 
-		if ((offset + limit) <= pos) break; // position exceed limit
-
+	QString value;
+	try {
 		int length = file->getCARD8();
-		QString value;
 		for(int i = 0; i < length; i++) {
 	     	char data = file->getCARD8();
 	    	QChar c(data);
 	    	value.append(c);
 		}
-
-		int index = bytePos - (offset * 2) - 3;
-		NameRecord* record = new NameRecord(index, value);
-		ss[index] = record;
-
-//		logger.info("ss %4d %s!", index, record->toString().toLocal8Bit().constData());
+	} catch(Abort &e) {
+		value.append(QString("#SS-%1#").arg(index));
 	}
 
-	// Add special
-	ss[NameRecord::NullName] = new NameRecord();
+	file->bytePosition(oldBytePosition);
+	return value;
 }
 
 
