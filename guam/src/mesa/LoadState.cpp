@@ -138,6 +138,14 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 					symbol->toString().toLocal8Bit().constData(),
 					mt->entries->toString().toLocal8Bit().constData());
 
+			if (symbol->isNull()) {
+				// No output
+			} else if (symbol->isSelf()) {
+				// If symbol is SELF, use mt->file as instead.
+				logger.info("SYMBOL %s %s", mt->file->version->toString().toLocal8Bit().constData(), mt->name.toLocal8Bit().constData());
+			} else {
+				logger.info("SYMBOL %s %s", symbol->version->toString().toLocal8Bit().constData(), symbol->name.toLocal8Bit().constData());
+			}
 			moduleIndex++;
 		}
 	}
