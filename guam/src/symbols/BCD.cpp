@@ -44,7 +44,26 @@ Stamp* Stamp::getInstance(BCD* bcd) {
 	//	logger.info("VersionStamp  %02X %02X %08X", net, host, time);
 
 	QDateTime dateTime = QDateTime::fromTime_t(Util::toUnixTime(time));
-	quint64 value = ((quint64)time << 32) | ((quint64)net << 16) | ((quint64)host << 0);
+
+	QDate sdate = dateTime.date();
+	int y = sdate.year();
+	int m = sdate.month();
+	int d = sdate.day();
+	QTime stime = dateTime.time();
+	int H = stime.hour();
+	int M = stime.minute();
+	int S = stime.second();
+
+	quint64 value = 0;
+	// To prevent overflow of value, use last 2 digts of year
+	value = (value *  100) + (y % 100);
+	value = (value *  100) + m;
+	value = (value *  100) + d;
+	value = (value *  100) + H;
+	value = (value *  100) + M;
+	value = (value *  100) + S;
+	value = (value * 1000) + net;
+	value = (value * 1000) + host;
 
 	return new Stamp(net, host, time, dateTime, value);
 }
@@ -53,7 +72,8 @@ Stamp* Stamp::getNull() {
 }
 QString Stamp::toString() const {
 	if (isNull()) return "#NULL#";
-	return QString("%1#%2#%3%4").arg(dateTime.toString("yyyyMMdd")).arg(dateTime.toString("HHmmss")).arg(net, 2, 16, QChar('0')).arg(host, 2, 16, QChar('0')).toUpper();
+	return QString("%1").arg(value);
+//	return QString("%1#%2#%3#%4").arg(dateTime.toString("yyyyMMdd")).arg(dateTime.toString("HHmmss")).arg(net, 3, 10, QChar('0')).arg(host, 3, 10, QChar('0'));
 }
 
 QString NameRecord::toString() {
