@@ -115,6 +115,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			if (mt->isNull()) continue;
 
 			const QString   name(mt->name);
+			const FTRecord* file(mt->file);
 			const FTRecord* code(mt->code->sgi->file);
 			const FTRecord* symbol(mt->sseg->file);
 
@@ -135,16 +136,16 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			logger.info("MODULE %5d %5d %8X %-24s %-48s %s",
 					bcdIndex, moduleIndex, codebase,
 					name.toLocal8Bit().constData(),
-					symbol->toString().toLocal8Bit().constData(),
+					file->toString().toLocal8Bit().constData(),
 					mt->entries->toString().toLocal8Bit().constData());
 
 			if (symbol->isNull()) {
 				// No output
 			} else if (symbol->isSelf()) {
 				// If symbol is SELF, use mt->file as instead.
-				logger.info("SYMBOL %s %s", mt->file->version->toString().toLocal8Bit().constData(), mt->name.toLocal8Bit().constData());
+				logger.info("SYMBOL %s %-24s", mt->file->version->toString().toLocal8Bit().constData(), mt->name.toLocal8Bit().constData());
 			} else {
-				logger.info("SYMBOL %s %s", symbol->version->toString().toLocal8Bit().constData(), symbol->name.toLocal8Bit().constData());
+				logger.info("SYMBOL %s %-24s %s %-24s", mt->file->version->toString().toLocal8Bit().constData(), mt->name.toLocal8Bit().constData(), symbol->version->toString().toLocal8Bit().constData(), symbol->name.toLocal8Bit().constData());
 			}
 			moduleIndex++;
 		}
