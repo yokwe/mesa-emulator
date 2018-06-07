@@ -125,7 +125,7 @@ void DumpSymbol::dumpSymbol(QString filePath, QString outDirPath) {
 
 		out << "--" << endl;
 		out << QString("-- File   %1 %2").arg(self->stamp->toString()).arg(self->fileId->getValue().value) << endl;
-		if (bcd->sourceFile) out << QString("-- Source %1 %2").arg(bcd->sourceFile->version->toString()).arg(bcd->sourceFile->name) << endl;
+		if (!bcd->sourceFile->isNull()) out << QString("-- Source %1 %2").arg(bcd->sourceFile->version->toString()).arg(bcd->sourceFile->name) << endl;
 		out << "--" << endl;
 		out << endl;
 	}
