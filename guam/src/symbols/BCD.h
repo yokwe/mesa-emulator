@@ -61,7 +61,7 @@ public:
 
 	QString toString() const;
 	bool isNull() const {
-		return net == 0 && host == 0 && time == 0;
+		return value == 0;
 	}
 	static bool equals(const Stamp* a, const Stamp* b) {
 		return a->value == b->value;
