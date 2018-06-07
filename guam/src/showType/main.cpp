@@ -47,6 +47,8 @@ void WriteProtectFault(CARD32 ptr) {
 int main(int argc, char** argv) {
 	logger.info("START");
 
+	setSignalHandler();
+
 	try {
 		for(int i = 1; i < argc; i++) {
 			QString path = argv[i];

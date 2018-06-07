@@ -47,6 +47,8 @@ void WriteProtectFault(CARD32 ptr) {
 int main(int argc, char** argv) {
 	logger.info("START");
 
+	setSignalHandler();
+
 	QString outDirPath("tmp/dumpSymbol");
 	logger.info("outDirPath %s", outDirPath.toLocal8Bit().constData());
 	if (!QFile::exists(outDirPath)) {
