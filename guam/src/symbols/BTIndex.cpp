@@ -180,7 +180,7 @@ const BTRecord::Callable::Inner& BTRecord::Callable::getInner() const {
 	return *ret;
 }
 const BTRecord::Callable::Catch& BTRecord::Callable::getCatch() const {
-	if (tag != Tag::INNER) ERROR();
+	if (tag != Tag::CATCH) ERROR();
 	if (tagValue == 0) ERROR();
 	Catch* ret = (Catch*)tagValue;
 	return *ret;
