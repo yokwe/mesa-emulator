@@ -28,6 +28,7 @@ RASPI_DEPLOY_ROOT := $(RASPI_ROOT)/home/pi/gaum
 
 all:
 	(cd src/mesa;          make all)
+	(cd src/symbols;       make all)
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
@@ -35,7 +36,6 @@ all:
 	(cd src/guam-headless; make all)
 	(cd src/guam;          make all)
 	(cd src/floppy;        make all)
-	(cd src/symbols;       make all)
 	(cd src/dumpSymbol;    make all)
 	(cd src/showType;      make all)
 	(cd src/moduleEntry;   make all)
@@ -91,6 +91,7 @@ test:
 	(cd src/simple-opcode; make all)
 	(cd src/agent;         make all)
 	(cd src/util;          make all)
+	(cd src/symbols;       make all)
 	(cd src/test;          make all)
 
 floppy:
