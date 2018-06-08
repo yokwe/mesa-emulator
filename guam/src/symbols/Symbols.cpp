@@ -245,11 +245,11 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
     bodyBlock       = BlockDescriptor::getInstance(bcd);
     logger.info("bodyBlock      %s", bodyBlock->toString().toLocal8Bit().constData());
     extBlock        = BlockDescriptor::getInstance(bcd);
-    logger.info("extBlock       %s", extBlock->toString().toLocal8Bit().constData());
+//    logger.info("extBlock       %s", extBlock->toString().toLocal8Bit().constData());
     treeBlock       = BlockDescriptor::getInstance(bcd);
-    logger.info("treeBlock      %s", treeBlock->toString().toLocal8Bit().constData());
+//    logger.info("treeBlock      %s", treeBlock->toString().toLocal8Bit().constData());
     litBlock        = BlockDescriptor::getInstance(bcd);
-    logger.info("litBlock       %s", litBlock->toString().toLocal8Bit().constData());
+//    logger.info("litBlock       %s", litBlock->toString().toLocal8Bit().constData());
     sLitBlock       = BlockDescriptor::getInstance(bcd);
 //    logger.info("sLitBlock      %s", sLitBlock->toString().toLocal8Bit().constData());
     epMapBlock      = BlockDescriptor::getInstance(bcd);
@@ -264,47 +264,23 @@ Symbols::Symbols(BCD* bcd_, int symbolBase_) : bcd(bcd_) {
 
     // Read block
     initializeSS(ssBlock);
-	DEBUG_TRACE();
     initializeHT(htBlock);
-	DEBUG_TRACE();
     initializeMD(mdBlock);
-	DEBUG_TRACE();
     initializeCTX(ctxBlock);
-	DEBUG_TRACE();
     initializeSE(seBlock);
-	DEBUG_TRACE();
     initializeBT(bodyBlock);
-	DEBUG_TRACE();
     initializeLT(litBlock);
-	DEBUG_TRACE();
     initializeExt(extBlock);
-	DEBUG_TRACE();
     initializeTree(treeBlock);
-	DEBUG_TRACE();
 
     BTIndex::checkAll();
-	DEBUG_TRACE();
     CTXIndex::checkAll();
-	DEBUG_TRACE();
     ExtIndex::checkAll();
-	DEBUG_TRACE();
     HTIndex::checkAll();
-	DEBUG_TRACE();
     LTIndex::checkAll();
-	DEBUG_TRACE();
     MDIndex::checkAll();
-	DEBUG_TRACE();
     SEIndex::checkAll();
-	DEBUG_TRACE();
     TreeIndex::checkAll();
-	DEBUG_TRACE();
-//	{
-//		MDRecord* p = md[0];
-//		logger.info("MD %s", p->toString().toLocal8Bit().constData());
-//	}
-	DEBUG_TRACE();
-    TreeIndex::checkAll();
-	DEBUG_TRACE();
 };
 
 void Symbols::initializeSS(BlockDescriptor* block) {
@@ -368,7 +344,6 @@ void Symbols::initializeHT(BlockDescriptor* block) {
 }
 
 void Symbols::initializeMD(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
@@ -399,7 +374,6 @@ void Symbols::initializeMD(BlockDescriptor* block) {
 }
 
 void Symbols::initializeCTX(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
@@ -430,7 +404,6 @@ void Symbols::initializeCTX(BlockDescriptor* block) {
 }
 
 void Symbols::initializeSE(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
@@ -461,7 +434,6 @@ void Symbols::initializeSE(BlockDescriptor* block) {
 }
 
 void Symbols::initializeBT(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
@@ -492,15 +464,12 @@ void Symbols::initializeBT(BlockDescriptor* block) {
 }
 
 void Symbols::initializeExt(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
     int    limit = base + block->size;
 
-	DEBUG_TRACE();
     file->position(base);
-	DEBUG_TRACE();
 
     for(;;) {
         int pos = file->position();
@@ -525,7 +494,6 @@ void Symbols::initializeExt(BlockDescriptor* block) {
 }
 
 void Symbols::initializeLT(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
@@ -556,7 +524,6 @@ void Symbols::initializeLT(BlockDescriptor* block) {
 }
 
 void Symbols::initializeTree(BlockDescriptor* block) {
-	DEBUG_TRACE();
     if (block->size == 0) return;
 
     CARD16 base  = offsetBase + block->offset;
@@ -581,7 +548,6 @@ void Symbols::initializeTree(BlockDescriptor* block) {
     	int pos = file->position();
         if (pos != limit) {
         	logger.warn("pos != limit  pos = %d  limit = %d", pos, limit);
- //           ERROR();
         }
     }
 }
