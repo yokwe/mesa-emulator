@@ -54,10 +54,16 @@ int main(int argc, char** argv) {
 			QString path = argv[i];
 			logger.info("path = %s", path.toLocal8Bit().constData());
 			BCDFile* file = BCDFile::getInstance(path);
+			// Skip not bcd file
+			if (!file->isBCDFile()) {
+				logger.warn("File is not BCD. filePath = %s", path.toLocal8Bit().constData());
+				continue;
+			}
+
 			BCD* bcd = new BCD(file);
 
 			int symbolBase = -1;
-			if (Symbols::isSymbolsFile(bcd)) {
+			if (file->isSymbolsFile()) {
 				logger.info("file is symbol file");
 				symbolBase = 2;
 
