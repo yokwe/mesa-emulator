@@ -36,6 +36,9 @@ static log4cpp::Category& logger = Logger::getLogger("bcdfile");
 
 #include "BCDFile.h"
 
+#include "BCD.h"
+#include "Symbols.h"
+
 BCDFile::~BCDFile() {}
 
 CARD16 BCDFile::getCARD16() {
@@ -53,6 +56,26 @@ void   BCDFile::get(int size, CARD8* data) {
 		data[i] = getCARD8();
 	}
 }
+
+bool BCDFile::isBCDFile() {
+	int oldPosition = getPosition();
+
+    position(0);
+	CARD16 word0 = getCARD16();
+
+	setPosition(oldPosition);
+	return word0 == BCD::VersionID;
+}
+bool BCDFile::isSymbolsFile() {
+	int oldPosition = getPosition();
+
+	position(Environment::wordsPerPage);
+    CARD16 word256 = getCARD16();
+
+	setPosition(oldPosition);
+    return word256 == Symbols::VersionID;
+}
+
 
 //
 // BCDFileFile

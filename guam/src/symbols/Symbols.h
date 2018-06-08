@@ -215,7 +215,6 @@ public:
 	    BlockDescriptor(CARD16 offset_, CARD16 size_) : offset(offset_), size(size_) {}
 	};
 
-   static bool isSymbolsFile(BCD* bcd);
    static bool isSymbolsSegment(BCD* bcd, int symbolBase);
 
 	//STHeader: TYPE = RECORD [

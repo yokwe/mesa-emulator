@@ -75,6 +75,9 @@ public:
 		return (INT32)getCARD32();
 	}
 	void   get(int size, CARD8* data);
+
+	bool isBCDFile();
+	bool isSymbolsFile();
 };
 
 #endif
