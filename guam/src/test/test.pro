@@ -13,6 +13,7 @@ SOURCES += testAgent.cpp testMain.cpp testMemory.cpp testOpcode_000.cpp testOpco
 SOURCES += testOpcode_300.cpp testOpcode_esc.cpp testPilot.cpp testType.cpp testByteBuffer.cpp
 
 LIBS += ../../tmp/build/mesa/libmesa.a
+LIBS += ../../tmp/build/symbols/libsymbols.a
 LIBS += ../../tmp/build/simple-opcode/libsimple-opcode.a
 LIBS += ../../tmp/build/agent/libagent.a
 LIBS += ../../tmp/build/util/libutil.a
@@ -20,6 +21,7 @@ LIBS += ../../tmp/build/util/libutil.a
 LIBS += -lcppunit -llog4cpp
 
 POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
+POST_TARGETDEPS += ../../tmp/build/symbols/libsymbols.a
 POST_TARGETDEPS += ../../tmp/build/simple-opcode/libsimple-opcode.a
 POST_TARGETDEPS += ../../tmp/build/agent/libagent.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
