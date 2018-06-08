@@ -72,16 +72,32 @@ private:
 void Module::dumpEntry(QString outDirPath, QString filePath) {
 	// Check existence of file
 	if (!QFile::exists(filePath)) {
-		logger.fatal("File does not exist. pathFile = %s", filePath.toLocal8Bit().constData());
+		logger.fatal("File does not exist. filePath = %s", filePath.toLocal8Bit().constData());
 		ERROR();
 	}
+	{
+		QFileInfo fileInfo(filePath);
+		if (fileInfo.size() < 512) {
+			logger.warn("File is too short. size = %lld pathFile = %s", fileInfo.size(), filePath.toLocal8Bit().constData());
+			return;
+		}
+	}
 	BCDFile* file = BCDFile::getInstance(filePath);
+
+	// Skip not bcd file
+	if (!file->isBCDFile()) {
+		logger.warn("File is not BCD. filePath = %s", filePath.toLocal8Bit().constData());
+		return;
+	}
 
 	// Read bcd file
 	BCD* bcd = new BCD(file);
 
+	// Skip definition file
+	if (bcd->definitions) return;
+
 	// Locate target segment
-	if (Symbols::isSymbolsFile(bcd)) {
+	if (file->isSymbolsFile()) {
 		logger.info("symbol file");
 		Symbols symbols(bcd, 2);
 		dumpEntry(outDirPath, symbols);
@@ -110,12 +126,18 @@ void Module::dumpEntry(QString outDirPath, Symbols& symbols) {
 				const BTRecord::Callable& callable = bt->getCallable();
 				if (callable.tag == BTRecord::Callable::Tag::OUTER || callable.tag == BTRecord::Callable::Tag::INNER) {
 					const CARD16        entryIndex = callable.entryIndex;
-					const SERecord::Id& id         = callable.id->getValue().getId();
-					const QString&      name       = id.hash->getValue().value;
 					const SERecord&     ioType     = callable.ioType->getValue();
 					const TransferMode  mode       = ioType.getCons().getTransfer().mode;
 
 					if (mode == TransferMode::PROGRAM || mode == TransferMode::PROC) {
+						QString      name;
+						if (callable.id->isNull()) {
+							name.append(QString("ANON-%1").arg(entryIndex));
+						} else {
+							const SERecord::Id& id = callable.id->getValue().getId();
+							name.append(id.hash->getValue().value);
+						}
+
 						Entry* entry = new Entry(entryIndex, name, mode);
 						if (entryMap.contains(entryIndex)) {
 							logger.fatal("Unexpected duplicate entryIndex %d", entryIndex);
@@ -168,7 +190,7 @@ void Module::dumpEntry(QString outDirPath, Symbols& symbols) {
 			ERROR();
 		}
 
-		outFilePath = outDir.absoluteFilePath(QString("%1-%2").arg(version).arg(moduleName));
+		outFilePath = outDir.absoluteFilePath(QString("%1-%2").arg(moduleName).arg(version));
 		logger.info("outFilePath = %s", outFilePath.toLocal8Bit().constData());
 	}
 
