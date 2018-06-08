@@ -64,14 +64,18 @@ void DumpSymbol::dumpSymbol(QString filePath, QString outDirPath) {
 		ERROR();
 	}
 	BCDFile* file = BCDFile::getInstance(filePath);
+	if (!file->isBCDFile()) {
+		logger.info("file is no bcd file. pathFile = %s", filePath.toLocal8Bit().constData());
+		return;
+	}
 
 	// Read bcd file
 	BCD* bcd = new BCD(file);
 
 	// Locate target segment
 	int symbolBase = -1;
-	if (Symbols::isSymbolsFile(bcd)) {
-		logger.info("file is symbol file");
+	if (file->isSymbolsFile()) {
+		logger.info("file is symbol file. pathFile = %s", filePath.toLocal8Bit().constData());
 		symbolBase = 2;
 	} else {
 	   for (SGRecord* p : bcd->sg.values()) {
