@@ -176,8 +176,11 @@ static QMap<BCDModuleInfo, GFInfo*> gfInfoMap; // scanBCD add entries
 
 static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState) {
 	static QSet<CARD16> done;
-	for(CARD16 bcdIndex = 0; bcdIndex < loadState.nBcds; bcdIndex++) {
-		CARD32 bcdInfoBase = loadStateAddress + loadState.bcdInfo + SIZE(LoadStateFormat::BcdInfo) * bcdIndex;
+
+	for(CARD16 i = 0; i < loadState.nBcds; i++) {
+		if (done.contains(i)) continue;
+
+		CARD32 bcdInfoBase = loadStateAddress + loadState.bcdInfo + SIZE(LoadStateFormat::BcdInfo) * i;
 
 		LoadStateFormat::BcdInfo bcdInfo;
 		bcdInfo.u0   = *Fetch(bcdInfoBase  + OFFSET(LoadStateFormat::BcdInfo, u0));
@@ -187,15 +190,17 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 		// Skip if bcdInfo is not mapped
 		//   check first page
 		if (Memory::isVacant(bcdInfo.base)) {
-			logger.info("bcdInfo %4d %8X first bcd page is not mapped", bcdIndex, bcdInfo.base);
+			logger.info("bcdInfo %4d %8X first bcd page is not mapped", bcdInfo.id, bcdInfo.base);
 			continue;
 		}
 
-		if (bcdIndex != bcdInfo.id) {
-			logger.fatal("bcdIndex = %d  bcdInfo.id = %d", bcdIndex, bcdInfo.id);
+		done.insert(i);
+
+		CARD16 bcdIndex = bcdInfo.id;
+		if (bcdIndex != i) {
+			logger.fatal("bcdIndex = %d  i = %d", bcdIndex, i);
 			ERROR();
 		}
-		if (done.contains(bcdIndex)) continue;
 
 		logger.info("bcdInfo %4d %8X+%4d %4d", bcdIndex, bcdInfo.base, bcdInfo.pages, bcdInfo.id);
 
@@ -262,9 +267,9 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 						}
 					} else {
 						// Add dummy entry to entryName
-						for(int i = 0; i < initialPCSize; i++) {
-							CARD16  initialPC = mt->entries->initialPC[i];
-							QString entryName = QString("%1").arg(i);
+						for(int j = 0; j < initialPCSize; j++) {
+							CARD16  initialPC = mt->entries->initialPC[j];
+							QString entryName = QString("%1").arg(j);
 							QString name = QString("%1.%2").arg(fileName).arg(entryName);
 							gfInfo->entryNameMap[initialPC] = name;
 						}
@@ -277,18 +282,17 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 				}
 			}
 		}
-
-		//
-		done.insert(bcdInfo.id);
 	}
 }
-
 
 
 static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadState) {
 	static QSet<CARD16> done;
 
 	for(CARD16 i = 0; i < loadState.nModules; i++) {
+		if (done.contains(i)) continue;
+		done.insert(i);
+
 		CARD32 moduleBase = loadStateAddress + loadState.moduleInfo + SIZE(LoadStateFormat::ModuleInfo) * i;
 
 		LoadStateFormat::ModuleInfo moduleInfo;
@@ -303,11 +307,9 @@ static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadSta
 		BCDModuleInfo key(bcdIndex, moduleIndex);
 		if (gfiMap.contains(key)) {
 			CARD16 oldValue = gfiMap[key];
-			if (moduleInfo.globalFrame != oldValue) {
-				logger.fatal("Unexpected %s moduleInfo.globalFrame =  %4X  oldValue %4X",
-					key.toString().toLocal8Bit().constData(), moduleInfo.globalFrame, oldValue);
-				ERROR();
-			}
+			logger.fatal("Unexpected %s moduleInfo.globalFrame =  %4X  oldValue %4X",
+				key.toString().toLocal8Bit().constData(), moduleInfo.globalFrame, oldValue);
+			ERROR();
 		} else {
 			gfiMap[key] = moduleInfo.globalFrame;
 
