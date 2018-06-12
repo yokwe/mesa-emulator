@@ -465,7 +465,7 @@ void BCD::initializeMTRecord() {
 		MTRecord* record = MTRecord::getInstance(this, index);
 		mt[index] = record;
 
-		logger.info("mt %3d %s", index, record->toString().toLocal8Bit().constData());
+//		logger.info("mt %3d %s", index, record->toString().toLocal8Bit().constData());
 	}
 
 	// Add special
