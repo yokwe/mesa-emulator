@@ -209,9 +209,12 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 
 		QList<MTRecord*> mtList = bcd->mt.values();
 
-		CARD16 moduleIndex = 1; // moduleIndex starts from 1
+		CARD16 moduleIndex = 0;
 		for(MTRecord* mt: mtList) {
 			if (mt->isNull()) continue;
+
+			// moduleIndex starts from 1
+			moduleIndex++;
 
 			const QString   name(mt->name);
 			const FTRecord* file(mt->file);
@@ -261,18 +264,12 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 						}
 						gfInfo->dummyEntryName = 1;
 					}
-					logger.info("gfInfo %s", gfInfo->toString().toLocal8Bit().constData());
+					logger.info("gfInfo %5d %5d %s", bcdIndex, moduleIndex, gfInfo->toString().toLocal8Bit().constData());
 				} else {
 					logger.fatal("Unexpected key = %s", key.toString().toLocal8Bit().constData());
 					ERROR();
 				}
 			}
-
-			logger.info("MODULE %5d %5d %s",
-					bcdIndex, moduleIndex, gfInfo->toString().toLocal8Bit().constData());
-
-			logger.info("SYMBOL %s %-24s", mt->file->version->toString().toLocal8Bit().constData(), mt->name.toLocal8Bit().constData());
-			moduleIndex++;
 		}
 
 		//
