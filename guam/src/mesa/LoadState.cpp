@@ -189,7 +189,11 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			continue;
 		}
 
-		if (done.contains(bcdInfo.id)) continue;
+		if (bcdIndex != bcdInfo.id) {
+			logger.fatal("bcdIndex = %d  bcdInfo.id = %d", bcdIndex, bcdInfo.id);
+			ERROR();
+		}
+		if (done.contains(bcdIndex)) continue;
 
 		logger.info("bcdInfo %4d %8X+%4d %4d", bcdIndex, bcdInfo.base, bcdInfo.pages, bcdInfo.id);
 
@@ -232,7 +236,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 					quint64 fileVersion = file->version->value;
 					CARD32  codebase    = ReadDbl(GFT_OFFSET(gfi, codebase)) & ~1;
 
-					gfInfo = new GFInfo(gfi, name, file->name, file->version->value, codebase);
+					gfInfo = new GFInfo(gfi, name, (file->isSelf() ? name : file->name), file->version->value, codebase);
 					gfInfoMap[key] = gfInfo;
 
 					int initialPCSize = mt->entries->initialPC.size();
@@ -290,18 +294,24 @@ static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadSta
 		moduleInfo.index       = *Fetch(moduleBase  + OFFSET(LoadStateFormat::ModuleInfo, index));
 		moduleInfo.globalFrame = *Fetch(moduleBase  + OFFSET(LoadStateFormat::ModuleInfo, globalFrame));
 
-		if (done.contains(moduleInfo.globalFrame)) continue;
-		done.insert(moduleInfo.globalFrame);
-
 		CARD16 bcdIndex    = moduleInfo.index;
 		CARD16 moduleIndex = moduleInfo.cgfi;
 		CARD16 gfi         = moduleInfo.globalFrame;
 
 		BCDModuleInfo key(bcdIndex, moduleIndex);
-		gfiMap[key] = moduleInfo.globalFrame;
+		if (gfiMap.contains(key)) {
+			CARD16 oldValue = gfiMap[key];
+			if (moduleInfo.globalFrame != oldValue) {
+				logger.fatal("Unexpected %s moduleInfo.globalFrame =  %4X  oldValue %4X",
+					key.toString().toLocal8Bit().constData(), moduleInfo.globalFrame, oldValue);
+				ERROR();
+			}
+		} else {
+			gfiMap[key] = moduleInfo.globalFrame;
 
-//		logger.info("module %4d %d %5d %5d %4X  %8X", i, moduleInfo.resolved, moduleInfo.cgfi, moduleInfo.index, moduleInfo.globalFrame, codebase);
-		logger.info("module %5d %5d %4X", bcdIndex, moduleIndex, gfi);
+//			logger.info("module %4d %d %5d %5d %4X  %8X", i, moduleInfo.resolved, moduleInfo.cgfi, moduleInfo.index, moduleInfo.globalFrame, codebase);
+			logger.info("module %5d %5d %4X", bcdIndex, moduleIndex, gfi);
+		}
 	}
 }
 
