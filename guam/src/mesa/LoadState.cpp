@@ -55,7 +55,7 @@ public:
 };
 static QMap<quint64, ModuleEntry*> moduleEntryMap; // key is module file version
 
-static void initializeModuleEntryMap() {
+void initializeModuleEntryMap() {
 	QString PATH_MODULE_ENTRY("tmp/moduleEntry/");
 	QDirIterator i(PATH_MODULE_ENTRY);
 
@@ -126,6 +126,8 @@ static void initializeModuleEntryMap() {
 
 		moduleEntryMap.insert(entry->version, entry);
 	}
+
+	logger.info("%s %s %d", __FUNCTION__, PATH_MODULE_ENTRY.toLocal8Bit().constData(), moduleEntryMap.size());
 }
 
 
@@ -339,8 +341,8 @@ static void scan(CARD32 loadStateAddress) {
 void scanLoadState() {
 	try {
 		if (moduleEntryMap.size() == 0) {
-			initializeModuleEntryMap();
-			logger.info("moduleEntryMap %d", moduleEntryMap.size());
+			logger.fatal("Unexpected moduleEntryMap.size() == 0");
+			ERROR();
 		}
 
 		// Sanity check

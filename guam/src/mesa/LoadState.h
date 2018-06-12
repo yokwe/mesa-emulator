@@ -32,11 +32,12 @@ OF SUCH DAMAGE.
 #ifndef LOADSTATE_H__
 #define LOADSTATE_H__ 1
 
+void initializeModuleEntryMap();
+
 //
 // Trace XFER with module name
 //   Hook write access to esv.loadStateDirty and collect module info.
 
 void scanLoadState();
-
 
 #endif

@@ -47,6 +47,7 @@ static log4cpp::Category& logger = Logger::getLogger("mesaproc");
 #include "Pilot.h"
 #include "MesaThread.h"
 #include "MesaProcessor.h"
+#include "LoadState.h"
 
 
 void MesaProcessor::initialize() {
@@ -141,6 +142,9 @@ void MesaProcessor::initialize() {
 	processorThread.setAutoDelete(false);
 	//
 	setRunning(0);
+
+	// Initialize moduleEntryMap
+	initializeModuleEntryMap();
 }
 
 void MesaProcessor::boot() {
