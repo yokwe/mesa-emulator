@@ -251,9 +251,9 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 						ModuleEntry* moduleEntry = moduleEntryMap[fileVersion];
 						int moduleEntrySize = moduleEntry->entryName.size();
 						if (moduleEntrySize == initialPCSize) {
-							for(int i = 0; i < initialPCSize; i++) {
-								CARD16  initialPC = mt->entries->initialPC[i];
-								QString entryName = moduleEntry->entryName[i];
+							for(int j = 0; j < initialPCSize; j++) {
+								CARD16  initialPC = mt->entries->initialPC[j];
+								QString entryName = moduleEntry->entryName[j];
 								QString name = QString("%1.%2").arg(fileName).arg(entryName);
 								gfInfo->entryNameMap[initialPC] = name;
 							}
