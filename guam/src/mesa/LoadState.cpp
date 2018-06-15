@@ -175,11 +175,10 @@ static QMap<BCDModuleInfo, GFInfo*> gfInfoMap; // scanBCD add entries
 
 
 static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState) {
-	static QSet<CARD16> done;
+//	static QSet<CARD16>       done;
+	static QMap<CARD32, BCD*> bcdMap; // key is base address. Cache BCD* in case of re-scan
 
 	for(CARD16 i = 0; i < loadState.nBcds; i++) {
-		if (done.contains(i)) continue;
-
 		CARD32 bcdInfoBase = loadStateAddress + loadState.bcdInfo + SIZE(LoadStateFormat::BcdInfo) * i;
 
 		LoadStateFormat::BcdInfo bcdInfo;
@@ -194,28 +193,32 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			continue;
 		}
 
-		done.insert(i);
-
 		CARD16 bcdIndex = bcdInfo.id;
 		if (bcdIndex != i) {
 			logger.fatal("bcdIndex = %d  i = %d", bcdIndex, i);
 			ERROR();
 		}
 
-		logger.info("bcdInfo %4d %8X+%4d %4d", bcdIndex, bcdInfo.base, bcdInfo.pages, bcdInfo.id);
+//		logger.info("bcdInfo %4d %8X+%4d %4d", bcdIndex, bcdInfo.base, bcdInfo.pages, bcdInfo.id);
 
-		CARD32 base = bcdInfo.base;
-
-		BCDFile* bcdFile = BCDFile::getInstance(base);
 		BCD* bcd;
-		try {
-			bcd = new BCD(bcdFile);
-		} catch (Abort& e) {
-			bcd = 0;
-		}
-		if (bcd == 0) {
-			logger.fatal("BCD page is not mapped");
-			ERROR();
+		{
+			CARD32 base = bcdInfo.base;
+			if (bcdMap.contains(base)) {
+				bcd = bcdMap[base];
+			} else {
+				BCDFile* bcdFile = BCDFile::getInstance(base);
+				try {
+					bcd = new BCD(bcdFile);
+				} catch (Abort& e) {
+					bcd = 0;
+				}
+				if (bcd == 0) {
+					logger.fatal("BCD page is not mapped");
+					ERROR();
+				}
+				bcdMap[base] = bcd;
+			}
 		}
 
 		QList<MTRecord*> mtList = bcd->mt.values();
@@ -230,15 +233,25 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			const QString   name(mt->name);
 			const FTRecord* file(mt->file);
 
-			GFInfo* gfInfo = 0;
 			BCDModuleInfo key(bcdIndex, moduleIndex);
+
+			// If there is no correspondence moduleInfo entry, skip this entry.
+			if (!gfiMap.contains(key)) {
+				logger.warn("No module info  key = %s  %s", key.toString().toLocal8Bit().constData(), name.toLocal8Bit().constData());
+				continue;
+			}
+
+			CARD16        gfi    = gfiMap[key];
+			GFInfo*       gfInfo = 0;
+
 			if (gfInfoMap.contains(key)) {
 				gfInfo = gfInfoMap[key];
-				logger.fatal("Duplicate gfInfo = %s", gfInfo->toString().toLocal8Bit().constData());
-				ERROR();
+				if (gfInfo->gfi != gfi) {
+					logger.fatal("Unexpected key = %s  gfi = %4X  gfInfo = %s", key.toString().toLocal8Bit().constData(), gfi, gfInfo->toString().toLocal8Bit().constData());
+					ERROR();
+				}
 			} else {
 				if (gfiMap.contains(key)) {
-					CARD16  gfi         = gfiMap[key];
 					QString fileName    = file->name;
 					quint64 fileVersion = file->version->value;
 					CARD32  codebase    = ReadDbl(GFT_OFFSET(gfi, codebase)) & ~1;
@@ -275,10 +288,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 						}
 						gfInfo->dummyEntryName = 1;
 					}
-					logger.info("gfInfo %5d %5d %s", bcdIndex, moduleIndex, gfInfo->toString().toLocal8Bit().constData());
-				} else {
-					logger.fatal("Unexpected key = %s", key.toString().toLocal8Bit().constData());
-					ERROR();
+					logger.info("gfInfo %-7s %s", key.toString().toLocal8Bit().constData(), gfInfo->toString().toLocal8Bit().constData());
 				}
 			}
 		}
@@ -287,12 +297,10 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 
 
 static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadState) {
-	static QSet<CARD16> done;
+	// Order of module entry can be change.
+	// So need scan all module entry each time.
 
 	for(CARD16 i = 0; i < loadState.nModules; i++) {
-		if (done.contains(i)) continue;
-		done.insert(i);
-
 		CARD32 moduleBase = loadStateAddress + loadState.moduleInfo + SIZE(LoadStateFormat::ModuleInfo) * i;
 
 		LoadStateFormat::ModuleInfo moduleInfo;
@@ -307,37 +315,18 @@ static void scanModule(CARD32 loadStateAddress, LoadStateFormat::Object& loadSta
 		BCDModuleInfo key(bcdIndex, moduleIndex);
 		if (gfiMap.contains(key)) {
 			CARD16 oldValue = gfiMap[key];
-			logger.fatal("Unexpected %s moduleInfo.globalFrame =  %4X  oldValue %4X",
-				key.toString().toLocal8Bit().constData(), moduleInfo.globalFrame, oldValue);
-			ERROR();
+			if (oldValue != moduleInfo.globalFrame) {
+				logger.fatal("Unexpected %s moduleInfo.globalFrame =  %4X  oldValue %4X  %5d",
+					key.toString().toLocal8Bit().constData(), moduleInfo.globalFrame, oldValue, i);
+				ERROR();
+			}
 		} else {
 			gfiMap[key] = moduleInfo.globalFrame;
 
 //			logger.info("module %4d %d %5d %5d %4X  %8X", i, moduleInfo.resolved, moduleInfo.cgfi, moduleInfo.index, moduleInfo.globalFrame, codebase);
-			logger.info("module %5d %5d %4X", bcdIndex, moduleIndex, gfi);
+			logger.info("module %5d %5d %5d %4X", i, bcdIndex, moduleIndex, gfi);
 		}
 	}
-}
-
-static void scan(CARD32 loadStateAddress) {
-	LoadStateFormat::Object loadState;
-	loadState.versionident = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, versionident));
-	loadState.nModules     = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, nModules));
-	loadState.maxModules   = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, maxModules));
-	loadState.nBcds        = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, nBcds));
-	loadState.maxBcds      = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, maxBcds));
-	loadState.nextID       = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, nextID));
-	loadState.moduleInfo   = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, moduleInfo));
-	loadState.bcdInfo      = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, bcdInfo));
-
-	if (loadState.versionident != LoadStateFormat::VersionID) {
-		logger.fatal("loadState.versionident %5d %5d", loadState.versionident, LoadStateFormat::VersionID);
-		ERROR();
-	}
-
-	logger.info("loadState %5d %5d %5d", loadState.nModules, loadState.nBcds, loadState.nextID);
-	scanModule(loadStateAddress, loadState);
-	scanBCD(loadStateAddress, loadState);
 }
 
 void scanLoadState() {
@@ -380,9 +369,27 @@ void scanLoadState() {
 			}
 
 			// Scan load state
-			scan(esv.loadState);
+			LoadStateFormat::Object loadState;
 
-			// Reset load state dirty flag
+			CARD32 loadStateAddress = esv.loadState;
+			loadState.versionident = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, versionident));
+			loadState.nModules     = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, nModules));
+			loadState.maxModules   = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, maxModules));
+			loadState.nBcds        = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, nBcds));
+			loadState.maxBcds      = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, maxBcds));
+			loadState.nextID       = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, nextID));
+			loadState.moduleInfo   = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, moduleInfo));
+			loadState.bcdInfo      = *Fetch(loadStateAddress + OFFSET(LoadStateFormat::Object, bcdInfo));
+
+			if (loadState.versionident != LoadStateFormat::VersionID) {
+				logger.fatal("loadState.versionident %5d %5d", loadState.versionident, LoadStateFormat::VersionID);
+				ERROR();
+			}
+
+			logger.info("loadState %5d %5d %5d", loadState.nModules, loadState.nBcds, loadState.nextID);
+			scanModule(loadStateAddress, loadState);
+			scanBCD(loadStateAddress, loadState);
+
 			esv.loadStateDirty = false;
 			*p27 = esv.u27;
 		}
