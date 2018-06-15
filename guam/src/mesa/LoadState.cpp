@@ -241,54 +241,52 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 				continue;
 			}
 
-			CARD16        gfi    = gfiMap[key];
-			GFInfo*       gfInfo = 0;
+			CARD16 gfi = gfiMap[key];
 
 			if (gfInfoMap.contains(key)) {
-				gfInfo = gfInfoMap[key];
+				GFInfo* gfInfo = gfInfoMap[key];
 				if (gfInfo->gfi != gfi) {
 					logger.fatal("Unexpected key = %s  gfi = %4X  gfInfo = %s", key.toString().toLocal8Bit().constData(), gfi, gfInfo->toString().toLocal8Bit().constData());
 					ERROR();
 				}
 			} else {
-				if (gfiMap.contains(key)) {
-					QString fileName    = file->name;
-					quint64 fileVersion = file->version->value;
-					CARD32  codebase    = ReadDbl(GFT_OFFSET(gfi, codebase)) & ~1;
+				QString fileName    = file->name;
+				quint64 fileVersion = file->version->value;
+				CARD32  codebase    = ReadDbl(GFT_OFFSET(gfi, codebase)) & ~1;
 
-					gfInfo = new GFInfo(gfi, name, (file->isSelf() ? name : file->name), file->version->value, codebase);
-					gfInfoMap[key] = gfInfo;
+				GFInfo* gfInfo = new GFInfo(gfi, name, (file->isSelf() ? name : file->name), file->version->value, codebase);
+				gfInfoMap[key] = gfInfo;
 
-					int initialPCSize = mt->entries->initialPC.size();
-					if (initialPCSize != 0 && moduleEntryMap.contains(fileVersion)) {
-						ModuleEntry* moduleEntry = moduleEntryMap[fileVersion];
-						int moduleEntrySize = moduleEntry->entryName.size();
-						if (moduleEntrySize == initialPCSize) {
-							for(int j = 0; j < initialPCSize; j++) {
-								CARD16  initialPC = mt->entries->initialPC[j];
-								QString entryName = moduleEntry->entryName[j];
-								QString name = QString("%1.%2").arg(fileName).arg(entryName);
-								gfInfo->entryNameMap[initialPC] = name;
-							}
-						} else {
-							logger.fatal("Unexpected  entrySize");
-							logger.fatal("entrySize  initialPCSize = %d   moduleEntry = %d", initialPCSize, moduleEntrySize);
-							logger.fatal("mt %s", mt->toString().toLocal8Bit().constData());
-							logger.fatal("moduleEntry %s", moduleEntry->toString().toLocal8Bit().constData());
-							logger.fatal("gfInfo %s", gfInfo->toString().toLocal8Bit().constData());
-							ERROR();
-						}
-					} else {
-						// Add dummy entry to entryName
+				logger.info("gfInfo %-7s %s", key.toString().toLocal8Bit().constData(), gfInfo->toString().toLocal8Bit().constData());
+
+				int initialPCSize = mt->entries->initialPC.size();
+				if (initialPCSize != 0 && moduleEntryMap.contains(fileVersion)) {
+					ModuleEntry* moduleEntry = moduleEntryMap[fileVersion];
+					int moduleEntrySize = moduleEntry->entryName.size();
+					if (moduleEntrySize == initialPCSize) {
 						for(int j = 0; j < initialPCSize; j++) {
 							CARD16  initialPC = mt->entries->initialPC[j];
-							QString entryName = QString("%1").arg(j);
+							QString entryName = moduleEntry->entryName[j];
 							QString name = QString("%1.%2").arg(fileName).arg(entryName);
 							gfInfo->entryNameMap[initialPC] = name;
 						}
-						gfInfo->dummyEntryName = 1;
+					} else {
+						logger.fatal("Unexpected  entrySize");
+						logger.fatal("entrySize  initialPCSize = %d   moduleEntry = %d", initialPCSize, moduleEntrySize);
+						logger.fatal("mt %s", mt->toString().toLocal8Bit().constData());
+						logger.fatal("moduleEntry %s", moduleEntry->toString().toLocal8Bit().constData());
+						logger.fatal("gfInfo %s", gfInfo->toString().toLocal8Bit().constData());
+						ERROR();
 					}
-					logger.info("gfInfo %-7s %s", key.toString().toLocal8Bit().constData(), gfInfo->toString().toLocal8Bit().constData());
+				} else {
+					// Add dummy entry to entryName
+					for(int j = 0; j < initialPCSize; j++) {
+						CARD16  initialPC = mt->entries->initialPC[j];
+						QString entryName = QString("%1").arg(j);
+						QString name = QString("%1.%2").arg(fileName).arg(entryName);
+						gfInfo->entryNameMap[initialPC] = name;
+					}
+					gfInfo->dummyEntryName = 1;
 				}
 			}
 		}
