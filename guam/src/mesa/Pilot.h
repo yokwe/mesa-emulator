@@ -475,7 +475,7 @@ public:
 	//FrameVec, frameSizeMap: ARRAY FrameSizeIndex OF [0..MaxFrameSize] = [
 	// 8, 12, 16, 20, 24, 28, 32, 40, 48, 56, 68, 80, 96, 112, 128, 148, 168, 192,
 	// 224, 252, 508, 764, 1020, 1276, 1532, 1788, 2044, 2556, 3068, 3580, 4092];
-	static const int FrameSizeMap[AVHeapSize - 1];
+	static const int FrameSizeMap[LastAVHeapSlot + 1];
 };
 
 
