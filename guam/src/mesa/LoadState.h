@@ -32,6 +32,8 @@ OF SUCH DAMAGE.
 #ifndef LOADSTATE_H__
 #define LOADSTATE_H__ 1
 
+static const int ENABLE_LOADSTATE_PROCESS = 0;
+
 void initializeModuleEntryMap();
 
 //

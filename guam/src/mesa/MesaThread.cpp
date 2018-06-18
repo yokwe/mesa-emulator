@@ -113,7 +113,9 @@ void ProcessorThread::run() {
 					// break if OP_STOPEMULATOR is called
 					if (stopThread) goto exitLoop;
 
-					scanLoadState();
+					if (ENABLE_LOADSTATE_PROCESS) {
+						scanLoadState();
+					}
 
 					// If not running, wait someone wake me up.
 					if (!getRunning()) {

@@ -144,7 +144,9 @@ void MesaProcessor::initialize() {
 	setRunning(0);
 
 	// Initialize moduleEntryMap
-	initializeModuleEntryMap();
+	if (ENABLE_LOADSTATE_PROCESS) {
+		initializeModuleEntryMap();
+	}
 }
 
 void MesaProcessor::boot() {
