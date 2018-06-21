@@ -193,18 +193,19 @@ MTRecord* MTRecord::getInstance(BCD* bcd, CARD16 index_) {
 	CARD16    ssegIndex    = bcd->file->getCARD16();
 	SGRecord* sseg         = bcd->getSGRecord(ssegIndex);
 	CARD16    links        = bcd->file->getCARD16();
-//	CARD16    u6           = bcd->file->getCARD16();
-	bcd->file->getCARD16();
+	CARD16    u8           = bcd->file->getCARD16();
+	//    packed (8:10..10): BOOLEAN,
+	bool      packed       = (bool)bitField(u8, 10, 10);
 	CARD16    framesize    = bcd->file->getCARD16();
 	CARD16    entriesIndex = bcd->file->getCARD16();
 	ENRecord* entries      = bcd->getENRecord(entriesIndex);
 	CARD16    atoms        = bcd->file->getCARD16();
 
-	return new MTRecord(index, name, file, config, code, sseg, links, framesize, entries, atoms);
+	return new MTRecord(index, name, file, config, code, sseg, links, packed, framesize, entries, atoms);
 }
 MTRecord* MTRecord::getNull() {
 	QVector<CARD16> initialPC_(0);
-	return new MTRecord(MT_NULL, "", 0, 0, 0, 0, 0, 0, 0, 0);
+	return new MTRecord(MT_NULL, "", 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 QString MTRecord::toString() const {
 	if (index == MT_NULL) return "#NULL#";
@@ -295,6 +296,10 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 	logger.info("nExports       %d", nExports);
 	logger.info("nPages         %d", nPages);
 	logger.info("flags          %s%s%s%s", definitions ? "definitions " : "", repackaged ? "repackaged " : "", typeExported ? "typeExported" : "", tableCompiled ? "tableCompiled " : "");
+}
+
+BCD::~BCD() {
+	delete file;
 }
 
 //NameRecord* BCD::getNameRecord(CARD16 index) {

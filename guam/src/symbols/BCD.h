@@ -256,7 +256,7 @@ public:
 //	const bool      residentFrame;
 //	const bool      crossJumped;
 //	const bool      packageable;
-//	const bool      packed;
+	const bool      packed;
 //	const bool      linkspace;
 //	const bool      spare0;
 //	const bool      spare1;
@@ -276,14 +276,18 @@ private:
 		CodeDesc* code_, SGRecord* sseg_, CARD16 links_,
 //		CARD16 linkLoc_,
 //		bool namedInstance_, bool initial_, bool boundsChecks_, bool nilChecks_,
-//		bool tableCompiled_, bool residentFrame_, bool crossJumped_, bool packageable_, bool packed_, bool linkspace_,
+//		bool tableCompiled_, bool residentFrame_, bool crossJumped_, bool packageable_,
+		bool packed_,
+//		bool linkspace_,
 //		bool spare0_, bool spare1_, bool spare2_, bool spare3_,
 		CARD16 framesize_, ENRecord* entries_, CARD16 atoms_) :
 			index(index_), name(name_), file(file_), config(config_),
 			code(code_), sseg(sseg_), links(links_),
 //			linkLoc(linkLoc_),
 //			namedInstance(namedInstance_), initial(initial_), boundsChecks(boundsChecks_), nilChecks(nilChecks_), tableCompiled(tableCompiled_),
-//			residentFrame(residentFrame_), crossJumped(crossJumped_), packageable(packageable_), packed(packed_), linkspace(linkspace_),
+//			residentFrame(residentFrame_), crossJumped(crossJumped_), packageable(packageable_),
+			packed(packed_),
+//			linkspace(linkspace_),
 //			spare0(spare0_), spare1(spare1_), spare2(spare2_), spare3(spare3_),
 			framesize(framesize_), entries(entries_), atoms(atoms_) {}
 };
@@ -295,6 +299,7 @@ public:
 	static const CARD16 VersionID = 6103;
 
 	BCD(BCDFile* bcdFile);
+	~BCD();
 
 	//BCD: TYPE = RECORD [
 	//  versionIdent: CARDINAL,
