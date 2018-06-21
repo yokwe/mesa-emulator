@@ -44,7 +44,8 @@ public:
 	// From mesa memory
 	static BCDFile* getInstance(CARD32 ptr);
 
-    virtual ~BCDFile() = 0;
+	// To make call destructor of child class, define virtual desturctor of parent
+    virtual ~BCDFile() {}
 
 	int  bytePosition() {
 		return getPosition();

@@ -39,8 +39,6 @@ static log4cpp::Category& logger = Logger::getLogger("bcdfile");
 #include "BCD.h"
 #include "Symbols.h"
 
-BCDFile::~BCDFile() {}
-
 CARD16 BCDFile::getCARD16() {
 	CARD16 b0 = getCARD8();
 	CARD16 b1 = getCARD8();
