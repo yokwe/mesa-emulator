@@ -36,7 +36,6 @@ static log4cpp::Category& logger = Logger::getLogger("loadState");
 #include "LoadState.h"
 
 #include "../symbols/BCD.h"
-#include "../symbols/BCDFile.h"
 #include "../symbols/Symbols.h"
 
 
@@ -207,9 +206,8 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 			if (bcdMap.contains(base)) {
 				bcd = bcdMap[base];
 			} else {
-				BCDFile* bcdFile = BCDFile::getInstance(base);
 				try {
-					bcd = new BCD(bcdFile);
+					bcd = new BCD(base);
 				} catch (Abort& e) {
 					bcd = 0;
 				}

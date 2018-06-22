@@ -32,7 +32,6 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("main");
 
-#include "../symbols/BCDFile.h"
 #include "../symbols/BCD.h"
 #include "../symbols/Symbols.h"
 
@@ -82,31 +81,30 @@ void Module::dumpEntry(QString outDirPath, QString filePath) {
 			return;
 		}
 	}
-	BCDFile* file = BCDFile::getInstance(filePath);
+
+	// Read bcd file
+	BCD bcd(filePath);
 
 	// Skip not bcd file
-	if (!file->isBCDFile()) {
+	if (!bcd.isBCDFile()) {
 		logger.warn("File is not BCD. filePath = %s", filePath.toLocal8Bit().constData());
 		return;
 	}
 
-	// Read bcd file
-	BCD* bcd = new BCD(file);
-
 	// Skip definition file
-	if (bcd->definitions) return;
+	if (bcd.definitions) return;
 
 	// Locate target segment
-	if (file->isSymbolsFile()) {
+	if (bcd.isSymbolsFile()) {
 		logger.info("symbol file");
-		Symbols symbols(bcd, 2);
+		Symbols symbols(&bcd, 2);
 		dumpEntry(outDirPath, symbols);
 	} else {
-	   for (SGRecord* p : bcd->sg.values()) {
+	   for (SGRecord* p : bcd.sg.values()) {
 			if (p->segClass == SGRecord::SegClass::SYMBOLS) {
 				if (p->file->isSelf()) {
 					logger.info("symbol segment  %s %s", p->file->version->toString().toLocal8Bit().constData(), p->toString().toLocal8Bit().constData());
-					Symbols symbols(bcd, p->base);
+					Symbols symbols(&bcd, p->base);
 					dumpEntry(outDirPath, symbols);
 				}
 			}

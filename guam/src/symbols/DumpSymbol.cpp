@@ -63,22 +63,22 @@ void DumpSymbol::dumpSymbol(QString filePath, QString outDirPath) {
 		logger.fatal("File does not exist. pathFile = %s", filePath.toLocal8Bit().constData());
 		ERROR();
 	}
-	BCDFile* file = BCDFile::getInstance(filePath);
-	if (!file->isBCDFile()) {
+
+	// Read bcd file
+	BCD bcd(filePath);
+	if (!bcd.isBCDFile()) {
 		logger.info("file is no bcd file. pathFile = %s", filePath.toLocal8Bit().constData());
 		return;
 	}
 
-	// Read bcd file
-	BCD* bcd = new BCD(file);
 
 	// Locate target segment
 	int symbolBase = -1;
-	if (file->isSymbolsFile()) {
+	if (bcd.isSymbolsFile()) {
 		logger.info("file is symbol file. pathFile = %s", filePath.toLocal8Bit().constData());
 		symbolBase = 2;
 	} else {
-	   for (SGRecord* p : bcd->sg.values()) {
+	   for (SGRecord* p : bcd.sg.values()) {
 			if (p->segClass != SGRecord::SegClass::SYMBOLS)
 				continue;
 			if (p->file->isSelf()) {
@@ -94,7 +94,7 @@ void DumpSymbol::dumpSymbol(QString filePath, QString outDirPath) {
 	}
 
 	// Read symbols
-	Symbols symbols(bcd, symbolBase);
+	Symbols symbols(&bcd, symbolBase);
 
 	// Prepare output file
 	QString outFilePath;
@@ -123,13 +123,13 @@ void DumpSymbol::dumpSymbol(QString filePath, QString outDirPath) {
 	// Print Header
 	{
 		MDRecord* self = symbols.md[MDIndex::MD_OWN];
-		//FTRecord* self = bcd->ft[FTRecord::FT_SELF];
+		//FTRecord* self = bcd.ft[FTRecord::FT_SELF];
 
 		QFileInfo info(filePath);
 
 		out << "--" << endl;
 		out << QString("-- File   %1 %2").arg(self->stamp->toString()).arg(self->fileId->getValue().value) << endl;
-		if (!bcd->sourceFile->isNull()) out << QString("-- Source %1 %2").arg(bcd->sourceFile->version->toString()).arg(bcd->sourceFile->name) << endl;
+		if (!bcd.sourceFile->isNull()) out << QString("-- Source %1 %2").arg(bcd.sourceFile->version->toString()).arg(bcd.sourceFile->name) << endl;
 		out << "--" << endl;
 		out << endl;
 	}

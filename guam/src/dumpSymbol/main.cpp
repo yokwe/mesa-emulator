@@ -32,7 +32,6 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("main");
 
-#include "../symbols/BCDFile.h"
 #include "../symbols/BCD.h"
 #include "../symbols/Symbols.h"
 #include "../symbols/DumpSymbol.h"

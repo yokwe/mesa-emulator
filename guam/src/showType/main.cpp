@@ -32,7 +32,6 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("main");
 
-#include "../symbols/BCDFile.h"
 #include "../symbols/BCD.h"
 #include "../symbols/Symbols.h"
 #include "../symbols/DumpSymbol.h"
@@ -53,31 +52,29 @@ int main(int argc, char** argv) {
 		for(int i = 1; i < argc; i++) {
 			QString path = argv[i];
 			logger.info("path = %s", path.toLocal8Bit().constData());
-			BCDFile* file = BCDFile::getInstance(path);
-			// Skip not bcd file
-			if (!file->isBCDFile()) {
+
+			BCD bcd(path);
+			if (!bcd.isBCDFile()) {
 				logger.warn("File is not BCD. filePath = %s", path.toLocal8Bit().constData());
 				continue;
 			}
 
-			BCD* bcd = new BCD(file);
-
 			int symbolBase = -1;
-			if (file->isSymbolsFile()) {
+			if (bcd.isSymbolsFile()) {
 				logger.info("file is symbol file");
 				symbolBase = 2;
 
-				Symbols symbols(bcd, symbolBase);
+				Symbols symbols(&bcd, symbolBase);
 				ShowType::dump(&symbols);
 			} else {
-			   for (SGRecord* p : bcd->sg.values()) {
+			   for (SGRecord* p : bcd.sg.values()) {
 				   if (p->isNull()) continue;
 				   if (p->segClass == SGRecord::SegClass::SYMBOLS) {
 				       if (p->file->isSelf()) {
 				    	   logger.info("found internal symbol segment  %s", p->toString().toLocal8Bit().constData());
 				    	   symbolBase = p->base;
 
-				    	   Symbols symbols(bcd, symbolBase);
+				    	   Symbols symbols(&bcd, symbolBase);
 				    	   ShowType::dump(&symbols);
 					   } else {
 				    	   logger.info("found external symbol segment  %s", p->toString().toLocal8Bit().constData());
