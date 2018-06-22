@@ -214,6 +214,11 @@ QString MTRecord::toString() const {
 
 
 BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
+	if (!isBCDFile()) {
+		logger.warn("Not BCD File");
+		return;
+	}
+
 	versionIdent = file->getCARD16();
 	if (versionIdent != VersionID) {
 		logger.fatal("versionIdent %d", versionIdent);
@@ -301,6 +306,14 @@ BCD::BCD(BCDFile* bcdFile) : file(bcdFile) {
 BCD::~BCD() {
 	delete file;
 }
+
+bool BCD::isBCDFile() {
+	return file->isBCDFile();
+}
+bool BCD::isSymbolsFile() {
+	return file->isSymbolsFile();
+}
+
 
 //NameRecord* BCD::getNameRecord(CARD16 index) {
 //	if (ss.contains(index)) return ss[index];

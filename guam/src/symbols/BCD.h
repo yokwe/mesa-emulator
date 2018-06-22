@@ -35,11 +35,12 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 #include "../mesa/MesaBasic.h"
 
+#include "BCDFile.h"
+
 #include <QMap>
 
 // Forward declaration of classes
 class BCD;
-class BCDFile;
 
 namespace bcd {
 	static const CARD16 T_LIMIT = 0177777;
@@ -298,7 +299,9 @@ public:
 	//VersionID: CARDINAL = 6103
 	static const CARD16 VersionID = 6103;
 
-	BCD(BCDFile* bcdFile);
+	BCD(QString path) : BCD(BCDFile::getInstance(path)) {}
+	BCD(CARD32 ptr) : BCD(BCDFile::getInstance(ptr)) {}
+
 	~BCD();
 
 	//BCD: TYPE = RECORD [
@@ -419,7 +422,12 @@ public:
 
 	QString getName(CARD16 index);
 
+	bool isBCDFile();
+	bool isSymbolsFile();
+
 private:
+	BCD(BCDFile* bcdFile);
+
 //	void initializeNameRecord();
 	void initializeFTRecord();
 	void initializeSGRecord();
