@@ -81,7 +81,7 @@ bool BCDFile::isSymbolsFile() {
 
 class BCDFileFile : public BCDFile {
 public:
-	BCDFileFile(QString path) : file(path) {
+	BCDFileFile(QString path_) : path(path_), file(path_) {
 		if (!file.exists()) {
 			logger.fatal("File does not exist. path = %s", path.toLocal8Bit().constData());
 			ERROR();
@@ -96,6 +96,10 @@ public:
 	}
 	~BCDFileFile() {
 		if (file.isOpen()) file.close();
+	}
+
+	QString getPath() {
+		return path;
 	}
 
 	int getPosition() {
@@ -118,8 +122,9 @@ public:
 	}
 
 private:
-	QFile file;
-	int   capacity;
+	QString path;
+	QFile   file;
+	qint64  capacity;
 };
 
 BCDFile* BCDFile::getInstance(QString path) {
@@ -151,6 +156,10 @@ public:
 	~BCDFileMesaMemory() {
 	}
 
+	QString getPath() {
+		logger.fatal("Unexpected call of %s", __FUNCTION__);
+		ERROR();
+	}
 	int getPosition() {
 		return pos;
 	}

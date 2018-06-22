@@ -422,8 +422,9 @@ public:
 
 	QString getName(CARD16 index);
 
-	bool isBCDFile();
-	bool isSymbolsFile();
+	bool    isBCDFile();
+	bool    isSymbolsFile();
+	QString getPath();
 
 private:
 	BCD(BCDFile* bcdFile);

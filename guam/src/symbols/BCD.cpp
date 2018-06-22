@@ -313,6 +313,9 @@ bool BCD::isBCDFile() {
 bool BCD::isSymbolsFile() {
 	return file->isSymbolsFile();
 }
+QString BCD::getPath() {
+	return file->getPath();
+}
 
 
 //NameRecord* BCD::getNameRecord(CARD16 index) {

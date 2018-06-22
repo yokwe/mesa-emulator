@@ -63,9 +63,10 @@ public:
 		setPosition(0);
 	}
 
-	virtual int    getPosition()                = 0;
-	virtual void   setPosition(int newPosition) = 0;
-	virtual CARD8  getCARD8() = 0;
+	virtual QString getPath()                    = 0;
+	virtual int     getPosition()                = 0;
+	virtual void    setPosition(int newPosition) = 0;
+	virtual CARD8   getCARD8()                   = 0;
 
 	CARD16 getCARD16();
 	CARD32 getCARD32();
