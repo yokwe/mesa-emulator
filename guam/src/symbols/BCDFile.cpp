@@ -65,6 +65,8 @@ bool BCDFile::isBCDFile() {
 	return word0 == BCD::VersionID;
 }
 bool BCDFile::isSymbolsFile() {
+	if (getLength() < Environment::wordsPerPage) return false;
+
 	int oldPosition = getPosition();
 
 	position(Environment::wordsPerPage);
@@ -119,6 +121,9 @@ public:
 			ERROR();
 		}
 		return (CARD8)data;
+	}
+	CARD32 getLength() {
+		return (CARD32)capacity;
 	}
 
 private:
@@ -179,6 +184,9 @@ public:
 
 		pos++;
 		return data;
+	}
+	CARD32 getLength() {
+		return (CARD32)-1;
 	}
 
 private:
