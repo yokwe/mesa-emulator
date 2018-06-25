@@ -26,9 +26,17 @@ TCP is not worked as expected even using dedicated network interface.
 
 Verified build environment
 --------------------------
-Ubuntu 14.04.1 32 bit
+I am using Long Term Support version of Ubuntu for build environment.
+Below is a list of software version as of 2018-06-25.
+  Ubuntu  - 18.04
+  gcc     - 7.3.0
+  qt5     - 5.9.5
+  log4cpp - 1.1.1
+  cppunit - 1.14.0
+
+I am maintaining only native qt5 build (64 bit).
+Below is a list of obsolete configurations.
   native build with qt4
-  native build with qt5
   raspberry pi cross build with qt4
   win32 cross build with qt4
   
@@ -37,17 +45,6 @@ Raspberry Pi cross build needs cross compile tool at /opt/raspi/tools.
 
 win32 cross build needs MXE at /opt/mxe.
   git://github.com/mxe/mxe.git
-
-
-Library Dependency
-------------------
-qt4     - 4.8.6
-qt5     - 5.2.1
-log4cpp - 0.3.5
-cppunit - 1.13.1
-
-You need qt4 or qt5(preferred).
-You need compile log4cpp and install it in MXE
 
 
 Acknowledgement
