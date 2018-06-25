@@ -39,6 +39,7 @@ all:
 	(cd src/dumpSymbol;    make all)
 	(cd src/showType;      make all)
 	(cd src/moduleEntry;   make all)
+	(cd src/bcdInfo;       make all)
 
 qt4-default:
 	sudo apt-get install qt4-default
@@ -49,7 +50,7 @@ qt5-default:
 clean:
 	echo "PATH = $(PATH)"
 	rm -rf tmp/build
-	mkdir  -p tmp/build
+	mkdir  tmp/build
 	mkdir  tmp/build/mesa
 	mkdir  tmp/build/simple-opcode
 	mkdir  tmp/build/agent
@@ -62,6 +63,7 @@ clean:
 	mkdir  tmp/build/dumpSymbol
 	mkdir  tmp/build/showType
 	mkdir  tmp/build/moduleEntry
+	mkdir  tmp/build/bcdInfo
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -117,6 +119,12 @@ moduleEntry:
 	(cd src/symbols;       make all)
 	(cd src/moduleEntry;   make all)
 
+bcdInfo:
+	(cd src/mesa;          make all)
+	(cd src/util;          make all)
+	(cd src/symbols;       make all)
+	(cd src/bcdInfo;       make all)
+
 run-dumpSymbol: dumpSymbol
 	echo -n >tmp/debug.log
 	tmp/build/dumpSymbol/dumpSymbol tmp/GermOpsImpl.bcd
@@ -128,6 +136,10 @@ run-showType: showType
 run-moduleEntry: moduleEntry
 	echo -n >tmp/debug.log
 	tmp/build/moduleEntry/moduleEntry tmp/GermOpsImpl.bcd
+
+run-bcdInfo: bcdInfo
+	echo -n >tmp/debug.log
+	tmp/build/bcdInfo/bcdInfo tmp/GermOpsImpl.bcd
 
 
 run-guam: guam
@@ -194,6 +206,7 @@ qmake:
 	(cd src/dumpSymbol;    qmake)
 	(cd src/showType;      qmake)
 	(cd src/moduleEntry;   qmake)
+	(cd src/bcdInfo;       qmake)
 	qmake --version
 
 
