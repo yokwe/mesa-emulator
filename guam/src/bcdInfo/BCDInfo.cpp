@@ -328,6 +328,164 @@ void SGInfo::setJsonArray(QJsonArray& ja, const QList<SGInfo>& list) {
 	}
 }
 
+
+//
+// CodeInfo
+//
+CodeInfo::CodeInfo() {
+	this->sg     = SGInfo();
+	this->offset = 0;
+	this->length = 0;
+}
+CodeInfo::CodeInfo(const CodeDesc& that) {
+	this->sg     = SGInfo(*that.sgi);
+	this->offset = that.offset;
+	this->length = that.length;
+}
+void CodeInfo::getJsonValue(const QJsonObject& json) {
+	SGInfo::getJsonValue(json, "sg", sg);
+	GET_JSON_FIELD(json, offset);
+	GET_JSON_FIELD(json, length);
+}
+void CodeInfo::setJsonValue(QJsonObject& json) const {
+	SGInfo::setJsonValue(json, "sg", sg);
+	SET_JSON_FIELD(json, offset);
+	SET_JSON_FIELD(json, length);
+}
+void CodeInfo::getJsonValue(const QJsonObject& json, const QString& key, CodeInfo&  value) {
+	QJsonObject jo;
+	JSONBase::getJsonValue(json, key, jo);
+	value.getJsonValue(jo);
+}
+void CodeInfo::setJsonValue(QJsonObject& json, const QString& key, const CodeInfo&  value) {
+	QJsonObject jo;
+	value.setJsonValue(jo);
+	JSONBase::setJsonValue(json, key, jo);
+}
+
+
+//
+// ENInfo
+//
+ENInfo::ENInfo() {
+	this->initialPC.clear();
+}
+ENInfo::ENInfo(const ENRecord& that) {
+	this->initialPC = that.initialPC;
+}
+void ENInfo::getJsonValue(const QJsonObject& json) {
+	initialPC.clear();
+
+	QJsonArray ja;
+	JSONBase::getJsonValue(json, "initialPC", ja);
+	for(QJsonValue jv: ja) {
+		QVariant       v = jv.toVariant();
+		QVariant::Type t = v.type();
+
+		if (t == QVariant::Type::Int) {
+			bool ok;
+			CARD16 value = (CARD16)v.toUInt(&ok);
+			if (!ok) {
+				logger.fatal("Unexpected not ok. value = %s", v.toString().toLocal8Bit().constData());
+				ERROR();
+			}
+			initialPC.append(value);
+		} else {
+			logger.fatal("Unexpected type = %s", QVariant::typeToName(t));
+			logger.fatal("Expected type = Int");
+			ERROR();
+		}
+	}
+}
+void ENInfo::setJsonValue(QJsonObject& json) const {
+	QJsonArray ja;
+	for(CARD16 value: initialPC) {
+		QJsonValue jv(value);
+		ja.append(value);
+	}
+	JSONBase::setJsonValue(json, "initialPC", ja);
+}
+void ENInfo::getJsonValue(const QJsonObject& json, const QString& key, ENInfo&  value) {
+	QJsonObject jo;
+	JSONBase::getJsonValue(json, key, jo);
+	value.getJsonValue(jo);
+}
+void ENInfo::setJsonValue(QJsonObject& json, const QString& key, const ENInfo&  value) {
+	QJsonObject jo;
+	value.setJsonValue(jo);
+	JSONBase::setJsonValue(json, key, jo);
+}
+
+
+//
+// MTInfo
+//
+MTInfo::MTInfo() {
+	this->name      = "Undefined";
+	this->file      = FTInfo();
+	this->code      = CodeInfo();
+	this->sseg      = SGInfo();
+	this->framesize = 0;
+	this->entries   = ENInfo();
+}
+MTInfo::MTInfo(const MTRecord& that) {
+	this->name      = that.name;
+	this->file      = FTInfo(*that.file);
+	this->code      = CodeInfo(*that.code);
+	this->sseg      = SGInfo(*that.sseg);
+	this->framesize = that.framesize;
+	this->entries   = ENInfo(*that.entries);
+}
+void MTInfo::getJsonValue(const QJsonObject& json) {
+	GET_JSON_FIELD(json, name);
+	FTInfo::getJsonValue(json, "file", file);
+	CodeInfo::getJsonValue(json, "code", code);
+	SGInfo::getJsonValue(json, "sseg", sseg);
+	GET_JSON_FIELD(json, framesize);
+	ENInfo::getJsonValue(json, "entries", entries);
+}
+void MTInfo::setJsonValue(QJsonObject& json) const {
+	SET_JSON_FIELD(json, name);
+	FTInfo::setJsonValue(json, "file", file);
+	CodeInfo::setJsonValue(json, "code", code);
+	SGInfo::setJsonValue(json, "sseg", sseg);
+	SET_JSON_FIELD(json, framesize);
+	ENInfo::setJsonValue(json, "entries", entries);
+}
+
+void MTInfo::getJsonValue(const QJsonObject& json, const QString& key, MTInfo&  value) {
+	QJsonObject jo;
+	JSONBase::getJsonValue(json, key, jo);
+	value.getJsonValue(jo);
+}
+void MTInfo::setJsonValue(QJsonObject& json, const QString& key, const MTInfo&  value) {
+	QJsonObject jo;
+	value.setJsonValue(jo);
+	JSONBase::setJsonValue(json, key, jo);
+}
+
+void MTInfo::getJsonArray(const QJsonArray& ja, QList<MTInfo>& list) {
+	for(const QJsonValue& e: ja) {
+		if (e.isObject()) {
+			QJsonObject o = e.toObject();
+			MTInfo mt(o);
+			list.append(mt);
+		} else {
+			logger.fatal("Unexpected type = %d", e.type());
+			logger.fatal("Expected type = Object");
+			ERROR();
+		}
+	}
+}
+void MTInfo::setJsonArray(QJsonArray& ja, const QList<MTInfo>& list) {
+	for(const MTInfo& e: list) {
+		QJsonObject jo;
+		e.setJsonValue(jo);
+		ja.append(jo);
+	}
+}
+
+
 //
 // BCDInfo
 //
@@ -349,12 +507,12 @@ BCDInfo::BCDInfo(BCD& bcd) {
 	typeExported  = bcd.typeExported;
 	tableCompiled = bcd.tableCompiled;
 
-	for(SGRecord* e: bcd.sg.values()) {
+	for(MTRecord* e: bcd.mt.values()) {
 		// Skip null entry
 		if (e->isNull()) continue;
 
-		SGInfo sg(*e);
-		sgList.append(sg);
+		MTInfo mt(*e);
+		mtList.append(mt);
 	}
 }
 BCDInfo::BCDInfo(QJsonObject& json) {
@@ -381,8 +539,8 @@ void BCDInfo::getJsonValue(const QJsonObject& json) {
 	GET_JSON_FIELD(json, tableCompiled);
 
 	QJsonArray ja;
-	SGInfo::getJsonArray(ja, sgList);
-	JSONBase::getJsonValue(json, "sgList", ja);
+	MTInfo::getJsonArray(ja, mtList);
+	JSONBase::getJsonValue(json, "mt", ja);
 }
 // write value to jsonObject
 void BCDInfo::setJsonValue(QJsonObject& json) const {
@@ -404,6 +562,6 @@ void BCDInfo::setJsonValue(QJsonObject& json) const {
 	SET_JSON_FIELD(json, tableCompiled);
 
 	QJsonArray ja;
-	SGInfo::setJsonArray(ja, sgList);
-	JSONBase::setJsonValue(json, "sgList", ja);
+	MTInfo::setJsonArray(ja, mtList);
+	JSONBase::setJsonValue(json, "mt", ja);
 }

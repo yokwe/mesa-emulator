@@ -112,8 +112,6 @@ public:
 
 class SGInfo : public JSONBase {
 public:
-	typedef SGRecord::SegClass SegClass;
-
 	static void getJsonValue(const QJsonObject& json, const QString& key, SGInfo&        value);
 	static void setJsonValue(QJsonObject& json,       const QString& key, const SGInfo&  value);
 
@@ -147,6 +145,116 @@ public:
 	void setJsonValue(QJsonObject& json) const;
 };
 
+class CodeInfo : public JSONBase {
+public:
+	static void getJsonValue(const QJsonObject& json, const QString& key,       CodeInfo& value);
+	static void setJsonValue(      QJsonObject& json, const QString& key, const CodeInfo& value);
+
+	SGInfo sg;
+	CARD16 offset;
+	CARD16 length;
+
+	CodeInfo();
+	CodeInfo(const CodeDesc& that);
+	CodeInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
+	CodeInfo(const CodeInfo& that) {
+		this->sg     = that.sg;
+		this->offset = that.offset;
+		this->length = that.length;
+	}
+
+	virtual ~CodeInfo() {}
+
+	// read value from jsonObject
+	void getJsonValue(const QJsonObject& json);
+	// write value to jsonObject
+	void setJsonValue(QJsonObject& json) const;
+};
+
+class ENInfo : public JSONBase {
+public:
+	static void getJsonValue(const QJsonObject& json, const QString& key,       ENInfo& value);
+	static void setJsonValue(      QJsonObject& json, const QString& key, const ENInfo& value);
+
+	QVector<CARD16> initialPC;
+
+	ENInfo();
+	ENInfo(const ENRecord& that);
+	ENInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
+	ENInfo(const ENInfo& that) {
+		this->initialPC     = that.initialPC;
+	}
+
+	virtual ~ENInfo() {}
+
+	// read value from jsonObject
+	void getJsonValue(const QJsonObject& json);
+	// write value to jsonObject
+	void setJsonValue(QJsonObject& json) const;
+};
+
+class MTInfo : JSONBase {
+public:
+	static void getJsonValue(const QJsonObject& json, const QString& key,       MTInfo& value);
+	static void setJsonValue(      QJsonObject& json, const QString& key, const MTInfo& value);
+
+	static void setJsonArray(      QJsonArray& ja, const QList<MTInfo>& list);
+	static void getJsonArray(const QJsonArray& ja,       QList<MTInfo>& list);
+
+	//	CARD16    index;
+	QString   name;
+	FTInfo    file;
+//	CARD16    config;
+	CodeInfo  code;
+	SGInfo    sseg;
+//	CARD16    links;
+//	CARD16    linkLoc;
+//	bool      namedInstance;
+//	bool      initial;
+//	bool      boundsChecks;
+//	bool      nilChecks;
+//	bool      tableCompiled;
+//	bool      residentFrame;
+//	bool      crossJumped;
+//	bool      packageable;
+//	bool      packed;
+//	bool      linkspace;
+//	bool      spare0;
+//	bool      spare1;
+//	bool      spare2;
+//	bool      spare3;
+	CARD16    framesize;
+	ENInfo    entries;
+//	CARD16    atoms;
+
+	MTInfo();
+	MTInfo(const MTRecord& that);
+	MTInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
+	MTInfo(const MTInfo& that) {
+		this->name      = that.name;
+		this->file      = that.file;
+		this->code      = that.code;
+		this->sseg      = that.sseg;
+		this->framesize = that.framesize;
+		this->entries   = that.entries;
+	}
+
+	virtual ~MTInfo() {}
+
+	// read value from jsonObject
+	void getJsonValue(const QJsonObject& json);
+	// write value to jsonObject
+	void setJsonValue(QJsonObject& json) const;
+
+};
+
+
 class BCDInfo : public JSONBase {
 public:
 	QString path;
@@ -167,7 +275,7 @@ public:
 	bool   typeExported;
 	bool   tableCompiled;
 
-	QList<SGInfo> sgList; // Treat as QJsonArray
+	QList<MTInfo> mtList; // Treat as QJsonArray
 
 	BCDInfo(BCD& bcd);
 	BCDInfo(QJsonObject& jsonObject);

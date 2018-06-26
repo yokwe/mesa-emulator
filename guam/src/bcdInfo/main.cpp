@@ -142,14 +142,22 @@ void processSymbols(Symbols& symbols) {
 }
 
 void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
-	QJsonObject jsonObject;
+	QJsonObject jsonObjectBCD;
+	QJsonObject jsonObjectSymbols;
 
 	BCD bcd(fileInfo.filePath());
 	if (bcd.isBCDFile()) {
+		BCDInfo bcdInfo(bcd);
+		bcdInfo.setJsonValue(jsonObjectBCD);
+
 		if (bcd.nPages == 0) {
 			if (bcd.isSymbolsFile()) {
 				logger.info("symbol file  %s", bcd.getPath().toLocal8Bit().constData());
-		//		Symbols symbols(&bcd, 2);
+				Symbols symbols(&bcd, 2);
+				JSONBase::setJsonValue(jsonObjectSymbols, "version", symbols.version->value);
+				JSONBase::setJsonValue(jsonObjectSymbols, "sourceVersion", symbols.sourceVersion->value);
+				JSONBase::setJsonValue(jsonObjectSymbols, "definitionsFile", symbols.definitionsFile);
+
 		//		processSymbols(symbols);
 			} else {
 				logger.fatal("Unexpected not symbol %s", bcd.getPath().toLocal8Bit().constData());
@@ -160,10 +168,6 @@ void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
 
 			// process BCD
 			processBCD(bcd);
-
-			//
-			BCDInfo bcdInfo(bcd);
-			bcdInfo.setJsonValue(jsonObject);
 
 			// process Symbols in symbols segment
 			for (SGRecord* p : bcd.sg.values()) {
@@ -193,6 +197,14 @@ void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
 
 	// Output jsonObect to file
 	{
+		QJsonObject jsonObject;
+		if (!jsonObjectBCD.isEmpty()) {
+			jsonObject["bcd"] = jsonObjectBCD;
+		}
+		if (!jsonObjectSymbols.isEmpty()) {
+			jsonObject["symbols"] = jsonObjectSymbols;
+		}
+
 		QJsonDocument jsonDoc(jsonObject);
 		QByteArray fileContents = jsonDoc.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
 
