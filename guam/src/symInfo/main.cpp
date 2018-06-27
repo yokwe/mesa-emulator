@@ -48,7 +48,7 @@ void WriteProtectFault(CARD32 ptr) {
 	ERROR();
 }
 
-static QList<BCDInfo> allBCD;
+static QList<BCDInfo> bcdAll;
 
 void processFile(const QDir& /*outDir*/, const QFileInfo& fileInfo) {
 	QFile jsonFile(fileInfo.filePath());
@@ -76,7 +76,7 @@ void processFile(const QDir& /*outDir*/, const QFileInfo& fileInfo) {
 
 	BCDInfo bcdInfo(jsonObject);
 
-	allBCD.append(bcdInfo);
+	bcdAll.append(bcdInfo);
 }
 
 
@@ -143,21 +143,25 @@ int main(int /*argc*/, char** /*argv*/) {
 		}
 
 		processDir(outDir, QFileInfo(inDirPath));
-		logger.info("allBCD = %d", allBCD.size());
+		logger.info("bcdAll %d", bcdAll.size());
 
+		QMap<quint64, BCDInfo> bcdMap;
 		{
-			QMap<quint64, QString> map;
-			for(BCDInfo& bcd: allBCD) {
-				quint64 version = bcd.version;
-				QString path    = bcd.path;
-				if (map.contains(version)) {
-					QString old = map[bcd.version];
-					logger.info("Duplicate %llu  %s", version, path.toLocal8Bit().constData());
-					logger.info("Duplicate %llu  %s", version, old.toLocal8Bit().constData());
+			for(BCDInfo& bcd: bcdAll) {
+				if (bcdMap.contains(bcd.version)) {
+					// Sanity check
+					BCDInfo old = bcdMap[bcd.version];
+					if (old.hash != old.hash) {
+						logger.fatal("Duplicate %llu", bcd.version);
+						logger.fatal("          %s  %s", bcd.hash.toLocal8Bit().constData(), bcd.path.toLocal8Bit().constData());
+						logger.fatal("          %s  %s", old.hash.toLocal8Bit().constData(), old.path.toLocal8Bit().constData());
+						ERROR();
+					}
 				} else {
-					map.insert(bcd.version, bcd.path);
+					bcdMap.insert(bcd.version, bcd);
 				}
 			}
+			logger.info("bcdMap %d", bcdMap.size());
 		}
 
 	} catch (Error& e) {
