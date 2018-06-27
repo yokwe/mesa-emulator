@@ -39,7 +39,9 @@ all:
 	(cd src/dumpSymbol;    make all)
 	(cd src/showType;      make all)
 	(cd src/moduleEntry;   make all)
+	(cd src/bcd;           make all)
 	(cd src/bcdInfo;       make all)
+	(cd src/symInfo;       make all)
 
 qt4-default:
 	sudo apt-get install qt4-default
@@ -63,7 +65,9 @@ clean:
 	mkdir  tmp/build/dumpSymbol
 	mkdir  tmp/build/showType
 	mkdir  tmp/build/moduleEntry
+	mkdir  tmp/build/bcd
 	mkdir  tmp/build/bcdInfo
+	mkdir  tmp/build/symInfo
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -119,11 +123,22 @@ moduleEntry:
 	(cd src/symbols;       make all)
 	(cd src/moduleEntry;   make all)
 
-bcdInfo:
-	(cd src/mesa;          make all)
+bcd:
 	(cd src/util;          make all)
 	(cd src/symbols;       make all)
+	(cd src/bcd;           make all)
+
+bcdInfo:
+	(cd src/util;          make all)
+	(cd src/symbols;       make all)
+	(cd src/bcd;           make all)
 	(cd src/bcdInfo;       make all)
+
+symInfo:
+	(cd src/util;          make all)
+	(cd src/symbols;       make all)
+	(cd src/bcd;           make all)
+	(cd src/symInfo;       make all)
 
 run-dumpSymbol: dumpSymbol
 	echo -n >tmp/debug.log
@@ -140,6 +155,10 @@ run-moduleEntry: moduleEntry
 run-bcdInfo: bcdInfo
 	echo -n >tmp/debug.log
 	tmp/build/bcdInfo/bcdInfo tmp/GermOpsImpl.bcd
+
+run-symInfo: symInfo
+	echo -n >tmp/debug.log
+	tmp/build/symInfo/symInfo
 
 
 run-guam: guam
@@ -206,7 +225,9 @@ qmake:
 	(cd src/dumpSymbol;    qmake)
 	(cd src/showType;      qmake)
 	(cd src/moduleEntry;   qmake)
+	(cd src/bcd;           qmake)
 	(cd src/bcdInfo;       qmake)
+	(cd src/symInfo;       qmake)
 	qmake --version
 
 
