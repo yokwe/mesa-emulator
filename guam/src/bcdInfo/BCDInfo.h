@@ -65,10 +65,10 @@ public:
 	static void setJsonValue(QJsonObject& json, const QString& key, const CARD16&      value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const quint64&     value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const bool&        value);
-	static void setJsonValue(QJsonObject& json, const QString& key, const FTInfo&      value);
-	static void setJsonValue(QJsonObject& json, const QString& key, const SGInfo&      value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const QJsonObject& value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const QJsonArray&  value);
+
+	static QString getJasonValueTypeName(QJsonValue::Type type);
 };
 
 class FTInfo : public JSONBase {
@@ -76,11 +76,11 @@ public:
 	static const quint64 VERSION_NULL = 0;
 	static const quint64 VERSION_SELF = 1;
 
-	static void getJsonValue(const QJsonObject& json, const QString& key, FTInfo&        value);
-	static void setJsonValue(QJsonObject& json,       const QString& key, const FTInfo&  value);
+	static void getJsonValue(const QJsonObject& json, const QString& key,       FTInfo& value);
+	static void setJsonValue(      QJsonObject& json, const QString& key, const FTInfo& value);
 
-	static void setJsonArray(QJsonArray& ja,       const QList<FTInfo>& list);
-	static void getJsonArray(const QJsonArray& ja, QList<FTInfo>&       list);
+	static void setJsonArray(      QJsonArray& ja, const QList<FTInfo>& list);
+	static void getJsonArray(const QJsonArray& ja,       QList<FTInfo>& list);
 
 
 	QString name;
@@ -112,11 +112,11 @@ public:
 
 class SGInfo : public JSONBase {
 public:
-	static void getJsonValue(const QJsonObject& json, const QString& key, SGInfo&        value);
-	static void setJsonValue(QJsonObject& json,       const QString& key, const SGInfo&  value);
+	static void getJsonValue(const QJsonObject& json, const QString& key,       SGInfo& value);
+	static void setJsonValue(      QJsonObject& json, const QString& key, const SGInfo& value);
 
-	static void setJsonArray(QJsonArray& ja,       const QList<SGInfo>& list);
-	static void getJsonArray(const QJsonArray& ja, QList<SGInfo>&       list);
+	static void setJsonArray(      QJsonArray& ja, const QList<SGInfo>& list);
+	static void getJsonArray(const QJsonArray& ja,       QList<SGInfo>& list);
 
 	FTInfo  file;
 	CARD16  base;
@@ -205,7 +205,7 @@ public:
 	static void setJsonArray(      QJsonArray& ja, const QList<MTInfo>& list);
 	static void getJsonArray(const QJsonArray& ja,       QList<MTInfo>& list);
 
-	//	CARD16    index;
+//	CARD16    index;
 	QString   name;
 	FTInfo    file;
 //	CARD16    config;

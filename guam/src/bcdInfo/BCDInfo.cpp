@@ -43,17 +43,33 @@ static log4cpp::Category& logger = Logger::getLogger("bcdInfo");
 // JSONBase
 //
 
+static QMap<QJsonValue::Type, QString> typeNameMap = {
+	{QJsonValue::Null,      "NULL"},
+	{QJsonValue::Bool,      "Bool"},
+	{QJsonValue::Double,    "Double"},
+	{QJsonValue::String,    "String"},
+	{QJsonValue::Array,     "Array"},
+	{QJsonValue::Object,    "Object"},
+	{QJsonValue::Undefined, "Undefined"},
+};
+
+QString JSONBase::getJasonValueTypeName(QJsonValue::Type type) {
+	if (typeNameMap.contains(type)) {
+		return typeNameMap[type];
+	} else {
+		return QString("Unknwn-0x%1").arg((int)type, 0, 16);
+	}
+}
+
 // read value from jsonObject
 void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, QString& value) {
 	if (jsonObject.contains(key)) {
-		QJsonValue     j = jsonObject.value(key);
-		QVariant       v = j.toVariant();
-		QVariant::Type t = v.type();
+		QJsonValue v = jsonObject.value(key);
 
-		if (t == QVariant::Type::String) {
+		if (v.isString()) {
 			value = v.toString();
 		} else {
-			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), QVariant::typeToName(t));
+			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
 			logger.fatal("Expected type = String");
 			ERROR();
 		}
@@ -65,20 +81,18 @@ void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, Q
 }
 void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, CARD16&  value) {
 	if (jsonObject.contains(key)) {
-		QJsonValue     j = jsonObject.value(key);
-		QVariant       v = j.toVariant();
-		QVariant::Type t = v.type();
+		QJsonValue v = jsonObject.value(key);
 
-		if (t == QVariant::Type::Int) {
+		if (v.isDouble()) {
 			bool ok;
-			value = (CARD16)v.toUInt(&ok);
+			value = (CARD16)v.toVariant().toInt(&ok);
 			if (!ok) {
 				logger.fatal("Unexpected not ok. key = %s  value = %s", key.toLocal8Bit().constData(), v.toString().toLocal8Bit().constData());
 				ERROR();
 			}
 		} else {
-			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), QVariant::typeToName(t));
-			logger.fatal("Expected type = Int");
+			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
+			logger.fatal("Expected type = Double");
 			ERROR();
 		}
 	} else {
@@ -89,20 +103,18 @@ void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, C
 }
 void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, quint64& value) {
 	if (jsonObject.contains(key)) {
-		QJsonValue     j = jsonObject.value(key);
-		QVariant       v = j.toVariant();
-		QVariant::Type t = v.type();
+		QJsonValue v = jsonObject.value(key);
 
-		if (t == QVariant::Type::LongLong) {
+		if (v.isDouble()) {
 			bool ok;
-			value = (quint64)v.toLongLong(&ok);
+			value = v.toVariant().toULongLong(&ok);
 			if (!ok) {
-				logger.fatal("Unexpected not ok. key = %s", key.toLocal8Bit().constData());
+				logger.fatal("Unexpected not ok. key = %s  value = %s", key.toLocal8Bit().constData(), v.toString().toLocal8Bit().constData());
 				ERROR();
 			}
 		} else {
-			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), QVariant::typeToName(t));
-			logger.fatal("Expected type = LongLong");
+			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
+			logger.fatal("Expected type = Double");
 			ERROR();
 		}
 	} else {
@@ -112,14 +124,12 @@ void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, q
 }
 void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, bool&    value) {
 	if (jsonObject.contains(key)) {
-		QJsonValue     j = jsonObject.value(key);
-		QVariant       v = j.toVariant();
-		QVariant::Type t = v.type();
+		QJsonValue v = jsonObject.value(key);
 
-		if (t == QVariant::Type::Bool) {
+		if (v.isBool()) {
 			value = v.toBool();
 		} else {
-			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), QVariant::typeToName(t));
+			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
 			logger.fatal("Expected type = Bool");
 			ERROR();
 		}
@@ -130,11 +140,12 @@ void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, b
 }
 void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, QJsonObject&  value) {
 	if (jsonObject.contains(key)) {
-		QJsonValue j = jsonObject.value(key);
-		if (j.isObject()) {
-			value = j.toObject();
+		QJsonValue v = jsonObject.value(key);
+
+		if (v.isObject()) {
+			value = v.toObject();
 		} else {
-			logger.fatal("Unexpected key = %s type = %d", key.toLocal8Bit().constData(), j.type());
+			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
 			logger.fatal("Expected type = Object");
 			ERROR();
 		}
@@ -145,11 +156,12 @@ void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, Q
 }
 void JSONBase::getJsonValue(const QJsonObject& jsonObject, const QString& key, QJsonArray&  value) {
 	if (jsonObject.contains(key)) {
-		QJsonValue j = jsonObject.value(key);
-		if (j.isArray()) {
-			value = j.toArray();
+		QJsonValue v = jsonObject.value(key);
+
+		if (v.isArray()) {
+			value = v.toArray();
 		} else {
-			logger.fatal("Unexpected key = %s type = %d", key.toLocal8Bit().constData(), j.type());
+			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
 			logger.fatal("Expected type = Array");
 			ERROR();
 		}
@@ -378,21 +390,18 @@ void ENInfo::getJsonValue(const QJsonObject& json) {
 
 	QJsonArray ja;
 	JSONBase::getJsonValue(json, "initialPC", ja);
-	for(QJsonValue jv: ja) {
-		QVariant       v = jv.toVariant();
-		QVariant::Type t = v.type();
-
-		if (t == QVariant::Type::Int) {
+	for(QJsonValue v: ja) {
+		if (v.isDouble()) {
 			bool ok;
-			CARD16 value = (CARD16)v.toUInt(&ok);
+			CARD16 value = (CARD16)v.toVariant().toInt(&ok);
 			if (!ok) {
 				logger.fatal("Unexpected not ok. value = %s", v.toString().toLocal8Bit().constData());
 				ERROR();
 			}
 			initialPC.append(value);
 		} else {
-			logger.fatal("Unexpected type = %s", QVariant::typeToName(t));
-			logger.fatal("Expected type = Int");
+			logger.fatal("Unexpected type = %s", getJasonValueTypeName(v.type()).toLocal8Bit().constData());
+			logger.fatal("Expected type = Double");
 			ERROR();
 		}
 	}
@@ -539,8 +548,8 @@ void BCDInfo::getJsonValue(const QJsonObject& json) {
 	GET_JSON_FIELD(json, tableCompiled);
 
 	QJsonArray ja;
-	MTInfo::getJsonArray(ja, mtList);
 	JSONBase::getJsonValue(json, "mt", ja);
+	MTInfo::getJsonArray(ja, mtList);
 }
 // write value to jsonObject
 void BCDInfo::setJsonValue(QJsonObject& json) const {

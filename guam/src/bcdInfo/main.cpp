@@ -150,6 +150,31 @@ void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
 		BCDInfo bcdInfo(bcd);
 		bcdInfo.setJsonValue(jsonObjectBCD);
 
+		// Sanity check of BCDInfo <-> QJsonObject conversion
+		{
+			BCDInfo bcdInfo1(bcd);
+
+			QJsonObject jsonObjectBCD1;
+			bcdInfo1.setJsonValue(jsonObjectBCD1);
+
+			QJsonDocument jsonDoc1(jsonObjectBCD1);
+			QByteArray fileContents1 = jsonDoc1.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
+
+			BCDInfo bcdInfo2(jsonObjectBCD1);
+			QJsonObject jsonObjectBCD2;
+			bcdInfo2.setJsonValue(jsonObjectBCD2);
+
+			QJsonDocument jsonDoc2(jsonObjectBCD2);
+			QByteArray fileContents2 = jsonDoc2.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
+
+			if (!(fileContents1.size() == fileContents2.size() || qstricmp((const char*)fileContents1, (const char*)fileContents2) == 0)) {
+				logger.fatal("Unexpected");
+				logger.fatal("fileContents1 = (%d) %s!", fileContents1.size(), fileContents1.constData());
+				logger.fatal("fileContents2 = (%d) %s!", fileContents2.size(), fileContents2.constData());
+				ERROR();
+			}
+		}
+
 		if (bcd.nPages == 0) {
 			if (bcd.isSymbolsFile()) {
 				logger.info("symbol file  %s", bcd.getPath().toLocal8Bit().constData());
