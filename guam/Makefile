@@ -129,12 +129,14 @@ bcd:
 	(cd src/bcd;           make all)
 
 bcdInfo:
+	(cd src/mesa;          make all)
 	(cd src/util;          make all)
 	(cd src/symbols;       make all)
 	(cd src/bcd;           make all)
 	(cd src/bcdInfo;       make all)
 
 symInfo:
+	(cd src/mesa;          make all)
 	(cd src/util;          make all)
 	(cd src/symbols;       make all)
 	(cd src/bcd;           make all)
