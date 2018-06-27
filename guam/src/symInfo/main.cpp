@@ -48,14 +48,14 @@ void WriteProtectFault(CARD32 ptr) {
 	ERROR();
 }
 
-static QList<BCDInfo*> allBCD;
+static QList<BCDInfo> allBCD;
 
-void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
-	QFile jsonFile(fileInfo.path());
+void processFile(const QDir& /*outDir*/, const QFileInfo& fileInfo) {
+	QFile jsonFile(fileInfo.filePath());
 
 	if (!jsonFile.open(QIODevice::ReadOnly)) {
-		logger.fatal("File open error %s", jsonFile.errorString().toLocal8Bit().constData());
-		logger.fatal("path = %s", fileInfo.path().toLocal8Bit().constData());
+		logger.fatal("File open error - %s", jsonFile.errorString().toLocal8Bit().constData());
+		logger.fatal("path = %s", fileInfo.filePath().toLocal8Bit().constData());
 		ERROR();
 	}
 
@@ -64,18 +64,19 @@ void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
 	QJsonDocument jsonDocument(QJsonDocument::fromJson(fileContents, &jsonParseError));
 	if (jsonDocument.isNull()) {
 		logger.fatal("Parse error %s", jsonParseError.errorString().toLocal8Bit().constData());
-		logger.fatal("path = %s", fileInfo.path().toLocal8Bit().constData());
+		logger.fatal("path = %s", fileInfo.filePath().toLocal8Bit().constData());
 		ERROR();
 	}
-	if (jsonDocument.isObject()) {
-		logger.fatal("Not Object");
-		logger.fatal("path = %s", fileInfo.path().toLocal8Bit().constData());
+	if (!jsonDocument.isObject()) {
+		logger.fatal("Not Object - array %d  empty %d  null %d  object %d", jsonDocument.isArray(), jsonDocument.isEmpty(), jsonDocument.isNull(), jsonDocument.isObject());
+		logger.fatal("path = %s", fileInfo.filePath().toLocal8Bit().constData());
 		ERROR();
 	}
 	QJsonObject jsonObject(jsonDocument.object());
 
 	BCDInfo bcdInfo(jsonObject);
 
+	allBCD.append(bcdInfo);
 }
 
 
@@ -90,9 +91,7 @@ void processDir(const QDir& outDir, const QFileInfo& parentFileInfo) {
 			if (childFileName == ".") continue;
 			if (childFileName == "..") continue;
 
-			QFileInfo childOutFileInfo(outDir, childFileName);
-			QDir childOutDir(childOutFileInfo.filePath());
-			processDir(childOutDir, childFileInfo);
+			processDir(outDir, childFileInfo);
 		}
 		if (childFileInfo.isFile()) {
 			if (childFileName.endsWith(".json")) {
@@ -103,7 +102,7 @@ void processDir(const QDir& outDir, const QFileInfo& parentFileInfo) {
 }
 
 
-int main(int argc, char** argv) {
+int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
 
 	setSignalHandler();
@@ -144,6 +143,22 @@ int main(int argc, char** argv) {
 		}
 
 		processDir(outDir, QFileInfo(inDirPath));
+		logger.info("allBCD = %d", allBCD.size());
+
+		{
+			QMap<quint64, QString> map;
+			for(BCDInfo& bcd: allBCD) {
+				quint64 version = bcd.version;
+				QString path    = bcd.path;
+				if (map.contains(version)) {
+					QString old = map[bcd.version];
+					logger.info("Duplicate %llu  %s", version, path.toLocal8Bit().constData());
+					logger.info("Duplicate %llu  %s", version, old.toLocal8Bit().constData());
+				} else {
+					map.insert(bcd.version, bcd.path);
+				}
+			}
+		}
 
 	} catch (Error& e) {
 		logger.info("Error %s %d %s", e.file, e.line, e.func);
