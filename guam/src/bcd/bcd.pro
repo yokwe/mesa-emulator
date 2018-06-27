@@ -11,8 +11,8 @@ CONFIG  += staticlib
 #HEADERS += 
 #SOURCES += 
 
-HEADERS += BCDInfo.h   JSON.h
-SOURCES += BCDInfo.cpp JSON.cpp
+HEADERS += BCDInfo.h   JSON.h   SymInfo.h
+SOURCES += BCDInfo.cpp JSON.cpp SymInfo.cpp
 
 LIBS += ../../tmp/build/symbols/libsymbols.a
 LIBS += ../../tmp/build/util/libutil.a

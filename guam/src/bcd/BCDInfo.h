@@ -55,16 +55,27 @@ public:
 	QString name;
 	quint64 version;
 
-	FTInfo();
-	FTInfo(const FTRecord& that);
-	FTInfo(const QJsonObject& jsonObject) {
-		getJsonValue(jsonObject);
+	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
+	FTInfo() {
+		this->name    = "#NULL#";
+		this->version = 0;
 	}
 	FTInfo(const FTInfo& that) {
 		this->name    = that.name;
 		this->version = that.version;
 	}
+	FTInfo &operator=(const FTInfo& that) {
+		this->name    = that.name;
+		this->version = that.version;
+		return *this;
+	}
+
 	virtual ~FTInfo() {}
+
+	FTInfo(const FTRecord& that);
+	FTInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
 
 	// read value from jsonObject
 	void getJsonValue(const QJsonObject& json);
@@ -79,6 +90,7 @@ public:
 	}
 };
 
+
 class SGInfo : public JSON {
 public:
 	static void getJsonValue(const QJsonObject& json, const QString& key,       SGInfo& value);
@@ -91,12 +103,15 @@ public:
 	CARD16  base;
 	CARD16  pages;
 	CARD16  extraPages;
-	QString segClass;
+	QString segClass;   // CODE, SYMBOLS, AC_MAP or OTHER
 
-	SGInfo();
-	SGInfo(const SGRecord& that);
-	SGInfo(const QJsonObject& jsonObject) {
-		getJsonValue(jsonObject);
+	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
+	SGInfo() {
+		this->file       = FTInfo();
+		this->base       = 0;
+		this->pages      = 0;
+		this->extraPages = 0;
+		this->segClass   = "OTHER";
 	}
 	SGInfo(const SGInfo& that) {
 		this->file       = that.file;
@@ -105,8 +120,21 @@ public:
 		this->extraPages = that.extraPages;
 		this->segClass   = that.segClass;
 	}
+	SGInfo &operator=(const SGInfo& that) {
+		this->file       = that.file;
+		this->base       = that.base;
+		this->pages      = that.pages;
+		this->extraPages = that.extraPages;
+		this->segClass   = that.segClass;
+		return *this;
+	}
 
 	virtual ~SGInfo() {}
+
+	SGInfo(const SGRecord& that);
+	SGInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
 
 	// read value from jsonObject
 	void getJsonValue(const QJsonObject& json);
@@ -123,18 +151,30 @@ public:
 	CARD16 offset;
 	CARD16 length;
 
-	CodeInfo();
-	CodeInfo(const CodeDesc& that);
-	CodeInfo(const QJsonObject& jsonObject) {
-		getJsonValue(jsonObject);
+	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
+	CodeInfo() {
+		this->sg     = SGInfo();
+		this->offset = 0;
+		this->length = 0;
 	}
 	CodeInfo(const CodeInfo& that) {
 		this->sg     = that.sg;
 		this->offset = that.offset;
 		this->length = that.length;
 	}
+	CodeInfo &operator=(const CodeInfo& that) {
+		this->sg     = that.sg;
+		this->offset = that.offset;
+		this->length = that.length;
+		return *this;
+	}
 
 	virtual ~CodeInfo() {}
+
+	CodeInfo(const CodeDesc& that);
+	CodeInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
 
 	// read value from jsonObject
 	void getJsonValue(const QJsonObject& json);
@@ -149,16 +189,24 @@ public:
 
 	QVector<CARD16> initialPC;
 
-	ENInfo();
+	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
+	ENInfo() {
+		this->initialPC.clear();
+	}
+	ENInfo(const ENInfo& that) {
+		this->initialPC = that.initialPC;
+	}
+	ENInfo &operator=(const ENInfo& that) {
+		this->initialPC = that.initialPC;
+		return *this;
+	}
+
+	virtual ~ENInfo() {}
+
 	ENInfo(const ENRecord& that);
 	ENInfo(const QJsonObject& jsonObject) {
 		getJsonValue(jsonObject);
 	}
-	ENInfo(const ENInfo& that) {
-		this->initialPC     = that.initialPC;
-	}
-
-	virtual ~ENInfo() {}
 
 	// read value from jsonObject
 	void getJsonValue(const QJsonObject& json);
@@ -200,10 +248,14 @@ public:
 	ENInfo    entries;
 //	CARD16    atoms;
 
-	MTInfo();
-	MTInfo(const MTRecord& that);
-	MTInfo(const QJsonObject& jsonObject) {
-		getJsonValue(jsonObject);
+	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
+	MTInfo() {
+		this->name      = "#UNDEF#";
+		this->file      = FTInfo();
+		this->code      = CodeInfo();
+		this->sseg      = SGInfo();
+		this->framesize = 0;
+		this->entries   = ENInfo();
 	}
 	MTInfo(const MTInfo& that) {
 		this->name      = that.name;
@@ -213,8 +265,22 @@ public:
 		this->framesize = that.framesize;
 		this->entries   = that.entries;
 	}
+	MTInfo &operator=(const MTInfo& that) {
+		this->name      = that.name;
+		this->file      = that.file;
+		this->code      = that.code;
+		this->sseg      = that.sseg;
+		this->framesize = that.framesize;
+		this->entries   = that.entries;
+		return *this;
+	}
 
 	virtual ~MTInfo() {}
+
+	MTInfo(const MTRecord& that);
+	MTInfo(const QJsonObject& jsonObject) {
+		getJsonValue(jsonObject);
+	}
 
 	// read value from jsonObject
 	void getJsonValue(const QJsonObject& json);
@@ -246,9 +312,74 @@ public:
 
 	QList<MTInfo> mtList; // Treat as QJsonArray
 
+	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
+	BCDInfo() {
+		path           = "#UNDEF";
+		version        = 0;
+
+		sourceFile     = FTInfo();
+		unpackagedFile = FTInfo();
+
+		nConfigs       = 0;
+		nModules       = 0;
+		nImports       = 0;
+		nExports       = 0;
+		nPages         = 0;
+
+		definitions    = false;
+		repackaged     = false;
+		typeExported   = false;
+		tableCompiled  = false;
+
+		mtList.clear();
+	}
+	BCDInfo(const BCDInfo& that) {
+		this->path           = that.path;
+		this->version        = that.version;
+
+		this->sourceFile     = that.sourceFile;
+		this->unpackagedFile = that.unpackagedFile;
+
+		this->nConfigs       = that.nConfigs;
+		this->nModules       = that.nModules;
+		this->nImports       = that.nImports;
+		this->nExports       = that.nExports;
+		this->nPages         = that.nPages;
+
+		this->definitions    = that.definitions;
+		this->repackaged     = that.repackaged;
+		this->typeExported   = that.typeExported;
+		this->tableCompiled  = that.tableCompiled;
+
+		this->mtList         = that.mtList;
+	}
+	BCDInfo &operator=(const BCDInfo& that) {
+		this->path           = that.path;
+		this->version        = that.version;
+
+		this->sourceFile     = that.sourceFile;
+		this->unpackagedFile = that.unpackagedFile;
+
+		this->nConfigs       = that.nConfigs;
+		this->nModules       = that.nModules;
+		this->nImports       = that.nImports;
+		this->nExports       = that.nExports;
+		this->nPages         = that.nPages;
+
+		this->definitions    = that.definitions;
+		this->repackaged     = that.repackaged;
+		this->typeExported   = that.typeExported;
+		this->tableCompiled  = that.tableCompiled;
+
+		this->mtList         = that.mtList;
+
+		return *this;
+	}
+
+	virtual ~BCDInfo() {}
+
 	BCDInfo(BCD& bcd);
 	BCDInfo(QJsonObject& jsonObject);
-	virtual ~BCDInfo() {}
 
 	// read value from jsonObject
 	void getJsonValue(const QJsonObject& json);

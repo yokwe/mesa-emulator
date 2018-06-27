@@ -38,10 +38,6 @@ static log4cpp::Category& logger = Logger::getLogger("bcdInfo");
 //
 // FTInfo
 //
-FTInfo::FTInfo() {
-	this->name    = "#NULL#";
-	this->version = 0;
-}
 FTInfo::FTInfo(const FTRecord& ft) {
 	if (ft.isNull()) {
 		this->name    = "#NULL#";
@@ -98,13 +94,6 @@ void FTInfo::setJsonArray(QJsonArray& ja, const QList<FTInfo>& list) {
 //
 // SGInfo
 //
-SGInfo::SGInfo() {
-	this->file       = FTInfo();
-	this->base       = 0;
-	this->pages      = 0;
-	this->extraPages = 0;
-	this->segClass   = "Undefined";
-}
 SGInfo::SGInfo(const SGRecord& that) {
 	this->file       = FTInfo(*that.file);
 	this->base       = that.base;
@@ -113,18 +102,18 @@ SGInfo::SGInfo(const SGRecord& that) {
 	this->segClass   = SGRecord::toString(that.segClass);
 }
 void SGInfo::getJsonValue(const QJsonObject& json) {
-	FTInfo::getJsonValue(json, "file", file);
-	JSON::getJsonValue(json, "base",       base);
-	JSON::getJsonValue(json, "pages",      pages);
-	JSON::getJsonValue(json, "extraPages", extraPages);
-	JSON::getJsonValue(json, "segClass",   segClass);
+	FTInfo::getJsonValue(json, "file",       file);
+	JSON::  getJsonValue(json, "base",       base);
+	JSON::  getJsonValue(json, "pages",      pages);
+	JSON::  getJsonValue(json, "extraPages", extraPages);
+	JSON::  getJsonValue(json, "segClass",   segClass);
 }
 void SGInfo::setJsonValue(QJsonObject& json) const {
-	FTInfo::setJsonValue(json, "file", file);
-	JSON::setJsonValue(json, "base",       base);
-	JSON::setJsonValue(json, "pages",      pages);
-	JSON::setJsonValue(json, "extraPages", extraPages);
-	JSON::setJsonValue(json, "segClass",   segClass);
+	FTInfo::setJsonValue(json, "file",       file);
+	JSON::  setJsonValue(json, "base",       base);
+	JSON::  setJsonValue(json, "pages",      pages);
+	JSON::  setJsonValue(json, "extraPages", extraPages);
+	JSON::  setJsonValue(json, "segClass",   segClass);
 }
 
 void SGInfo::getJsonValue(const QJsonObject& json, const QString& key, SGInfo&  value) {
@@ -162,11 +151,6 @@ void SGInfo::setJsonArray(QJsonArray& ja, const QList<SGInfo>& list) {
 //
 // CodeInfo
 //
-CodeInfo::CodeInfo() {
-	this->sg     = SGInfo();
-	this->offset = 0;
-	this->length = 0;
-}
 CodeInfo::CodeInfo(const CodeDesc& that) {
 	this->sg     = SGInfo(*that.sgi);
 	this->offset = that.offset;
@@ -197,9 +181,6 @@ void CodeInfo::setJsonValue(QJsonObject& json, const QString& key, const CodeInf
 //
 // ENInfo
 //
-ENInfo::ENInfo() {
-	this->initialPC.clear();
-}
 ENInfo::ENInfo(const ENRecord& that) {
 	this->initialPC = that.initialPC;
 }
@@ -247,14 +228,6 @@ void ENInfo::setJsonValue(QJsonObject& json, const QString& key, const ENInfo&  
 //
 // MTInfo
 //
-MTInfo::MTInfo() {
-	this->name      = "Undefined";
-	this->file      = FTInfo();
-	this->code      = CodeInfo();
-	this->sseg      = SGInfo();
-	this->framesize = 0;
-	this->entries   = ENInfo();
-}
 MTInfo::MTInfo(const MTRecord& that) {
 	this->name      = that.name;
 	this->file      = FTInfo(*that.file);

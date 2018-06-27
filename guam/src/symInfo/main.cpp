@@ -36,6 +36,7 @@ static log4cpp::Category& logger = Logger::getLogger("main");
 #include "../symbols/Symbols.h"
 
 #include "../bcd/BCDInfo.h"
+#include "../bcd/SymInfo.h"
 
 // Define PageFault and WriteProtectFault for BCDFile
 void PageFault(CARD32 ptr) {
@@ -47,89 +48,34 @@ void WriteProtectFault(CARD32 ptr) {
 	ERROR();
 }
 
+static QList<BCDInfo*> allBCD;
 
 void processFile(const QDir& outDir, const QFileInfo& fileInfo) {
-	BCD bcd(fileInfo.filePath());
+	QFile jsonFile(fileInfo.path());
 
-	// If it is not BCD file, just return
-	if (!bcd.isBCDFile()) return;
-
-	logger.info("%s %s", __FUNCTION__, fileInfo.filePath().toLocal8Bit().constData());
-
-	QJsonObject jsonObject;
-
-	//  Build jsonObject from bcd
-	{
-		BCDInfo bcdInfo(bcd);
-		bcdInfo.setJsonValue(jsonObject);
+	if (!jsonFile.open(QIODevice::ReadOnly)) {
+		logger.fatal("File open error %s", jsonFile.errorString().toLocal8Bit().constData());
+		logger.fatal("path = %s", fileInfo.path().toLocal8Bit().constData());
+		ERROR();
 	}
 
-	// Sanity check of BCDInfo <-> QJsonObject conversion
-	{
-
-		// Create jsonObject1 from bcd -- BCD -> BCDInfo -> json
-		QJsonObject jsonObject1;
-		{
-			BCDInfo bcdInfo1(bcd);
-			bcdInfo1.setJsonValue(jsonObject1);
-		}
-
-		// Create jsonObject2 from jsonObject1 -- json -> BCDInfo -> json
-		QJsonObject jsonObject2;
-		{
-			BCDInfo bcdInfo2(jsonObject1);
-			bcdInfo2.setJsonValue(jsonObject2);
-		}
-
-		// Create sting representation of jsonObject1
-		QJsonDocument jsonDoc1(jsonObject1);
-		QByteArray fileContents1 = jsonDoc1.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
-
-		// Create sting representation of jsonObject2
-		QJsonDocument jsonDoc2(jsonObject2);
-		QByteArray fileContents2 = jsonDoc2.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
-
-		// Compare fileContents1 and fileContents2.  These value should be same.
-		if (!(fileContents1.size() == fileContents2.size() || qstricmp((const char*)fileContents1, (const char*)fileContents2) == 0)) {
-			logger.fatal("Unexpected");
-			logger.fatal("fileContents1 = (%d) %s!", fileContents1.size(), fileContents1.constData());
-			logger.fatal("fileContents2 = (%d) %s!", fileContents2.size(), fileContents2.constData());
-			ERROR();
-		}
+	QByteArray fileContents = jsonFile.readAll();
+	QJsonParseError jsonParseError;
+	QJsonDocument jsonDocument(QJsonDocument::fromJson(fileContents, &jsonParseError));
+	if (jsonDocument.isNull()) {
+		logger.fatal("Parse error %s", jsonParseError.errorString().toLocal8Bit().constData());
+		logger.fatal("path = %s", fileInfo.path().toLocal8Bit().constData());
+		ERROR();
 	}
-
-	// Create outDir if not exists.
-	{
-		if (!outDir.exists()) {
-			QFileInfo outDirFileInfo(outDir.absolutePath());
-			QString parentPath(outDirFileInfo.path());
-			QString dirName(outDirFileInfo.fileName());
-
-			logger.info("mkpath %s %s", parentPath.toLocal8Bit().constData(), dirName.toLocal8Bit().constData());
-			QDir parentDir(parentPath);
-			parentDir.mkpath(dirName);
-		}
+	if (jsonDocument.isObject()) {
+		logger.fatal("Not Object");
+		logger.fatal("path = %s", fileInfo.path().toLocal8Bit().constData());
+		ERROR();
 	}
+	QJsonObject jsonObject(jsonDocument.object());
 
-	// Output jsonObect to file
-	{
-		QJsonDocument jsonDoc(jsonObject);
-		QByteArray fileContents = jsonDoc.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
+	BCDInfo bcdInfo(jsonObject);
 
-		QFileInfo outFileInfo(outDir, QString("%1.json").arg(fileInfo.fileName()));
-		QString outFilePath = outFileInfo.filePath();
-		QFile outFile(outFilePath);
-		if (!outFile.open(QIODevice::OpenModeFlag::WriteOnly)) {
-			logger.fatal("File open error %s", outFile.errorString().toLocal8Bit().constData());
-			ERROR();
-		}
-		int fileLength = outFile.write(fileContents);
-		if (fileLength != fileContents.size()) {
-			logger.fatal("File write error %s  fileLength = %d  fileContents = %d", outFile.errorString().toLocal8Bit().constData(), fileLength, fileContents.size());
-			ERROR();
-		}
-		outFile.close();
-	}
 }
 
 
@@ -149,7 +95,7 @@ void processDir(const QDir& outDir, const QFileInfo& parentFileInfo) {
 			processDir(childOutDir, childFileInfo);
 		}
 		if (childFileInfo.isFile()) {
-			if (childFileName.endsWith(".bcd") || childFileName.endsWith(".symbols")) {
+			if (childFileName.endsWith(".json")) {
 				processFile(outDir, childFileInfo);
 			}
 		}
@@ -163,44 +109,42 @@ int main(int argc, char** argv) {
 	setSignalHandler();
 
 	try {
-		QString outDirPath("tmp/bcdInfo");
+		QString outDirPath("tmp/symInfo");
 		logger.info("outDirPath %s", outDirPath.toLocal8Bit().constData());
 
-		QDir outDir(outDirPath);
-		if (!outDir.exists()) {
-			logger.fatal("outDir does not exist. outDir = %s", outDir.absolutePath().toLocal8Bit().constData());
-			ERROR();
-		}
-
-		for(int i = 1; i < argc; i++) {
-			QString path = argv[i];
-			logger.info("path = %s", path.toLocal8Bit().constData());
-			QFileInfo fileInfo(path);
-
-			// Sanity check
+		// Sanity check
+		{
+			QFileInfo fileInfo(outDirPath);
 			if (!fileInfo.exists()) {
-				logger.fatal("path doesn't exist = %s", fileInfo.filePath().toLocal8Bit().constData());
+				logger.fatal("outDirPath does not exist. outDirPath = %s", outDirPath.toLocal8Bit().constData());
 				ERROR();
 			}
-
-			if (fileInfo.isFile()) {
-				processFile(outDir, fileInfo);
-			}
-			if (fileInfo.isDir()) {
-				QString fileName(fileInfo.fileName());
-				// Special case : trailing slash
-				if (fileName.length() == 0) {
-					fileInfo = QFileInfo(fileInfo.path());
-					fileName = fileInfo.fileName();
-				}
-
-				QFileInfo rootOutDirFileInfo(outDir, fileName);
-				QDir rootOutDir(rootOutDirFileInfo.filePath());
-
-				logger.info("rootOutDir = %s", rootOutDirFileInfo.filePath().toLocal8Bit().constData());
-				processDir(rootOutDir, fileInfo);
+			if (!fileInfo.isDir()) {
+				logger.fatal("inDirPath is not directory. outDirPath = %s", outDirPath.toLocal8Bit().constData());
+				ERROR();
 			}
 		}
+
+		QDir outDir(outDirPath);
+
+		QString inDirPath("tmp/bcdInfo");
+		logger.info("inDirPath %s", inDirPath.toLocal8Bit().constData());
+
+		// Sanity check
+		{
+			QFileInfo fileInfo(inDirPath);
+			if (!fileInfo.exists()) {
+				logger.fatal("inDirPath does not exist. outDirPath = %s", inDirPath.toLocal8Bit().constData());
+				ERROR();
+			}
+			if (!fileInfo.isDir()) {
+				logger.fatal("inDirPath is not directory. outDirPath = %s", inDirPath.toLocal8Bit().constData());
+				ERROR();
+			}
+		}
+
+		processDir(outDir, QFileInfo(inDirPath));
+
 	} catch (Error& e) {
 		logger.info("Error %s %d %s", e.file, e.line, e.func);
 		return -1;
