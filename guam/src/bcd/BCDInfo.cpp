@@ -34,6 +34,8 @@ static log4cpp::Category& logger = Logger::getLogger("bcdInfo");
 
 #include "BCDInfo.h"
 
+#include <QCryptographicHash>
+
 
 //
 // FTInfo
@@ -289,8 +291,28 @@ void MTInfo::setJsonArray(QJsonArray& ja, const QList<MTInfo>& list) {
 //
 // BCDInfo
 //
+
+static QCryptographicHash md5(QCryptographicHash::Algorithm::Md5);
+
+QString getHash(QString path) {
+	QFile file(path);
+	bool result = file.open(QIODevice::OpenModeFlag::ReadOnly);
+	if (!result) {
+		logger.fatal("File open error -- %s", file.errorString().toLocal8Bit().constData());
+		logger.fatal("path %s", path.toLocal8Bit().constData());
+		ERROR();
+	}
+	QByteArray data = file.readAll();
+	file.close();
+
+	md5.reset();
+	md5.addData(data);
+	return md5.result().toHex();
+}
 BCDInfo::BCDInfo(BCD& bcd) {
 	path        = bcd.getPath();
+	hash        = getHash(path);
+
 	version     = bcd.version->value;
 
 	sourceFile     = FTInfo(*bcd.sourceFile);
@@ -322,6 +344,8 @@ BCDInfo::BCDInfo(QJsonObject& json) {
 // read value from jsonObject
 void BCDInfo::getJsonValue(const QJsonObject& json) {
 	JSON::  getJsonValue(json, "path",           path);
+	JSON::  getJsonValue(json, "hash",           hash);
+
 	JSON::  getJsonValue(json, "version",        version);
 
 	FTInfo::getJsonValue(json, "sourceFile",     sourceFile);
@@ -345,6 +369,8 @@ void BCDInfo::getJsonValue(const QJsonObject& json) {
 // write value to jsonObject
 void BCDInfo::setJsonValue(QJsonObject& json) const {
 	JSON::  setJsonValue(json, "path",           path);
+	JSON::  setJsonValue(json, "hash",           hash);
+
 	JSON::  setJsonValue(json, "version",        version);
 
 	FTInfo::setJsonValue(json, "sourceFile",     sourceFile);

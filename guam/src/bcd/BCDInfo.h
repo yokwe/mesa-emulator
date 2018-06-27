@@ -293,6 +293,7 @@ public:
 class BCDInfo : public JSON {
 public:
 	QString path;
+	QString hash;
 
 	quint64 version;
 
@@ -314,7 +315,9 @@ public:
 
 	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
 	BCDInfo() {
-		path           = "#UNDEF";
+		path           = "#UNDEF#";
+		hash           = "#UNDEF#";
+
 		version        = 0;
 
 		sourceFile     = FTInfo();
@@ -335,6 +338,8 @@ public:
 	}
 	BCDInfo(const BCDInfo& that) {
 		this->path           = that.path;
+		this->hash           = that.hash;
+
 		this->version        = that.version;
 
 		this->sourceFile     = that.sourceFile;
@@ -355,6 +360,8 @@ public:
 	}
 	BCDInfo &operator=(const BCDInfo& that) {
 		this->path           = that.path;
+		this->hash           = that.hash;
+
 		this->version        = that.version;
 
 		this->sourceFile     = that.sourceFile;
