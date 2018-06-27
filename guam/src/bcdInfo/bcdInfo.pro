@@ -12,16 +12,16 @@ SOURCES += main.cpp
 #HEADERS += 
 #SOURCES += 
 
+LIBS += ../../tmp/build/bcd/libbcd.a
 LIBS += ../../tmp/build/symbols/libsymbols.a
 LIBS += ../../tmp/build/mesa/libmesa.a
-LIBS += ../../tmp/build/bcd/libbcd.a
 LIBS += ../../tmp/build/util/libutil.a
 
 LIBS += -llog4cpp
 
+POST_TARGETDEPS += ../../tmp/build/bcd/libbcd.a
 POST_TARGETDEPS += ../../tmp/build/symbols/libsymbols.a
 POST_TARGETDEPS += ../../tmp/build/mesa/libmesa.a
-POST_TARGETDEPS += ../../tmp/build/bcd/libbcd.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 ###############################################
