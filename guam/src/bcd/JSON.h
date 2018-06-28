@@ -44,7 +44,6 @@ public:
 	// read value from jsonObject
 	static void getJsonValue(const QJsonObject& json, const QString& key, QString&     value);
 	static void getJsonValue(const QJsonObject& json, const QString& key, quint16&     value);
-	static void getJsonValue(const QJsonObject& json, const QString& key, quint64&     value);
 	static void getJsonValue(const QJsonObject& json, const QString& key, bool&        value);
 	static void getJsonValue(const QJsonObject& json, const QString& key, QJsonObject& value);
 	static void getJsonValue(const QJsonObject& json, const QString& key, QJsonArray&  value);
@@ -52,7 +51,6 @@ public:
 	// write value to jsonObject
 	static void setJsonValue(QJsonObject& json, const QString& key, const QString&     value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const quint16&     value);
-	static void setJsonValue(QJsonObject& json, const QString& key, const quint64&     value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const bool&        value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const QJsonObject& value);
 	static void setJsonValue(QJsonObject& json, const QString& key, const QJsonArray&  value);

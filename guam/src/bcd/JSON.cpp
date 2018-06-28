@@ -93,27 +93,6 @@ void JSON::getJsonValue(const QJsonObject& jsonObject, const QString& key, quint
 	}
 
 }
-void JSON::getJsonValue(const QJsonObject& jsonObject, const QString& key, quint64& value) {
-	if (jsonObject.contains(key)) {
-		QJsonValue v = jsonObject.value(key);
-
-		if (v.isDouble()) {
-			bool ok;
-			value = v.toVariant().toULongLong(&ok);
-			if (!ok) {
-				logger.fatal("Unexpected not ok. key = %s  value = %s", key.toLocal8Bit().constData(), v.toString().toLocal8Bit().constData());
-				ERROR();
-			}
-		} else {
-			logger.fatal("Unexpected key = %s type = %s", key.toLocal8Bit().constData(), getJasonValueTypeName(v.type()).toLocal8Bit().constData());
-			logger.fatal("Expected type = Double");
-			ERROR();
-		}
-	} else {
-		logger.fatal("Key doesn't exist. key = %s", key.toLocal8Bit().constData());
-		ERROR();
-	}
-}
 void JSON::getJsonValue(const QJsonObject& jsonObject, const QString& key, bool&    value) {
 	if (jsonObject.contains(key)) {
 		QJsonValue v = jsonObject.value(key);
@@ -173,13 +152,6 @@ void JSON::setJsonValue(QJsonObject& jsonObject, const QString& key, const QStri
 	}
 }
 void JSON::setJsonValue(QJsonObject& jsonObject, const QString& key, const quint16& value) {
-	if (jsonObject.contains(key)) {
-		logger.fatal("Duplicate key = %s", key.toLocal8Bit().constData());
-	} else {
-		jsonObject[key] = QJsonValue::fromVariant(QVariant(value));
-	}
-}
-void JSON::setJsonValue(QJsonObject& jsonObject, const QString& key, const quint64& value) {
 	if (jsonObject.contains(key)) {
 		logger.fatal("Duplicate key = %s", key.toLocal8Bit().constData());
 	} else {
