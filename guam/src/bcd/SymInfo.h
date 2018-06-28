@@ -44,15 +44,15 @@ class SymInfo : public JSON {
 public:
 	QString path;
 
-	quint64 version;
-	quint64 sourceVersion;
+	QString version;
+	QString sourceVersion;
 	bool    definitionsFile;
 
 	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
 	SymInfo() {
-		this->path            = "#UNDEF";
-		this->version         = 0;
-		this->sourceVersion   = 0;
+		this->path            = "#UNDEF#";
+		this->version         = "#UNDEF#";
+		this->sourceVersion   = "#UNDEF#";
 		this->definitionsFile = false;
 	}
 	SymInfo(const SymInfo& that) {

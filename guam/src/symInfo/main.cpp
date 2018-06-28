@@ -101,6 +101,50 @@ void processDir(const QDir& outDir, const QFileInfo& parentFileInfo) {
 	}
 }
 
+static QMap<QString, BCDInfo> bcdMap;
+void processSymbols(const QDir& outDir, const QString& name, const QString& version, CARD16 base) {
+	if (bcdMap.contains(version)) {
+		QString path = bcdMap[version].path;
+		BCD bcd(path);
+
+		if (Symbols::isSymbolsSegment(&bcd, base)) {
+			// Found symbols segment
+			Symbols symbols(&bcd, base);
+
+			QJsonObject jsonObject;
+			SymInfo symInfo(symbols);
+			symInfo.setJsonValue(jsonObject);
+
+			// Output jsonObect to file
+			{
+				QJsonDocument jsonDoc(jsonObject);
+				QByteArray fileContents = jsonDoc.toJson(QJsonDocument::JsonFormat::Indented); // Compact or Indented
+
+				QFileInfo outFileInfo(outDir, QString("%1-%2-%3.json").arg(name).arg(version).arg(base));
+				logger.info("outFile %s", outFileInfo.fileName().toLocal8Bit().constData());
+
+				QString outFilePath = outFileInfo.filePath();
+				QFile outFile(outFilePath);
+				if (!outFile.open(QIODevice::OpenModeFlag::WriteOnly)) {
+					logger.fatal("File open error %s", outFile.errorString().toLocal8Bit().constData());
+					ERROR();
+				}
+				int fileLength = outFile.write(fileContents);
+				if (fileLength != fileContents.size()) {
+					logger.fatal("File write error %s  fileLength = %d  fileContents = %d", outFile.errorString().toLocal8Bit().constData(), fileLength, fileContents.size());
+					ERROR();
+				}
+				outFile.close();
+			}
+		} else {
+			logger.fatal("Unexpected not symbol segment");
+			logger.fatal("path = %s  base = %d", path.toLocal8Bit().constData(), base);
+			ERROR();
+		}
+	} else {
+		logger.warn("Not in bcdMap  %llu", version);
+	}
+}
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -145,7 +189,6 @@ int main(int /*argc*/, char** /*argv*/) {
 		processDir(outDir, QFileInfo(inDirPath));
 		logger.info("bcdAll %d", bcdAll.size());
 
-		QMap<quint64, BCDInfo> bcdMap;
 		{
 			for(BCDInfo& bcd: bcdAll) {
 				if (bcdMap.contains(bcd.version)) {
@@ -163,6 +206,56 @@ int main(int /*argc*/, char** /*argv*/) {
 			}
 			logger.info("bcdMap %d", bcdMap.size());
 		}
+
+		// Check symbols
+		int countBCD      = 0;
+		int countMT       = 0;
+		int countCodeSelf = 0;
+		int countCode     = 0;
+		int countCodeMiss = 0;
+		int countSym      = 0;
+		int countSymSelf  = 0;
+		int countSymMiss = 0;
+		for(BCDInfo bcdInfo: bcdMap.values()) {
+			countBCD++;
+			logger.info("bcdInfo %s", bcdInfo.path.toLocal8Bit().constData());
+			for(MTInfo mt: bcdInfo.mtList) {
+				countMT++;
+				SGInfo code = mt.code.sg;
+				SGInfo sym  = mt.sseg;
+
+				if (code.file.isNull()) {
+					//
+				} else if (code.file.isSelf()) {
+					countCodeSelf++;
+				} else {
+					countCode++;
+					if (bcdMap.contains(code.file.version)) {
+						//
+					} else {
+						countCodeMiss++;
+						logger.warn("No code %llu %-32s  %s", code.file.version, mt.name.toLocal8Bit().constData(), bcdInfo.path.toLocal8Bit().constData());
+					}
+				}
+
+				if (sym.file.isNull()) {
+					//
+				} else if (sym.file.isSelf()) {
+					countSymSelf++;
+					logger.info("bcdInfo sym S %s %llu, %d", bcdInfo.path.toLocal8Bit().constData(), bcdInfo.version, sym.base);
+					processSymbols(outDir, mt.name, bcdInfo.version, sym.base);
+				} else {
+					countSym++;
+					logger.info("bcdInfo sym E %s %llu, %d", bcdInfo.path.toLocal8Bit().constData(), sym.file.version, sym.base);
+					logger.info("XX  %llu  %lld  %s", sym.file.version, sym.file.version, QString("%1").arg(sym.file.version).toLocal8Bit().constData());
+					processSymbols(outDir, mt.name, sym.file.version, sym.base);
+				}
+			}
+		}
+		logger.info("countBCD      = %5d  countMT   = %5d", countBCD, countMT);
+		logger.info("countCodeSelf = %5d  countCode = %5d  countCodeMiss = %5d", countCodeSelf, countCode, countCodeMiss);
+		logger.info("countSymSelf  = %5d  countSym  = %5d  countSymMiss  = %5d", countSymSelf,  countSym,  countSymMiss);
+
 
 	} catch (Error& e) {
 		logger.info("Error %s %d %s", e.file, e.line, e.func);

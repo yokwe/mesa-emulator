@@ -40,13 +40,16 @@ static log4cpp::Category& logger = Logger::getLogger("bcdInfo");
 //
 // FTInfo
 //
+QString FTInfo::VALUE_NULL("#NULL#");
+QString FTInfo::VALUE_SELF("#SELF#");
+
 FTInfo::FTInfo(const FTRecord& ft) {
 	if (ft.isNull()) {
-		this->name    = "#NULL#";
-		this->version = VERSION_NULL;
+		this->name    = VALUE_NULL;
+		this->version = VALUE_NULL;
 	} else if (ft.isSelf()) {
-		this->name    = "#SELF#";
-		this->version = VERSION_SELF;
+		this->name    = VALUE_SELF;
+		this->version = VALUE_SELF;
 	} else {
 		this->name    = ft.name;
 		this->version = ft.version->value;
@@ -313,7 +316,7 @@ BCDInfo::BCDInfo(BCD& bcd) {
 	path        = bcd.getPath();
 	hash        = getHash(path);
 
-	version     = bcd.version->value;
+	version     = bcd.version->toString();
 
 	sourceFile     = FTInfo(*bcd.sourceFile);
 	unpackagedFile = FTInfo(*bcd.unpackagedFile);

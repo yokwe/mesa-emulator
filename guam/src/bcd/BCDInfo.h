@@ -42,8 +42,8 @@ OF SUCH DAMAGE.
 
 class FTInfo : public JSON {
 public:
-	static const quint64 VERSION_NULL = 0;
-	static const quint64 VERSION_SELF = 1;
+	static QString VALUE_NULL;
+	static QString VALUE_SELF;
 
 	static void getJsonValue(const QJsonObject& json, const QString& key,       FTInfo& value);
 	static void setJsonValue(      QJsonObject& json, const QString& key, const FTInfo& value);
@@ -53,12 +53,12 @@ public:
 
 
 	QString name;
-	quint64 version;
+	QString version;
 
 	// Assignable data type must provide default constructor, a copy constructor, and an assignment operator.
 	FTInfo() {
 		this->name    = "#NULL#";
-		this->version = 0;
+		this->version = "#NULL#";
 	}
 	FTInfo(const FTInfo& that) {
 		this->name    = that.name;
@@ -83,10 +83,10 @@ public:
 	void setJsonValue(QJsonObject& json) const;
 
 	bool isNull() const {
-		return version == VERSION_NULL;
+		return version == VALUE_NULL;
 	}
 	bool isSelf() const {
-		return version == VERSION_SELF;
+		return version == VALUE_SELF;
 	}
 };
 
@@ -295,7 +295,7 @@ public:
 	QString path;
 	QString hash;
 
-	quint64 version;
+	QString version;
 
 	FTInfo sourceFile;
 	FTInfo unpackagedFile;
@@ -318,7 +318,7 @@ public:
 		path           = "#UNDEF#";
 		hash           = "#UNDEF#";
 
-		version        = 0;
+		version        = "#UNDEF#";
 
 		sourceFile     = FTInfo();
 		unpackagedFile = FTInfo();

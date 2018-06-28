@@ -40,8 +40,8 @@ static log4cpp::Category& logger = Logger::getLogger("symInfo");
 SymInfo::SymInfo(Symbols& symbols) {
 	path        = symbols.file->getPath();
 
-	version       = symbols.version->value;
-	sourceVersion = symbols.sourceVersion->value;
+	version       = symbols.version->toString();
+	sourceVersion = symbols.sourceVersion->toString();
 
 	definitionsFile = symbols.definitionsFile;
 }
