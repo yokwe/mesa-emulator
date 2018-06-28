@@ -41,18 +41,18 @@ static log4cpp::Category& logger = Logger::getLogger("loadState");
 
 class ModuleEntry {
 public:
-	const quint64 version;
+	const QString version;
 	const QString moduleName;
 
 	QVector<QString> entryName;
 
-	ModuleEntry(quint64 version_, QString moduleName_) : version(version_), moduleName(moduleName_) {}
+	ModuleEntry(QString version_, QString moduleName_) : version(version_), moduleName(moduleName_) {}
 
 	QString toString() {
 		return QString("%1 %2 %3").arg(version).arg(moduleName).arg(entryName.size());
 	}
 };
-static QMap<quint64, ModuleEntry*> moduleEntryMap; // key is module file version
+static QMap<QString, ModuleEntry*> moduleEntryMap; // key is module file version
 
 void initializeModuleEntryMap() {
 	QString PATH_MODULE_ENTRY("tmp/moduleEntry/");
@@ -90,7 +90,7 @@ void initializeModuleEntryMap() {
 			}
 
 			bool ok;
-			const quint64 version     = token.at(0).toULongLong(&ok);
+			const QString version     = token.at(0);
 			if (!ok) {
 				logger.fatal("path = %s", path.toLocal8Bit().constData());
 				logger.fatal("Unexpected line = %s", line.toLocal8Bit().constData());
@@ -156,14 +156,14 @@ public:
 	QString name;
 
 	QString fileName;
-	quint64 fileVersion;
+	QString fileVersion;
 
 	CARD32  codebase;
 	bool    dummyEntryName;
 
 	QMap<CARD16, QString> entryNameMap; // key = initialPC, value = name
 
-	GFInfo(CARD16 gfi_, QString name_, QString fileName_, quint64 fileVersion_, CARD32 codebase_) :
+	GFInfo(CARD16 gfi_, QString name_, QString fileName_, QString fileVersion_, CARD32 codebase_) :
 		gfi(gfi_), name(name_), fileName(fileName_), fileVersion(fileVersion_), codebase(codebase_), dummyEntryName(0) {}
 
 	QString toString() {
@@ -249,7 +249,7 @@ static void scanBCD(CARD32 loadStateAddress, LoadStateFormat::Object& loadState)
 				}
 			} else {
 				QString fileName    = file->name;
-				quint64 fileVersion = file->version->value;
+				QString fileVersion = file->version->value;
 				CARD32  codebase    = ReadDbl(GFT_OFFSET(gfi, codebase)) & ~1;
 
 				GFInfo* gfInfo = new GFInfo(gfi, name, (file->isSelf() ? name : file->name), file->version->value, codebase);

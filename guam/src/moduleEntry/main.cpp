@@ -114,7 +114,7 @@ void Module::dumpEntry(QString outDirPath, QString filePath) {
 
 
 void Module::dumpEntry(QString outDirPath, Symbols& symbols) {
-	quint64 version = symbols.version->value;
+	QString version = symbols.version->value;
 
 	QMap<CARD16, Entry*> entryMap;
 
