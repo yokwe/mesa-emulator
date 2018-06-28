@@ -58,11 +58,13 @@ public:
 	const CARD16    host;
 	const CARD32    time;
 	const QDateTime dateTime;
-	const quint64   value;
+	const QString   value;
 
-	QString toString() const;
+	QString toString() const {
+		return value;
+	}
 	bool isNull() const {
-		return value == 0;
+		return net == 0 && host == 0 && time == 0;
 	}
 	static bool equals(const Stamp* a, const Stamp* b) {
 		return a->value == b->value;
@@ -75,7 +77,7 @@ public:
     }
 
 private:
-	Stamp(CARD16 net_, CARD16 host_, CARD32 time_, QDateTime dateTime_, quint64 value_) :
+	Stamp(CARD16 net_, CARD16 host_, CARD32 time_, QDateTime dateTime_, QString value_) :
 		net(net_), host(host_), time(time_), dateTime(dateTime_), value(value_) {}
 };
 
