@@ -4,4 +4,4 @@
 bin/
 tmp/
 src/*/Makefile
-data/GVWin/
+src/*/.qmake.stash
