@@ -518,7 +518,7 @@ static inline CARD16* StorePda(POINTER ptr) {
 // 9.5.3 Trap Handlers
 static inline void SaveStack(StateHandle state) {
 	for(int sp = 0; sp < StackDepth; sp++) {
-		*Store(state + OFFSET(StateVector, stack[sp])) = stack[sp];
+		*Store(state + OFFSET3(StateVector, stack, sp)) = stack[sp];
 	}
 	StateWord word;
 	word.breakByte = breakByte;
@@ -531,7 +531,7 @@ static inline void LoadStack(StateHandle state) {
 	StateWord word;
 	word.u = *Fetch(state + OFFSET(StateVector, word));
 	for(int sp = 0; sp < StackDepth; sp++) {
-		stack[sp] = *Fetch(state + OFFSET(StateVector, stack[sp]));
+		stack[sp] = *Fetch(state + OFFSET3(StateVector, stack, sp));
 	}
 	SP = savedSP = word.stkptr;
 	breakByte = word.breakByte;

@@ -80,57 +80,57 @@ static inline void TrapTwo(POINTER ptr, UNSPEC parameter) {
 // 9.5.1 Trap Routines
 void BoundsTrap() {
 	if (DEBUG_SHOW_BOUNDS_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sBoundsTrap));
+	TrapZero(SD + OFFSET_SD(sBoundsTrap));
 }
 void BreakTrap() {
 	if (DEBUG_SHOW_BREAK_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sBreakTrap));
+	TrapZero(SD + OFFSET_SD(sBreakTrap));
 }
 void CodeTrap(GFTHandle gfi) {
 	if (PERF_ENABLE) perf_CodeTrap++;
 	if (DEBUG_SHOW_CODE_TRAP) logger.debug("%s %04X", __FUNCTION__, gfi);
-	TrapOne(SD_OFFSET(sCodeTrap), gfi);
+	TrapOne(SD + OFFSET_SD(sCodeTrap), gfi);
 }
 void ControlTrap(ShortControlLink src) {
 	if (DEBUG_SHOW_CONTROL_TRAP) logger.debug("%s %04X", __FUNCTION__, src);
 	if (DEBUG_STOP_AT_CONTROL_TRAP) ERROR();
-	TrapOne(SD_OFFSET(sControlTrap), src);
+	TrapOne(SD + OFFSET_SD(sControlTrap), src);
 }
 void DivCheckTrap() {
 	if (DEBUG_SHOW_DIV_CHECK_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sDivCheckTrap));
+	TrapZero(SD + OFFSET_SD(sDivCheckTrap));
 }
 void DivZeroTrap() {
 	if (DEBUG_SHOW_DIV_ZERO_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sDivZeroTrap));
+	TrapZero(SD + OFFSET_SD(sDivZeroTrap));
 }
 void EscOpcodeTrap(BYTE opcode) {
 	if (PERF_ENABLE) perf_EscOpcodeTrap++;
 	if (DEBUG_SHOW_ESC_OPCODE_TRAP) logger.debug("%s %03o", __FUNCTION__, opcode);
 	if (DEBUG_STOP_AT_OPCODE_TRAP) ERROR();
-	TrapOne(ETT_OFFSET(opcode), opcode);
+	TrapOne(ETT + OFFSET_ETT(opcode), opcode);
 }
 void InterruptError() {
 	if (DEBUG_SHOW_INTERRUPT_ERROR) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sInterruptError));
+	TrapZero(SD + OFFSET_SD(sInterruptError));
 }
 void OpcodeTrap(BYTE opcode) {
 	if (PERF_ENABLE) perf_OpcodeTrap++;
 	if (DEBUG_SHOW_OPCODE_TRAP) logger.debug("%s %03o", __FUNCTION__, opcode);
 	if (DEBUG_STOP_AT_OPCODE_TRAP) ERROR();
-	TrapOne(SD_OFFSET(sOpcodeTrap), opcode);
+	TrapOne(SD + OFFSET_SD(sOpcodeTrap), opcode);
 }
 void PointerTrap() {
 	if (DEBUG_SHOW_POINTER_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sPointerTrap));
+	TrapZero(SD + OFFSET_SD(sPointerTrap));
 }
 void ProcessTrap() {
 	if (DEBUG_SHOW_PROCESS_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sProcessTrap));
+	TrapZero(SD + OFFSET_SD(sProcessTrap));
 }
 void RescheduleError() {
 	if (DEBUG_SHOW_RESCHEDULE_TRAP) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sRescheduleError));
+	TrapZero(SD + OFFSET_SD(sRescheduleError));
 }
 void StackError() {
 	if (DEBUG_SHOW_STACK_ERROR) logger.debug("%s", __FUNCTION__);
@@ -139,17 +139,17 @@ void StackError() {
 		logger.fatal("GFI = %04X  CB = %8X  PC = %4X  savedPC = %4X", GFI, CodeCache::CB(), PC, savedPC);
 		ERROR();
 	}
-	TrapZero(SD_OFFSET(sStackError));
+	TrapZero(SD + OFFSET_SD(sStackError));
 }
 void UnboundTrap(ControlLink dst) {
 	if (PERF_ENABLE) perf_UnboundTrap++;
 	if (DEBUG_SHOW_UNBOUND_TRAP) logger.debug("%s %08X", __FUNCTION__, dst);
 	if (DEBUG_STOP_AT_UNBOUND_TRAP) ERROR();
-	TrapTwo(SD_OFFSET(sUnboundTrap), dst);
+	TrapTwo(SD + OFFSET_SD(sUnboundTrap), dst);
 }
 void HardwareError() {
 	if (DEBUG_SHOW_HARDWARE_ERROR) logger.debug("%s", __FUNCTION__);
-	TrapZero(SD_OFFSET(sHardwareError));
+	TrapZero(SD + OFFSET_SD(sHardwareError));
 }
 
 // 9.5.5 Xfer Traps
@@ -160,7 +160,7 @@ static inline void CheckForXferTraps(ControlLink dst, int type) {
 		if (word.trapxfers) {
 			XTS = XTS >> 1;
 			if (DEBUG_SHOW_XFER_TRAP) logger.debug("XferTrap %08X %d", dst, type);
-			Trap(SD_OFFSET(sXferTrap));
+			Trap(SD + OFFSET_SD(sXferTrap));
 			*StoreLF(0) = LowHalf(dst);
 			*StoreLF(1) = HighHalf(dst);
 			*StoreLF(2) = type;
@@ -179,22 +179,22 @@ static inline LocalFrameHandle Alloc(FSIndex fsi) {
 	AVItem item;
 	FSIndex slot = fsi;
 	for(;;) {
-		item.u = *FetchMds(AV_OFFSET(slot));
+		item.u = *FetchMds(AV + OFFSET_AV(slot));
 		if (item.tag != AT_indirect) break;
 		if (FSIndex_SIZE <= item.data) ERROR();
 		slot = item.data;
 	}
 	if (item.tag == AT_empty) FrameFault(fsi);
-	*StoreMds(AV_OFFSET(slot)) = *FetchMds(AVLink(item.u));
+	*StoreMds(AV + OFFSET_AV(slot)) = *FetchMds(AVLink(item.u));
 	return AVFrame(item.u);
 }
 
 // Free: PROC[frame: LocalFrameHandle]
 static inline void Free(LocalFrameHandle frame) {
 	LocalWord word = {*FetchMds(LO_OFFSET(frame, word))};
-	AVItem item = {*FetchMds(AV_OFFSET(word.fsi))};
+	AVItem item = {*FetchMds(AV + OFFSET_AV(word.fsi))};
 	*StoreMds(frame) = item.u;
-	*StoreMds(AV_OFFSET(word.fsi)) = frame;
+	*StoreMds(AV + OFFSET_AV(word.fsi)) = frame;
 }
 
 // 9.3 Control Transfer Primitives
@@ -429,7 +429,7 @@ void E_RET() {
 void E_KFCB() {
 	SDIndex alpha = GetCodeByte();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  KFCB %02X", savedPC, alpha);
-	Call(ReadDblMds(SD_OFFSET(alpha)));
+	Call(ReadDblMds(SD + OFFSET_SD(alpha)));
 }
 // aAF - 012
 void E_AF() {
@@ -450,8 +450,8 @@ void E_PI() {
 	Recover();
 	ShortControlLink src = Pop();
 	PortLink port = Pop();
-	*StoreMds(PORT_OFFSET(port, inport)) = 0;
-	if (src) *StoreMds(PORT_OFFSET(port, outport)) = src;
+	*StoreMds(port + OFFSET_PORT(inport)) = 0;
+	if (src) *StoreMds(port + OFFSET_PORT(outport)) = src;
 }
 // aPO - 015
 void E_PO() {
@@ -459,8 +459,8 @@ void E_PO() {
 	/* UNSPEC reserved = */ Pop();
 	PortLink port = Pop();
 	*StoreLF(LO_OFFSET(0, pc)) = PC;
-	*StoreMds(PORT_OFFSET(port, inport)) = LFCache::LF();
-	XFER(ReadDblMds(PORT_OFFSET(port, outport)), port, XT_port, 0);
+	*StoreMds(port + OFFSET_PORT(inport)) = LFCache::LF();
+	XFER(ReadDblMds(port + OFFSET_PORT(outport)), port, XT_port, 0);
 }
 // aPOR - 016
 void E_POR() {
@@ -468,8 +468,8 @@ void E_POR() {
 	/* UNSPEC reserved = */ Pop();
 	PortLink port = Pop();
 	*StoreLF(LO_OFFSET(0, pc)) = PC;
-	*StoreMds(PORT_OFFSET(port, inport)) = LFCache::LF();
-	XFER(ReadDblMds(PORT_OFFSET(port, outport)), port, XT_port, 0);
+	*StoreMds(port + OFFSET_PORT(inport)) = LFCache::LF();
+	XFER(ReadDblMds(port + OFFSET_PORT(outport)), port, XT_port, 0);
 }
 
 

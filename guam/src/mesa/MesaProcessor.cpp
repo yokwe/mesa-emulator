@@ -220,7 +220,7 @@ static void setSwitches(System::Switches& switches, const char *string) {
 	}
 }
 void MesaProcessor::setBootRequestPV(CARD16 deviceOrdinal) {
-	Boot::Request* request = (Boot::Request*)Memory::getAddress(SD_OFFSET(SDDefs::sFirstGermRequest));
+	Boot::Request* request = (Boot::Request*)Memory::getAddress(SD + OFFSET_SD(SDDefs::sFirstGermRequest));
 
 	{
 		CARD16* p = (CARD16*)request;
@@ -236,7 +236,7 @@ void MesaProcessor::setBootRequestPV(CARD16 deviceOrdinal) {
 	setSwitches(request->switches, bootSwitch.toLatin1().constData());
 }
 void MesaProcessor::setBootRequestEther(CARD16 deviceOrdinal) {
-	Boot::Request* request = (Boot::Request*)Memory::getAddress(SD_OFFSET(SDDefs::sFirstGermRequest));
+	Boot::Request* request = (Boot::Request*)Memory::getAddress(SD + OFFSET_SD(SDDefs::sFirstGermRequest));
 
 	{
 		CARD16* p = (CARD16*)request;
@@ -263,7 +263,7 @@ void MesaProcessor::setBootRequestEther(CARD16 deviceOrdinal) {
 }
 
 void MesaProcessor::setBootRequestStream() {
-	Boot::Request* request = (Boot::Request*)Memory::getAddress(SD_OFFSET(SDDefs::sFirstGermRequest));
+	Boot::Request* request = (Boot::Request*)Memory::getAddress(SD + OFFSET_SD(SDDefs::sFirstGermRequest));
 
 	{
 		CARD16* p = (CARD16*)request;

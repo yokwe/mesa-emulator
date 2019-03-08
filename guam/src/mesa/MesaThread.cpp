@@ -86,7 +86,7 @@ void ProcessorThread::stop() {
 void ProcessorThread::run() {
 	logger.info("ProcessorThread::run START");
 	QThread::currentThread()->setPriority(PRIORITY);
-	TaggedControlLink bootLink = {SD_OFFSET(sBoot)};
+	TaggedControlLink bootLink = {SD + OFFSET_SD(sBoot)};
 
 	logger.info("bootLink  %04X %d %04X  %08X", bootLink.data, bootLink.tag, bootLink.fill, bootLink.u);
 	if (DEBUG_STOP_MESSAGE_UNTIL_MP) Logger::pushPriority(QtFatalMsg);

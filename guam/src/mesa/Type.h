@@ -296,8 +296,8 @@ typedef POINTER GFTHandle;
 typedef CARD16 GFTIndex;
 
 
-//#define GFT_OFFSET(n,m) (GFT + OFFSET(GlobalFrameTable, item[n]) + OFFSET(GFTItem, m))
-#define GFT_OFFSET(n,m) (GFT + OFFSET(GlobalFrameTable, item[(n / SIZE(GFTItem))].m))
+//#define GFT_OFFSET(n,m) (GFT + OFFSET(GlobalFrameTable, item[(n / SIZE(GFTItem))].m))
+#define GFT_OFFSET(n,m) (GFT + OFFSET4(GlobalFrameTable, item, (n / SIZE(GFTItem)), m))
 
 
 // LocalFrameHandle: TYPE = POINTER TO LocalVaribles;
@@ -658,7 +658,7 @@ union AVItem {
 enum AVItemTag { AT_frame = 0, AT_empty = 1, AT_indirect = 2, AT_unused = 3 };
 
 
-#define AV_OFFSET(n) (AV + OFFSET(AllocationVector, item[n]))
+#define OFFSET_AV(n) OFFSET3(AllocationVector, item, n)
 
 
 //FSindex: TYPE = [0 .. 256);
@@ -696,7 +696,7 @@ struct Port {
 	ControlLink outport;
 };
 
-#define PORT_OFFSET(p,m) (p + OFFSET(Port, m))
+#define OFFSET_PORT(m) OFFSET(Port, m)
 
 
 // 9.5.1 Trap Routines
@@ -712,7 +712,7 @@ struct SystemData {
 	ControlLink item[256];
 };
 
-#define SD_OFFSET(n) (SD + OFFSET(SystemData, item[n]))
+#define OFFSET_SD(n) OFFSET3(SystemData, item, n)
 
 
 // ETT: POINTER TO EscTrapTable = LOOPHOLE[mETT]
@@ -724,7 +724,7 @@ struct EscTrapTable {
 	ControlLink item[256];
 };
 
-#define ETT_OFFSET(n) (ETT + OFFSET(EscTrapTable, item[n]))
+#define OFFSET_ETT(n) OFFSET3(EscTrapTable, item, n)
 
 
 // 9.5.3 Trap Handler

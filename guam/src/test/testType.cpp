@@ -298,13 +298,14 @@ public:
 
    // GlobalFrameTable: TYPE = LONG BASE POINTER TO ARRAY GFTIndex OF GFTItem;
    // GFTIndex: TYPE = [0..16384);
-   // #define GFT_OFFSET(n,m) (GFT + OFFSET(GlobalFrameTable, item[(n / SIZE(GFTItem))].m))
+   // #define GFT_OFFSET(n,m) (GFT + OFFSET4(GlobalFrameTable, item, (n / SIZE(GFTItem)), m))
+
    void testGlobalFrameTable() {
 	   	CPPUNIT_ASSERT_EQUAL(65536U, SIZE(GlobalFrameTable));
 
 	   	CARD16 index = 8;
-	   	CPPUNIT_ASSERT_EQUAL((GFT + index + 0), GFT_OFFSET(index, globalFrame));
-	   	CPPUNIT_ASSERT_EQUAL((GFT + index + 2), GFT_OFFSET(index, codebase));
+	   	CPPUNIT_ASSERT_EQUAL((GFT + index + 0), (CARD32)(GFT_OFFSET(index, globalFrame)));
+	   	CPPUNIT_ASSERT_EQUAL((GFT + index + 2), ((CARD32)GFT_OFFSET(index, codebase)));
    }
 
 

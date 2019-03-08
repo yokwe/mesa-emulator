@@ -43,8 +43,11 @@ static log4cpp::Category& logger = Logger::getLogger("process");
 
 #include "Opcode.h"
 
-#define PDA_OFFSET(m) (PDA + OFFSET(ProcessDataArea, m))
-#define SV_OFFSET(sv,m) (sv + OFFSET(StateVector, m))
+#define OFFSET_PDA(m)      OFFSET(ProcessDataArea, m)
+#define OFFSET_PDA2(m,n)   OFFSET3(ProcessDataArea, m, n)
+#define OFFSET_PDA3(m,n,o) OFFSET4(ProcessDataArea, m, n, o)
+
+#define OFFSET_SV(m) OFFSET(StateVector, m)
 #define MAX(a,b) (((a) < (b)) ? (b) : (a))
 
 //#define TRACE_RESCHEDULE
@@ -57,24 +60,24 @@ static void Dequeue(LONG_POINTER src, PsbIndex psb) {
 
 	QueueHandle que = src;
 	Queue queue = {que ? *Fetch(que) : (CARD16)0};
-	PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[psb].link))};
+	PsbLink link = {*FetchPda(OFFSET_PDA3(block, psb, link))};
 	if (link.next == psb) {
 		prev = PsbNull;
 	} else {
 		PsbLink temp;
 		prev = (que == 0) ? psb : queue.tail;
 		for(;;) {
-			temp.u = *FetchPda(OFFSET(ProcessDataArea, block[prev].link));
+			temp.u = *FetchPda(OFFSET_PDA3(block, prev, link));
 			if (temp.next == psb) break;
 			prev = temp.next;
 		}
 		temp.next = link.next;
-		*StorePda(OFFSET(ProcessDataArea, block[prev].link)) = temp.u;
+		*StorePda(OFFSET_PDA3(block, prev, link)) = temp.u;
 	}
 	if (que == 0) {
-		PsbFlags flags = {*FetchPda(OFFSET(ProcessDataArea, block[psb].flags))};
+		PsbFlags flags = {*FetchPda(OFFSET_PDA3(block, psb, flags))};
 		flags.cleanup = link.next;
-		*StorePda(OFFSET(ProcessDataArea, block[psb].flags)) = flags.u;
+		*StorePda(OFFSET_PDA3(block, psb, flags)) = flags.u;
 	} else if (queue.tail == psb) {
 		queue.tail = prev;
 		*Store(que) = queue.u;
@@ -85,30 +88,30 @@ static void Dequeue(LONG_POINTER src, PsbIndex psb) {
 static void Enqueue(LONG_POINTER dst, PsbIndex psb) {
 	QueueHandle que = dst;
 	Queue queue = {*Fetch(que)};
-	PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[psb].link))};
+	PsbLink link = {*FetchPda(OFFSET_PDA3(block, psb, link))};
 	if (queue.tail == PsbNull) {
 		link.next = psb;
-		*StorePda(OFFSET(ProcessDataArea, block[psb].link)) = link.u;
+		*StorePda(OFFSET_PDA3(block, psb, link)) = link.u;
 		queue.tail = psb;
 		*Store(que) = queue.u;
 	} else {
 		PsbIndex prev = queue.tail;
-		PsbLink currentlink = {*FetchPda(OFFSET(ProcessDataArea, block[prev].link))};
+		PsbLink currentlink = {*FetchPda(OFFSET_PDA3(block, prev, link))};
 		if (link.priority <= currentlink.priority) {
 			queue.tail = psb;
 			*Store(que) = queue.u;
 		} else {
 			for(;;) {
-				PsbLink nextlink = {*FetchPda(OFFSET(ProcessDataArea, block[currentlink.next].link))};
+				PsbLink nextlink = {*FetchPda(OFFSET_PDA3(block, currentlink.next, link))};
 				if (nextlink.priority < link.priority) break;
 				prev = currentlink.next;
 				currentlink = nextlink;
 			}
 		}
 		link.next = currentlink.next;
-		*StorePda(OFFSET(ProcessDataArea, block[psb].link)) = link.u;
+		*StorePda(OFFSET_PDA3(block, psb, link)) = link.u;
 		currentlink.next = psb;
-		*StorePda(OFFSET(ProcessDataArea, block[prev].link)) = currentlink.u;
+		*StorePda(OFFSET_PDA3(block, prev, link)) = currentlink.u;
 	}
 }
 
@@ -122,23 +125,23 @@ static void Requeue(LONG_POINTER src, LONG_POINTER dst, PsbIndex psb) {
 // 10.4.2.2 State Vector Allocation
 // EmptyState: PROC[pri: Priority] RETURNS[BOOLEAN]
 int EmptyState(CARD16 pri) {
-	PDA_POINTER state = *FetchPda(OFFSET(ProcessDataArea, state[pri]));
+	PDA_POINTER state = *FetchPda(OFFSET_PDA2(state, pri));
 	return state == 0;
 }
 
 // AllocState: PROC[pri: Priority] RETURNS[state: StateHandle]
 static LONG_POINTER AllocState(CARD16 pri) {
-	PDA_POINTER offset = *FetchPda(OFFSET(ProcessDataArea, state[pri]));
+	PDA_POINTER offset = *FetchPda(OFFSET_PDA2(state, pri));
 	if (offset == 0) ERROR();
 	StateHandle state = LengthenPdaPtr(offset);
-	*StorePda(OFFSET(ProcessDataArea, state[pri])) = *Fetch(state);
+	*StorePda(OFFSET_PDA2(state, pri)) = *Fetch(state);
 	return state;
 }
 
 // FreeState: PROC[pri: Priority, state: StateHandle]
 static void FreeState(CARD16 pri, StateHandle state) {
-	*Store(state) = *FetchPda(OFFSET(ProcessDataArea, state[pri]));
-	*StorePda(OFFSET(ProcessDataArea, state[pri])) = OffsetPda(state);
+	*Store(state) = *FetchPda(OFFSET_PDA2(state, pri));
+	*StorePda(OFFSET_PDA2(state, pri)) = OffsetPda(state);
 }
 
 
@@ -147,25 +150,25 @@ static void FreeState(CARD16 pri, StateHandle state) {
 // SaveProcess: PROC[preemption BOOLEAN]
 void SaveProcess(int preemption) {
 	try {
-		PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].link))};
+		PsbLink link = {*FetchPda(OFFSET_PDA3(block, PSB, link))};
 		if (ValidContext()) *StoreLF(LO_OFFSET(0, pc)) = PC;
 		link.preempted = preemption;
 		if (preemption) {
 			StateHandle state;
 			if (!link.permanent) state = AllocState(link.priority);
-			else state = LengthenPdaPtr(*FetchPda(OFFSET(ProcessDataArea, block[PSB].context)));
+			else state = LengthenPdaPtr(*FetchPda(OFFSET_PDA3(block, PSB, context)));
 			SaveStack(state);
 //			*Store(state + OFFSET(StateVector, frame)) = LF;
-			*Store(SV_OFFSET(state, frame)) = LFCache::LF();
-			if (!link.permanent) *StorePda(OFFSET(ProcessDataArea, block[PSB].context)) = OffsetPda(state);
+			*Store(state + OFFSET_SV(frame)) = LFCache::LF();
+			if (!link.permanent) *StorePda(OFFSET_PDA3(block, PSB, context)) = OffsetPda(state);
 		} else {
-			if (!link.permanent) *StorePda(OFFSET(ProcessDataArea, block[PSB].context)) = LFCache::LF();
+			if (!link.permanent) *StorePda(OFFSET_PDA3(block, PSB, context)) = LFCache::LF();
 			else {
-				StateHandle state = LengthenPdaPtr(*FetchPda(OFFSET(ProcessDataArea, block[PSB].context)));
-				*Store(SV_OFFSET(state, frame)) = LFCache::LF();
+				StateHandle state = LengthenPdaPtr(*FetchPda(OFFSET_PDA3(block, PSB, context)));
+				*Store(state + OFFSET_SV(frame)) = LFCache::LF();
 			}
 		}
-		*StorePda(OFFSET(ProcessDataArea, block[PSB].link)) = link.u;
+		*StorePda(OFFSET_PDA3(block, PSB, link)) = link.u;
 	} catch (Abort &abort) {
 		ERROR();
 	}
@@ -174,25 +177,25 @@ void SaveProcess(int preemption) {
 // LoadProcess: PROC RETURNS[frame: LocalFrameHandle]
 LocalFrameHandle LoadProcess() {
 	try {
-		PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].link))};
-		LocalFrameHandle frame = *FetchPda(OFFSET(ProcessDataArea, block[PSB].context));
+		PsbLink link = {*FetchPda(OFFSET_PDA3(block, PSB, link))};
+		LocalFrameHandle frame = *FetchPda(OFFSET_PDA3(block, PSB, context));
 		if (link.preempted) {
 			StateHandle state = LengthenPdaPtr(frame);
 			LoadStack(state);
-			frame = *Fetch(SV_OFFSET(state, frame));
+			frame = *Fetch(state + OFFSET_SV(frame));
 			if (!link.permanent) FreeState(link.priority, state);
 		} else {
 			if (link.failed) {
 				Push(0);
 				link.failed = 0;
-				*StorePda(OFFSET(ProcessDataArea, block[PSB].link)) = link.u;
+				*StorePda(OFFSET_PDA3(block, PSB, link)) = link.u;
 			}
 			if (link.permanent) {
 				StateHandle state = LengthenPdaPtr(frame);
-				frame = *Fetch(SV_OFFSET(state, frame));
+				frame = *Fetch(state + OFFSET_SV(frame));
 			}
 		}
-		CARD32 mds = *FetchPda(OFFSET(ProcessDataArea, block[PSB].mds)) << WordSize;
+		CARD32 mds = *FetchPda(OFFSET_PDA3(block, PSB, mds)) << WordSize;
 		Memory::setMDS(mds);
 		return frame;
 	} catch (Abort &abort) {
@@ -215,12 +218,12 @@ void Reschedule(int preemption) {
 #endif
 
 	if (ProcessorThread::getRunning()) SaveProcess(preemption);
-	Queue queue = {*FetchPda(OFFSET(ProcessDataArea, ready))};
+	Queue queue = {*FetchPda(OFFSET_PDA(ready))};
 	if (queue.tail == PsbNull) goto BusyWait;
-	link.u = *FetchPda(OFFSET(ProcessDataArea, block[queue.tail].link));
+	link.u = *FetchPda(OFFSET_PDA3(block, queue.tail, link));
 	for(;;) {
 		psb = link.next;
-		link.u = *FetchPda(OFFSET(ProcessDataArea, block[psb].link));
+		link.u = *FetchPda(OFFSET_PDA3(block, psb, link));
 		if (link.permanent || link.preempted || !EmptyState(link.priority)) break;
 		if (psb == queue.tail) goto BusyWait;
 	}
@@ -260,10 +263,10 @@ BusyWait:
 // Also EnterFailed is called at very end of opcode implementation of ME and MR
 // So even if RequestReschedule is thrown within Reschedule, it is fine.
 static void EnterFailed(LONG_POINTER m) {
-	PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].link))};
+	PsbLink link = {*FetchPda(OFFSET_PDA3(block, PSB, link))};
 	link.failed = 1;
-	*StorePda(OFFSET(ProcessDataArea, block[PSB].link)) = link.u;
-	Requeue(PDA_OFFSET(ready), m, PSB);
+	*StorePda(OFFSET_PDA3(block, PSB, link)) = link.u;
+	Requeue(PDA + OFFSET_PDA(ready), m, PSB);
 	Reschedule();
 }
 
@@ -277,8 +280,8 @@ static int Exit(LONG_POINTER m) {
 	*Store(m) = mon.u;
 	int requeue = (mon.tail != PsbNull);
 	if (requeue) {
-		PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[mon.tail].link))};
-		Requeue(m, PDA_OFFSET(ready), link.next);
+		PsbLink link = {*FetchPda(OFFSET_PDA3(block, mon.tail, link))};
+		Requeue(m, PDA + OFFSET_PDA(ready), link.next);
 	}
 	return requeue;
 }
@@ -288,12 +291,12 @@ static int Exit(LONG_POINTER m) {
 // WakeHead: PROC[c: LONG POINTER TO Condition]
 static void WakeHead(LONG_POINTER c) {
 	Condition cond = {*Fetch(c)};
-	PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[cond.tail].link))};
-	PsbFlags flags = {*FetchPda(OFFSET(ProcessDataArea, block[link.next].flags))};
+	PsbLink link = {*FetchPda(OFFSET_PDA3(block, cond.tail, link))};
+	PsbFlags flags = {*FetchPda(OFFSET_PDA3(block, link.next, flags))};
 	flags.waiting = 0;
-	*StorePda(OFFSET(ProcessDataArea, block[link.next].flags)) = flags.u;
-	*StorePda(OFFSET(ProcessDataArea, block[link.next].timeout)) = 0;
-	Requeue(c, PDA_OFFSET(ready), link.next);
+	*StorePda(OFFSET_PDA3(block, link.next, flags)) = flags.u;
+	*StorePda(OFFSET_PDA3(block, link.next, timeout)) = 0;
+	Requeue(c, PDA + OFFSET_PDA(ready), link.next);
 }
 
 // 10.3.2 Cleanup Links
@@ -304,7 +307,7 @@ static void CleanupCondition(LONG_POINTER c) {
 	PsbIndex psb = cond.tail;
 
 	if (psb != PsbNull) {
-		PsbFlags flags = {*FetchPda(OFFSET(ProcessDataArea, block[psb].flags))};
+		PsbFlags flags = {*FetchPda(OFFSET_PDA3(block, psb, flags))};
 		if (flags.cleanup != PsbNull) {
 			for(;;) {
 				if (flags.cleanup == psb) {
@@ -314,12 +317,12 @@ static void CleanupCondition(LONG_POINTER c) {
 					return;
 				}
 				psb = flags.cleanup;
-				flags.u = *FetchPda(OFFSET(ProcessDataArea, block[psb].flags));
+				flags.u = *FetchPda(OFFSET_PDA3(block, psb, flags));
 				if (flags.cleanup == PsbNull) break;
 			}
 			PsbIndex head = psb;
 			for(;;) {
-				PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[psb].link))};
+				PsbLink link = {*FetchPda(OFFSET_PDA3(block, psb, link))};
 				if (link.next == head) break;
 				psb = link.next;
 			}
@@ -354,7 +357,7 @@ int ProcessInterrupt() {
 	UNSPEC wakeups = InterruptThread::getWP();
 	InterruptThread::setWP(0);
 	for(int level = InterruptLevel_SIZE - 1; 0 <= level; level--) {
-		if (wakeups & mask) requeue = NotifyWakeup(PDA_OFFSET(interrupt[level].condition)) || requeue;
+		if (wakeups & mask) requeue = NotifyWakeup(PDA + OFFSET_PDA3(interrupt, level, condition)) || requeue;
 		mask = Shift(mask, 1);
 	}
 	return requeue;
@@ -370,8 +373,8 @@ int ProcessInterrupt() {
 // Fault: PROC[fi: FaultIndex] RETURNS[PsbIndex]
 static inline PsbIndex Fault(FaultIndex fi) {
 	PsbIndex faulted = PSB;
-	Requeue(PDA_OFFSET(ready), PDA_OFFSET(fault[fi].queue), faulted);
-	NotifyWakeup(PDA_OFFSET(fault[fi].condition));
+	Requeue(PDA + OFFSET_PDA(ready), PDA + OFFSET_PDA3(fault, fi, queue), faulted);
+	NotifyWakeup(PDA + OFFSET_PDA3(fault, fi, condition));
 	PC = savedPC;
 	SP = savedSP;
 	try {
@@ -384,16 +387,16 @@ static inline PsbIndex Fault(FaultIndex fi) {
 // FaultOne: PROC[fi: FaultIndex, parameter: UNSPEC]
 static void FaultOne(FaultIndex fi, UNSPEC parameter) {
 	PsbIndex psb = Fault(fi);
-	POINTER state = *FetchPda(OFFSET(ProcessDataArea, block[psb].context));
-	*StorePda(SV_OFFSET(state, data[0])) = parameter;
+	POINTER state = *FetchPda(OFFSET_PDA3(block, psb, context));
+	*StorePda(state + OFFSET_SV(data[0])) = parameter;
 	ERROR_Abort();
 }
 // FaultTwo: PROC[fi: FaultIndex, parameter: LONG UNSPEC]
 static void FaultTwo(FaultIndex fi, LONG_UNSPEC parameter) {
 	PsbIndex psb = Fault(fi);
-	POINTER state = *FetchPda(OFFSET(ProcessDataArea, block[psb].context));
-	*StorePda(SV_OFFSET(state, data[0])) = LowHalf(parameter);
-	*StorePda(SV_OFFSET(state, data[1])) = HighHalf(parameter);
+	POINTER state = *FetchPda(OFFSET_PDA3(block, psb, context));
+	*StorePda(state + OFFSET_SV(data[0])) = LowHalf(parameter);
+	*StorePda(state + OFFSET_SV(data[1])) = HighHalf(parameter);
 	ERROR_Abort();
 }
 
@@ -435,15 +438,15 @@ void WriteProtectFault(LONG_POINTER ptr) {
 // TimeoutScan: PROC RETURNS [BOOLEAN]
 int TimeoutScan() {
 	int requeue = 0;
-	CARDINAL count = *FetchPda(OFFSET(ProcessDataArea, count));
+	CARDINAL count = *FetchPda(OFFSET_PDA(count));
 	for(PsbIndex psb = StartPsb; psb < (StartPsb + count); psb++) {
-		Ticks timeout = *FetchPda(OFFSET(ProcessDataArea, block[psb].timeout));
+		Ticks timeout = *FetchPda(OFFSET_PDA3(block, psb, timeout));
 		if (timeout && timeout == TimerThread::getPTC()) {
-			PsbFlags flags = {*FetchPda(OFFSET(ProcessDataArea, block[psb].flags))};
+			PsbFlags flags = {*FetchPda(OFFSET_PDA3(block, psb, flags))};
 			flags.waiting = 0;
-			*StorePda(OFFSET(ProcessDataArea, block[psb].flags)) = flags.u;
-			*StorePda(OFFSET(ProcessDataArea, block[psb].timeout)) = 0;
-			Requeue(0, PDA_OFFSET(ready), psb);
+			*StorePda(OFFSET_PDA3(block, psb, flags)) = flags.u;
+			*StorePda(OFFSET_PDA3(block, psb, timeout)) = 0;
+			Requeue(0, PDA + OFFSET_PDA(ready), psb);
 			requeue = 1;
 		}
 	}
@@ -503,18 +506,18 @@ void E_MW() {
 	MINIMAL_STACK();
 	CleanupCondition(c);
 	int requeue = Exit(m);
-	PsbFlags flags = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].flags))};
+	PsbFlags flags = {*FetchPda(OFFSET_PDA3(block, PSB, flags))};
 	Condition cond = {*Fetch(c)};
 	if ((!flags.abort) || (!cond.abortable)) {
 		if (cond.wakeup) {
 			cond.wakeup = 0;
 			*Store(c) = cond.u;
 		} else {
-//			*StorePda(OFFSET(ProcessDataArea, block[PSB].timeout)) = ((t == 0) ? 0 : MAX(1U, (CARD16)((CARD32)PTC + (CARD32)t)));
-			*StorePda(OFFSET(ProcessDataArea, block[PSB].timeout)) = ((t == 0) ? 0 : MAX(1U, (CARD16)((CARD32)TimerThread::getPTC() + (CARD32)t)));
+//			*StorePda(OFFSET_PDA3(block, PSB, timeout)) = ((t == 0) ? 0 : MAX(1U, (CARD16)((CARD32)PTC + (CARD32)t)));
+			*StorePda(OFFSET_PDA3(block, PSB, timeout)) = ((t == 0) ? 0 : MAX(1U, (CARD16)((CARD32)TimerThread::getPTC() + (CARD32)t)));
 			flags.waiting = 1;
-			*StorePda(OFFSET(ProcessDataArea, block[PSB].flags)) = flags.u;
-			Requeue(PDA_OFFSET(ready), c, PSB);
+			*StorePda(OFFSET_PDA3(block, PSB, flags)) = flags.u;
+			Requeue(PDA + OFFSET_PDA(ready), c, PSB);
 			requeue = 1;
 		}
 	}
@@ -531,9 +534,9 @@ void E_MR() {
 	Monitor mon = {*Fetch(m)};
 	if (!mon.locked) {
 		CleanupCondition(c);
-		PsbFlags flags = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].flags))};
+		PsbFlags flags = {*FetchPda(OFFSET_PDA3(block, PSB, flags))};
 		flags.cleanup = PsbNull;
-		*StorePda(OFFSET(ProcessDataArea, block[PSB].flags)) = flags.u;
+		*StorePda(OFFSET_PDA3(block, PSB, flags)) = flags.u;
 		if (flags.abort) {
 			Condition cond = {*Fetch(c)};
 			if (cond.abortable) ProcessTrap();
@@ -591,10 +594,10 @@ void E_SPP() {
 	CARD16 priority = Pop();
 	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  SPP  %d", savedPC, priority);
 	MINIMAL_STACK();
-	PsbLink link = {*FetchPda(OFFSET(ProcessDataArea, block[PSB].link))};
+	PsbLink link = {*FetchPda(OFFSET_PDA3(block, PSB, link))};
 	link.priority = priority;
-	*StorePda(OFFSET(ProcessDataArea, block[PSB].link)) = link.u;
-	Requeue(PDA_OFFSET(ready), PDA_OFFSET(ready), PSB);
+	*StorePda(OFFSET_PDA3(block, PSB, link)) = link.u;
+	Requeue(PDA + OFFSET_PDA(ready), PDA + OFFSET_PDA(ready), PSB);
 	// Reschedule must be placed at very end of implementation of opcode.
 	Reschedule();
 }
