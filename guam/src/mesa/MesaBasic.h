@@ -58,8 +58,12 @@ typedef CARD32 LONG_CARDINAL;
 
 
 #define SIZE(t) ((CARD32)(sizeof(t) / sizeof(CARD16)))
-#define OFFSET(s,m) ((CARD32)(((unsigned long)(&((s *)0)->m)) / sizeof(CARD16)))
-//#define OFFSET(s,m) (offsetof(s,m) / sizeof(CARD16))
+
+// OFFSET must returns CARD32 for CPPUNIT_ASSERT_EQUAL
+#define OFFSET(s,m)      (CARD32)(offsetof(s,m) / sizeof(CARD16))
+#define OFFSET3(s,m,n)   (CARD32)(OFFSET(s,m)    + ((offsetof(s,m[1])   - offsetof(s,m[0])) * n) / sizeof(CARD16))
+#define OFFSET4(s,m,n,p) (CARD32)(OFFSET3(s,m,n) + ((offsetof(s,m[0].p) - offsetof(s,m[0])))     / sizeof(CARD16))
+
 #define ELEMENTSOF(t) ((CARD32)(sizeof(t) / sizeof(t[0])))
 
 #endif
