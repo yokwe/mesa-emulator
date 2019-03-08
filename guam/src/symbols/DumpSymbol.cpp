@@ -446,7 +446,7 @@ noprint:;
 			const SERecord::Cons::Union& t(tsei->getValue().getCons().getUnion());
 			out << "SELECT ";
 			if (!t.controlled) {
-				out << (t.overlaid ? "OVERLAID " : "COMPUTED");
+				out << (t.overlaid ? "OVERLAID " : "COMPUTED ");
 			} else {
 				out << t.tagSei->getValue().getId().hash->getValue().value;
 				out << getBitSpec(t.tagSei);
