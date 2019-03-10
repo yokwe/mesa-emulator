@@ -3,5 +3,6 @@
 #
 bin/
 tmp/
+data/GVWin*/
 src/*/Makefile
 src/*/.qmake.stash
