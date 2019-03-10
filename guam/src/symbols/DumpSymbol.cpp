@@ -213,34 +213,36 @@ void DumpSymbol::printSym(QTextStream& out, const SEIndex* sei, QString colonStr
 			}
 		}
 		ValFormat vf = printType(out, typeSei, {});
-		if (vf.tag == ValFormat::Tag::TRANSFER) {
-			out << (id.constant ? " = " : " _ ");
-			const BTRecord* bt = BTRecord::find(sei->getSymbols(), id.idInfo);
-			if (bt) {
-				const Symbols::TransferMode mode = vf.getTransfer().mode;
-				if (mode == Symbols::TransferMode::SIGNAL || mode == Symbols::TransferMode::ERROR) {
-					out << "CODE";
-				} else if (bt->getCallable().inline_) {
-					out << "INLINE";
-				} else {
-					out << "BODY";
-				}
-			} else if (sei->getValue().getId().extended) {
-				out << "OPCODE";
-			} else {
-				ShowType::printTypedVal(out, sei->getValue().getId().idValue, vf);
-			}
-		} else {
-			out << (id.constant ? " = " : " _ ");
-			if (sei->getValue().getId().extended) {
-				ExtRecord* ext = ExtRecord::find(sei);
-				ShowType::printTreeLink(out, ext->tree, vf, 0, false);
-			} else {
-				const SEIndex* underTypeSei = typeSei->underType();
-				if (underTypeSei->getValue().getCons().tag == SERecord::Cons::Tag::SUBRANGE) {
-					ShowType::printTypedVal(out, sei->getValue().getId().idValue + underTypeSei->getValue().getCons().getSubrange().origin, vf);
+		if (id.constant) {
+			if (vf.tag == ValFormat::Tag::TRANSFER) {
+				out << " = ";
+				const BTRecord* bt = BTRecord::find(sei->getSymbols(), id.idInfo);
+				if (bt) {
+					const Symbols::TransferMode mode = vf.getTransfer().mode;
+					if (mode == Symbols::TransferMode::SIGNAL || mode == Symbols::TransferMode::ERROR) {
+						out << "CODE";
+					} else if (bt->getCallable().inline_) {
+						out << "INLINE";
+					} else {
+						out << "BODY";
+					}
+				} else if (sei->getValue().getId().extended) {
+					out << "OPCODE";
 				} else {
 					ShowType::printTypedVal(out, sei->getValue().getId().idValue, vf);
+				}
+			} else {
+				out << " = ";
+				if (sei->getValue().getId().extended) {
+					ExtRecord* ext = ExtRecord::find(sei);
+					ShowType::printTreeLink(out, ext->tree, vf, 0, false);
+				} else {
+					const SEIndex* underTypeSei = typeSei->underType();
+					if (underTypeSei->getValue().getCons().tag == SERecord::Cons::Tag::SUBRANGE) {
+						ShowType::printTypedVal(out, sei->getValue().getId().idValue + underTypeSei->getValue().getCons().getSubrange().origin, vf);
+					} else {
+						ShowType::printTypedVal(out, sei->getValue().getId().idValue, vf);
+					}
 				}
 			}
 		}
