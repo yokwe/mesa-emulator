@@ -28,7 +28,7 @@ POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 INCLUDEPATH += .
 
-QMAKE_CXXFLAGS += -std=c++0x -Wall -Werror -g
+QMAKE_CXXFLAGS += -std=c++14 -Wall -Werror -g
 
 win32 {
 	QMAKE_LFLAGS   += -static

@@ -18,7 +18,7 @@ SOURCES += DumpSymbol.cpp ShowType.cpp
 
 INCLUDEPATH += .
 
-QMAKE_CXXFLAGS += -std=c++0x -Wall -Werror -g
+QMAKE_CXXFLAGS += -std=c++14 -Wall -Werror -g
 
 contains(QT_MAJOR_VERSION, 4) {
         QMAKE_CXXFLAGS += -Wno-unused-local-typedefs

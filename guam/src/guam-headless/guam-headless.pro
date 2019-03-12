@@ -45,7 +45,7 @@ SOURCES += LoadGerm.cpp
 
 INCLUDEPATH += .
 
-QMAKE_CXXFLAGS += -std=c++0x -Wall -Werror -g
+QMAKE_CXXFLAGS += -std=c++14 -Wall -Werror -g
 
 DESTDIR     = ../../tmp/build/$$TARGET
 OBJECTS_DIR = ../../tmp/build/$$TARGET
