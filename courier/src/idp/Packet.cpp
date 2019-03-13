@@ -36,12 +36,6 @@ static log4cpp::Category& logger = Logger::getLogger("packet");
 
 #include "../idp/Packet.h"
 
-Packet::Packet(quint8* data_, quint32 limit_) : data(rawData), capacity(sizeof(rawData)), limit(limit_), pos(0) {
-	if (capacity < limit) RUNTIME_ERROR();
-	for(quint32 i = 0; i < limit; i++) data[i] = data_[i];
-	for(quint32 i = limit; i < capacity; i++) data[i] = 0;
-}
-
 void Packet::setPos(quint32 newValue) {
 	if (limit < newValue) RUNTIME_ERROR();
 	pos = newValue;

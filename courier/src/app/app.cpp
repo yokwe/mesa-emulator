@@ -34,6 +34,7 @@ static log4cpp::Category& logger = Logger::getLogger("app");
 
 #include "../idp/NIC.h"
 #include "../idp/Packet.h"
+#include "../idp/IDP.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -41,7 +42,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	setSignalHandler();
 
 	NIC nic;
-	nic.attach("ens33");
+	nic.attach("ens33", NIC::ETH_P_IDP);
 
 	Packet packet;
 	int opErrno = 0;

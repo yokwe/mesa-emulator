@@ -62,13 +62,15 @@ static inline quint64 get48_(quint8* p) {
 	return ret;
 }
 
-void NIC::attach(const char* name_) {
-	name = name_;
+void NIC::attach(const char* name_, const quint16 protocol_) {
+	name     = name_;
+	protocol = protocol_;
+
     logger.info("name     = %s", name);
-    logger.info("protocol = 0x%04X", ETH_P_IDP);
+    logger.info("protocol = 0x%04X", protocol);
 
 	// open socket
-	fd = socket(AF_PACKET, SOCK_RAW, qToBigEndian((quint16)ETH_P_IDP));
+	fd = socket(AF_PACKET, SOCK_RAW, qToBigEndian((quint16)protocol));
 	if (fd == -1) {
 		int myErrno = errno;
 		logger.fatal("socket returns -1.  errno = %d", myErrno);
@@ -121,7 +123,7 @@ void NIC::attach(const char* name_) {
 
 			memset(&sll, 0xff, sizeof(sll));
 			sll.sll_family   = AF_PACKET;
-			sll.sll_protocol = qToBigEndian(ETH_P_IDP);
+			sll.sll_protocol = qToBigEndian(protocol);
 			sll.sll_ifindex  = ifindex;
 			int ret = ::bind(fd, (struct sockaddr *)&sll, sizeof sll);
 		    if (ret) {

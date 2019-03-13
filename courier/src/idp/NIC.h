@@ -39,18 +39,21 @@ OF SUCH DAMAGE.
 class NIC {
 public:
 	// packet type of Xerox IDP
-	static const int ETH_P_IDP = 0x0600;
+	static const quint16 ETH_P_IDP = 0x0600;
 
-	NIC() : name(0), fd(0), address(0), network(0) {}
+	NIC() : name(0), protocol(0), fd(0), address(0) {}
 
 	const char* getName() {
 		return name;
+	}
+	quint16 getProtocol() {
+		return protocol;
 	}
 	quint64 getAddress() {
 		return address;
 	}
 
-	void attach(const char* name_);
+	void attach(const char* name, const quint16 protocol);
 	void detach();
 
 	// discard already received packet
@@ -64,9 +67,9 @@ public:
 
 private:
 	const char* name;
+	quint16     protocol;
 	int         fd;
 	quint64     address;
-	quint32     network;
 };
 
 #endif

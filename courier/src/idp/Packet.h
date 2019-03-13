@@ -53,8 +53,9 @@ protected:
 	quint8        rawData[MAX_SIZE];
 
 public:
-	Packet(quint8* data_, quint32 limit_);
 	Packet(Packet* that) : data(that->data), capacity(that->capacity), limit(that->limit), pos(that->pos) {}
+
+	Packet(quint8* data_, quint32 limit_) : data(data_), capacity(limit_), limit(limit_), pos(0) {}
 	Packet() : data(rawData), capacity(MAX_SIZE), limit(capacity), pos(0) {
 		for(quint32 i = 0; i < capacity; i++) data[i] = 0;
 	}
