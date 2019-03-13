@@ -25,49 +25,48 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// NIC.h
+//
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("app");
+#ifndef NIC_H__
+#define NIC_H__
 
-#include "../util/Debug.h"
+#include <linux/if_ether.h>
 
-#include "../idp/NIC.h"
-#include "../idp/Packet.h"
+#include <QtCore>
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+class NIC {
+public:
+	// packet type of Xerox IDP
+	static const int ETH_P_IDP = 0x0600;
 
-	setSignalHandler();
+	NIC() : name(0), fd(0), address(0), network(0) {}
 
-	NIC nic;
-	nic.attach("ens33");
-
-	Packet packet;
-	int opErrno = 0;
-
-	for(int i = 0; i < 10; i++) {
-		logger.info("# %3d", i);
-
-		packet.clear();
-		opErrno = 0;
-		int length = nic.receive(packet.getData(), packet.getCapacity(), opErrno);
-		if (length == -1) {
-			logger.info("opErrno * %d", opErrno);
-			break;
-		}
-		if (opErrno != 0) {
-			logger.info("opErrno # %d", opErrno);
-			break;
-		}
-
-		packet.setLimit(length);
-
-		logger.info("packet %4d %3d", length, opErrno);
+	const char* getName() {
+		return name;
+	}
+	quint64 getAddress() {
+		return address;
 	}
 
-	nic.detach();
+	void attach(const char* name_);
+	void detach();
 
-	logger.info("STOP");
-	return 0;
-}
+	// discard already received packet
+	void discardRecievedPacket();
+	void discardOnePacket();
+	int  select(quint32 timeout, int& opErrno);
+
+	// returns return code of send and recv. no error checking
+	int transmit(quint8* data, quint32 dataLen, int& opErrno);
+	int receive (quint8* data, quint32 dataLen, int& opErrno);
+
+private:
+	const char* name;
+	int         fd;
+	quint64     address;
+	quint32     network;
+};
+
+#endif

@@ -11,16 +11,16 @@ export LOG4CPP_CONFIG
 
 
 all:
-	(cd src/util;    make all)
-#	(cd src/xns;     make all)
-#	(cd src/courier; make all)
-	(cd src/app;     make all)
+	(cd src/util; make all)
+	(cd src/idp;  make all)
+#	(cd src/rpc;  make all)
+	(cd src/app;  make all)
 
 qmake:
-	(cd src/util;    qmake)
-#	(cd src/xns;     qmake)
-#	(cd src/courier; qmake)
-	(cd src/app;     qmake)
+	(cd src/util; qmake)
+	(cd src/idp;  qmake)
+#	(cd src/rpc;  qmake)
+	(cd src/app;  qmake)
 	qmake --version
 
 qt5-default:
@@ -31,8 +31,8 @@ clean:
 	rm -rf tmp/build
 	mkdir  -p tmp/build
 	mkdir  tmp/build/util
-	mkdir  tmp/build/xns
-	mkdir  tmp/build/courier
+	mkdir  tmp/build/idp
+	mkdir  tmp/build/rpc
 	mkdir  tmp/build/app
 
 distclean: clean
