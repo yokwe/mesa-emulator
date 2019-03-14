@@ -41,9 +41,13 @@ OF SUCH DAMAGE.
 class NIC {
 public:
 	// packet type of Xerox IDP
-	static const quint16 ETH_P_IDP = 0x0600;
+	enum class Type : quint16 {
+		IDP = 0x0600,
+	};
 
-    static const quint64 BROADCAST_ADDRESS = 0xFFFFFFFFFFFFLL;
+    enum class Address : quint64 {
+        BROADCAST = 0xFFFFFFFFFFFFLL,
+    };
 
 	static const quint32 MAX_DATA_SIZE = 1514;
 	static const quint32 MIN_DATA_SIZE =   46;
@@ -106,9 +110,10 @@ private:
 	quint64     address;
 };
 
+QString toString(const NIC::Address value);
 QString toString(const NIC::Ethernet& ethernet);
 
-void deserialize(NetData& data, NIC::Ethernet& ethernet);
-void serialize  (NetData& data, NIC::Ethernet& ethernet);
+void deserialize(NetData& netData, NIC::Ethernet& ethernet);
+void serialize  (NetData& netData, NIC::Ethernet& ethernet);
 
 #endif

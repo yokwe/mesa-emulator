@@ -45,11 +45,11 @@ public:
         ROUTING          = 1,
         ECHO             = 2,
         ERROR            = 3,
-        PACKET_EXCHANGE  = 4,
-        SEQUENCED_PACKET = 5,
-        BOOT_SERVER      = 9,
+        PACKET_EXCHANGE  = 4, // PEX
+        SEQUENCED_PACKET = 5, // SPP
+        BOOT_SERVER      = 9, // BOOT
     };
-    enum class WellKnownSocket : quint16 {
+    enum class Socket : quint16 {
         ROUTING           = 1,
         ECHO              = 2,
         ERROR             = 3,
@@ -71,17 +71,21 @@ public:
 		MAX_WELL_KNOWN_SOCKET = 3000,
     };
 
-	static const quint32 NETWORK_UNKNOWN       = 0x0;
-	static const quint32 NETWORK_ALL           = 0xFFFFFFFF;
+    enum class Network : quint32 {
+    	UNKNOWN = 0,
+    	ALL     = 0xFFFFFFFF,
+    };
 
-	static const quint64 HOST_ALL              = 0xFFFFFFFFFFFFLL;
+    enum class Host : quint64 {
+    	ALL = 0xFFFFFFFFFFFFLL,
+    };
 
-	static const quint16 CHECKSUM_NONE         = 0xFFFF;
+    enum class Checksum : quint16 {
+    	NONE = 0xFFFF,
+    };
+
 	static const quint16 MAX_HOP_COUNT         = 16U;
 	static const quint16 MAX_PACKET_LIFETIME   = 60U;
-
-	static const quint32 IDP_HEADER_LENGTH     = 30;
-	static const quint32 MIN_DATA_LENGTH       = 16;
 
 	// Data starts from here
     quint16 checksum;
@@ -97,20 +101,25 @@ public:
     quint64 src_host;
     quint16 src_socket;
 
+    // data follow
+    //   quint8  data[546];
+
     // Length of Ethernet packet is always even number.
     // So if length of data is odd, need to output one garbage byte.
     // Minimum data length of ethernet datagram is 46. And header length of IDP is 30.
     // So if data length of IDP is less than 16, add padding to make data length 16.
-    quint8  data[546];
 };
 
-QString toString(const IDP::PacketType& value);
-QString toString(const IDP::WellKnownSocket& value);
+QString toString(const IDP::PacketType value);
+QString toString(const IDP::Socket value);
+QString toString(const IDP::Network value);
+QString toString(const IDP::Host value);
+QString toString(const IDP::Checksum value);
 QString toString(const IDP& value);
 
 // Assume data offset point to beginning of IDP
-void deserialize(NetData& data, IDP& ethernet);
-void serialize  (NetData& data, IDP& ethernet);
+void deserialize(NetData& netData, IDP& ethernet);
+void serialize  (NetData& netData, IDP& ethernet);
 
 #endif
 

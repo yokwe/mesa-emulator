@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += NIC.h   NetData.h   IDP.cpp
-SOURCES += NIC.cpp NetData.cpp IDP.h
+HEADERS += NIC.h   NetData.h   IDP.h
+SOURCES += NIC.cpp NetData.cpp IDP.cpp
 
 ###############################################
 

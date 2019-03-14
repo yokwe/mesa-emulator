@@ -209,8 +209,10 @@ int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) {
 }
 
 int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) {
+	if (DEBUG_NIC_SHOW) logger.debug("%-8s fd = %d  data = %p  dataLen = %4d  opErrno = %3d", __FUNCTION__, fd, data, dataLen, opErrno);
 	int ret = recv(fd, data, dataLen, 0);
 	opErrno = errno;
+	if (DEBUG_NIC_SHOW) logger.debug("%-8s ret = %4d  opErrno = %3d", __FUNCTION__, ret, opErrno);
 
 	if (0 < ret) {
 		if (DEBUG_NIC_TRACE) {
@@ -228,8 +230,6 @@ int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) {
 			logger.debug("RECV     %s", buf);
 		}
 	}
-
-	if (DEBUG_NIC_SHOW) logger.debug("%-8s data = %p  dataLen = %4d  opErrno = %3d  ret = %4d", __FUNCTION__, data, dataLen, opErrno, ret);
 	return ret;
 }
 
@@ -250,8 +250,8 @@ void NIC::transmit(NetData& netData) {
 		dataLen = netData.getLimit();
 	}
 	int ret = transmit(data, dataLen, opErrno);
-	if (ret < 0 || opErrno != 0) {
-		logger.fatal("transmit ret = %d  opErrno = %d", ret, opErrno);
+	if (ret == -1) {
+		logger.fatal("transmit ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
 		RUNTIME_ERROR();
 	}
 	if ((quint32)ret != dataLen) {
@@ -261,17 +261,61 @@ void NIC::transmit(NetData& netData) {
 }
 
 void NIC::receive(NetData& netData) {
-	int opErrno = 0;
 	netData.setOffset(0);
 	netData.clear();
 
 	quint8* data = netData.getData();
 	quint32 dataLen = netData.getCapacity();
+	int opErrno = 0;
 
 	int ret = receive(data, dataLen, opErrno);
-	if (ret < 0 || opErrno != 0) {
-		logger.fatal("receive ret = %d  opErrno = %d", ret, opErrno);
+	if (ret == -1) {
+		logger.fatal("receive ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
 		RUNTIME_ERROR();
 	}
 	netData.setLimit((quint32)ret);
 }
+
+QString toString(const NIC::Address value) {
+	static QMap<NIC::Address, QString>map = {
+		    {NIC::Address::BROADCAST, "BROADCAST"},
+	};
+
+	if (map.contains(value)) {
+		return map[value];
+	} else {
+		return QString("%1").arg((quint64)value, 0, 16).toUpper();
+	}
+}
+
+QString toString(const NIC::Type value) {
+	static QMap<NIC::Type, QString>map = {
+		    {NIC::Type::IDP, "IDP"},
+	};
+
+	if (map.contains(value)) {
+		return map[value];
+	} else {
+		return QString("%1").arg((quint64)value, 4, 16);
+	}
+}
+
+QString toString(const NIC::Ethernet& ethernet) {
+	QString ret = QString("[%1 %2 %3]")
+			.arg(toString((NIC::Address)ethernet.eth_dst))
+			.arg(toString((NIC::Address)ethernet.eth_src))
+			.arg(toString((NIC::Type)ethernet.eth_type));
+	return ret;
+}
+
+void deserialize(NetData& netData, NIC::Ethernet& ethernet) {
+	ethernet.eth_dst  = netData.get48();
+	ethernet.eth_src  = netData.get48();
+	ethernet.eth_type = netData.get16();
+}
+void serialize  (NetData& netData, NIC::Ethernet& ethernet) {
+	netData.put48(ethernet.eth_dst);
+	netData.put48(ethernet.eth_src);
+	netData.put16(ethernet.eth_type);
+}
+

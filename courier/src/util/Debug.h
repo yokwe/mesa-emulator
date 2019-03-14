@@ -32,7 +32,7 @@ OF SUCH DAMAGE.
 #ifndef DEBUG_H__
 #define DEBUG_H__
 
-static const int DEBUG_NIC_SHOW  = 1;
-static const int DEBUG_NIC_TRACE = 1;
+static const int DEBUG_NIC_SHOW  = 0;
+static const int DEBUG_NIC_TRACE = 0;
 
 #endif

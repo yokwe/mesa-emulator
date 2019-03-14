@@ -42,17 +42,25 @@ int main(int /*argc*/, char** /*argv*/) {
 	setSignalHandler();
 
 	NIC nic;
-	nic.attach("ens33", NIC::ETH_P_IDP);
+	nic.attach("ens33", (quint16)NIC::Type::IDP);
 
 	NIC::Data data;
 
-	for(int i = 0; i < 10; i++) {
+	for(int i = 0; i < 100; i++) {
 		logger.info("# %3d", i);
 
 		data.netData.clear();
 		nic.receive(data);
 
 		logger.info("packet %4d %3d", data.netData.getLimit(), data.netData.getCapacity());
+
+		NIC::Ethernet ethernet;
+		deserialize(data.netData, ethernet);
+		logger.info("ETHER %s", toString(ethernet).toLocal8Bit().constData());
+
+		IDP idp;
+		deserialize(data.netData, idp);
+		logger.info("  IDP %s", toString(idp).toLocal8Bit().constData());
 	}
 
 	nic.detach();
