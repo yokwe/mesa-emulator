@@ -98,7 +98,7 @@ QString toString(const IDP::Network value) {
 
 QString toString(const IDP::Host value) {
 	static QMap<IDP::Host, QString>map = {
-		    {IDP::Host::ALL,     "ALL"},
+		    {IDP::Host::ALL, "ALL"},
 	};
 
 	if (map.contains(value)) {
@@ -110,7 +110,7 @@ QString toString(const IDP::Host value) {
 
 QString toString(const IDP::Checksum value) {
 	static QMap<IDP::Checksum, QString>map = {
-		    {IDP::Checksum::NONE,     "NONE"},
+		    {IDP::Checksum::NONE, "NONE"},
 	};
 
 	if (map.contains(value)) {
@@ -120,40 +120,51 @@ QString toString(const IDP::Checksum value) {
 	}
 }
 
+QString toString(const IDP::HopCount value) {
+	static QMap<IDP::HopCount, QString>map = {
+		    {IDP::HopCount::MAX, "MAX"},
+	};
+
+	if (map.contains(value)) {
+		return map[value];
+	} else {
+		return QString("%1").arg((quint8)value);
+	}
+}
 
 QString toString(const IDP& value) {
 	return QString("[%1 %2 %3 %4   [%5 %6 %7]   [%8 %9 %10]]")
-			.arg(toString((IDP::Checksum)value.checksum)).arg(value.length, 4).arg(value.hopCount, 2).arg(toString((IDP::PacketType)value.packetType))
-			.arg(toString((IDP::Network)value.dst_net)).arg(toString((IDP::Host)value.dst_host)).arg(toString((IDP::Socket)value.dst_socket))
-			.arg(toString((IDP::Network)value.src_net)).arg(toString((IDP::Host)value.src_host)).arg(toString((IDP::Socket)value.src_socket));
+			.arg(toString(value.checksum)).arg(value.length, 4).arg(toString(value.hopCount)).arg(toString(value.packetType))
+			.arg(toString(value.dst_net)).arg(toString(value.dst_host)).arg(toString(value.dst_socket))
+			.arg(toString(value.src_net)).arg(toString(value.src_host)).arg(toString(value.src_socket));
 }
 
 void deserialize(NetData& netData, IDP& idp) {
-	idp.checksum   = netData.get16();
+	idp.checksum   = (IDP::Checksum)netData.get16();
 	idp.length     = netData.get16();
-	idp.hopCount   = netData.get8();
-	idp.packetType = netData.get8();
+	idp.hopCount   = (IDP::HopCount)netData.get8();
+	idp.packetType = (IDP::PacketType)netData.get8();
 
-	idp.dst_net    = netData.get32();
-	idp.dst_host   = netData.get48();
-	idp.dst_socket = netData.get16();
+	idp.dst_net    = (IDP::Network)netData.get32();
+	idp.dst_host   = (IDP::Host)netData.get48();
+	idp.dst_socket = (IDP::Socket)netData.get16();
 
-	idp.src_net    = netData.get32();
-	idp.src_host   = netData.get48();
-	idp.src_socket = netData.get16();
+	idp.src_net    = (IDP::Network)netData.get32();
+	idp.src_host   = (IDP::Host)netData.get48();
+	idp.src_socket = (IDP::Socket)netData.get16();
 }
 void serialize  (NetData& netData, IDP& idp) {
-	netData.put16(idp.checksum);
+	netData.put16((quint16)idp.checksum);
 	netData.put16(idp.length);
-	netData.put8 (idp.hopCount);
-	netData.put8 (idp.packetType);
+	netData.put8 ((quint8)idp.hopCount);
+	netData.put8 ((quint8)idp.packetType);
 
-	netData.put32(idp.dst_net);
-	netData.put48(idp.dst_host);
-	netData.put16(idp.dst_socket);
+	netData.put32((quint32)idp.dst_net);
+	netData.put48((quint64)idp.dst_host);
+	netData.put16((quint16)idp.dst_socket);
 
-	netData.put32(idp.src_net);
-	netData.put48(idp.src_host);
-	netData.put16(idp.src_socket);
+	netData.put32((quint32)idp.src_net);
+	netData.put48((quint64)idp.src_host);
+	netData.put16((quint16)idp.src_socket);
 }
 

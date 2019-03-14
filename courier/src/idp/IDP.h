@@ -84,22 +84,25 @@ public:
     	NONE = 0xFFFF,
     };
 
-	static const quint16 MAX_HOP_COUNT         = 16U;
+    enum class HopCount : quint8 {
+    	MAX = 16,
+    };
+
 	static const quint16 MAX_PACKET_LIFETIME   = 60U;
 
 	// Data starts from here
-    quint16 checksum;
-    quint16 length;     // length in byte including checksum
-    quint8  hopCount;
-    quint8  packetType;
+    Checksum   checksum;
+    quint16    length;     // length in byte including checksum
+    HopCount   hopCount;
+    PacketType packetType;
 
-    quint32 dst_net;
-    quint64 dst_host;
-    quint16 dst_socket;
+    Network dst_net;
+    Host    dst_host;
+    Socket  dst_socket;
 
-    quint32 src_net;
-    quint64 src_host;
-    quint16 src_socket;
+    Network src_net;
+    Host    src_host;
+    Socket  src_socket;
 
     // data follow
     //   quint8  data[546];
@@ -115,6 +118,7 @@ QString toString(const IDP::Socket value);
 QString toString(const IDP::Network value);
 QString toString(const IDP::Host value);
 QString toString(const IDP::Checksum value);
+QString toString(const IDP::HopCount value);
 QString toString(const IDP& value);
 
 // Assume data offset point to beginning of IDP
