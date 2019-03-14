@@ -37,7 +37,7 @@ OF SUCH DAMAGE.
 #include <QtCore>
 
 #include "../idp/NIC.h"
-#include "../idp/Packet.h"
+#include "../idp/NetData.h"
 
 class IDP {
 public:
@@ -84,14 +84,6 @@ public:
 	static const quint32 MIN_DATA_LENGTH       = 16;
 
 	// Data starts from here
-    quint64 eth_dst;  // 48 bit mac address
-    quint64 eth_src;  // 48 bit mac address
-    quint16 eth_type; // must be 0600
-
-    quint64 ether_dst;
-    quint64 ether_src;
-    quint16 ether_type; // must be 0600
-
     quint16 checksum;
     quint16 length;     // length in byte including checksum
     quint8  hopCount;
@@ -110,10 +102,15 @@ public:
     // Minimum data length of ethernet datagram is 46. And header length of IDP is 30.
     // So if data length of IDP is less than 16, add padding to make data length 16.
     quint8  data[546];
-
-    void receive (NIC& nic);
-    void transmit(NIC& nic);
 };
+
+QString toString(const IDP::PacketType& value);
+QString toString(const IDP::WellKnownSocket& value);
+QString toString(const IDP& value);
+
+// Assume data offset point to beginning of IDP
+void deserialize(NetData& data, IDP& ethernet);
+void serialize  (NetData& data, IDP& ethernet);
 
 #endif
 

@@ -32,10 +32,6 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("nic");
 
-#include "../util/Debug.h"
-
-#include "../idp/NIC.h"
-
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
@@ -46,6 +42,11 @@ static log4cpp::Category& logger = Logger::getLogger("nic");
 #include <unistd.h>
 
 #include <errno.h>
+
+#include "../util/Debug.h"
+
+#include "../idp/NIC.h"
+
 
 static inline quint64 get48_(quint8* p) {
 	quint64 ret = p[0];
@@ -230,4 +231,47 @@ int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) {
 
 	if (DEBUG_NIC_SHOW) logger.debug("%-8s data = %p  dataLen = %4d  opErrno = %3d  ret = %4d", __FUNCTION__, data, dataLen, opErrno, ret);
 	return ret;
+}
+
+void NIC::transmit(NetData& netData) {
+	int opErrno = 0;
+	quint8* data = netData.getData();
+	quint32 dataLen = netData.getLimit();
+
+	// Add padding if necessary.
+	if (dataLen < NIC::MIN_DATA_SIZE) {
+		int paddingSize = NIC::MIN_DATA_SIZE - dataLen;
+		quint32 savePos = netData.getPos();
+		netData.setPos(netData.getLimit());
+		for(int i = 0; i < paddingSize; i++) {
+			netData.put8(0);
+		}
+		netData.setPos(savePos);
+		dataLen = netData.getLimit();
+	}
+	int ret = transmit(data, dataLen, opErrno);
+	if (ret < 0 || opErrno != 0) {
+		logger.fatal("transmit ret = %d  opErrno = %d", ret, opErrno);
+		RUNTIME_ERROR();
+	}
+	if ((quint32)ret != dataLen) {
+		logger.fatal("transmit ret = %d  dataLen = %d", ret, dataLen);
+		RUNTIME_ERROR();
+	}
+}
+
+void NIC::receive(NetData& netData) {
+	int opErrno = 0;
+	netData.setOffset(0);
+	netData.clear();
+
+	quint8* data = netData.getData();
+	quint32 dataLen = netData.getCapacity();
+
+	int ret = receive(data, dataLen, opErrno);
+	if (ret < 0 || opErrno != 0) {
+		logger.fatal("receive ret = %d  opErrno = %d", ret, opErrno);
+		RUNTIME_ERROR();
+	}
+	netData.setLimit((quint32)ret);
 }

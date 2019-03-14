@@ -26,25 +26,76 @@ OF SUCH DAMAGE.
 
 
 //
-// Packet.cpp
+// NetData.cpp
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("packet");
+static log4cpp::Category& logger = Logger::getLogger("netdata");
 
 #include "../util/Debug.h"
 
-#include "../idp/Packet.h"
+#include "../idp/NetData.h"
 
-void Packet::setPos(quint32 newValue) {
-	if (limit < newValue) RUNTIME_ERROR();
-	pos = newValue;
+static const quint32 SIZE_48 = 6;
+static const quint32 SIZE_32 = 4;
+static const quint32 SIZE_16 = 2;
+static const quint32 SIZE_8  = 1;
+
+void NetData::checkConsistency() {
+	// capacity
+	// limit
+	if (limit <= capacity) {
+		// OK
+	} else {
+		logger.fatal("offset = %d  pos = %d  limit = %d capacity = %d", offset, pos, limit, capacity);
+		RUNTIME_ERROR()
+	}
+	// pos
+	if (offset <= pos && pos <= limit) {
+		// OK
+	} else {
+		logger.fatal("offset = %d  pos = %d  limit = %d capacity = %d", offset, pos, limit, capacity);
+		RUNTIME_ERROR()
+	}
+	// offset
+	if (offset < limit) {
+		// OK
+	} else {
+		logger.fatal("offset = %d  pos = %d  limit = %d capacity = %d", offset, pos, limit, capacity);
+		RUNTIME_ERROR()
+	}
 }
 
-void Packet::setLimit(quint32 newValue) {
-	if (capacity < newValue) RUNTIME_ERROR();
-	limit = newValue;
+void NetData::setPos(quint32 newValue) {
+	if (offset <= newValue && newValue <= limit) {
+		pos = newValue;
+		checkConsistency();
+	} else {
+		logger.fatal("setPos  offset = %d  limit = %d  newValue = %d", offset, limit, newValue);
+		RUNTIME_ERROR()
+	}
 }
+
+void NetData::setLimit(quint32 newValue) {
+	if (offset <= newValue && newValue <= capacity) {
+		limit = newValue;
+		checkConsistency();
+	} else {
+		logger.fatal("setLimit  offset = %d  capacity = %d  newValue = %d", offset, capacity, newValue);
+		RUNTIME_ERROR()
+	}
+}
+
+void NetData::setOffset(quint32 newValue) {
+	if (newValue < limit) {
+		offset = newValue;
+		checkConsistency();
+	} else {
+		logger.fatal("setOffset  limit = %d  newValue = %d", limit, newValue);
+		RUNTIME_ERROR()
+	}
+}
+
 
 static inline quint64 get48_(quint8* p) {
 	quint64 ret = p[0];
@@ -111,36 +162,36 @@ static inline void put8_(quint8* p, quint8 value) {
 	p[0] = value;
 }
 
-quint64 Packet::get48(quint32 offset) {
-	if (limit < (offset + SIZE_48)) {
-		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_48);
+quint64 NetData::get48(quint32 at) {
+	if (limit < (at + SIZE_48)) {
+		logger.fatal("%s  limit = %d  at = %d  SIZE = %d", __FUNCTION__, limit, at, SIZE_48);
 		RUNTIME_ERROR();
 	}
-	return get48_(data + offset);
+	return get48_(data + at);
 }
-quint32 Packet::get32(quint32 offset) {
-	if (limit < (offset + SIZE_32)) {
-		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_32);
+quint32 NetData::get32(quint32 at) {
+	if (limit < (at + SIZE_32)) {
+		logger.fatal("%s  limit = %d  at = %d  SIZE = %d", __FUNCTION__, limit, at, SIZE_32);
 		RUNTIME_ERROR();
 	}
-	return get32_(data + offset);
+	return get32_(data + at);
 }
-quint16 Packet::get16(quint32 offset) {
-	if (limit < (offset + SIZE_16)) {
-		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_16);
+quint16 NetData::get16(quint32 at) {
+	if (limit < (at + SIZE_16)) {
+		logger.fatal("%s  limit = %d  at = %d  SIZE = %d", __FUNCTION__, limit, at, SIZE_16);
 		RUNTIME_ERROR();
 	}
-	return get16_(data + offset);
+	return get16_(data + at);
 }
-quint8 Packet::get8(quint32 offset) {
-	if (limit < (offset + SIZE_8)) {
-		logger.fatal("%s  limit = %d  offset = %d  SIZE = %d", __FUNCTION__, limit, offset, SIZE_8);
+quint8 NetData::get8(quint32 at) {
+	if (limit < (at + SIZE_8)) {
+		logger.fatal("%s  limit = %d  at = %d  SIZE = %d", __FUNCTION__, limit, at, SIZE_8);
 		RUNTIME_ERROR();
 	}
-	return get8_(data + offset);
+	return get8_(data + at);
 }
 
-quint64 Packet::get48() {
+quint64 NetData::get48() {
 	if (limit < (pos + SIZE_48)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_48);
 		RUNTIME_ERROR();
@@ -149,7 +200,7 @@ quint64 Packet::get48() {
 	pos += SIZE_48;
 	return ret;
 }
-quint32 Packet::get32() {
+quint32 NetData::get32() {
 	if (limit < (pos + SIZE_32)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_32);
 		RUNTIME_ERROR();
@@ -158,7 +209,7 @@ quint32 Packet::get32() {
 	pos += SIZE_32;
 	return ret;
 }
-quint16 Packet::get16() {
+quint16 NetData::get16() {
 	if (limit < (pos + SIZE_16)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_16);
 		RUNTIME_ERROR();
@@ -167,7 +218,7 @@ quint16 Packet::get16() {
 	pos += SIZE_16;
 	return ret;
 }
-quint8 Packet::get8() {
+quint8 NetData::get8() {
 	if (limit < (pos + SIZE_8)) {
 		logger.fatal("%s  limit = %d  pos = %d  SIZE = %d", __FUNCTION__, limit, pos, SIZE_8);
 		RUNTIME_ERROR();
@@ -179,36 +230,36 @@ quint8 Packet::get8() {
 
 
 
-void Packet::set48(quint32 offset, quint64 value) {
-	if (capacity < (offset + SIZE_48)) {
-		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_48);
+void NetData::set48(quint32 at, quint64 value) {
+	if (capacity < (at + SIZE_48)) {
+		logger.fatal("%s  capacity = %d  at = %d  SIZE = %d", __FUNCTION__, capacity, at, SIZE_48);
 		RUNTIME_ERROR();
 	}
-	put48_(data + offset, value);
+	put48_(data + at, value);
 }
-void Packet::set32(quint32 offset, quint32 value) {
-	if (capacity < (offset + SIZE_32)) {
-		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_32);
+void NetData::set32(quint32 at, quint32 value) {
+	if (capacity < (at + SIZE_32)) {
+		logger.fatal("%s  capacity = %d  at = %d  SIZE = %d", __FUNCTION__, capacity, at, SIZE_32);
 		RUNTIME_ERROR();
 	}
-	put32_(data + offset, value);
+	put32_(data + at, value);
 }
-void Packet::set16(quint32 offset, quint16 value) {
-	if (capacity < (offset + SIZE_16)) {
-		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_16);
+void NetData::set16(quint32 at, quint16 value) {
+	if (capacity < (at + SIZE_16)) {
+		logger.fatal("%s  capacity = %d  at = %d  SIZE = %d", __FUNCTION__, capacity, at, SIZE_16);
 		RUNTIME_ERROR();
 	}
-	put32_(data + offset, value);
+	put32_(data + at, value);
 }
-void Packet::set8(quint32 offset, quint8 value) {
-	if (capacity < (offset + SIZE_8)) {
-		logger.fatal("%s  capacity = %d  offset = %d  SIZE = %d", __FUNCTION__, capacity, offset, SIZE_8);
+void NetData::set8(quint32 at, quint8 value) {
+	if (capacity < (at + SIZE_8)) {
+		logger.fatal("%s  capacity = %d  at = %d  SIZE = %d", __FUNCTION__, capacity, at, SIZE_8);
 		RUNTIME_ERROR();
 	}
-	put8_(data + offset, value);
+	put8_(data + at, value);
 }
 
-void Packet::put48(quint64 value) {
+void NetData::put48(quint64 value) {
 	if (capacity < (pos + SIZE_48)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_48);
 		RUNTIME_ERROR();
@@ -217,7 +268,7 @@ void Packet::put48(quint64 value) {
 	pos += SIZE_48;
 	if (limit < pos) limit = pos;
 }
-void Packet::put32(quint32 value) {
+void NetData::put32(quint32 value) {
 	if (capacity < (pos + SIZE_32)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_32);
 		RUNTIME_ERROR();
@@ -226,7 +277,7 @@ void Packet::put32(quint32 value) {
 	pos += SIZE_32;
 	if (limit < pos) limit = pos;
 }
-void Packet::put16(quint16 value) {
+void NetData::put16(quint16 value) {
 	if (capacity < (pos + SIZE_16)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_16);
 		RUNTIME_ERROR();
@@ -235,7 +286,7 @@ void Packet::put16(quint16 value) {
 	pos += SIZE_16;
 	if (limit < pos) limit = pos;
 }
-void Packet::put8(quint8 value) {
+void NetData::put8(quint8 value) {
 	if (capacity < (pos + SIZE_8)) {
 		logger.fatal("%s  capacity = %d  pos = %d  SIZE = %d", __FUNCTION__, capacity, pos, SIZE_8);
 		RUNTIME_ERROR();

@@ -36,10 +36,34 @@ OF SUCH DAMAGE.
 
 #include <QtCore>
 
+#include "../idp/NetData.h"
+
 class NIC {
 public:
 	// packet type of Xerox IDP
 	static const quint16 ETH_P_IDP = 0x0600;
+
+    static const quint64 BROADCAST_ADDRESS = 0xFFFFFFFFFFFFLL;
+
+	static const quint32 MAX_DATA_SIZE = 1514;
+	static const quint32 MIN_DATA_SIZE =   46;
+
+	class Data {
+	public:
+		quint8  data[MAX_DATA_SIZE];
+		NetData netData;
+
+		Data() : netData(data, sizeof(data)) {}
+	};
+
+	class Ethernet {
+	public:
+	    quint64 eth_dst;  // 48 bit mac address
+	    quint64 eth_src;  // 48 bit mac address
+	    quint16 eth_type; // must be 0600
+	    // Data follows
+	};
+
 
 	NIC() : name(0), protocol(0), fd(0), address(0) {}
 
@@ -62,8 +86,18 @@ public:
 	int  select(quint32 timeout, int& opErrno);
 
 	// returns return code of send and recv. no error checking
-	int transmit(quint8* data, quint32 dataLen, int& opErrno);
 	int receive (quint8* data, quint32 dataLen, int& opErrno);
+	int transmit(quint8* data, quint32 dataLen, int& opErrno);
+
+	void receive (NetData& netData);
+	void transmit(NetData& netData);
+
+	void receive (Data& data) {
+		receive(data.netData);
+	}
+	void transmit(Data& data) {
+		transmit(data.netData);
+	}
 
 private:
 	const char* name;
@@ -71,5 +105,10 @@ private:
 	int         fd;
 	quint64     address;
 };
+
+QString toString(const NIC::Ethernet& ethernet);
+
+void deserialize(NetData& data, NIC::Ethernet& ethernet);
+void serialize  (NetData& data, NIC::Ethernet& ethernet);
 
 #endif

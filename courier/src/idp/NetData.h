@@ -26,50 +26,41 @@ OF SUCH DAMAGE.
 
 
 //
-// Packet.h
+// NetData.h
 //
 
-#ifndef PACKET_H__
-#define PACKET_H__
+#ifndef NETDATA_H__
+#define NETDATA_H__
 
 #include "../util/Util.h"
 
-class Packet {
-public:
-	static const quint32 MAX_SIZE = 1514;
-	static const quint32 MIN_SIZE =   46;
+class NetData {
+private:
+	quint8*       data;     // valid index rage   [0..capacity)
+	const quint32 capacity; // data capacity
+	quint32       limit;    // limit of position  [0..capacity]
+	quint32       pos;      // cursor position    [offset..limit]
+	quint32       offset;   // offset of position [0..limit)
 
-protected:
-	static const quint32 SIZE_48 = 6;
-	static const quint32 SIZE_32 = 4;
-	static const quint32 SIZE_16 = 2;
-	static const quint32 SIZE_8  = 1;
-
-	quint8*       data;
-	const quint32 capacity; // data capacity [0..limit)
-	quint32       limit;    // valid data range [0..limit)
-	quint32       pos;      // cursor position
-
-	quint8        rawData[MAX_SIZE];
+	void checkConsistency();
 
 public:
-	Packet(Packet* that) : data(that->data), capacity(that->capacity), limit(that->limit), pos(that->pos) {}
+	NetData(quint8* data_, quint32 capacity_) : data(data_), capacity(capacity_), limit(capacity_), pos(0), offset(0) {checkConsistency();}
 
-	Packet(quint8* data_, quint32 limit_) : data(data_), capacity(limit_), limit(limit_), pos(0) {}
-	Packet() : data(rawData), capacity(MAX_SIZE), limit(capacity), pos(0) {
-		for(quint32 i = 0; i < capacity; i++) data[i] = 0;
-	}
+	NetData(const NetData* that) : data(that->data), capacity(that->capacity), limit(that->limit), pos(that->pos), offset(that->offset) {checkConsistency();}
+	NetData(const NetData* that, const quint32 newOffset) : data(that->data), capacity(that->capacity), limit(that->limit), pos(newOffset), offset(newOffset) {checkConsistency();}
+
 
 	// Absolute get and put
-	quint64 get48(quint32 offset);
-	quint32 get32(quint32 offset);
-	quint16 get16(quint32 offset);
-	quint8  get8 (quint32 offset);
+	quint64 get48(quint32 at);
+	quint32 get32(quint32 at);
+	quint16 get16(quint32 at);
+	quint8  get8 (quint32 at);
 
-	void    set48(quint32 offset, quint64 value);
-	void    set32(quint32 offset, quint32 value);
-	void    set16(quint32 offset, quint16 value);
-	void    set8 (quint32 offset, quint8  value);
+	void    set48(quint32 at, quint64 value);
+	void    set32(quint32 at, quint32 value);
+	void    set16(quint32 at, quint16 value);
+	void    set8 (quint32 at, quint8  value);
 
 	// cursor position
 	quint32 getPos() {
@@ -89,16 +80,22 @@ public:
 		return capacity;
 	}
 
+	// offset
+	quint32 getOffset() {
+		return offset;
+	}
+	void setOffset(quint32 newValue);
+
 	// reset buffer for fresh write
 	void clear() {
 		limit = capacity;
-		pos   = 0;
+		pos   = offset;
 		for(quint32 i = 0; i < capacity; i++) data[i] = 0;
 	}
 	// reset buffer for read written content
 	void rewind() {
 		limit = pos;
-		pos   = 0;
+		pos   = offset;
 	}
 	// remaining
 	quint32 remaining() {

@@ -25,38 +25,15 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// IDP.cpp
+//
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("app");
+static log4cpp::Category& logger = Logger::getLogger("idp");
 
 #include "../util/Debug.h"
 
-#include "../idp/NIC.h"
-#include "../idp/NetData.h"
 #include "../idp/IDP.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
 
-	setSignalHandler();
-
-	NIC nic;
-	nic.attach("ens33", NIC::ETH_P_IDP);
-
-	NIC::Data data;
-
-	for(int i = 0; i < 10; i++) {
-		logger.info("# %3d", i);
-
-		data.netData.clear();
-		nic.receive(data);
-
-		logger.info("packet %4d %3d", data.netData.getLimit(), data.netData.getCapacity());
-	}
-
-	nic.detach();
-
-	logger.info("STOP");
-	return 0;
-}
