@@ -122,8 +122,8 @@ QString toString(const IDP::HopCount value);
 QString toString(const IDP& value);
 
 // Assume data offset point to beginning of IDP
-void deserialize(NetData& netData, IDP& ethernet);
-void serialize  (NetData& netData, IDP& ethernet);
+void deserialize(NetData& netData, IDP& idp);
+void serialize  (NetData& netData, IDP& idp);
 
 #endif
 
