@@ -39,7 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("idp");
 #include "../idp/IDP.h"
 
 QString toString(const IDP::PacketType value) {
-	static QMap<IDP::PacketType, QString>map = {
+	static QMap<IDP::PacketType, QString> map = {
 	    {IDP::PacketType::ROUTING,          "ROUTING"},
 	    {IDP::PacketType::ECHO,             "ECHO"},
 	    {IDP::PacketType::ERROR,            "ERROR"},
@@ -56,7 +56,7 @@ QString toString(const IDP::PacketType value) {
 }
 
 QString toString(const IDP::Socket value) {
-	static QMap<IDP::Socket, QString>map = {
+	static QMap<IDP::Socket, QString> map = {
 	    {IDP::Socket::ROUTING,           "ROUTING"},
 	    {IDP::Socket::ECHO,              "ECHO"},
 	    {IDP::Socket::ERROR,             "ERROR"},
@@ -84,7 +84,7 @@ QString toString(const IDP::Socket value) {
 }
 
 QString toString(const IDP::Network value) {
-	static QMap<IDP::Network, QString>map = {
+	static QMap<IDP::Network, QString> map = {
 		    {IDP::Network::UNKNOWN, "UNKNOWN"},
 		    {IDP::Network::ALL,     "ALL"},
 	};
@@ -97,7 +97,7 @@ QString toString(const IDP::Network value) {
 }
 
 QString toString(const IDP::Host value) {
-	static QMap<IDP::Host, QString>map = {
+	static QMap<IDP::Host, QString> map = {
 		    {IDP::Host::ALL, "ALL"},
 	};
 
@@ -109,7 +109,7 @@ QString toString(const IDP::Host value) {
 }
 
 QString toString(const IDP::Checksum value) {
-	static QMap<IDP::Checksum, QString>map = {
+	static QMap<IDP::Checksum, QString> map = {
 		    {IDP::Checksum::NONE, "NONE"},
 	};
 
@@ -121,7 +121,7 @@ QString toString(const IDP::Checksum value) {
 }
 
 QString toString(const IDP::HopCount value) {
-	static QMap<IDP::HopCount, QString>map = {
+	static QMap<IDP::HopCount, QString> map = {
 		    {IDP::HopCount::MAX, "MAX"},
 	};
 
