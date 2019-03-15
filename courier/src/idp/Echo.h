@@ -26,45 +26,37 @@ OF SUCH DAMAGE.
 
 
 //
-// Routing.h
+// Echo.h
 //
 
 
-#ifndef ROUTING_H__
-#define ROUTING_H__
+#ifndef ECHO_H__
+#define ECHO_H__
 
 #include <QtCore>
 
 #include "../idp/IDP.h"
 #include "../idp/NetData.h"
 
-class Routing {
+class Echo {
 public:
 	enum class Operation : quint16 {
         REQUEST  = 1,
         RESPONSE = 2,
 	};
 
-	class Tupple {
-	public:
-		IDP::Network  network;
-		IDP::HopCount hopCount;
-
-	    void serialize  (NetData& netData);
-	    void deserialize(NetData& netData);
-	};
-
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
-    Routing() : operation((Operation)0) {}
+    Echo() : operation((Operation)0), netData(data, sizeof(data)) {}
 
-	Operation     operation;
-	QList<Tupple> tupples;
+	Operation       operation;
+
+    quint8  data[544];
+    NetData netData; // access data through netData};
 };
 
-QString toString(const Routing::Operation value);
-QString toString(const Routing::Tupple& value);
-QString toString(const Routing& value);
+QString toString(const Echo::Operation value);
+QString toString(const Echo& value);
 
 #endif

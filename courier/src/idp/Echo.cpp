@@ -26,45 +26,46 @@ OF SUCH DAMAGE.
 
 
 //
-// Routing.h
+// Routing.cpp
 //
 
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("echo");
 
-#ifndef ROUTING_H__
-#define ROUTING_H__
+#include "../util/Debug.h"
 
 #include <QtCore>
 
-#include "../idp/IDP.h"
-#include "../idp/NetData.h"
+#include "../idp/Echo.h"
 
-class Routing {
-public:
-	enum class Operation : quint16 {
-        REQUEST  = 1,
-        RESPONSE = 2,
+void Echo::deserialize(NetData& netData_) {
+	operation = (Operation)netData_.get16();
+
+	netData.clear();
+	netData.put(netData_, netData_.getPos());
+	netData.rewind();
+}
+void Echo::serialize(NetData& netData_) {
+	netData_.put16((quint16)operation);
+
+	netData_.put(netData, 0);
+}
+
+QString toString(const Echo::Operation value) {
+	static QMap<Echo::Operation, QString> map = {
+		{Echo::Operation::REQUEST,  "REQUEST"},
+		{Echo::Operation::RESPONSE, "RESPONSE"},
 	};
 
-	class Tupple {
-	public:
-		IDP::Network  network;
-		IDP::HopCount hopCount;
+	if (map.contains(value)) {
+		return map[value];
+	} else {
+		return QString("%1").arg((quint8)value);
+	}
+}
 
-	    void serialize  (NetData& netData);
-	    void deserialize(NetData& netData);
-	};
-
-    void serialize  (NetData& netData);
-    void deserialize(NetData& netData);
-
-    Routing() : operation((Operation)0) {}
-
-	Operation     operation;
-	QList<Tupple> tupples;
-};
-
-QString toString(const Routing::Operation value);
-QString toString(const Routing::Tupple& value);
-QString toString(const Routing& value);
-
-#endif
+QString toString(const Echo& value) {
+	QString ret;
+	ret.append(QString("[%1 %2]").arg(toString(value.operation)).arg(toString(value.netData)));
+	return ret;
+}
