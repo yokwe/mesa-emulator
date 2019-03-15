@@ -194,9 +194,11 @@ void IDP::serialize  (NetData& netData_) {
 		netData_.put8(0);
 	}
 
-	// Update checksum
+	// Update checksum if necessary.
 	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
-	netData_.set16(pos + 2, computedChecksum);
+	if (checksum != Checksum::NONE) {
+		netData_.set16(pos + 2, computedChecksum);
+	}
 }
 
 quint16 IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {
