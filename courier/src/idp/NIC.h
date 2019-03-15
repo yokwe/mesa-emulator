@@ -49,23 +49,36 @@ public:
         BROADCAST = 0xFFFFFFFFFFFFLL,
     };
 
-	static const quint32 MAX_DATA_SIZE = 1514;
-	static const quint32 MIN_DATA_SIZE =   46;
+	class Ethernet {
+	public:
+		static const quint32 MAX_FRAME_SIZE = 1514;
+    	static const quint32 MIN_FRAME_SIZE =   46;
+		static const quint32 HEADER_SIZE    =   14;
+
+		static const quint32 MAX_DATA_SIZE  = MAX_FRAME_SIZE - HEADER_SIZE;
+		static const quint32 MIN_DATA_SIZE  = MIN_FRAME_SIZE - HEADER_SIZE;
+
+	    void serialize  (NetData& netData);
+	    void deserialize(NetData& netData);
+
+	    Address dst;  // 6 - 48 bit mac address
+	    Address src;  // 6 - 48 bit mac address
+	    Type    type; // 2 - 0600 for IDP
+
+	    quint8  data[MAX_DATA_SIZE];
+	    NetData netData; // access data through netData
+
+	    Ethernet() : dst((Address)0), src((Address)0), type((Type)0), netData(data, sizeof(data)) {
+	    	::bzero(data, sizeof(data));
+	    }
+	};
 
 	class Data {
 	public:
-		quint8  data[MAX_DATA_SIZE];
+    	quint8  data[Ethernet::MAX_FRAME_SIZE];
 		NetData netData;
 
 		Data() : netData(data, sizeof(data)) {}
-	};
-
-	class Ethernet {
-	public:
-	    quint64 eth_dst;  // 48 bit mac address
-	    quint64 eth_src;  // 48 bit mac address
-	    quint16 eth_type; // must be 0600
-	    // Data follows
 	};
 
 
@@ -103,6 +116,9 @@ public:
 		transmit(data.netData);
 	}
 
+	void receive (Ethernet& ethernet);
+	void transmit(Ethernet& ethernet);
+
 private:
 	const char* name;
 	quint16     protocol;
@@ -112,8 +128,5 @@ private:
 
 QString toString(const NIC::Address value);
 QString toString(const NIC::Ethernet& ethernet);
-
-void deserialize(NetData& netData, NIC::Ethernet& ethernet);
-void serialize  (NetData& netData, NIC::Ethernet& ethernet);
 
 #endif

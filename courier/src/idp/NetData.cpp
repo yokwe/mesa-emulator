@@ -47,51 +47,34 @@ void NetData::checkConsistency() {
 	if (limit <= capacity) {
 		// OK
 	} else {
-		logger.fatal("offset = %d  pos = %d  limit = %d capacity = %d", offset, pos, limit, capacity);
+		logger.fatal("pos = %d  limit = %d capacity = %d", pos, limit, capacity);
 		RUNTIME_ERROR()
 	}
 	// pos
-	if (offset <= pos && pos <= limit) {
+	if (pos <= limit) {
 		// OK
 	} else {
-		logger.fatal("offset = %d  pos = %d  limit = %d capacity = %d", offset, pos, limit, capacity);
-		RUNTIME_ERROR()
-	}
-	// offset
-	if (offset < limit) {
-		// OK
-	} else {
-		logger.fatal("offset = %d  pos = %d  limit = %d capacity = %d", offset, pos, limit, capacity);
+		logger.fatal("pos = %d  limit = %d capacity = %d", pos, limit, capacity);
 		RUNTIME_ERROR()
 	}
 }
 
 void NetData::setPos(quint32 newValue) {
-	if (offset <= newValue && newValue <= limit) {
+	if (newValue <= limit) {
 		pos = newValue;
 		checkConsistency();
 	} else {
-		logger.fatal("setPos  offset = %d  limit = %d  newValue = %d", offset, limit, newValue);
+		logger.fatal("setPos  limit = %d  newValue = %d", limit, newValue);
 		RUNTIME_ERROR()
 	}
 }
 
 void NetData::setLimit(quint32 newValue) {
-	if (offset <= newValue && newValue <= capacity) {
+	if (newValue <= capacity) {
 		limit = newValue;
 		checkConsistency();
 	} else {
-		logger.fatal("setLimit  offset = %d  capacity = %d  newValue = %d", offset, capacity, newValue);
-		RUNTIME_ERROR()
-	}
-}
-
-void NetData::setOffset(quint32 newValue) {
-	if (newValue < limit) {
-		offset = newValue;
-		checkConsistency();
-	} else {
-		logger.fatal("setOffset  limit = %d  newValue = %d", limit, newValue);
+		logger.fatal("setLimit  capacity = %d  newValue = %d", capacity, newValue);
 		RUNTIME_ERROR()
 	}
 }
@@ -295,3 +278,28 @@ void NetData::put8(quint8 value) {
 	pos += SIZE_8;
 	if (limit < pos) limit = pos;
 }
+
+void NetData::put(const NetData& that, quint32 from) {
+	quint32 limit = that.getLimit();
+	if (limit <= from) {
+		logger.fatal("%s  from = %d  limit = %d", __FUNCTION__, from, limit);
+		RUNTIME_ERROR();
+	}
+	for(quint32 i = from; i < limit; i++) {
+		put8(that.data[i]);
+	}
+}
+
+QString toString(const NetData value) {
+	quint8* data = value.getData();
+	quint32 limit = value.getLimit();
+
+	QString ret;
+	ret.append(QString("(%1)").arg(limit));
+	for(quint32 i = 0; i < limit; i++) {
+		ret.append(QString("%1").arg(data[i], 2, 16, QChar('0')));
+	}
+
+	return ret;
+}
+

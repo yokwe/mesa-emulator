@@ -133,38 +133,45 @@ QString toString(const IDP::HopCount value) {
 }
 
 QString toString(const IDP& value) {
-	return QString("[%1 %2 %3 %4   [%5 %6 %7]   [%8 %9 %10]]")
+	return QString("[%1 %2 %3 %4   [%5 %6 %7]   [%8 %9 %10] %11]")
 			.arg(toString(value.checksum)).arg(value.length, 4).arg(toString(value.hopCount)).arg(toString(value.packetType))
 			.arg(toString(value.dst_net)).arg(toString(value.dst_host)).arg(toString(value.dst_socket))
-			.arg(toString(value.src_net)).arg(toString(value.src_host)).arg(toString(value.src_socket));
+			.arg(toString(value.src_net)).arg(toString(value.src_host)).arg(toString(value.src_socket))
+			.arg(toString(value.netData));
 }
 
-void deserialize(NetData& netData, IDP& idp) {
-	idp.checksum   = (IDP::Checksum)netData.get16();
-	idp.length     = netData.get16();
-	idp.hopCount   = (IDP::HopCount)netData.get8();
-	idp.packetType = (IDP::PacketType)netData.get8();
+void IDP::deserialize(NetData& netData_) {
+	checksum   = (IDP::Checksum)netData_.get16();
+	length     = netData_.get16();
+	hopCount   = (IDP::HopCount)netData_.get8();
+	packetType = (IDP::PacketType)netData_.get8();
 
-	idp.dst_net    = (IDP::Network)netData.get32();
-	idp.dst_host   = (IDP::Host)netData.get48();
-	idp.dst_socket = (IDP::Socket)netData.get16();
+	dst_net    = (IDP::Network)netData_.get32();
+	dst_host   = (IDP::Host)netData_.get48();
+	dst_socket = (IDP::Socket)netData_.get16();
 
-	idp.src_net    = (IDP::Network)netData.get32();
-	idp.src_host   = (IDP::Host)netData.get48();
-	idp.src_socket = (IDP::Socket)netData.get16();
+	src_net    = (IDP::Network)netData_.get32();
+	src_host   = (IDP::Host)netData_.get48();
+	src_socket = (IDP::Socket)netData_.get16();
+
+	netData.clear();
+	netData.put(netData_, netData_.getPos());
+	netData.rewind();
 }
-void serialize  (NetData& netData, IDP& idp) {
-	netData.put16((quint16)idp.checksum);
-	netData.put16(idp.length);
-	netData.put8 ((quint8)idp.hopCount);
-	netData.put8 ((quint8)idp.packetType);
+void IDP::serialize  (NetData& netData_) {
+	netData_.put16((quint16)checksum);
+	netData_.put16(length);
+	netData_.put8 ((quint8)hopCount);
+	netData_.put8 ((quint8)packetType);
 
-	netData.put32((quint32)idp.dst_net);
-	netData.put48((quint64)idp.dst_host);
-	netData.put16((quint16)idp.dst_socket);
+	netData_.put32((quint32)dst_net);
+	netData_.put48((quint64)dst_host);
+	netData_.put16((quint16)dst_socket);
 
-	netData.put32((quint32)idp.src_net);
-	netData.put48((quint64)idp.src_host);
-	netData.put16((quint16)idp.src_socket);
+	netData_.put32((quint32)src_net);
+	netData_.put48((quint64)src_host);
+	netData_.put16((quint16)src_socket);
+
+	netData_.put(netData, 0);
 }
 

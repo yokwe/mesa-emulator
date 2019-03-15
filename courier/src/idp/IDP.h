@@ -49,6 +49,7 @@ public:
         SEQUENCED_PACKET = 5, // SPP
         BOOT_SERVER      = 9, // BOOT
     };
+
     enum class Socket : quint16 {
         ROUTING           = 1,
         ECHO              = 2,
@@ -90,6 +91,9 @@ public:
 
 	static const quint16 MAX_PACKET_LIFETIME   = 60U;
 
+    void serialize  (NetData& netData);
+    void deserialize(NetData& netData);
+
 	// Data starts from here
     Checksum   checksum;
     quint16    length;     // length in byte including checksum
@@ -104,13 +108,18 @@ public:
     Host    src_host;
     Socket  src_socket;
 
-    // data follow
-    //   quint8  data[546];
+    quint8  data[546];
+    NetData netData; // access data through netData
+
+    IDP() : checksum((Checksum)0), length(0), hopCount((HopCount)0), packetType((PacketType)0),
+    		dst_net((Network)0), dst_host((Host)0), dst_socket((Socket)0),
+    		src_net((Network)0), src_host((Host)0), src_socket((Socket)0),
+			netData(data, sizeof(data)) {
+    	::bzero(data, sizeof(data));
+    }
 
     // Length of Ethernet packet is always even number.
     // So if length of data is odd, need to output one garbage byte.
-    // Minimum data length of ethernet datagram is 46. And header length of IDP is 30.
-    // So if data length of IDP is less than 16, add padding to make data length 16.
 };
 
 QString toString(const IDP::PacketType value);
@@ -120,10 +129,6 @@ QString toString(const IDP::Host value);
 QString toString(const IDP::Checksum value);
 QString toString(const IDP::HopCount value);
 QString toString(const IDP& value);
-
-// Assume data offset point to beginning of IDP
-void deserialize(NetData& netData, IDP& idp);
-void serialize  (NetData& netData, IDP& idp);
 
 #endif
 

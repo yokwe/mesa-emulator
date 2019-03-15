@@ -239,8 +239,8 @@ void NIC::transmit(NetData& netData) {
 	quint32 dataLen = netData.getLimit();
 
 	// Add padding if necessary.
-	if (dataLen < NIC::MIN_DATA_SIZE) {
-		int paddingSize = NIC::MIN_DATA_SIZE - dataLen;
+	if (dataLen < NIC::Ethernet::MIN_DATA_SIZE) {
+		int paddingSize = NIC::Ethernet::MIN_DATA_SIZE - dataLen;
 		quint32 savePos = netData.getPos();
 		netData.setPos(netData.getLimit());
 		for(int i = 0; i < paddingSize; i++) {
@@ -261,7 +261,6 @@ void NIC::transmit(NetData& netData) {
 }
 
 void NIC::receive(NetData& netData) {
-	netData.setOffset(0);
 	netData.clear();
 
 	quint8* data = netData.getData();
@@ -274,6 +273,20 @@ void NIC::receive(NetData& netData) {
 		RUNTIME_ERROR();
 	}
 	netData.setLimit((quint32)ret);
+}
+
+void NIC::receive(NIC::Ethernet& ethernet) {
+	Data data;
+
+	receive(data.netData);
+	ethernet.deserialize(data.netData);
+}
+
+void NIC::transmit(NIC::Ethernet& ethernet) {
+	Data data;
+
+	ethernet.serialize(data.netData);
+	transmit(data.netData);
 }
 
 QString toString(const NIC::Address value) {
@@ -301,21 +314,28 @@ QString toString(const NIC::Type value) {
 }
 
 QString toString(const NIC::Ethernet& ethernet) {
-	QString ret = QString("[%1 %2 %3]")
-			.arg(toString((NIC::Address)ethernet.eth_dst))
-			.arg(toString((NIC::Address)ethernet.eth_src))
-			.arg(toString((NIC::Type)ethernet.eth_type));
+	QString ret = QString("[%1 %2 %3] %4")
+			.arg(toString(ethernet.dst))
+			.arg(toString(ethernet.src))
+			.arg(toString(ethernet.type))
+			.arg(toString(ethernet.netData));
 	return ret;
 }
 
-void deserialize(NetData& netData, NIC::Ethernet& ethernet) {
-	ethernet.eth_dst  = netData.get48();
-	ethernet.eth_src  = netData.get48();
-	ethernet.eth_type = netData.get16();
+void NIC::Ethernet::deserialize(NetData& netData_) {
+	dst  = (Address)netData_.get48();
+	src  = (Address)netData_.get48();
+	type = (Type)netData_.get16();
+
+	netData.clear();
+	netData.put(netData_, netData_.getPos());
+	netData.rewind();
 }
-void serialize  (NetData& netData, NIC::Ethernet& ethernet) {
-	netData.put48(ethernet.eth_dst);
-	netData.put48(ethernet.eth_src);
-	netData.put16(ethernet.eth_type);
+void NIC::Ethernet::serialize  (NetData& netData_) {
+	netData_.put48((quint64)dst);
+	netData_.put48((quint64)src);
+	netData_.put16((quint16)type);
+
+	netData_.put(netData, 0);
 }
 
