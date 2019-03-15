@@ -91,6 +91,8 @@ public:
 
 	static const quint16 MAX_PACKET_LIFETIME   = 60U;
 
+	static quint16 computeChecksum(quint8* data, quint32 offset, quint32 length);
+
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
@@ -111,10 +113,12 @@ public:
     quint8  data[546];
     NetData netData; // access data through netData
 
+    quint16 computedChecksum; // value is assigned after deserialize
+
     IDP() : checksum((Checksum)0), length(0), hopCount((HopCount)0), packetType((PacketType)0),
     		dst_net((Network)0), dst_host((Host)0), dst_socket((Socket)0),
     		src_net((Network)0), src_host((Host)0), src_socket((Socket)0),
-			netData(data, sizeof(data)) {
+			netData(data, sizeof(data)), computedChecksum(0) {
     	::bzero(data, sizeof(data));
     }
 

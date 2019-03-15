@@ -238,17 +238,6 @@ void NIC::transmit(NetData& netData) {
 	quint8* data = netData.getData();
 	quint32 dataLen = netData.getLimit();
 
-	// Add padding if necessary.
-	if (dataLen < NIC::Ethernet::MIN_DATA_SIZE) {
-		int paddingSize = NIC::Ethernet::MIN_DATA_SIZE - dataLen;
-		quint32 savePos = netData.getPos();
-		netData.setPos(netData.getLimit());
-		for(int i = 0; i < paddingSize; i++) {
-			netData.put8(0);
-		}
-		netData.setPos(savePos);
-		dataLen = netData.getLimit();
-	}
 	int ret = transmit(data, dataLen, opErrno);
 	if (ret == -1) {
 		logger.fatal("transmit ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
@@ -337,5 +326,10 @@ void NIC::Ethernet::serialize  (NetData& netData_) {
 	netData_.put16((quint16)type);
 
 	netData_.put(netData, 0);
+
+	// Add padding if length is less than MIN_DATA_SIZE
+	for(quint32 i = netData_.getPos(); i < MIN_DATA_SIZE; i++) {
+		netData.put8(0);
+	}
 }
 

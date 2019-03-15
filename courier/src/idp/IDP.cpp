@@ -51,7 +51,7 @@ QString toString(const IDP::PacketType value) {
 	if (map.contains(value)) {
 		return map[value];
 	} else {
-		return QString("%1").arg((quint8)value);
+		return QString("%1").arg((quint16)value);
 	}
 }
 
@@ -141,6 +141,8 @@ QString toString(const IDP& value) {
 }
 
 void IDP::deserialize(NetData& netData_) {
+	quint32 pos = netData_.getPos();
+
 	checksum   = (IDP::Checksum)netData_.get16();
 	length     = netData_.get16();
 	hopCount   = (IDP::HopCount)netData_.get8();
@@ -155,10 +157,23 @@ void IDP::deserialize(NetData& netData_) {
 	src_socket = (IDP::Socket)netData_.get16();
 
 	netData.clear();
-	netData.put(netData_, netData_.getPos());
+	for(;;) {
+		quint32 pos = netData_.getPos();
+		if (pos == length) break;
+		netData.put8(netData_.get8());
+	}
 	netData.rewind();
+
+	// 2 for checksum field
+	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
+
+	if (checksum != Checksum::NONE && (quint16)checksum != computedChecksum) {
+		logger.warn("CHECKSUM %04X %04X", (quint16)checksum, computedChecksum);
+	}
 }
 void IDP::serialize  (NetData& netData_) {
+	quint32 pos = netData_.getPos();
+
 	netData_.put16((quint16)checksum);
 	netData_.put16(length);
 	netData_.put8 ((quint8)hopCount);
@@ -173,5 +188,33 @@ void IDP::serialize  (NetData& netData_) {
 	netData_.put16((quint16)src_socket);
 
 	netData_.put(netData, 0);
+
+	// Append garbage byte if number of data is odd
+	if (netData.getLimit() & 1) {
+		netData_.put8(0);
+	}
+
+	// Update checksum
+	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
+	netData_.set16(pos + 2, computedChecksum);
 }
 
+quint16 IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {
+	quint32 s = 0;
+
+	// Calculate checksum based 16 bit word. not 8 bit.
+	// So if length is odd number, one bye beyond length is used to calculate checksum
+	for(quint32 i = 0; i < length; i += 2) {
+		quint16 w = data[offset++] & 0x00ffU;
+		w = (w << 8) | (data[offset++] & 0x00ffU);
+		// add w to s
+		s += w;
+		// if there is overflow, increment t
+		if (0x10000U <= s) s = (s + 1) & 0xffffU;
+		// shift left
+		s <<= 1;
+		// if there is overflow, increment t
+		if (0x10000U <= s) s = (s + 1) & 0xffffU;
+	}
+	return (quint16)s;
+}

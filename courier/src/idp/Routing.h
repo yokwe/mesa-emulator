@@ -25,53 +25,44 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// Routing.h
+//
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("app");
 
-#include "../util/Debug.h"
+#ifndef ROUTING_H__
+#define ROUTING_H__
 
-#include "../idp/NIC.h"
-#include "../idp/NetData.h"
+#include <QtCore>
+
 #include "../idp/IDP.h"
-#include "../idp/Routing.h"
+#include "../idp/NetData.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+class Routing {
+public:
+	enum class Operation : quint16 {
+        REQUEST  = 1,
+        RESPONSE = 2,
+	};
 
-	setSignalHandler();
+	class Tupple {
+	public:
+		IDP::Network  network;
+		IDP::HopCount hopCount;
 
-	NIC nic;
-	nic.attach("ens33", (quint16)NIC::Type::IDP);
+	    void serialize  (NetData& netData);
+	    void deserialize(NetData& netData);
+	};
 
-	for(int i = 0; i < 100; i++) {
-		logger.info("# %3d", i);
+    void serialize  (NetData& netData);
+    void deserialize(NetData& netData);
 
-		NIC::Ethernet ethernet;
-		nic.receive(ethernet);
+	Operation     operation;
+	QList<Tupple> tupples;
+};
 
-		logger.info("ETHER   %s", toString(ethernet).toLocal8Bit().constData());
+QString toString(const Routing::Operation value);
+QString toString(const Routing::Tupple& value);
+QString toString(const Routing& value);
 
-		IDP idp;
-		idp.deserialize(ethernet.netData);
-		logger.info("  IDP   %s", toString(idp).toLocal8Bit().constData());
-
-		switch(idp.packetType) {
-		case IDP::PacketType::ROUTING:
-		{
-			Routing routing;
-			routing.deserialize(idp.netData);
-			logger.info("    ROUTING %s", toString(routing).toLocal8Bit().constData());
-		}
-			break;
-		default:
-			break;
-		}
-	}
-
-	nic.detach();
-
-	logger.info("STOP");
-	return 0;
-}
+#endif
