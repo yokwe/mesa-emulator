@@ -26,55 +26,36 @@ OF SUCH DAMAGE.
 
 
 //
-// SPP.cpp
+// PEX.cpp
 //
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("spp");
-
 #include "../util/Debug.h"
-#include "../idp/SPP.h"
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("pex");
 
-void SPP::deserialize(NetData& netData_) {
-	control.u   = netData_.get8();
-	sst         = (SST)netData_.get8();
-	src_conn_id = netData_.get16();
-	dst_conn_id = netData_.get16();
-	sequence    = netData_.get16();
-	acknowledge = netData_.get16();
-	allocation  = netData_.get16();
+#include "../itp/PEX.h"
+
+void ITP::PEX::deserialize(NetData& netData_) {
+	id = netData_.get32();
+	clientType = (ClientType)netData_.get16();
 
 	netData.clear();
 	netData.put(netData_, netData_.getPos());
 	netData.rewind();
 }
-void SPP::serialize(NetData& netData_) {
-	netData_.put8(control.u);
-	netData_.put8((quint8)sst);
-	netData_.put16(src_conn_id);
-	netData_.put16(dst_conn_id);
-	netData_.put16(sequence);
-	netData_.put16(acknowledge);
-	netData_.put16(allocation);
+void ITP::PEX::serialize(NetData& netData_) {
+	netData_.put32(id);
+	netData_.put16((quint16)clientType);
 
 	netData_.put(netData, 0);
 }
 
-QString toString(const SPP::Control value) {
-	return QString("[%1 %2 %3 %4 %5]")
-			.arg(value.systemPacket ? "SYS " : "")
-			.arg(value.sendAcknowledge ? "SEND_ACK " : "")
-			.arg(value.attention ? "ATT " : "")
-			.arg(value.endOfMessage ? "EOM " : "")
-			.arg(value.reserved);
-}
-
-QString toString(const SPP::SST value) {
-	static QMap<SPP::SST, QString> map = {
-		{SPP::SST::DATA,        "DATA"},
-		{SPP::SST::BULK,        "BULK"},
-		{SPP::SST::CLOSE,       "CLOSE"},
-		{SPP::SST::CLOSE_REPLY, "CLOSE_REPLY"},
+QString toString(const ITP::PEX::ClientType value) {
+	static QMap<ITP::PEX::ClientType, QString> map = {
+		{ITP::PEX::ClientType::UNSPECIFIED, "UNSPECIFIED"},
+		{ITP::PEX::ClientType::TIME,        "TIME"},
+		{ITP::PEX::ClientType::CHS,         "CHS"},
+		{ITP::PEX::ClientType::TELEDEBUG,   "TELEDEBUG"},
 	};
 
 	if (map.contains(value)) {
@@ -84,16 +65,8 @@ QString toString(const SPP::SST value) {
 	}
 }
 
-QString toString(const SPP& value) {
+QString toString(const ITP::PEX& value) {
 	QString ret;
-	ret.append(QString("[%1 %2 %3 %4 %5 %6 %7]")
-			.arg(toString(value.control))
-			.arg(toString(value.sst))
-			.arg(value.src_conn_id, 4, 16)
-			.arg(value.dst_conn_id, 4, 16)
-			.arg(value.sequence)
-			.arg(value.acknowledge)
-			.arg(value.allocation)
-			.arg(toString(value.netData)));
+	ret.append(QString("[%1 %2 %3]").arg(value.id, 0, 16).arg(toString(value.clientType)).arg(toString(value.netData)));
 	return ret;
 }

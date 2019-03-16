@@ -26,47 +26,70 @@ OF SUCH DAMAGE.
 
 
 //
-// PEX.cpp
+// Time.h
 //
 
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("pex");
+#ifndef RPC_TIME_H_
+#define RPC_TIME_H_
 
-#include "../util/Debug.h"
-#include "../idp/PEX.h"
+#include "../itp/IDP.h"
 
-void PEX::deserialize(NetData& netData_) {
-	id = netData_.get32();
-	clientType = (ClientType)netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-void PEX::serialize(NetData& netData_) {
-	netData_.put32(id);
-	netData_.put16((quint16)clientType);
-
-	netData_.put(netData, 0);
-}
-
-QString toString(const PEX::ClientType value) {
-	static QMap<PEX::ClientType, QString> map = {
-		{PEX::ClientType::UNSPECIFIED, "UNSPECIFIED"},
-		{PEX::ClientType::TIME,        "TIME"},
-		{PEX::ClientType::CHS,         "CHS"},
-		{PEX::ClientType::TELEDEBUG,   "TELEDEBUG"},
+namespace RPC {
+class Time {
+public:
+	enum class Operation : quint16 {
+        REQUEST  = 1,
+        RESPONSE = 2,
 	};
+    enum class OffsetDirection : quint16 {
+        WEST = 0,
+        EAST = 1,
+    };
+    enum class ToleranceType : quint16 {
+        UNKNOWN = 0,
+        IN_MILLI_SECONDS = 1,
+    };
 
-	if (map.contains(value)) {
-		return map[value];
-	} else {
-		return QString("%1").arg((quint8)value);
-	}
+    const quint32 PROGRAM_NUMBER = 15;
+    const quint32 VERSION_NUMBER = 2;
+
+    class Request {
+    public:
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
+    };
+
+    class Response {
+    public:
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
+
+        quint32         currentTime;
+        OffsetDirection offsetDirection;
+        quint16         offsetHours;
+        quint16         offsetMinutes;
+        quint16         startOfDST;
+        quint16         endOfDST;
+        ToleranceType   toleranceType;
+        quint32         tolerance;
+    };
+
+    void serialize  (NetData& netData);
+    void deserialize(NetData& netData);
+
+	quint16   version;
+	Operation operation;
+
+	union {
+		Request  request;
+		Response response;
+	} value;
+};
 }
 
-QString toString(const PEX& value) {
-	QString ret;
-	ret.append(QString("[%1 %2 %3]").arg(value.id, 0, 16).arg(toString(value.clientType)).arg(toString(value.netData)));
-	return ret;
-}
+QString toString(const RPC::Time::Operation value);
+QString toString(const RPC::Time::OffsetDirection value);
+QString toString(const RPC::Time::ToleranceType value);
+QString toString(const RPC::Time& value);
+
+#endif /* RPC_TIME_H_ */

@@ -29,6 +29,7 @@ OF SUCH DAMAGE.
 // NIC.cpp
 //
 
+#include "../util/Debug.h"
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("nic");
 
@@ -43,8 +44,7 @@ static log4cpp::Category& logger = Logger::getLogger("nic");
 
 #include <errno.h>
 
-#include "../util/Debug.h"
-#include "../idp/NIC.h"
+#include "../util/NIC.h"
 
 
 static inline quint64 get48_(quint8* p) {
@@ -179,10 +179,9 @@ void NIC::discardRecievedPacket() {
 	if (DEBUG_NIC_SHOW) logger.debug("discards %d packet", count);
 }
 void NIC::discardOnePacket() {
-	int dataLen = ETH_FRAME_LEN;
-	unsigned char data[dataLen];
+	Data data;
 	int opErrno = 0;
-	receive(data, dataLen, opErrno);
+	receive(data.data, sizeof(data.data), opErrno);
 }
 
 int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) {

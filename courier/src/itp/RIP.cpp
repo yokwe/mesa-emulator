@@ -29,22 +29,22 @@ OF SUCH DAMAGE.
 // RIP.cpp
 //
 
+#include "../util/Debug.h"
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("rip");
 
-#include "../util/Debug.h"
-#include "../idp/RIP.h"
+#include "../itp/RIP.h"
 
-void RIP::Tupple::deserialize  (NetData& netData_) {
+void ITP::RIP::Tupple::deserialize  (NetData& netData_) {
 	network  = (IDP::Network)netData_.get32();
 	hopCount = (IDP::HopCount)netData_.get16();
 }
-void RIP::Tupple::serialize  (NetData& netData_) {
+void ITP::RIP::Tupple::serialize  (NetData& netData_) {
 	netData_.put32((quint32)network);
 	netData_.put16((quint16)hopCount);
 }
 
-void RIP::deserialize(NetData& netData_) {
+void ITP::RIP::deserialize(NetData& netData_) {
 	operation = (Operation)netData_.get16();
 	while(netData_.remaining() != 0) {
 		Tupple tupple;
@@ -52,17 +52,17 @@ void RIP::deserialize(NetData& netData_) {
 		tupples.append(tupple);
 	}
 }
-void RIP::serialize(NetData& netData_) {
+void ITP::RIP::serialize(NetData& netData_) {
 	netData_.put16((quint16)operation);
 	for(Tupple tupple: tupples) {
 		tupple.serialize(netData_);
 	}
 }
 
-QString toString(const RIP::Operation value) {
-	static QMap<RIP::Operation, QString> map = {
-		{RIP::Operation::REQUEST,  "REQUEST"},
-		{RIP::Operation::RESPONSE, "RESPONSE"},
+QString toString(const ITP::RIP::Operation value) {
+	static QMap<ITP::RIP::Operation, QString> map = {
+		{ITP::RIP::Operation::REQUEST,  "REQUEST"},
+		{ITP::RIP::Operation::RESPONSE, "RESPONSE"},
 	};
 
 	if (map.contains(value)) {
@@ -72,18 +72,18 @@ QString toString(const RIP::Operation value) {
 	}
 }
 
-QString toString(const RIP::Tupple& value) {
+QString toString(const ITP::RIP::Tupple& value) {
 	QString ret;
 	ret.append(QString("[%1 %2]").arg(toString(value.network)).arg(toString(value.hopCount)));
 	return ret;
 }
 
-QString toString(const RIP& value) {
+QString toString(const ITP::RIP& value) {
 	QString ret;
 	ret.append(QString("[%1 ").arg(toString(value.operation)));
 	ret.append(QString("(%1)[").arg(value.tupples.size()));
 	int i = 0;
-	for(RIP::Tupple tupple: value.tupples) {
+	for(ITP::RIP::Tupple tupple: value.tupples) {
 		if (i++) ret.append(" ");
 		ret.append(toString(tupple));
 	}

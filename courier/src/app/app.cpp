@@ -27,18 +27,22 @@ OF SUCH DAMAGE.
 
 #include <stdio.h>
 
+#include "../util/Debug.h"
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("app");
 
-#include "../util/Debug.h"
 
-#include "../idp/NIC.h"
-#include "../idp/NetData.h"
-#include "../idp/IDP.h"
-#include "../idp/Echo.h"
-#include "../idp/PEX.h"
-#include "../idp/RIP.h"
-#include "../idp/SPP.h"
+#include "../util/NIC.h"
+#include "../util/NetData.h"
+
+#include "../itp/IDP.h"
+#include "../itp/Echo.h"
+#include "../itp/PEX.h"
+#include "../itp/RIP.h"
+#include "../itp/SPP.h"
+#include "../itp/Error.h"
+
+#include "../rpc/Time.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -54,39 +58,57 @@ int main(int /*argc*/, char** /*argv*/) {
 		NIC::Ethernet ethernet;
 		nic.receive(ethernet);
 
-		logger.info("ETHER   %s", toString(ethernet).toLocal8Bit().constData());
+		logger.info("%-8s %s", "ETHER", toString(ethernet).toLocal8Bit().constData());
 
-		IDP idp;
+		ITP::IDP idp;
 		idp.deserialize(ethernet.netData);
-		logger.info("  IDP   %s", toString(idp).toLocal8Bit().constData());
+		logger.info("%-8s %s", "IDP", toString(idp).toLocal8Bit().constData());
 
 		switch(idp.packetType) {
-		case IDP::PacketType::RIP:
+		case ITP::IDP::PacketType::RIP:
 		{
-			RIP data;
+			ITP::RIP data;
 			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
 		}
 			break;
-		case IDP::PacketType::ECHO:
+		case ITP::IDP::PacketType::ECHO:
 		{
-			Echo data;
+			ITP::Echo data;
 			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
 		}
 			break;
-		case IDP::PacketType::PEX:
+		case ITP::IDP::PacketType::PEX:
 		{
-			PEX data;
+			ITP::PEX data;
 			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+			switch(data.clientType) {
+			case ITP::PEX::ClientType::TIME:
+			{
+				RPC::Time timeData;
+				timeData.deserialize(data.netData);
+				logger.info("%-8s %s", "TIME", toString(timeData).toLocal8Bit().constData());
+			}
+				break;
+			default:
+				break;
+			}
 		}
 			break;
-		case IDP::PacketType::SPP:
+		case ITP::IDP::PacketType::SPP:
 		{
-			SPP data;
+			ITP::SPP data;
 			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+		}
+			break;
+		case ITP::IDP::PacketType::ERROR:
+		{
+			ITP::Error data;
+			data.deserialize(idp.netData);
+			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
 		}
 			break;
 		default:

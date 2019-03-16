@@ -31,14 +31,12 @@ OF SUCH DAMAGE.
 
 // IDP stands for Internet Datagram Protocol
 
-#ifndef IDP_IDP_H__
-#define IDP_IDP_H__
+#ifndef ITP_IDP_H__
+#define ITP_IDP_H__
 
-#include <QtCore>
+#include "../util/NIC.h"
 
-#include "../idp/NIC.h"
-#include "../idp/NetData.h"
-
+namespace ITP {
 class IDP {
 public:
     enum class PacketType : quint8 {
@@ -126,14 +124,15 @@ public:
     // Length of Ethernet packet is always even number.
     // So if length of data is odd, need to output one garbage byte.
 };
+}
 
-QString toString(const IDP::PacketType value);
-QString toString(const IDP::Socket value);
-QString toString(const IDP::Network value);
-QString toString(const IDP::Host value);
-QString toString(const IDP::Checksum value);
-QString toString(const IDP::HopCount value);
-QString toString(const IDP& value);
+QString toString(const ITP::IDP::PacketType value);
+QString toString(const ITP::IDP::Socket value);
+QString toString(const ITP::IDP::Network value);
+QString toString(const ITP::IDP::Host value);
+QString toString(const ITP::IDP::Checksum value);
+QString toString(const ITP::IDP::HopCount value);
+QString toString(const ITP::IDP& value);
 
 #endif
 

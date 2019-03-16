@@ -32,9 +32,7 @@ OF SUCH DAMAGE.
 #ifndef IDP_NIC_H__
 #define IDP_NIC_H__
 
-#include <linux/if_ether.h>
-
-#include "../idp/NetData.h"
+#include "../util/NetData.h"
 
 class NIC {
 public:

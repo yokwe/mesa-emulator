@@ -26,42 +26,41 @@ OF SUCH DAMAGE.
 
 
 //
-// RIPs.h
+// PEX.h
 //
 
 
-#ifndef IDP_RIP_H__
-#define IDP_RIP_H__
+#ifndef ITP_PEX_H__
+#define ITP_PEX_H__
 
-#include "../idp/IDP.h"
+#include "../itp/IDP.h"
 
-class RIP {
+namespace ITP {
+class PEX {
 public:
-	enum class Operation : quint16 {
-        REQUEST  = 1,
-        RESPONSE = 2,
+	enum class ClientType : quint16 {
+        UNSPECIFIED = 0,
+        TIME        = 1,
+        CHS         = 2,
+        TELEDEBUG   = 8,
 	};
 
-	class Tupple {
-	public:
-		IDP::Network  network;
-		IDP::HopCount hopCount;
-
-	    void serialize  (NetData& netData);
-	    void deserialize(NetData& netData);
-	};
+	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 6;
 
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
-    RIP() : operation((Operation)0) {}
+    PEX() : id(0), clientType((ClientType)0), netData(data, sizeof(data)) {}
 
-	Operation     operation;
-	QList<Tupple> tupples;
+	quint32    id;
+	ClientType clientType;
+
+    quint8  data[DATA_SIZE];
+    NetData netData; // access data through netData
 };
+}
 
-QString toString(const RIP::Operation value);
-QString toString(const RIP::Tupple& value);
-QString toString(const RIP& value);
+QString toString(const ITP::PEX::ClientType value);
+QString toString(const ITP::PEX& value);
 
 #endif

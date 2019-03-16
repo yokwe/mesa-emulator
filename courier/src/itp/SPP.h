@@ -26,39 +26,65 @@ OF SUCH DAMAGE.
 
 
 //
-// PEX.h
+// SPP.h
 //
 
 
-#ifndef IDP_PEX_H__
-#define IDP_PEX_H__
+#ifndef ITP_SPP_H__
+#define ITP_SPP_H__
 
-#include "../idp/IDP.h"
+#include "../itp/IDP.h"
 
-class PEX {
+namespace ITP {
+class SPP {
 public:
-	enum class ClientType : quint16 {
-        UNSPECIFIED = 0,
-        TIME        = 1,
-        CHS         = 2,
-        TELEDEBUG   = 8,
-	};
+	static const quint32 DATA_SIZE = ITP::IDP::DATA_SIZE - 12;
 
-	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 6;
+    union Control {
+    	quint8 u;
+    	struct {
+    		quint8 reserved        : 4;
+    		quint8 endOfMessage    : 1;
+    		quint8 attention       : 1;
+    		quint8 sendAcknowledge : 1;
+    		quint8 systemPacket    : 1;
+    	};
+
+    	Control() : u(0) {};
+    	Control(quint8 value) {
+    		u = value;
+    	}
+    };
+
+    enum class SST : quint8 {
+        DATA        = 0,
+        BULK        = 1,
+        CLOSE       = 254,
+        CLOSE_REPLY = 255,
+    };
+
 
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
-    PEX() : id(0), clientType((ClientType)0), netData(data, sizeof(data)) {}
+    SPP() : control(0), sst((SST)0), src_conn_id(0), dst_conn_id(0),
+    		sequence(0), acknowledge(0), allocation(0), netData(data, sizeof(data)) {}
 
-	quint32    id;
-	ClientType clientType;
+    Control control;
+    SST     sst;
+	quint16 src_conn_id;
+	quint16 dst_conn_id;
+	quint16 sequence;
+	quint16 acknowledge;
+	quint16 allocation;
 
     quint8  data[DATA_SIZE];
     NetData netData; // access data through netData
 };
+}
 
-QString toString(const PEX::ClientType value);
-QString toString(const PEX& value);
+QString toString(const ITP::SPP::Control value);
+QString toString(const ITP::SPP::SST value);
+QString toString(const ITP::SPP& value);
 
 #endif

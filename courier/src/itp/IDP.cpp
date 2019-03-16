@@ -29,20 +29,20 @@ OF SUCH DAMAGE.
 // IDP.cpp
 //
 
+#include "../util/Debug.h"
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("idp");
 
-#include "../util/Debug.h"
-#include "../idp/IDP.h"
+#include "../itp/IDP.h"
 
-QString toString(const IDP::PacketType value) {
-	static QMap<IDP::PacketType, QString> map = {
-	    {IDP::PacketType::RIP,   "RIP"},
-	    {IDP::PacketType::ECHO,  "ECHO"},
-	    {IDP::PacketType::ERROR, "ERROR"},
-	    {IDP::PacketType::PEX,   "PEX"},
-	    {IDP::PacketType::SPP,   "SPP"},
-	    {IDP::PacketType::BOOT,  "BOOT"},
+QString toString(const ITP::IDP::PacketType value) {
+	static QMap<ITP::IDP::PacketType, QString> map = {
+	    {ITP::IDP::PacketType::RIP,   "RIP"},
+	    {ITP::IDP::PacketType::ECHO,  "ECHO"},
+	    {ITP::IDP::PacketType::ERROR, "ERROR"},
+	    {ITP::IDP::PacketType::PEX,   "PEX"},
+	    {ITP::IDP::PacketType::SPP,   "SPP"},
+	    {ITP::IDP::PacketType::BOOT,  "BOOT"},
 	};
 
 	if (map.contains(value)) {
@@ -52,25 +52,25 @@ QString toString(const IDP::PacketType value) {
 	}
 }
 
-QString toString(const IDP::Socket value) {
-	static QMap<IDP::Socket, QString> map = {
-	    {IDP::Socket::RIP,       "RIP"},
-	    {IDP::Socket::ECHO,      "ECHO"},
-	    {IDP::Socket::ERROR,     "ERROR"},
-	    {IDP::Socket::ENVOY,     "ENVOY"},
-	    {IDP::Socket::COURIER,   "COURIER"},
-	    {IDP::Socket::CHS_OLD,   "CHS_OLD"},
-	    {IDP::Socket::TIME,      "TIME"},
-	    {IDP::Socket::BOOT,      "BOOT"},
-	    {IDP::Socket::DIAG,      "DIAG"},
-	    {IDP::Socket::CHS,       "CHS"},
-	    {IDP::Socket::AUTH,      "AUTH"},
-	    {IDP::Socket::MAIL,      "MAIL"},
-	    {IDP::Socket::NET_EXEC,  "NET_EXEC"},
-	    {IDP::Socket::WS_INFO,   "WS_INFO"},
-	    {IDP::Socket::BINDING,   "BINDING"},
-	    {IDP::Socket::GERM,      "GERM"},
-	    {IDP::Socket::TELEDEBUG, "TELEDEBUG"},
+QString toString(const ITP::IDP::Socket value) {
+	static QMap<ITP::IDP::Socket, QString> map = {
+	    {ITP::IDP::Socket::RIP,       "RIP"},
+	    {ITP::IDP::Socket::ECHO,      "ECHO"},
+	    {ITP::IDP::Socket::ERROR,     "ERROR"},
+	    {ITP::IDP::Socket::ENVOY,     "ENVOY"},
+	    {ITP::IDP::Socket::COURIER,   "COURIER"},
+	    {ITP::IDP::Socket::CHS_OLD,   "CHS_OLD"},
+	    {ITP::IDP::Socket::TIME,      "TIME"},
+	    {ITP::IDP::Socket::BOOT,      "BOOT"},
+	    {ITP::IDP::Socket::DIAG,      "DIAG"},
+	    {ITP::IDP::Socket::CHS,       "CHS"},
+	    {ITP::IDP::Socket::AUTH,      "AUTH"},
+	    {ITP::IDP::Socket::MAIL,      "MAIL"},
+	    {ITP::IDP::Socket::NET_EXEC,  "NET_EXEC"},
+	    {ITP::IDP::Socket::WS_INFO,   "WS_INFO"},
+	    {ITP::IDP::Socket::BINDING,   "BINDING"},
+	    {ITP::IDP::Socket::GERM,      "GERM"},
+	    {ITP::IDP::Socket::TELEDEBUG, "TELEDEBUG"},
 	};
 
 	if (map.contains(value)) {
@@ -80,10 +80,10 @@ QString toString(const IDP::Socket value) {
 	}
 }
 
-QString toString(const IDP::Network value) {
-	static QMap<IDP::Network, QString> map = {
-		    {IDP::Network::UNKNOWN, "UNKNOWN"},
-		    {IDP::Network::ALL,     "ALL"},
+QString toString(const ITP::IDP::Network value) {
+	static QMap<ITP::IDP::Network, QString> map = {
+		    {ITP::IDP::Network::UNKNOWN, "UNKNOWN"},
+		    {ITP::IDP::Network::ALL,     "ALL"},
 	};
 
 	if (map.contains(value)) {
@@ -93,9 +93,9 @@ QString toString(const IDP::Network value) {
 	}
 }
 
-QString toString(const IDP::Host value) {
-	static QMap<IDP::Host, QString> map = {
-		    {IDP::Host::ALL, "ALL"},
+QString toString(const ITP::IDP::Host value) {
+	static QMap<ITP::IDP::Host, QString> map = {
+		    {ITP::IDP::Host::ALL, "ALL"},
 	};
 
 	if (map.contains(value)) {
@@ -105,9 +105,9 @@ QString toString(const IDP::Host value) {
 	}
 }
 
-QString toString(const IDP::Checksum value) {
-	static QMap<IDP::Checksum, QString> map = {
-		    {IDP::Checksum::NONE, "NONE"},
+QString toString(const ITP::IDP::Checksum value) {
+	static QMap<ITP::IDP::Checksum, QString> map = {
+		    {ITP::IDP::Checksum::NONE, "NONE"},
 	};
 
 	if (map.contains(value)) {
@@ -117,9 +117,9 @@ QString toString(const IDP::Checksum value) {
 	}
 }
 
-QString toString(const IDP::HopCount value) {
-	static QMap<IDP::HopCount, QString> map = {
-		    {IDP::HopCount::MAX, "MAX"},
+QString toString(const ITP::IDP::HopCount value) {
+	static QMap<ITP::IDP::HopCount, QString> map = {
+		    {ITP::IDP::HopCount::MAX, "MAX"},
 	};
 
 	if (map.contains(value)) {
@@ -129,7 +129,7 @@ QString toString(const IDP::HopCount value) {
 	}
 }
 
-QString toString(const IDP& value) {
+QString toString(const ITP::IDP& value) {
 	return QString("[%1 %2 %3 %4   [%5 %6 %7]   [%8 %9 %10] %11]")
 			.arg(toString(value.checksum)).arg(value.length, 4).arg(toString(value.hopCount)).arg(toString(value.packetType))
 			.arg(toString(value.dst_net)).arg(toString(value.dst_host)).arg(toString(value.dst_socket))
@@ -137,21 +137,21 @@ QString toString(const IDP& value) {
 			.arg(toString(value.netData));
 }
 
-void IDP::deserialize(NetData& netData_) {
+void ITP::IDP::deserialize(NetData& netData_) {
 	quint32 pos = netData_.getPos();
 
-	checksum   = (IDP::Checksum)netData_.get16();
+	checksum   = (ITP::IDP::Checksum)netData_.get16();
 	length     = netData_.get16();
-	hopCount   = (IDP::HopCount)netData_.get8();
-	packetType = (IDP::PacketType)netData_.get8();
+	hopCount   = (ITP::IDP::HopCount)netData_.get8();
+	packetType = (ITP::IDP::PacketType)netData_.get8();
 
-	dst_net    = (IDP::Network)netData_.get32();
-	dst_host   = (IDP::Host)netData_.get48();
-	dst_socket = (IDP::Socket)netData_.get16();
+	dst_net    = (ITP::IDP::Network)netData_.get32();
+	dst_host   = (ITP::IDP::Host)netData_.get48();
+	dst_socket = (ITP::IDP::Socket)netData_.get16();
 
-	src_net    = (IDP::Network)netData_.get32();
-	src_host   = (IDP::Host)netData_.get48();
-	src_socket = (IDP::Socket)netData_.get16();
+	src_net    = (ITP::IDP::Network)netData_.get32();
+	src_host   = (ITP::IDP::Host)netData_.get48();
+	src_socket = (ITP::IDP::Socket)netData_.get16();
 
 	netData.clear();
 	for(;;) {
@@ -168,7 +168,7 @@ void IDP::deserialize(NetData& netData_) {
 		logger.warn("CHECKSUM %04X %04X", (quint16)checksum, computedChecksum);
 	}
 }
-void IDP::serialize  (NetData& netData_) {
+void ITP::IDP::serialize  (NetData& netData_) {
 	quint32 pos = netData_.getPos();
 
 	netData_.put16((quint16)checksum);
@@ -198,7 +198,7 @@ void IDP::serialize  (NetData& netData_) {
 	}
 }
 
-quint16 IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {
+quint16 ITP::IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {
 	quint32 s = 0;
 
 	// Calculate checksum based 16 bit word. not 8 bit.

@@ -12,14 +12,14 @@ export LOG4CPP_CONFIG
 
 all:
 	(cd src/util; make all)
-	(cd src/idp;  make all)
-#	(cd src/rpc;  make all)
+	(cd src/itp;  make all)
+	(cd src/rpc;  make all)
 	(cd src/app;  make all)
 
 qmake:
 	(cd src/util; qmake)
-	(cd src/idp;  qmake)
-#	(cd src/rpc;  qmake)
+	(cd src/itp;  qmake)
+	(cd src/rpc;  qmake)
 	(cd src/app;  qmake)
 	qmake --version
 
@@ -31,7 +31,7 @@ clean:
 	rm -rf tmp/build
 	mkdir  -p tmp/build
 	mkdir  tmp/build/util
-	mkdir  tmp/build/idp
+	mkdir  tmp/build/itp
 	mkdir  tmp/build/rpc
 	mkdir  tmp/build/app
 

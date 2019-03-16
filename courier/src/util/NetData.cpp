@@ -29,11 +29,11 @@ OF SUCH DAMAGE.
 // NetData.cpp
 //
 
+#include "../util/Debug.h"
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("netdata");
 
-#include "../util/Debug.h"
-#include "../idp/NetData.h"
+#include "../util/NetData.h"
 
 static const quint32 SIZE_48 = 6;
 static const quint32 SIZE_32 = 4;

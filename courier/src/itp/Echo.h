@@ -30,11 +30,12 @@ OF SUCH DAMAGE.
 //
 
 
-#ifndef IDP_ECHO_H__
-#define IDP_ECHO_H__
+#ifndef ITP_ECHO_H__
+#define ITP_ECHO_H__
 
-#include "../idp/IDP.h"
+#include "../itp/IDP.h"
 
+namespace ITP {
 class Echo {
 public:
 	enum class Operation : quint16 {
@@ -42,7 +43,7 @@ public:
         RESPONSE = 2,
 	};
 
-	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 2;
+	static const quint32 DATA_SIZE = ITP::IDP::DATA_SIZE - 2;
 
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
@@ -54,8 +55,9 @@ public:
     quint8  data[DATA_SIZE];
     NetData netData; // access data through netData
 };
+}
 
-QString toString(const Echo::Operation value);
-QString toString(const Echo& value);
+QString toString(const ITP::Echo::Operation value);
+QString toString(const ITP::Echo& value);
 
 #endif

@@ -26,63 +26,43 @@ OF SUCH DAMAGE.
 
 
 //
-// SPP.h
+// Echo.cpp
 //
 
+#include "../util/Debug.h"
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("echo");
 
-#ifndef IDP_SPP_H__
-#define IDP_SPP_H__
+#include "../itp/Echo.h"
 
-#include "../idp/IDP.h"
+void ITP::Echo::deserialize(NetData& netData_) {
+	operation = (Operation)netData_.get16();
 
-class SPP {
-public:
-	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 12;
+	netData.clear();
+	netData.put(netData_, netData_.getPos());
+	netData.rewind();
+}
+void ITP::Echo::serialize(NetData& netData_) {
+	netData_.put16((quint16)operation);
 
-    union Control {
-    	quint8 u;
-    	struct {
-    		quint8 reserved        : 4;
-    		quint8 endOfMessage    : 1;
-    		quint8 attention       : 1;
-    		quint8 sendAcknowledge : 1;
-    		quint8 systemPacket    : 1;
-    	};
+	netData_.put(netData, 0);
+}
 
-    	Control() : u(0) {};
-    	Control(quint8 value) {
-    		u = value;
-    	}
-    };
+QString toString(const ITP::Echo::Operation value) {
+	static QMap<ITP::Echo::Operation, QString> map = {
+		{ITP::Echo::Operation::REQUEST,  "REQUEST"},
+		{ITP::Echo::Operation::RESPONSE, "RESPONSE"},
+	};
 
-    enum class SST : quint8 {
-        DATA        = 0,
-        BULK        = 1,
-        CLOSE       = 254,
-        CLOSE_REPLY = 255,
-    };
+	if (map.contains(value)) {
+		return map[value];
+	} else {
+		return QString("%1").arg((quint8)value);
+	}
+}
 
-
-    void serialize  (NetData& netData);
-    void deserialize(NetData& netData);
-
-    SPP() : control(0), sst((SST)0), src_conn_id(0), dst_conn_id(0),
-    		sequence(0), acknowledge(0), allocation(0), netData(data, sizeof(data)) {}
-
-    Control control;
-    SST     sst;
-	quint16 src_conn_id;
-	quint16 dst_conn_id;
-	quint16 sequence;
-	quint16 acknowledge;
-	quint16 allocation;
-
-    quint8  data[DATA_SIZE];
-    NetData netData; // access data through netData
-};
-
-QString toString(const SPP::Control value);
-QString toString(const SPP::SST value);
-QString toString(const SPP& value);
-
-#endif
+QString toString(const ITP::Echo& value) {
+	QString ret;
+	ret.append(QString("[%1 %2]").arg(toString(value.operation)).arg(toString(value.netData)));
+	return ret;
+}

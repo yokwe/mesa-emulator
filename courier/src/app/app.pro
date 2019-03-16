@@ -25,11 +25,13 @@ contains(QT_MAJOR_VERSION, 4) {
 }
 
 LIBS += ../../tmp/build/idp/libidp.a
+LIBS += ../../tmp/build/rpc/librpc.a
 LIBS += ../../tmp/build/util/libutil.a
 
 LIBS += -llog4cpp
 
 POST_TARGETDEPS += ../../tmp/build/idp/libidp.a
+POST_TARGETDEPS += ../../tmp/build/rpc/librpc.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input
