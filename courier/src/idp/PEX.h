@@ -41,10 +41,10 @@ OF SUCH DAMAGE.
 class PEX {
 public:
 	enum class ClientType : quint16 {
-        UNSPECIFIED   = 0,
-        TIME          = 1,
-        CLEARINGHOUSE = 2,
-        TELEDEBUG     = 8,
+        UNSPECIFIED = 0,
+        TIME        = 1,
+        CHS         = 2,
+        TELEDEBUG   = 8,
 	};
 
 	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 6;

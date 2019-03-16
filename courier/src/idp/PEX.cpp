@@ -52,10 +52,10 @@ void PEX::serialize(NetData& netData_) {
 
 QString toString(const PEX::ClientType value) {
 	static QMap<PEX::ClientType, QString> map = {
-		{PEX::ClientType::UNSPECIFIED,   "UNSPECIFIED"},
-		{PEX::ClientType::TIME,          "TIME"},
-		{PEX::ClientType::CLEARINGHOUSE, "CLEARINGHOUSE"},
-		{PEX::ClientType::TELEDEBUG,     "TELEDEBUG"},
+		{PEX::ClientType::UNSPECIFIED, "UNSPECIFIED"},
+		{PEX::ClientType::TIME,        "TIME"},
+		{PEX::ClientType::CHS,         "CHS"},
+		{PEX::ClientType::TELEDEBUG,   "TELEDEBUG"},
 	};
 
 	if (map.contains(value)) {
