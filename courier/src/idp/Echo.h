@@ -30,8 +30,8 @@ OF SUCH DAMAGE.
 //
 
 
-#ifndef ECHO_H__
-#define ECHO_H__
+#ifndef IDP_ECHO_H__
+#define IDP_ECHO_H__
 
 #include <QtCore>
 

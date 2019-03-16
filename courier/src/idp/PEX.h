@@ -30,8 +30,8 @@ OF SUCH DAMAGE.
 //
 
 
-#ifndef PEX_H__
-#define PEX_H__
+#ifndef IDP_PEX_H__
+#define IDP_PEX_H__
 
 #include <QtCore>
 

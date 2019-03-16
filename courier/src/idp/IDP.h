@@ -31,8 +31,8 @@ OF SUCH DAMAGE.
 
 // IDP stands for Internet Datagram Protocol
 
-#ifndef IDP_H__
-#define IDP_H__
+#ifndef IDP_IDP_H__
+#define IDP_IDP_H__
 
 #include <QtCore>
 

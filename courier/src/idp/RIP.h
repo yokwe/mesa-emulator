@@ -30,8 +30,8 @@ OF SUCH DAMAGE.
 //
 
 
-#ifndef RIP_H__
-#define RIP_H__
+#ifndef IDP_RIP_H__
+#define IDP_RIP_H__
 
 #include <QtCore>
 

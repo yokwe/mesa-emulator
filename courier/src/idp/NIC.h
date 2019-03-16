@@ -29,8 +29,8 @@ OF SUCH DAMAGE.
 // NIC.h
 //
 
-#ifndef NIC_H__
-#define NIC_H__
+#ifndef IDP_NIC_H__
+#define IDP_NIC_H__
 
 #include <linux/if_ether.h>
 

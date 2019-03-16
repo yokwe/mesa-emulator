@@ -29,8 +29,8 @@ OF SUCH DAMAGE.
 // NetData.h
 //
 
-#ifndef NETDATA_H__
-#define NETDATA_H__
+#ifndef IDP_NETDATA_H__
+#define IDP_NETDATA_H__
 
 #include "../util/Util.h"
 
