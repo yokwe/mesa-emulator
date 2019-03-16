@@ -34,8 +34,6 @@ OF SUCH DAMAGE.
 
 #include <linux/if_ether.h>
 
-#include <QtCore>
-
 #include "../idp/NetData.h"
 
 class NIC {

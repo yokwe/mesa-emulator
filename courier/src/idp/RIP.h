@@ -33,10 +33,7 @@ OF SUCH DAMAGE.
 #ifndef IDP_RIP_H__
 #define IDP_RIP_H__
 
-#include <QtCore>
-
 #include "../idp/IDP.h"
-#include "../idp/NetData.h"
 
 class RIP {
 public:

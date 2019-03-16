@@ -34,6 +34,8 @@ OF SUCH DAMAGE.
 
 #include "../util/Util.h"
 
+#include <QtCore>
+
 class NetData {
 private:
 	quint8*       data;     // valid index rage   [0..capacity)
