@@ -33,19 +33,16 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("idp");
 
 #include "../util/Debug.h"
-
-#include <QtCore>
-
 #include "../idp/IDP.h"
 
 QString toString(const IDP::PacketType value) {
 	static QMap<IDP::PacketType, QString> map = {
-	    {IDP::PacketType::ROUTING,          "ROUTING"},
-	    {IDP::PacketType::ECHO,             "ECHO"},
-	    {IDP::PacketType::ERROR,            "ERROR"},
-	    {IDP::PacketType::PACKET_EXCHANGE,  "PEX"},
-	    {IDP::PacketType::SEQUENCED_PACKET, "SPP"},
-	    {IDP::PacketType::BOOT_SERVER,      "BOOT"},
+	    {IDP::PacketType::RIP,   "RIP"},
+	    {IDP::PacketType::ECHO,  "ECHO"},
+	    {IDP::PacketType::ERROR, "ERROR"},
+	    {IDP::PacketType::PEX,   "PEX"},
+	    {IDP::PacketType::SPP,   "SPP"},
+	    {IDP::PacketType::BOOT,  "BOOT"},
 	};
 
 	if (map.contains(value)) {
@@ -57,16 +54,16 @@ QString toString(const IDP::PacketType value) {
 
 QString toString(const IDP::Socket value) {
 	static QMap<IDP::Socket, QString> map = {
-	    {IDP::Socket::ROUTING,           "ROUTING"},
+	    {IDP::Socket::RIP,               "RIP"},
 	    {IDP::Socket::ECHO,              "ECHO"},
 	    {IDP::Socket::ERROR,             "ERROR"},
 	    {IDP::Socket::ENVOY,             "ENVOY"},
 	    {IDP::Socket::COURIER,           "COURIER"},
-	    {IDP::Socket::CLEARINGHOUSE_OLD, "CLEARINGHOUSE_OLD"},
+	    {IDP::Socket::CLEARINGHOUSE_OLD, "CHS_OLD"},
 	    {IDP::Socket::TIME,              "TIME"},
 	    {IDP::Socket::BOOT,              "BOOT"},
 	    {IDP::Socket::DIAG,              "DIAG"},
-	    {IDP::Socket::CLEARINGHOUSE,     "CLEARINGHOUSE"},
+	    {IDP::Socket::CLEARINGHOUSE,     "CHS"},
 	    {IDP::Socket::AUTH,              "AUTH"},
 	    {IDP::Socket::MAIL,              "MAIL"},
 	    {IDP::Socket::NET_EXEC,          "NET_EXEC"},

@@ -25,69 +25,68 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// RIP.cpp
+//
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("app");
+static log4cpp::Category& logger = Logger::getLogger("rip");
 
 #include "../util/Debug.h"
-
-#include "../idp/NIC.h"
-#include "../idp/NetData.h"
-#include "../idp/IDP.h"
-#include "../idp/Echo.h"
-#include "../idp/PEX.h"
 #include "../idp/RIP.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+void RIP::Tupple::deserialize  (NetData& netData_) {
+	network  = (IDP::Network)netData_.get32();
+	hopCount = (IDP::HopCount)netData_.get16();
+}
+void RIP::Tupple::serialize  (NetData& netData_) {
+	netData_.put32((quint32)network);
+	netData_.put16((quint16)hopCount);
+}
 
-	setSignalHandler();
-
-	NIC nic;
-	nic.attach("ens33", (quint16)NIC::Type::IDP);
-
-	for(int i = 0; i < 100; i++) {
-		logger.info("# %3d", i);
-
-		NIC::Ethernet ethernet;
-		nic.receive(ethernet);
-
-		logger.info("ETHER   %s", toString(ethernet).toLocal8Bit().constData());
-
-		IDP idp;
-		idp.deserialize(ethernet.netData);
-		logger.info("  IDP   %s", toString(idp).toLocal8Bit().constData());
-
-		switch(idp.packetType) {
-		case IDP::PacketType::RIP:
-		{
-			RIP data;
-			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-		}
-			break;
-		case IDP::PacketType::ECHO:
-		{
-			Echo data;
-			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-		}
-			break;
-		case IDP::PacketType::PEX:
-		{
-			PEX data;
-			data.deserialize(idp.netData);
-			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-		}
-			break;
-		default:
-			break;
-		}
+void RIP::deserialize(NetData& netData_) {
+	operation = (Operation)netData_.get16();
+	while(netData_.remaining() != 0) {
+		Tupple tupple;
+		tupple.deserialize(netData_);
+		tupples.append(tupple);
 	}
+}
+void RIP::serialize(NetData& netData_) {
+	netData_.put16((quint16)operation);
+	for(Tupple tupple: tupples) {
+		tupple.serialize(netData_);
+	}
+}
 
-	nic.detach();
+QString toString(const RIP::Operation value) {
+	static QMap<RIP::Operation, QString> map = {
+		{RIP::Operation::REQUEST,  "REQUEST"},
+		{RIP::Operation::RESPONSE, "RESPONSE"},
+	};
 
-	logger.info("STOP");
-	return 0;
+	if (map.contains(value)) {
+		return map[value];
+	} else {
+		return QString("%1").arg((quint8)value);
+	}
+}
+
+QString toString(const RIP::Tupple& value) {
+	QString ret;
+	ret.append(QString("[%1 %2]").arg(toString(value.network)).arg(toString(value.hopCount)));
+	return ret;
+}
+
+QString toString(const RIP& value) {
+	QString ret;
+	ret.append(QString("[%1 ").arg(toString(value.operation)));
+	ret.append(QString("(%1)[").arg(value.tupples.size()));
+	int i = 0;
+	for(RIP::Tupple tupple: value.tupples) {
+		if (i++) ret.append(" ");
+		ret.append(toString(tupple));
+	}
+	ret.append("]]");
+	return ret;
 }

@@ -33,9 +33,6 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("echo");
 
 #include "../util/Debug.h"
-
-#include <QtCore>
-
 #include "../idp/Echo.h"
 
 void Echo::deserialize(NetData& netData_) {

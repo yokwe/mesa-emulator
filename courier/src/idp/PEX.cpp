@@ -30,42 +30,32 @@ OF SUCH DAMAGE.
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("routing");
+static log4cpp::Category& logger = Logger::getLogger("pex");
 
 #include "../util/Debug.h"
+#include "../idp/PEX.h"
 
-#include <QtCore>
+void PEX::deserialize(NetData& netData_) {
+	id = netData_.get32();
+	clientType = (ClientType)netData_.get16();
 
-#include "../idp/Routing.h"
-
-void Routing::Tupple::deserialize  (NetData& netData_) {
-	network  = (IDP::Network)netData_.get32();
-	hopCount = (IDP::HopCount)netData_.get16();
+	netData.clear();
+	netData.put(netData_, netData_.getPos());
+	netData.rewind();
 }
-void Routing::Tupple::serialize  (NetData& netData_) {
-	netData_.put32((quint32)network);
-	netData_.put16((quint16)hopCount);
-}
+void PEX::serialize(NetData& netData_) {
+	netData_.put32(id);
+	netData_.put16((quint16)clientType);
 
-void Routing::deserialize(NetData& netData_) {
-	operation = (Operation)netData_.get16();
-	while(netData_.remaining() != 0) {
-		Tupple tupple;
-		tupple.deserialize(netData_);
-		tupples.append(tupple);
-	}
-}
-void Routing::serialize(NetData& netData_) {
-	netData_.put16((quint16)operation);
-	for(Tupple tupple: tupples) {
-		tupple.serialize(netData_);
-	}
+	netData_.put(netData, 0);
 }
 
-QString toString(const Routing::Operation value) {
-	static QMap<Routing::Operation, QString> map = {
-		{Routing::Operation::REQUEST,  "REQUEST"},
-		{Routing::Operation::RESPONSE, "RESPONSE"},
+QString toString(const PEX::ClientType value) {
+	static QMap<PEX::ClientType, QString> map = {
+		{PEX::ClientType::UNSPECIFIED,   "UNSPECIFIED"},
+		{PEX::ClientType::TIME,          "TIME"},
+		{PEX::ClientType::CLEARINGHOUSE, "CLEARINGHOUSE"},
+		{PEX::ClientType::TELEDEBUG,     "TELEDEBUG"},
 	};
 
 	if (map.contains(value)) {
@@ -75,21 +65,8 @@ QString toString(const Routing::Operation value) {
 	}
 }
 
-QString toString(const Routing::Tupple& value) {
+QString toString(const PEX& value) {
 	QString ret;
-	ret.append(QString("[%1 %2]").arg(toString(value.network)).arg(toString(value.hopCount)));
-	return ret;
-}
-
-QString toString(const Routing& value) {
-	QString ret;
-	ret.append(QString("[%1 ").arg(toString(value.operation)));
-	ret.append(QString("(%1)[").arg(value.tupples.size()));
-	int i = 0;
-	for(Routing::Tupple tupple: value.tupples) {
-		if (i++) ret.append(" ");
-		ret.append(toString(tupple));
-	}
-	ret.append("]]");
+	ret.append(QString("[%1 %2 %3]").arg(value.id, 0, 16).arg(toString(value.clientType)).arg(toString(value.netData)));
 	return ret;
 }

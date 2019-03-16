@@ -44,7 +44,6 @@ static log4cpp::Category& logger = Logger::getLogger("nic");
 #include <errno.h>
 
 #include "../util/Debug.h"
-
 #include "../idp/NIC.h"
 
 

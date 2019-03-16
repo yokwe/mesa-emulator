@@ -33,7 +33,6 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("netdata");
 
 #include "../util/Debug.h"
-
 #include "../idp/NetData.h"
 
 static const quint32 SIZE_48 = 6;

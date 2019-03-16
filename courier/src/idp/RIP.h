@@ -26,39 +26,45 @@ OF SUCH DAMAGE.
 
 
 //
-// Echo.h
+// RIPs.h
 //
 
 
-#ifndef ECHO_H__
-#define ECHO_H__
+#ifndef RIP_H__
+#define RIP_H__
 
 #include <QtCore>
 
 #include "../idp/IDP.h"
 #include "../idp/NetData.h"
 
-class Echo {
+class RIP {
 public:
 	enum class Operation : quint16 {
         REQUEST  = 1,
         RESPONSE = 2,
 	};
 
-	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 2;
+	class Tupple {
+	public:
+		IDP::Network  network;
+		IDP::HopCount hopCount;
+
+	    void serialize  (NetData& netData);
+	    void deserialize(NetData& netData);
+	};
 
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
-    Echo() : operation((Operation)0), netData(data, sizeof(data)) {}
+    RIP() : operation((Operation)0) {}
 
-	Operation       operation;
-
-    quint8  data[DATA_SIZE];
-    NetData netData; // access data through netData
+	Operation     operation;
+	QList<Tupple> tupples;
 };
 
-QString toString(const Echo::Operation value);
-QString toString(const Echo& value);
+QString toString(const RIP::Operation value);
+QString toString(const RIP::Tupple& value);
+QString toString(const RIP& value);
 
 #endif

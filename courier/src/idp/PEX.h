@@ -26,45 +26,42 @@ OF SUCH DAMAGE.
 
 
 //
-// Routing.h
+// PEX.h
 //
 
 
-#ifndef ROUTING_H__
-#define ROUTING_H__
+#ifndef PEX_H__
+#define PEX_H__
 
 #include <QtCore>
 
 #include "../idp/IDP.h"
 #include "../idp/NetData.h"
 
-class Routing {
+class PEX {
 public:
-	enum class Operation : quint16 {
-        REQUEST  = 1,
-        RESPONSE = 2,
+	enum class ClientType : quint16 {
+        UNSPECIFIED   = 0,
+        TIME          = 1,
+        CLEARINGHOUSE = 2,
+        TELEDEBUG     = 8,
 	};
 
-	class Tupple {
-	public:
-		IDP::Network  network;
-		IDP::HopCount hopCount;
-
-	    void serialize  (NetData& netData);
-	    void deserialize(NetData& netData);
-	};
+	static const quint32 DATA_SIZE = IDP::DATA_SIZE - 6;
 
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
-    Routing() : operation((Operation)0) {}
+    PEX() : id(0), clientType((ClientType)0), netData(data, sizeof(data)) {}
 
-	Operation     operation;
-	QList<Tupple> tupples;
+	quint32    id;
+	ClientType clientType;
+
+    quint8  data[DATA_SIZE];
+    NetData netData; // access data through netData
 };
 
-QString toString(const Routing::Operation value);
-QString toString(const Routing::Tupple& value);
-QString toString(const Routing& value);
+QString toString(const PEX::ClientType value);
+QString toString(const PEX& value);
 
 #endif

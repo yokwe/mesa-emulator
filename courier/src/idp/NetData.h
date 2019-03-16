@@ -82,7 +82,7 @@ public:
 	void clear() {
 		limit = capacity;
 		pos   = 0;
-		for(quint32 i = 0; i < capacity; i++) data[i] = 0;
+    	::bzero(data, capacity);
 	}
 	// reset buffer for read written content
 	void rewind() {

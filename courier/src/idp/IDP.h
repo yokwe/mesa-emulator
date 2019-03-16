@@ -42,16 +42,16 @@ OF SUCH DAMAGE.
 class IDP {
 public:
     enum class PacketType : quint8 {
-        ROUTING          = 1,
-        ECHO             = 2,
-        ERROR            = 3,
-        PACKET_EXCHANGE  = 4, // PEX
-        SEQUENCED_PACKET = 5, // SPP
-        BOOT_SERVER      = 9, // BOOT
+        RIP   = 1, // Routing
+        ECHO  = 2,
+        ERROR = 3,
+        PEX   = 4, // Packet Exchange
+        SPP   = 5, // Sequenced Packet
+        BOOT  = 9, // BOOT Server
     };
 
     enum class Socket : quint16 {
-        ROUTING           = 1,
+        RIP           = 1,
         ECHO              = 2,
         ERROR             = 3,
         ENVOY             = 4,
@@ -89,7 +89,8 @@ public:
     	MAX = 16,
     };
 
-	static const quint16 MAX_PACKET_LIFETIME   = 60U;
+	static const quint32 DATA_SIZE           = 546;
+	static const quint16 MAX_PACKET_LIFETIME = 60U;
 
 	static quint16 computeChecksum(quint8* data, quint32 offset, quint32 length);
 
@@ -110,10 +111,10 @@ public:
     Host    src_host;
     Socket  src_socket;
 
-    quint8  data[546];
+    quint8  data[DATA_SIZE];
     NetData netData; // access data through netData
 
-    quint16 computedChecksum; // value is assigned after deserialize
+    quint16 computedChecksum; // value is assigned after serialize and deserialize
 
     IDP() : checksum((Checksum)0), length(0), hopCount((HopCount)0), packetType((PacketType)0),
     		dst_net((Network)0), dst_host((Host)0), dst_socket((Socket)0),
