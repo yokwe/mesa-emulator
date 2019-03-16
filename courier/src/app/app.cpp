@@ -38,6 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("app");
 #include "../idp/Echo.h"
 #include "../idp/PEX.h"
 #include "../idp/RIP.h"
+#include "../idp/SPP.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -77,6 +78,13 @@ int main(int /*argc*/, char** /*argv*/) {
 		case IDP::PacketType::PEX:
 		{
 			PEX data;
+			data.deserialize(idp.netData);
+			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+		}
+			break;
+		case IDP::PacketType::SPP:
+		{
+			SPP data;
 			data.deserialize(idp.netData);
 			logger.info("    %s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
 		}

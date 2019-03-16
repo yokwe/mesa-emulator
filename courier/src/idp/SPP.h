@@ -51,9 +51,14 @@ public:
     		quint8 sendAcknowledge : 1;
     		quint8 systemPacket    : 1;
     	};
+
+    	Control() : u(0) {};
+    	Control(quint8 value) {
+    		u = value;
+    	}
     };
 
-    enum class StreamType : quint8 {
+    enum class SST : quint8 {
         DATA        = 0,
         BULK        = 1,
         CLOSE       = 254,
@@ -64,23 +69,23 @@ public:
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 
-    SPP() : control((Control)0), streamType((StreamType)0), src_conn_id(0), dst_conn_id(0),
+    SPP() : control(0), sst((SST)0), src_conn_id(0), dst_conn_id(0),
     		sequence(0), acknowledge(0), allocation(0), netData(data, sizeof(data)) {}
 
-    Control    control;
-    StreamType streamType;
-	quint16    src_conn_id;
-	quint16    dst_conn_id;
-	quint16    sequence;
-	quint16    acknowledge;
-	quint16    allocation;
+    Control control;
+    SST     sst;
+	quint16 src_conn_id;
+	quint16 dst_conn_id;
+	quint16 sequence;
+	quint16 acknowledge;
+	quint16 allocation;
 
     quint8  data[DATA_SIZE];
     NetData netData; // access data through netData
 };
 
 QString toString(const SPP::Control value);
-QString toString(const SPP::StreamType value);
+QString toString(const SPP::SST value);
 QString toString(const SPP& value);
 
 #endif
