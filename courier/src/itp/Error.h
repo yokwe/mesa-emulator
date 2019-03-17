@@ -61,6 +61,7 @@ public:
     void deserialize(NetData& netData);
 
     Error() : errorNumber((ErrorNumber)0), errorParameter(0), netData(data, sizeof(data)) {}
+    Error(ErrorNumber errorNumber_) : errorNumber(errorNumber_), errorParameter(0), netData(data, sizeof(data)) {}
 
     ErrorNumber errorNumber;
     quint16     errorParameter;
