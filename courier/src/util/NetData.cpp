@@ -280,7 +280,7 @@ void NetData::put8(quint8 value) {
 
 void NetData::put(const NetData& that, quint32 from) {
 	quint32 limit = that.getLimit();
-	if (limit <= from) {
+	if (limit < from) {
 		logger.fatal("%s  from = %d  limit = %d", __FUNCTION__, from, limit);
 		RUNTIME_ERROR();
 	}

@@ -43,7 +43,7 @@ void ITP::Error::deserialize(NetData& netData_) {
 	netData.put(netData_, netData_.getPos());
 	netData.rewind();
 }
-void ITP::Error::serialize(NetData& netData_) {
+void ITP::Error::serialize(NetData& netData_) const {
 	netData_.put16((quint16)errorNumber);
 	netData_.put16(errorParameter);
 

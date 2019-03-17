@@ -78,48 +78,48 @@ public:
 	};
 
 
-	NIC() : name(0), protocol(0), fd(0), address(0) {}
+	NIC() : name(0), type((Type)0), fd(0), address((Address)0) {}
 
-	const char* getName() {
+	const char* getName() const {
 		return name;
 	}
-	quint16 getProtocol() {
-		return protocol;
+	Type getType() const {
+		return type;
 	}
-	quint64 getAddress() {
+	Address getAddress() const {
 		return address;
 	}
 
-	void attach(const char* name, const quint16 protocol);
+	void attach(const char* name, const Type type);
 	void detach();
 
 	// discard already received packet
-	void discardRecievedPacket();
-	void discardOnePacket();
-	int  select(quint32 timeout, int& opErrno);
+	void discardRecievedPacket() const;
+	void discardOnePacket() const;
+	int  select(quint32 timeout, int& opErrno) const;
 
 	// returns return code of send and recv. no error checking
-	int receive (quint8* data, quint32 dataLen, int& opErrno);
-	int transmit(quint8* data, quint32 dataLen, int& opErrno);
+	int receive (quint8* data, quint32 dataLen, int& opErrno) const;
+	int transmit(quint8* data, quint32 dataLen, int& opErrno) const;
 
-	void receive (NetData& netData);
-	void transmit(NetData& netData);
+	void receive (NetData& netData) const;
+	void transmit(NetData& netData) const;
 
-	void receive (Data& data) {
+	void receive (Data& data) const {
 		receive(data.netData);
 	}
-	void transmit(Data& data) {
+	void transmit(Data& data) const {
 		transmit(data.netData);
 	}
 
-	void receive (Ethernet& ethernet);
-	void transmit(Ethernet& ethernet);
+	void receive (Ethernet& ethernet) const;
+	void transmit(Ethernet& ethernet) const;
 
 private:
 	const char* name;
-	quint16     protocol;
+	Type        type;
 	int         fd;
-	quint64     address;
+	Address     address;
 };
 
 QString toString(const NIC::Address value);

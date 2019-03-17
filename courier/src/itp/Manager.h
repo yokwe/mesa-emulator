@@ -26,54 +26,28 @@ OF SUCH DAMAGE.
 
 
 //
-// Error.h
+// Manager.h
 //
 
-
-#ifndef ITP_ERROR_H__
-#define ITP_ERROR_H__
+#ifndef ITP_MANAGER_H__
+#define ITP_MANAGER_H__
 
 #include "../itp/IDP.h"
+#include "../itp/Listener.h"
 
 namespace ITP {
-class Error {
+class Manager {
 public:
-    enum class ErrorNumber : quint16 {
-        UNSPECIFIED          = 0,
-        BAD_CHECKSUM         = 1,
-        NO_SOCKET            = 2,
-        RESOURCE_LIMIT       = 3,
-        LISTEN_REJECT        = 4,
-        INVALID_PACKET_TYPE  = 5,
-        PROTOCOL_VIOLATION   = 6,
-        UNSPECIFIED_IN_ROUTE = 512,
-        INCONSISTENT         = 513,
-        CANT_GET_THERE       = 514,
-        EXCESS_HOPS          = 515,
-        TOO_BIG              = 516,
-        CONGESTION_WARNING   = 517,
-        CONGESTION_DISCARD   = 518,
-    };
+	void addListener(Listener* listener);
+	void main();
 
-	static const quint32 DATA_SIZE = ITP::IDP::DATA_SIZE - 2;
+	Manager(NIC& nic_) : nic(nic_) {}
 
-    void serialize  (NetData& netData) const;
-    void deserialize(NetData& netData);
+private:
+	NIC& nic;
 
-    Error() : errorNumber((ErrorNumber)0), errorParameter(0), netData(data, sizeof(data)) {}
-    Error(ErrorNumber errorNumber_) : errorNumber(errorNumber_), errorParameter(0), netData(data, sizeof(data)) {
-    	netData.rewind();
-    }
-
-    ErrorNumber errorNumber;
-    quint16     errorParameter;
-
-    quint8  data[DATA_SIZE];
-    NetData netData; // access data through netData
+	QMap<IDP::Socket, Listener*> listenerMap;
 };
 }
-
-QString toString(const ITP::Error::ErrorNumber value);
-QString toString(const ITP::Error& value);
 
 #endif

@@ -62,15 +62,15 @@ static inline quint64 get48_(quint8* p) {
 	return ret;
 }
 
-void NIC::attach(const char* name_, const quint16 protocol_) {
-	name     = name_;
-	protocol = protocol_;
+void NIC::attach(const char* name_, const Type type_) {
+	name = name_;
+	type = type_;
 
     logger.info("name     = %s", name);
-    logger.info("protocol = 0x%04X", protocol);
+    logger.info("protocol = 0x%04X", type);
 
 	// open socket
-	fd = socket(AF_PACKET, SOCK_RAW, qToBigEndian((quint16)protocol));
+	fd = socket(AF_PACKET, SOCK_RAW, qToBigEndian((quint16)type));
 	if (fd == -1) {
 		int myErrno = errno;
 		logger.fatal("socket returns -1.  errno = %d", myErrno);
@@ -96,7 +96,7 @@ void NIC::attach(const char* name_, const quint16 protocol_) {
 				RUNTIME_ERROR();
 		    }
 
-		    address = get48_((quint8*)(ifr.ifr_hwaddr.sa_data));
+		    address = (Address)get48_((quint8*)(ifr.ifr_hwaddr.sa_data));
 		    logger.info("address  = %012llX", address);
 		}
 
@@ -123,7 +123,7 @@ void NIC::attach(const char* name_, const quint16 protocol_) {
 
 			memset(&sll, 0xff, sizeof(sll));
 			sll.sll_family   = AF_PACKET;
-			sll.sll_protocol = qToBigEndian(protocol);
+			sll.sll_protocol = qToBigEndian((quint16)type);
 			sll.sll_ifindex  = ifindex;
 			int ret = ::bind(fd, (struct sockaddr *)&sll, sizeof sll);
 		    if (ret) {
@@ -146,7 +146,7 @@ void NIC::detach() {
 	name = 0;
 }
 
-int NIC::select(quint32 timeout, int& opErrno) {
+int NIC::select(quint32 timeout, int& opErrno) const {
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
@@ -161,7 +161,7 @@ int NIC::select(quint32 timeout, int& opErrno) {
 	return ret;
 }
 
-void NIC::discardRecievedPacket() {
+void NIC::discardRecievedPacket() const {
 	int count = 0;
 	for(;;) {
 		int opErrno = 0;
@@ -178,13 +178,13 @@ void NIC::discardRecievedPacket() {
 	}
 	if (DEBUG_NIC_SHOW) logger.debug("discards %d packet", count);
 }
-void NIC::discardOnePacket() {
+void NIC::discardOnePacket() const {
 	Data data;
 	int opErrno = 0;
 	receive(data.data, sizeof(data.data), opErrno);
 }
 
-int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) {
+int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) const {
 	if (DEBUG_NIC_TRACE) {
 		logger.debug("TRANS    dataLen = %d", dataLen);
 		char buf[dataLen * 2 + 1];
@@ -206,7 +206,7 @@ int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) {
 	return ret;
 }
 
-int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) {
+int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) const {
 	if (DEBUG_NIC_SHOW) logger.debug("%-8s fd = %d  data = %p  dataLen = %4d  opErrno = %3d", __FUNCTION__, fd, data, dataLen, opErrno);
 	int ret = recv(fd, data, dataLen, 0);
 	opErrno = errno;
@@ -231,7 +231,7 @@ int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) {
 	return ret;
 }
 
-void NIC::transmit(NetData& netData) {
+void NIC::transmit(NetData& netData) const {
 	int opErrno = 0;
 	quint8* data = netData.getData();
 	quint32 dataLen = netData.getLimit();
@@ -247,7 +247,7 @@ void NIC::transmit(NetData& netData) {
 	}
 }
 
-void NIC::receive(NetData& netData) {
+void NIC::receive(NetData& netData) const {
 	netData.clear();
 
 	quint8* data = netData.getData();
@@ -262,14 +262,14 @@ void NIC::receive(NetData& netData) {
 	netData.setLimit((quint32)ret);
 }
 
-void NIC::receive(NIC::Ethernet& ethernet) {
+void NIC::receive(NIC::Ethernet& ethernet) const {
 	Data data;
 
 	receive(data.netData);
 	ethernet.deserialize(data.netData);
 }
 
-void NIC::transmit(NIC::Ethernet& ethernet) {
+void NIC::transmit(NIC::Ethernet& ethernet) const {
 	Data data;
 
 	ethernet.serialize(data.netData);

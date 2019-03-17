@@ -26,54 +26,27 @@ OF SUCH DAMAGE.
 
 
 //
-// Error.h
+// Listener.h
 //
 
-
-#ifndef ITP_ERROR_H__
-#define ITP_ERROR_H__
+#ifndef ITP_LISTENER_H__
+#define ITP_LISTENER_H__
 
 #include "../itp/IDP.h"
+#include "../itp/Error.h"
 
 namespace ITP {
-class Error {
+class Listener {
 public:
-    enum class ErrorNumber : quint16 {
-        UNSPECIFIED          = 0,
-        BAD_CHECKSUM         = 1,
-        NO_SOCKET            = 2,
-        RESOURCE_LIMIT       = 3,
-        LISTEN_REJECT        = 4,
-        INVALID_PACKET_TYPE  = 5,
-        PROTOCOL_VIOLATION   = 6,
-        UNSPECIFIED_IN_ROUTE = 512,
-        INCONSISTENT         = 513,
-        CANT_GET_THERE       = 514,
-        EXCESS_HOPS          = 515,
-        TOO_BIG              = 516,
-        CONGESTION_WARNING   = 517,
-        CONGESTION_DISCARD   = 518,
-    };
+	const QString         name;
+	const IDP::Socket     socket;
+	const IDP::PacketType packetType;
 
-	static const quint32 DATA_SIZE = ITP::IDP::DATA_SIZE - 2;
+	Listener(const QString name_, IDP::Socket socket_, IDP::PacketType packetType_) : name(name_), socket(socket_), packetType(packetType_) {}
+	virtual ~Listener() {}
 
-    void serialize  (NetData& netData) const;
-    void deserialize(NetData& netData);
-
-    Error() : errorNumber((ErrorNumber)0), errorParameter(0), netData(data, sizeof(data)) {}
-    Error(ErrorNumber errorNumber_) : errorNumber(errorNumber_), errorParameter(0), netData(data, sizeof(data)) {
-    	netData.rewind();
-    }
-
-    ErrorNumber errorNumber;
-    quint16     errorParameter;
-
-    quint8  data[DATA_SIZE];
-    NetData netData; // access data through netData
+	virtual void process(const IDP& request, IDP& response) = 0;
 };
 }
-
-QString toString(const ITP::Error::ErrorNumber value);
-QString toString(const ITP::Error& value);
 
 #endif

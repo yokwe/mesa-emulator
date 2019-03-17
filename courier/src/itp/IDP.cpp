@@ -172,7 +172,7 @@ void ITP::IDP::serialize  (NetData& netData_) {
 	quint32 pos = netData_.getPos();
 
 	netData_.put16((quint16)checksum);
-	netData_.put16(length);
+	netData_.put16((quint16)length);
 	netData_.put8 ((quint8)hopCount);
 	netData_.put8 ((quint8)packetType);
 
@@ -186,16 +186,20 @@ void ITP::IDP::serialize  (NetData& netData_) {
 
 	netData_.put(netData, 0);
 
+	// Update length
+	length = netData_.getPos();
+	netData_.set16(pos + 2, length);
+
 	// Append garbage byte if number of data is odd
 	if (netData.getLimit() & 1) {
 		netData_.put8(0);
 	}
 
-	// Update checksum if necessary.
+	// Update checksum
+	// 2 for checksum field
 	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
-	if (checksum != Checksum::NONE) {
-		netData_.set16(pos + 2, computedChecksum);
-	}
+	checksum = (Checksum)computedChecksum;
+	netData_.set16(pos + 0, (quint16)checksum);
 }
 
 quint16 ITP::IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {

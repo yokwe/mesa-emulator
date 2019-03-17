@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += IDP.h   RIP.h   Echo.h   PEX.h   SPP.h   Error.h
-SOURCES += IDP.cpp RIP.cpp Echo.cpp PEX.cpp SPP.cpp Error.cpp
+HEADERS += IDP.h   RIP.h   Echo.h   PEX.h   SPP.h   Error.h   Manager.h
+SOURCES += IDP.cpp RIP.cpp Echo.cpp PEX.cpp SPP.cpp Error.cpp Manager.cpp
 
 ###############################################
 
