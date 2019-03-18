@@ -35,6 +35,14 @@ static log4cpp::Category& logger = Logger::getLogger("idp");
 
 #include "../itp/IDP.h"
 
+#include "../itp/Echo.h"
+#include "../itp/PEX.h"
+#include "../itp/RIP.h"
+#include "../itp/SPP.h"
+#include "../itp/Error.h"
+
+#include "../rpc/Time.h"
+
 QString toString(const ITP::IDP::PacketType value) {
 	static QMap<ITP::IDP::PacketType, QString> map = {
 	    {ITP::IDP::PacketType::RIP,   "RIP"},
@@ -195,6 +203,11 @@ void ITP::IDP::serialize  (NetData& netData_) {
 		netData_.put8(0);
 	}
 
+	// Add padding if length is less than MIN_DATA_SIZE
+	for(quint32 i = netData_.getPos(); i < MIN_DATA_SIZE; i++) {
+		netData_.put8(0);
+	}
+
 	// Update checksum
 	// 2 for checksum field
 	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
@@ -220,4 +233,60 @@ quint16 ITP::IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) 
 		if (0x10000U <= s) s = (s + 1) & 0xffffU;
 	}
 	return (quint16)s;
+}
+
+void dump(const char* prefix, ITP::IDP& idp) {
+	logger.info("%s%8s %s", prefix, "IDP", toString(idp).toLocal8Bit().constData());
+
+	switch(idp.packetType) {
+	case ITP::IDP::PacketType::RIP:
+	{
+		ITP::RIP data;
+		data.deserialize(idp.netData);
+		logger.info("%s%8s %s", prefix, toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+	}
+		break;
+	case ITP::IDP::PacketType::ECHO:
+	{
+		ITP::Echo data;
+		data.deserialize(idp.netData);
+		logger.info("%s%8s %s", prefix, toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+	}
+		break;
+	case ITP::IDP::PacketType::PEX:
+	{
+		ITP::PEX data;
+		data.deserialize(idp.netData);
+		logger.info("%s%8s %s", prefix, toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+
+		switch(data.clientType) {
+		case ITP::PEX::ClientType::TIME:
+		{
+			RPC::Time timeData;
+			timeData.deserialize(data.netData);
+			logger.info("%s%8s %s", prefix, toString(data.clientType).toLocal8Bit().constData(), toString(timeData).toLocal8Bit().constData());
+		}
+			break;
+		default:
+			break;
+		}
+	}
+		break;
+	case ITP::IDP::PacketType::SPP:
+	{
+		ITP::SPP data;
+		data.deserialize(idp.netData);
+		logger.info("%s%8s %s", prefix, toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+	}
+		break;
+	case ITP::IDP::PacketType::ERROR:
+	{
+		ITP::Error data;
+		data.deserialize(idp.netData);
+		logger.info("%s%8s %s", prefix, toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
+	}
+		break;
+	default:
+		break;
+	}
 }
