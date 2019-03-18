@@ -249,6 +249,7 @@ void NIC::transmit(NetData& netData) const {
 
 void NIC::receive(NetData& netData) const {
 	netData.clear();
+	netData.zero();
 
 	quint8* data = netData.getData();
 	quint32 dataLen = netData.getCapacity();
@@ -324,10 +325,5 @@ void NIC::Ethernet::serialize  (NetData& netData_) {
 	netData_.put16((quint16)type);
 
 	netData_.put(netData, 0);
-
-	// Add padding if length is less than MIN_DATA_SIZE
-	for(quint32 i = netData_.getPos(); i < MIN_DATA_SIZE; i++) {
-		netData.put8(0);
-	}
 }
 
