@@ -87,7 +87,10 @@ public:
     	MAX = 16,
     };
 
-	static const quint32 DATA_SIZE           = 546;
+    static const quint32 HEADER_SIZE   = 30;
+	static const quint32 DATA_SIZE     = 546;
+	static const quint32 MIN_DATA_SIZE = 46;
+
 	static const quint16 MAX_PACKET_LIFETIME = 60U;
 
 	static quint16 computeChecksum(quint8* data, quint32 offset, quint32 length);
@@ -133,6 +136,8 @@ QString toString(const ITP::IDP::Host value);
 QString toString(const ITP::IDP::Checksum value);
 QString toString(const ITP::IDP::HopCount value);
 QString toString(const ITP::IDP& value);
+
+void dump(const char* prefix, ITP::IDP& value);
 
 #endif
 
