@@ -42,74 +42,10 @@ int main(int /*argc*/, char** /*argv*/) {
 	setSignalHandler();
 
 	NIC nic;
-	nic.attach("ens33", NIC::Type::IDP);
+	nic.attach("ens192", NIC::Type::IDP);
 
 	Service::Manager manager(nic);
 	manager.main();
-
-//	for(int i = 0; i < 100; i++) {
-//		logger.info("# %3d", i);
-//
-//		NIC::Ethernet ethernet;
-//		nic.receive(ethernet);
-//
-//		logger.info("%-8s %s", "ETHER", toString(ethernet).toLocal8Bit().constData());
-//
-//		ITP::IDP idp;
-//		idp.deserialize(ethernet.netData);
-//		logger.info("%-8s %s", "IDP", toString(idp).toLocal8Bit().constData());
-//
-//		switch(idp.packetType) {
-//		case ITP::IDP::PacketType::RIP:
-//		{
-//			ITP::RIP data;
-//			data.deserialize(idp.netData);
-//			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-//		}
-//			break;
-//		case ITP::IDP::PacketType::ECHO:
-//		{
-//			ITP::Echo data;
-//			data.deserialize(idp.netData);
-//			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-//		}
-//			break;
-//		case ITP::IDP::PacketType::PEX:
-//		{
-//			ITP::PEX data;
-//			data.deserialize(idp.netData);
-//			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-//			switch(data.clientType) {
-//			case ITP::PEX::ClientType::TIME:
-//			{
-//				RPC::Time timeData;
-//				timeData.deserialize(data.netData);
-//				logger.info("%-8s %s", "TIME", toString(timeData).toLocal8Bit().constData());
-//			}
-//				break;
-//			default:
-//				break;
-//			}
-//		}
-//			break;
-//		case ITP::IDP::PacketType::SPP:
-//		{
-//			ITP::SPP data;
-//			data.deserialize(idp.netData);
-//			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-//		}
-//			break;
-//		case ITP::IDP::PacketType::ERROR:
-//		{
-//			ITP::Error data;
-//			data.deserialize(idp.netData);
-//			logger.info("%-8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-//		}
-//			break;
-//		default:
-//			break;
-//		}
-//	}
 
 	nic.detach();
 
