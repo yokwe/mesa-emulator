@@ -46,7 +46,7 @@ private:
 	void checkConsistency();
 
 public:
-	NetData(quint8* data_, quint32 capacity_) : data(data_), capacity(capacity_), limit(capacity_), pos(0) {checkConsistency();}
+	NetData(quint8* data_, quint32 capacity_) : data(data_), capacity(capacity_), limit(0), pos(0) {checkConsistency();}
 
 	NetData(const NetData& that) : data(that.data), capacity(that.capacity), limit(that.limit), pos(that.pos) {checkConsistency();}
 
@@ -84,8 +84,9 @@ public:
 	void clear() {
 		limit = capacity;
 		pos   = 0;
-    	::bzero(data, capacity);
 	}
+	// fill data[0..capacity) with zero
+	void zero();
 	// reset buffer for read written content
 	void rewind() {
 		limit = pos;
