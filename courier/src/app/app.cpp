@@ -34,7 +34,7 @@ static log4cpp::Category& logger = Logger::getLogger("app");
 
 #include "../util/NIC.h"
 
-#include "../itp/Manager.h"
+#include "../service/Manager.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -44,7 +44,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	NIC nic;
 	nic.attach("ens33", NIC::Type::IDP);
 
-	ITP::Manager manager(nic);
+	Service::Manager manager(nic);
 	manager.main();
 
 //	for(int i = 0; i < 100; i++) {

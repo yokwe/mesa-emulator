@@ -33,7 +33,7 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("manager");
 
-#include "../itp/Manager.h"
+#include "../service/Manager.h"
 
 #include "../itp/IDP.h"
 #include "../itp/Echo.h"
@@ -44,10 +44,10 @@ static log4cpp::Category& logger = Logger::getLogger("manager");
 
 #include "../rpc/Time.h"
 
-void ITP::Manager::addListener(Listener* listener) {
+void Service::Manager::addListener(Listener* listener) {
 	QString         name       = listener->name;
-	IDP::Socket     socket     = listener->socket;
-	IDP::PacketType packetType = listener->packetType;
+	ITP::IDP::Socket     socket     = listener->socket;
+	ITP::IDP::PacketType packetType = listener->packetType;
 
 	if (listenerMap.contains(socket)) {
 		for(Listener* listener: listenerMap.values(socket)) {
@@ -62,7 +62,7 @@ void ITP::Manager::addListener(Listener* listener) {
 	listenerMap.insertMulti(socket, listener);
 }
 
-void ITP::Manager::main() {
+void Service::Manager::main() {
 	for(;;) {
 		NIC::Ethernet eth_request;
 		NIC::Ethernet eth_response;
@@ -74,13 +74,13 @@ void ITP::Manager::main() {
 		eth_response.src  = nic.getAddress();
 		eth_response.type = nic.getType();
 
-		IDP idp_request;
-		IDP idp_response;
+		ITP::IDP idp_request;
+		ITP::IDP idp_response;
 		idp_request.deserialize(eth_request.netData);
 		logger.info(">> %8s %s", "IDP", toString(idp_request).toLocal8Bit().constData());
 
 		{
-			IDP idp(idp_request);
+			ITP::IDP idp(idp_request);
 			switch(idp.packetType) {
 			case ITP::IDP::PacketType::RIP:
 			{
@@ -133,29 +133,29 @@ void ITP::Manager::main() {
 			}
 		}
 
-	    idp_response.checksum   = (IDP::Checksum)0;       // dummy
+	    idp_response.checksum   = (ITP::IDP::Checksum)0;       // dummy
 	    idp_response.length     = 0;                      // dummy
-	    idp_response.hopCount   = (IDP::HopCount)0;
+	    idp_response.hopCount   = (ITP::IDP::HopCount)0;
 		idp_response.packetType = idp_request.packetType;
 
 		idp_response.dst_net    = idp_request.src_net;
 		idp_response.dst_host   = idp_request.src_host;
 		idp_response.dst_socket = idp_request.src_socket;
 		idp_response.src_net    = idp_request.dst_net;
-		idp_response.src_host   = (IDP::Host)(quint64)nic.getAddress();
+		idp_response.src_host   = (ITP::IDP::Host)(quint64)nic.getAddress();
 		idp_response.src_socket = idp_request.dst_socket;
 
 
 		bool foundError = false;
 		try {
-			if (idp_request.checksum != IDP::Checksum::NONE) {
-				if (idp_request.checksum != (IDP::Checksum)idp_request.computedChecksum) {
+			if (idp_request.checksum != ITP::IDP::Checksum::NONE) {
+				if (idp_request.checksum != (ITP::IDP::Checksum)idp_request.computedChecksum) {
 					throw ITP::Error(ITP::Error::ErrorNumber::BAD_CHECKSUM);
 				}
 			}
 
-			const IDP::Socket     socket     = idp_request.dst_socket;
-			const IDP::PacketType packetType = idp_request.packetType;
+			const ITP::IDP::Socket     socket     = idp_request.dst_socket;
+			const ITP::IDP::PacketType packetType = idp_request.packetType;
 
 			if (listenerMap.contains(socket)) {
 				// has listener
@@ -178,7 +178,7 @@ void ITP::Manager::main() {
 		} catch (const ITP::Error& error) {
 			logger.info("        Error %s", toString(error).toLocal8Bit().constData());
 
-			idp_response.packetType = IDP::PacketType::ERROR;
+			idp_response.packetType = ITP::IDP::PacketType::ERROR;
 			idp_response.netData.clear();
 			error.serialize(idp_response.netData);
 			foundError = true;
@@ -186,8 +186,8 @@ void ITP::Manager::main() {
 
 		bool transmitResponse = true;
 		if (foundError) {
-			if (idp_request.dst_host == IDP::Host::ALL) {
-//				transmitResponse = false;
+			if (idp_request.dst_host == ITP::IDP::Host::ALL) {
+// FIXME				transmitResponse = false;
 			}
 		}
 		if (transmitResponse) {
@@ -198,7 +198,7 @@ void ITP::Manager::main() {
 			logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());
 			logger.info("<< %8s %s", "IDP", toString(idp_response).toLocal8Bit().constData());
 
-//			nic.transmit(eth_response);
+// FIXME			nic.transmit(eth_response);
 		} else {
 			logger.info("<< NO RESPONSE");
 		}

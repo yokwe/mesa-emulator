@@ -26,26 +26,30 @@ OF SUCH DAMAGE.
 
 
 //
-// Listener.h
+// Manager.h
 //
 
-#ifndef ITP_LISTENER_H__
-#define ITP_LISTENER_H__
+#ifndef SERVICE_MANAGER_H__
+#define SERVICE_MANAGER_H__
+
+#include "../util/NIC.h"
 
 #include "../itp/IDP.h"
-#include "../itp/Error.h"
 
-namespace ITP {
-class Listener {
+#include "../service/Listener.h"
+
+namespace Service {
+class Manager {
 public:
-	const QString         name;
-	const IDP::Socket     socket;
-	const IDP::PacketType packetType;
+	void addListener(Listener* listener);
+	void main();
 
-	Listener(const QString name_, IDP::Socket socket_, IDP::PacketType packetType_) : name(name_), socket(socket_), packetType(packetType_) {}
-	virtual ~Listener() {}
+	Manager(NIC& nic_) : nic(nic_) {}
 
-	virtual void process(const IDP& request, IDP& response) = 0;
+private:
+	NIC& nic;
+
+	QMap<ITP::IDP::Socket, Listener*> listenerMap;
 };
 }
 
