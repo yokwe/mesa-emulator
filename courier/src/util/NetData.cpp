@@ -78,7 +78,9 @@ void NetData::setLimit(quint32 newValue) {
 	}
 }
 
-
+void NetData::zero() {
+	::bzero(data, capacity);
+}
 static inline quint64 get48_(quint8* p) {
 	quint64 ret = p[0];
 	ret <<= 8;
