@@ -48,7 +48,7 @@ public:
 	class Ethernet {
 	public:
 		static const quint32 MAX_FRAME_SIZE = 1514;
-    	static const quint32 MIN_FRAME_SIZE =   46;
+    	static const quint32 MIN_FRAME_SIZE =   60;
 		static const quint32 HEADER_SIZE    =   14;
 
 		static const quint32 MAX_DATA_SIZE  = MAX_FRAME_SIZE - HEADER_SIZE;

@@ -87,9 +87,8 @@ public:
     	MAX = 16,
     };
 
-    static const quint32 HEADER_SIZE   = 30;
+    static const quint32 HEADER_SIZE   =  30;
 	static const quint32 DATA_SIZE     = 546;
-	static const quint32 MIN_DATA_SIZE = 46;
 
 	static const quint16 MAX_PACKET_LIFETIME = 60U;
 

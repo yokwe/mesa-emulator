@@ -204,7 +204,7 @@ void ITP::IDP::serialize  (NetData& netData_) {
 	}
 
 	// Add padding if length is less than MIN_DATA_SIZE
-	for(quint32 i = netData_.getPos(); i < MIN_DATA_SIZE; i++) {
+	for(quint32 i = netData_.getPos(); i < NIC::Ethernet::MIN_DATA_SIZE; i++) {
 		netData_.put8(0);
 	}
 
