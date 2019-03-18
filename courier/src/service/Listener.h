@@ -37,14 +37,14 @@ OF SUCH DAMAGE.
 namespace Service {
 class Listener {
 public:
-	const QString         name;
-	const ITP::IDP::Socket     socket;
-	const ITP::IDP::PacketType packetType;
+	const QString          name;
+	const ITP::IDP::Socket socket;
 
-	Listener(const QString name_, ITP::IDP::Socket socket_, ITP::IDP::PacketType packetType_) : name(name_), socket(socket_), packetType(packetType_) {}
+	Listener(const QString name_, ITP::IDP::Socket socket_) : name(name_), socket(socket_) {}
 	virtual ~Listener() {}
 
-	virtual void process(const ITP::IDP& request, ITP::IDP& response) = 0;
+	// If process returns true, send response packet. Otherwise don't send response packet.
+	virtual bool process(ITP::IDP& idp_request, ITP::IDP& idp_response) = 0;
 };
 }
 
