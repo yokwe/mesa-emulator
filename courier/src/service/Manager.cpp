@@ -34,6 +34,7 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("manager");
 
 #include "../service/Manager.h"
+#include "../service/Echo.h"
 
 #include "../itp/IDP.h"
 #include "../itp/Echo.h"
@@ -45,95 +46,45 @@ static log4cpp::Category& logger = Logger::getLogger("manager");
 #include "../rpc/Time.h"
 
 void Service::Manager::addListener(Listener* listener) {
-	QString         name       = listener->name;
-	ITP::IDP::Socket     socket     = listener->socket;
-	ITP::IDP::PacketType packetType = listener->packetType;
+	QString          name   = listener->name;
+	ITP::IDP::Socket socket = listener->socket;
 
 	if (listenerMap.contains(socket)) {
-		for(Listener* listener: listenerMap.values(socket)) {
-			if (packetType == listener->packetType) {
-				logger.fatal("Duplicate listener  %s  %s", toString(socket).toLocal8Bit().constData(), toString(packetType).toLocal8Bit().constData());
-				RUNTIME_ERROR();
-			}
-		}
+		Listener* old = listenerMap[socket];
+		logger.fatal("Duplicate listener");
+		logger.fatal("  new  %s  %s", name.toLocal8Bit().constData(), toString(socket).toLocal8Bit().constData());
+		logger.fatal("  old  %s  %s", old->name.toLocal8Bit().constData(), toString(old->socket).toLocal8Bit().constData());
+		RUNTIME_ERROR();
 	}
 
-	logger.info("add %8s %8s %s", name.toLocal8Bit().constData(), toString(socket).toLocal8Bit().constData(), toString(packetType).toLocal8Bit().constData());
-	listenerMap.insertMulti(socket, listener);
+	logger.info("add %8s %s", name.toLocal8Bit().constData(), toString(socket).toLocal8Bit().constData());
+	listenerMap[socket] = listener;
 }
 
 void Service::Manager::main() {
+	// add listener
+	Echo echo;
+
+	addListener(&echo);
+
 	for(;;) {
 		NIC::Ethernet eth_request;
 		NIC::Ethernet eth_response;
 		nic.receive(eth_request);
-		logger.info("----");
-		logger.info(">> %8s %s", "ETHER", toString(eth_request).toLocal8Bit().constData());
 
 		eth_response.dst  = eth_request.src;
 		eth_response.src  = nic.getAddress();
 		eth_response.type = nic.getType();
 
 		ITP::IDP idp_request;
-		ITP::IDP idp_response;
 		idp_request.deserialize(eth_request.netData);
-		logger.info(">> %8s %s", "IDP", toString(idp_request).toLocal8Bit().constData());
 
-		{
-			ITP::IDP idp(idp_request);
-			switch(idp.packetType) {
-			case ITP::IDP::PacketType::RIP:
-			{
-				ITP::RIP data;
-				data.deserialize(idp.netData);
-				logger.info(">> %8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-			}
-				break;
-			case ITP::IDP::PacketType::ECHO:
-			{
-				ITP::Echo data;
-				data.deserialize(idp.netData);
-				logger.info(">> %8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-			}
-				break;
-			case ITP::IDP::PacketType::PEX:
-			{
-				ITP::PEX data;
-				data.deserialize(idp.netData);
-				logger.info(">> %8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-				switch(data.clientType) {
-				case ITP::PEX::ClientType::TIME:
-				{
-					RPC::Time timeData;
-					timeData.deserialize(data.netData);
-					logger.info(">> %8s %s", "TIME", toString(timeData).toLocal8Bit().constData());
-				}
-					break;
-				default:
-					break;
-				}
-			}
-				break;
-			case ITP::IDP::PacketType::SPP:
-			{
-				ITP::SPP data;
-				data.deserialize(idp.netData);
-				logger.info(">> %8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-			}
-				break;
-			case ITP::IDP::PacketType::ERROR:
-			{
-				ITP::Error data;
-				data.deserialize(idp.netData);
-				logger.info(">> %8s %s", toString(idp.packetType).toLocal8Bit().constData(), toString(data).toLocal8Bit().constData());
-			}
-				break;
-			default:
-				break;
-			}
-		}
+		logger.info("----");
+		logger.info(">> %8s %s", "ETHER", toString(eth_request).toLocal8Bit().constData());
+		dump(">> ", idp_request);
 
-	    idp_response.checksum   = (ITP::IDP::Checksum)0;       // dummy
+		ITP::IDP idp_response;
+	    idp_response.checksum   = (ITP::IDP::Checksum)0;  // dummy
 	    idp_response.length     = 0;                      // dummy
 	    idp_response.hopCount   = (ITP::IDP::HopCount)0;
 		idp_response.packetType = idp_request.packetType;
@@ -145,31 +96,21 @@ void Service::Manager::main() {
 		idp_response.src_host   = (ITP::IDP::Host)(quint64)nic.getAddress();
 		idp_response.src_socket = idp_request.dst_socket;
 
-
+		bool transmitResponse = true;
 		bool foundError = false;
 		try {
+			// Sanity check - verify checksum
 			if (idp_request.checksum != ITP::IDP::Checksum::NONE) {
 				if (idp_request.checksum != (ITP::IDP::Checksum)idp_request.computedChecksum) {
 					throw ITP::Error(ITP::Error::ErrorNumber::BAD_CHECKSUM);
 				}
 			}
 
-			const ITP::IDP::Socket     socket     = idp_request.dst_socket;
-			const ITP::IDP::PacketType packetType = idp_request.packetType;
-
+			const ITP::IDP::Socket socket = idp_request.dst_socket;
 			if (listenerMap.contains(socket)) {
 				// has listener
-				bool foundListener = false;
-				for(Listener* listener: listenerMap.values(socket)) {
-					if (packetType == listener->packetType) {
-						foundListener = true;
-						listener->process(idp_request, idp_response);
-						break;
-					}
-				}
-				if (!foundListener) {
-					throw ITP::Error(ITP::Error::ErrorNumber::INVALID_PACKET_TYPE);
-				}
+				Listener* listener = listenerMap[socket];
+				transmitResponse = listener->process(idp_request, idp_response);
 			} else {
 				// no listener
 				throw ITP::Error(ITP::Error::ErrorNumber::NO_SOCKET);
@@ -179,26 +120,25 @@ void Service::Manager::main() {
 			logger.info("        Error %s", toString(error).toLocal8Bit().constData());
 
 			idp_response.packetType = ITP::IDP::PacketType::ERROR;
+			// Clear idp_response.netData
 			idp_response.netData.clear();
 			error.serialize(idp_response.netData);
 			foundError = true;
 		}
 
-		bool transmitResponse = true;
 		if (foundError) {
 			if (idp_request.dst_host == ITP::IDP::Host::ALL) {
-// FIXME				transmitResponse = false;
+				transmitResponse = false;
 			}
 		}
 		if (transmitResponse) {
 			idp_response.netData.rewind();
 			idp_response.serialize(eth_response.netData);
 			eth_response.netData.rewind();
+			nic.transmit(eth_response);
 
 			logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());
-			logger.info("<< %8s %s", "IDP", toString(idp_response).toLocal8Bit().constData());
-
-// FIXME			nic.transmit(eth_response);
+			dump("<< ", idp_response);
 		} else {
 			logger.info("<< NO RESPONSE");
 		}
