@@ -31,7 +31,6 @@ OF SUCH DAMAGE.
 
 #include "../util/Debug.h"
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("rip");
 
 #include "../itp/RIP.h"
 

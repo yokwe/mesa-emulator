@@ -31,11 +31,11 @@ OF SUCH DAMAGE.
 
 #include "../util/Debug.h"
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("echo");
 
 #include "../itp/Echo.h"
 
 void ITP::Echo::deserialize(NetData& netData_) {
+	netData_.setPos(0);
 	operation = (Operation)netData_.get16();
 
 	netData.clear();
@@ -43,6 +43,7 @@ void ITP::Echo::deserialize(NetData& netData_) {
 	netData.rewind();
 }
 void ITP::Echo::serialize(NetData& netData_) {
+	netData_.clear();
 	netData_.put16((quint16)operation);
 
 	netData_.put(netData, 0);
@@ -63,6 +64,6 @@ QString toString(const ITP::Echo::Operation value) {
 
 QString toString(const ITP::Echo& value) {
 	QString ret;
-	ret.append(QString("[%1 %2]").arg(toString(value.operation)).arg(toString(value.netData)));
+	ret.append(QString("[%1 %2]").arg(toString(value.operation), 8).arg(toString(value.netData)));
 	return ret;
 }
