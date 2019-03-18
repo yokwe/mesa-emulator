@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Listener.h Manager.h
-SOURCES +=            Manager.cpp
+HEADERS += Listener.h Manager.h   Echo.h
+SOURCES +=            Manager.cpp Echo.cpp
 
 ###############################################
 
