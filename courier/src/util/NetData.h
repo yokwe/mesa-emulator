@@ -92,6 +92,10 @@ public:
 		limit = pos;
 		pos   = 0;
 	}
+	// reset position for read
+	void reset() {
+		pos = 0;
+	}
 	// remaining
 	quint32 remaining() const {
 		return limit - pos;
