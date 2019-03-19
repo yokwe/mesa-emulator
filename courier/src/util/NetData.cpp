@@ -233,7 +233,7 @@ void NetData::set16(quint32 at, quint16 value) {
 		logger.fatal("%s  capacity = %d  at = %d  SIZE = %d", __FUNCTION__, capacity, at, SIZE_16);
 		RUNTIME_ERROR();
 	}
-	put32_(data + at, value);
+	put16_(data + at, value);
 }
 void NetData::set8(quint32 at, quint8 value) {
 	if (capacity < (at + SIZE_8)) {
