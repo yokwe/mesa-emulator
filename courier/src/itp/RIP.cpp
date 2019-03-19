@@ -44,6 +44,8 @@ void ITP::RIP::Tupple::serialize  (NetData& netData_) {
 }
 
 void ITP::RIP::deserialize(NetData& netData_) {
+	netData_.reset();
+
 	operation = (Operation)netData_.get16();
 	while(netData_.remaining() != 0) {
 		Tupple tupple;
@@ -52,6 +54,8 @@ void ITP::RIP::deserialize(NetData& netData_) {
 	}
 }
 void ITP::RIP::serialize(NetData& netData_) {
+	netData_.clear();
+
 	netData_.put16((quint16)operation);
 	for(Tupple tupple: tupples) {
 		tupple.serialize(netData_);

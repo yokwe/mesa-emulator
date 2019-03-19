@@ -35,6 +35,8 @@ OF SUCH DAMAGE.
 #include "../itp/Error.h"
 
 void ITP::Error::deserialize(NetData& netData_) {
+	netData_.reset();
+
 	errorNumber    = (ErrorNumber)netData_.get16();
 	errorParameter = netData_.get16();
 
@@ -43,6 +45,8 @@ void ITP::Error::deserialize(NetData& netData_) {
 	netData.rewind();
 }
 void ITP::Error::serialize(NetData& netData_) const {
+	netData_.clear();
+
 	netData_.put16((quint16)errorNumber);
 	netData_.put16(errorParameter);
 

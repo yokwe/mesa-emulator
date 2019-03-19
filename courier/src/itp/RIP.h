@@ -48,6 +48,9 @@ public:
 		IDP::Network  network;
 		IDP::HopCount hopCount;
 
+		Tupple(IDP::Network  network_, IDP::HopCount hopCount_) : network(network_), hopCount(hopCount_) {}
+		Tupple() : network((IDP::Network)0), hopCount((IDP::HopCount)0) {}
+
 	    void serialize  (NetData& netData);
 	    void deserialize(NetData& netData);
 	};

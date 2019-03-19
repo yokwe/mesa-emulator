@@ -35,7 +35,8 @@ OF SUCH DAMAGE.
 #include "../itp/Echo.h"
 
 void ITP::Echo::deserialize(NetData& netData_) {
-	netData_.setPos(0);
+	netData_.reset();
+
 	operation = (Operation)netData_.get16();
 
 	netData.clear();
@@ -44,6 +45,7 @@ void ITP::Echo::deserialize(NetData& netData_) {
 }
 void ITP::Echo::serialize(NetData& netData_) {
 	netData_.clear();
+
 	netData_.put16((quint16)operation);
 
 	netData_.put(netData, 0);

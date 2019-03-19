@@ -146,7 +146,7 @@ QString toString(const ITP::IDP& value) {
 }
 
 void ITP::IDP::deserialize(NetData& netData_) {
-	quint32 pos = netData_.getPos();
+	netData_.reset();
 
 	checksum   = (ITP::IDP::Checksum)netData_.get16();
 	length     = netData_.get16();
@@ -169,15 +169,15 @@ void ITP::IDP::deserialize(NetData& netData_) {
 	}
 	netData.rewind();
 
-	// 2 for checksum field
-	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
+	// 2 for field position of length in byte and 2 for size of checksum field in byte
+	computedChecksum = computeChecksum(netData_.getData(), 2, length - 2);
 
 	if (checksum != Checksum::NONE && (quint16)checksum != computedChecksum) {
 		logger.warn("CHECKSUM %04X %04X", (quint16)checksum, computedChecksum);
 	}
 }
 void ITP::IDP::serialize  (NetData& netData_) {
-	quint32 pos = netData_.getPos();
+	netData_.clear();
 
 	netData_.put16((quint16)checksum);
 	netData_.put16((quint16)length);
@@ -196,7 +196,7 @@ void ITP::IDP::serialize  (NetData& netData_) {
 
 	// Update length
 	length = netData_.getPos();
-	netData_.set16(pos + 2, length);
+	netData_.set16(2, length); // 2 for position of length field in byte
 
 	// Append garbage byte if number of data is odd
 	if (netData.getLimit() & 1) {
@@ -209,10 +209,11 @@ void ITP::IDP::serialize  (NetData& netData_) {
 	}
 
 	// Update checksum
-	// 2 for checksum field
-	computedChecksum = computeChecksum(netData_.getData(), pos + 2, length - 2);
+	// 2 for field position of length in byte and 2 for size of checksum field in byte
+	computedChecksum = computeChecksum(netData_.getData(), 2, length - 2);
 	checksum = (Checksum)computedChecksum;
-	netData_.set16(pos + 0, (quint16)checksum);
+	// 0 for field position of checksum
+	netData_.set16(0, (quint16)checksum);
 }
 
 quint16 ITP::IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {

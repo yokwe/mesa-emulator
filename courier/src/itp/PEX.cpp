@@ -35,6 +35,8 @@ OF SUCH DAMAGE.
 #include "../itp/PEX.h"
 
 void ITP::PEX::deserialize(NetData& netData_) {
+	netData_.reset();
+
 	id = netData_.get32();
 	clientType = (ClientType)netData_.get16();
 
@@ -43,6 +45,8 @@ void ITP::PEX::deserialize(NetData& netData_) {
 	netData.rewind();
 }
 void ITP::PEX::serialize(NetData& netData_) {
+	netData_.clear();
+
 	netData_.put32(id);
 	netData_.put16((quint16)clientType);
 
