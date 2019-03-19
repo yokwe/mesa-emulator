@@ -35,6 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("manager");
 
 #include "../service/Manager.h"
 #include "../service/Echo.h"
+#include "../service/RIP.h"
 
 #include "../itp/IDP.h"
 #include "../itp/Echo.h"
@@ -64,8 +65,15 @@ void Service::Manager::addListener(Listener* listener) {
 void Service::Manager::main() {
 	// add listener
 	Echo echo;
+	RIP  rip;
+
+	RIP::setMyNetwork((ITP::IDP::Network)0x11223344);
+	RIP::addNetwork((ITP::IDP::Network)0x11229999, (ITP::IDP::HopCount)1);
 
 	addListener(&echo);
+	addListener(&rip);
+
+	ITP::IDP::Network myNetwork = RIP::getMyNetwork();
 
 	for(;;) {
 		NIC::Ethernet eth_request;
@@ -89,10 +97,10 @@ void Service::Manager::main() {
 	    idp_response.hopCount   = (ITP::IDP::HopCount)0;
 		idp_response.packetType = idp_request.packetType;
 
-		idp_response.dst_net    = idp_request.src_net;
+		idp_response.dst_net    = myNetwork;
 		idp_response.dst_host   = idp_request.src_host;
 		idp_response.dst_socket = idp_request.src_socket;
-		idp_response.src_net    = idp_request.dst_net;
+		idp_response.src_net    = myNetwork;
 		idp_response.src_host   = (ITP::IDP::Host)(quint64)nic.getAddress();
 		idp_response.src_socket = idp_request.dst_socket;
 
