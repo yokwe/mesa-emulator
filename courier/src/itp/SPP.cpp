@@ -35,6 +35,8 @@ OF SUCH DAMAGE.
 #include "../itp/SPP.h"
 
 void ITP::SPP::deserialize(NetData& netData_) {
+	netData_.reset();
+
 	control.u   = netData_.get8();
 	sst         = (SST)netData_.get8();
 	src_conn_id = netData_.get16();
@@ -48,6 +50,8 @@ void ITP::SPP::deserialize(NetData& netData_) {
 	netData.rewind();
 }
 void ITP::SPP::serialize(NetData& netData_) {
+	netData_.clear();
+
 	netData_.put8(control.u);
 	netData_.put8((quint8)sst);
 	netData_.put16(src_conn_id);
