@@ -196,7 +196,7 @@ void ITP::IDP::serialize  (NetData& netData_) {
 
 	// Update length
 	length = netData_.getPos();
-	netData_.set16(2, length); // 2 for position of length field in byte
+	netData_.set16(2, length); // 2 is byte position of length field
 
 	// Append garbage byte if number of data is odd
 	if (netData.getLimit() & 1) {
@@ -209,7 +209,7 @@ void ITP::IDP::serialize  (NetData& netData_) {
 	}
 
 	// Update checksum
-	// 2 for field position of length in byte and 2 for size of checksum field in byte
+	// 2 is byte position of field length and 2 is byte size of checksum field
 	computedChecksum = computeChecksum(netData_.getData(), 2, length - 2);
 	checksum = (Checksum)computedChecksum;
 	// 0 for field position of checksum
