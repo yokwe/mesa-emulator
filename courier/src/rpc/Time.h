@@ -80,7 +80,7 @@ public:
 	quint16   version;
 	Operation operation;
 
-	union {
+	union union_value {
 		Request  request;
 		Response response;
 	} value;
