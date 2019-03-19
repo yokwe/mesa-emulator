@@ -39,6 +39,7 @@ static log4cpp::Category& logger = Logger::getLogger("nic");
 #include <linux/if.h>
 #include <linux/if_packet.h>
 #include <net/if_arp.h>
+#include <arpa/inet.h>
 
 #include <unistd.h>
 
@@ -62,7 +63,7 @@ static inline quint64 get48_(quint8* p) {
 	return ret;
 }
 
-void NIC::attach(const char* name_, const Type type_) {
+void NIC::attach(const char* name_, const quint16 type_) {
 	name = name_;
 	type = type_;
 
@@ -70,7 +71,7 @@ void NIC::attach(const char* name_, const Type type_) {
     logger.info("protocol = 0x%04X", type);
 
 	// open socket
-	fd = socket(AF_PACKET, SOCK_RAW, qToBigEndian((quint16)type));
+	fd = socket(AF_PACKET, SOCK_RAW, htons(type));
 	if (fd == -1) {
 		int myErrno = errno;
 		logger.fatal("socket returns -1.  errno = %d", myErrno);
@@ -96,7 +97,7 @@ void NIC::attach(const char* name_, const Type type_) {
 				RUNTIME_ERROR();
 		    }
 
-		    address = (Address)get48_((quint8*)(ifr.ifr_hwaddr.sa_data));
+		    address = get48_((quint8*)(ifr.ifr_hwaddr.sa_data));
 		    logger.info("address  = %012llX", address);
 		}
 
@@ -123,7 +124,7 @@ void NIC::attach(const char* name_, const Type type_) {
 
 			memset(&sll, 0xff, sizeof(sll));
 			sll.sll_family   = AF_PACKET;
-			sll.sll_protocol = qToBigEndian((quint16)type);
+			sll.sll_protocol = htons(type);
 			sll.sll_ifindex  = ifindex;
 			int ret = ::bind(fd, (struct sockaddr *)&sll, sizeof sll);
 		    if (ret) {
@@ -311,6 +312,8 @@ QString toString(const NIC::Ethernet& ethernet) {
 }
 
 void NIC::Ethernet::deserialize(NetData& netData_) {
+	netData_.reset();
+
 	dst  = (Address)netData_.get48();
 	src  = (Address)netData_.get48();
 	type = (Type)netData_.get16();
@@ -320,6 +323,8 @@ void NIC::Ethernet::deserialize(NetData& netData_) {
 	netData.rewind();
 }
 void NIC::Ethernet::serialize  (NetData& netData_) {
+	netData_.clear();
+
 	netData_.put48((quint64)dst);
 	netData_.put48((quint64)src);
 	netData_.put16((quint16)type);
