@@ -88,7 +88,7 @@ void Service::Manager::main() {
 		idp_request.deserialize(eth_request.netData);
 
 		logger.info("----");
-		logger.info(">> %8s %s", "ETHER", toString(eth_request).toLocal8Bit().constData());
+//		logger.info(">> %8s %s", "ETHER", toString(eth_request).toLocal8Bit().constData());
 		dump(">> ", idp_request);
 
 		ITP::IDP idp_response;
@@ -145,7 +145,7 @@ void Service::Manager::main() {
 			eth_response.netData.rewind();
 			nic.transmit(eth_response);
 
-			logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());
+//			logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());
 			dump("<< ", idp_response);
 		} else {
 			logger.info("<< NO RESPONSE");
