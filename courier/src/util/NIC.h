@@ -78,19 +78,22 @@ public:
 	};
 
 
-	NIC() : name(0), type((Type)0), fd(0), address((Address)0) {}
+	NIC() : name(0), type(0), fd(0), address(0) {}
 
 	const char* getName() const {
 		return name;
 	}
 	Type getType() const {
-		return type;
+		return (Type)type;
 	}
 	Address getAddress() const {
-		return address;
+		return (Address)address;
 	}
 
-	void attach(const char* name, const Type type);
+	void attach(const char* name, const quint16 type);
+	void attach(const char* name, const Type type) {
+		attach(name, (quint16)type);
+	}
 	void detach();
 
 	// discard already received packet
@@ -117,9 +120,9 @@ public:
 
 private:
 	const char* name;
-	Type        type;
+	quint16     type;
 	int         fd;
-	Address     address;
+	quint64     address;
 };
 
 QString toString(const NIC::Address value);
