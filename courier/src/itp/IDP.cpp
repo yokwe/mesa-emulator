@@ -43,6 +43,34 @@ static log4cpp::Category& logger = Logger::getLogger("idp");
 
 #include "../pex/Time.h"
 
+
+QString ITP::IDP::toStarStyleAddress(quint64 value) {
+	const QChar ZERO = QLatin1Char('0');
+
+	// special case for less than 1000
+	if (value < 1000) {
+		return QString("0-%1").arg(QString("%1").arg(value, 3, 10, ZERO));
+	}
+
+	QString ret(QString("%1").arg(value % 1000, 3, 10, ZERO));
+	value = value / 1000;
+
+	for(;;) {
+		quint64 nnn = value % 1000;
+
+		if (value < 1000) {
+			ret.prepend(QString("%1-").arg(nnn, 0, 10, ZERO));
+			break;
+		} else {
+			ret.prepend(QString("%1-").arg(nnn, 3, 10, ZERO));
+		}
+
+		value = value / 1000;
+	}
+
+	return ret;
+}
+
 QString toString(const ITP::IDP::PacketType value) {
 	static QMap<ITP::IDP::PacketType, QString> map = {
 	    {ITP::IDP::PacketType::RIP,   "RIP"},

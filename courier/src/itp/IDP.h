@@ -94,6 +94,17 @@ public:
 
 	static quint16 computeChecksum(quint8* data, quint32 offset, quint32 length);
 
+	static QString toStarStyleAddress(quint64 value);
+	static QString toStarStyleAddress(Network value) {
+		return toStarStyleAddress((quint32)value);
+	}
+	static QString toStarStyleAddress(Host value) {
+		return toStarStyleAddress((quint64)value);
+	}
+	static QString toStarStyleAddress(NIC::Address value) {
+		return toStarStyleAddress((quint64)value);
+	}
+
     void serialize  (NetData& netData);
     void deserialize(NetData& netData);
 

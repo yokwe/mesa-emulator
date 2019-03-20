@@ -59,6 +59,10 @@ void Service::Manager::addListener(Listener* listener) {
 
 void Service::Manager::main(bool dumpEther, bool dumpIDP) {
 	ITP::IDP::Network network = RIP::getNetwork();
+	ITP::IDP::Host    host    = (ITP::IDP::Host)nic.getAddress();
+
+	logger.info("network %s", ITP::IDP::toStarStyleAddress(network).toLocal8Bit().constData());
+	logger.info("host    %s", ITP::IDP::toStarStyleAddress(host).toLocal8Bit().constData());
 
 	for(;;) {
 		NIC::Ethernet eth_request;
@@ -86,7 +90,7 @@ void Service::Manager::main(bool dumpEther, bool dumpIDP) {
 		idp_response.dst_host   = idp_request.src_host;
 		idp_response.dst_socket = idp_request.src_socket;
 		idp_response.src_net    = network;
-		idp_response.src_host   = (ITP::IDP::Host)(quint64)nic.getAddress();
+		idp_response.src_host   = host;
 		idp_response.src_socket = idp_request.dst_socket;
 
 		bool transmitResponse = true;
