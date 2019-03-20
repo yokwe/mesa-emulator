@@ -330,5 +330,7 @@ void NIC::Ethernet::serialize  (NetData& netData_) {
 	netData_.put16((quint16)type);
 
 	netData_.put(netData, 0);
+
+	netData_.rewind();
 }
 

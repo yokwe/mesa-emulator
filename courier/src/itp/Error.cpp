@@ -51,6 +51,8 @@ void ITP::Error::serialize(NetData& netData_) const {
 	netData_.put16(errorParameter);
 
 	netData_.put(netData, 0);
+
+	netData_.rewind();
 }
 
 QString toString(const ITP::Error::ErrorNumber value) {

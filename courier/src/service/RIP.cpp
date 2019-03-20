@@ -86,27 +86,27 @@ bool Service::RIP::process(ITP::IDP& idp_request, ITP::IDP& idp_response) {
 	switch(idp_request.packetType) {
 	case ITP::IDP::PacketType::RIP:
 	{
-		ITP::RIP data_request;
-		data_request.deserialize(idp_request.netData);
+		ITP::RIP rip_request;
+		rip_request.deserialize(idp_request.netData);
 
-		switch(data_request.operation) {
+		switch(rip_request.operation) {
 		case ITP::RIP::Operation::REQUEST:
 		{
-			ITP::RIP data_response;
-			data_response.operation = ITP::RIP::Operation::RESPONSE;
-			data_response.tupples.append(getNetworkList());
+			ITP::RIP rip_response;
+			rip_response.operation = ITP::RIP::Operation::RESPONSE;
+			rip_response.tupples.append(getNetworkList());
 
-			data_response.serialize(idp_response.netData);
+			rip_response.serialize(idp_response.netData);
 		}
 			return true; // transmit response
 		case ITP::RIP::Operation::RESPONSE:
-			logger.warn("Unexpected %s", toString(data_request).toLocal8Bit().constData());
+			logger.warn("Unexpected %s", toString(rip_request).toLocal8Bit().constData());
 			break;
 		default:
-			logger.error("Unexpected operation    %s", toString(data_request.operation).toLocal8Bit().constData());
+			logger.error("Unexpected operation    %s", toString(rip_request.operation).toLocal8Bit().constData());
 			logger.error("Unexpected idp_request  %s", toString(idp_request).toLocal8Bit().constData());
-			logger.error("Unexpected data_request %s", toString(data_request).toLocal8Bit().constData());
-			throw ITP::Error(ITP::Error::ErrorNumber::PROTOCOL_VIOLATION);
+			logger.error("Unexpected data_request %s", toString(rip_request).toLocal8Bit().constData());
+			RUNTIME_ERROR();
 			break;
 		}
 	}

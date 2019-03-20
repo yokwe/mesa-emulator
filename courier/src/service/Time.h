@@ -26,52 +26,21 @@ OF SUCH DAMAGE.
 
 
 //
-// PEX.cpp
+// Time.h
 //
 
-#include "../util/Debug.h"
-#include "../util/Util.h"
+#ifndef SERVICE_TIME_H__
+#define SERVICE_TIME_H__
 
-#include "../itp/PEX.h"
+#include "../service/Listener.h"
 
-void ITP::PEX::deserialize(NetData& netData_) {
-	netData_.reset();
+namespace Service {
+class Time : public Listener {
+public:
+	Time() : Listener("time", ITP::IDP::Socket::TIME) {}
 
-	id = netData_.get32();
-	clientType = (ClientType)netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-void ITP::PEX::serialize(NetData& netData_) {
-	netData_.clear();
-
-	netData_.put32(id);
-	netData_.put16((quint16)clientType);
-
-	netData_.put(netData, 0);
-
-	netData_.rewind();
+	bool process(ITP::IDP& request, ITP::IDP& response);
+};
 }
 
-QString toString(const ITP::PEX::ClientType value) {
-	static QMap<ITP::PEX::ClientType, QString> map = {
-		{ITP::PEX::ClientType::UNSPECIFIED, "UNSPECIFIED"},
-		{ITP::PEX::ClientType::TIME,        "TIME"},
-		{ITP::PEX::ClientType::CHS,         "CHS"},
-		{ITP::PEX::ClientType::TELEDEBUG,   "TELEDEBUG"},
-	};
-
-	if (map.contains(value)) {
-		return map[value];
-	} else {
-		return QString("%1").arg((quint8)value);
-	}
-}
-
-QString toString(const ITP::PEX& value) {
-	QString ret;
-	ret.append(QString("[%1 %2 %3]").arg(value.id, 0, 16).arg(toString(value.clientType)).arg(toString(value.netData)));
-	return ret;
-}
+#endif

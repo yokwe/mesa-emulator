@@ -47,27 +47,29 @@ bool Service::Echo::process(ITP::IDP& idp_request, ITP::IDP& idp_response) {
 	switch(idp_request.packetType) {
 	case ITP::IDP::PacketType::ECHO:
 	{
-		ITP::Echo data_request;
-		data_request.deserialize(idp_request.netData);
+		ITP::Echo echo_request;
+		echo_request.deserialize(idp_request.netData);
 
-		switch(data_request.operation) {
+		switch(echo_request.operation) {
 		case ITP::Echo::Operation::REQUEST:
 		{
-			ITP::Echo data_response;
-			data_response.operation = ITP::Echo::Operation::RESPONSE;
-			data_response.netData.put(data_request.netData, 0);
+			ITP::Echo echo_response;
+			echo_response.operation = ITP::Echo::Operation::RESPONSE;
+			echo_response.netData.put(echo_request.netData, 0);
 
-			data_response.serialize(idp_response.netData);
+			echo_response.serialize(idp_response.netData);
+
+			QThread::msleep(10); // sleep 100 msec
 		}
 			return true; // transmit response
 		case ITP::Echo::Operation::RESPONSE:
-			logger.warn("Unexpected %s", toString(data_request).toLocal8Bit().constData());
+			logger.warn("Unexpected %s", toString(echo_request).toLocal8Bit().constData());
 			break;
 		default:
-			logger.error("Unexpected operation    %s", toString(data_request.operation).toLocal8Bit().constData());
+			logger.error("Unexpected operation    %s", toString(echo_request.operation).toLocal8Bit().constData());
 			logger.error("Unexpected idp_request  %s", toString(idp_request).toLocal8Bit().constData());
-			logger.error("Unexpected data_request %s", toString(data_request).toLocal8Bit().constData());
-			throw ITP::Error(ITP::Error::ErrorNumber::PROTOCOL_VIOLATION);
+			logger.error("Unexpected data_request %s", toString(echo_request).toLocal8Bit().constData());
+			RUNTIME_ERROR();
 			break;
 		}
 	}

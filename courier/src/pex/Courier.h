@@ -29,8 +29,8 @@ OF SUCH DAMAGE.
 // Courier.h
 //
 
-#ifndef RPC_COURIER_H_
-#define RPC_COURIER_H_
+#ifndef PEX_COURIER_H_
+#define PEX_COURIER_H_
 
 #include "../itp/IDP.h"
 
@@ -159,4 +159,4 @@ public:
 
 
 
-#endif /* RPC_COURIER_H_ */
+#endif /* PEX_COURIER_H_ */

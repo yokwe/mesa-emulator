@@ -49,6 +49,8 @@ void ITP::Echo::serialize(NetData& netData_) {
 	netData_.put16((quint16)operation);
 
 	netData_.put(netData, 0);
+
+	netData_.rewind();
 }
 
 QString toString(const ITP::Echo::Operation value) {

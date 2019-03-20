@@ -41,7 +41,7 @@ static log4cpp::Category& logger = Logger::getLogger("idp");
 #include "../itp/SPP.h"
 #include "../itp/Error.h"
 
-#include "../rpc/Time.h"
+#include "../pex/Time.h"
 
 QString toString(const ITP::IDP::PacketType value) {
 	static QMap<ITP::IDP::PacketType, QString> map = {
@@ -214,6 +214,8 @@ void ITP::IDP::serialize  (NetData& netData_) {
 	checksum = (Checksum)computedChecksum;
 	// 0 for field position of checksum
 	netData_.set16(0, (quint16)checksum);
+
+	netData_.rewind();
 }
 
 quint16 ITP::IDP::computeChecksum(quint8* data, quint32 offset, quint32 length) {
@@ -263,7 +265,7 @@ void dump(const char* prefix, ITP::IDP& idp) {
 		switch(data.clientType) {
 		case ITP::PEX::ClientType::TIME:
 		{
-			RPC::Time timeData;
+			PEX::Time timeData;
 			timeData.deserialize(data.netData);
 			logger.info("%s%8s %s", prefix, toString(data.clientType).toLocal8Bit().constData(), toString(timeData).toLocal8Bit().constData());
 		}

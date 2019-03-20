@@ -26,14 +26,14 @@ contains(QT_MAJOR_VERSION, 4) {
 
 LIBS += ../../tmp/build/service/libservice.a
 LIBS += ../../tmp/build/itp/libitp.a
-LIBS += ../../tmp/build/rpc/librpc.a
+LIBS += ../../tmp/build/pex/libpex.a
 LIBS += ../../tmp/build/util/libutil.a
 
 LIBS += -llog4cpp
 
 POST_TARGETDEPS += ../../tmp/build/service/libservice.a
 POST_TARGETDEPS += ../../tmp/build/itp/libitp.a
-POST_TARGETDEPS += ../../tmp/build/rpc/librpc.a
+POST_TARGETDEPS += ../../tmp/build/pex/libpex.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
 # Input

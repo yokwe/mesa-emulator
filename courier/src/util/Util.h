@@ -67,5 +67,19 @@ class Util {
 public:
 	static void*   mapFile  (const QString& path, quint32& mapSize, bool readOnly = false);
 	static void    unmapFile(void* page);
+
+	// Unix Time Epoch  1970-01-01 00:00:00
+	// Mesa Time Epoch  1968-01-01 00:00:00
+	//   Difference between above 2 date is 731 days.
+    static const quint32 EARLIEST_TIME = 2114294400U;
+	static const quint32 EPOCH_DIFF = EARLIEST_TIME + (quint32)(731 * 60 * 60 * 24);
+
+	static quint32 toMesaTime(quint32 unixTime) {
+		return unixTime + EPOCH_DIFF;
+	}
+
+	static quint32 toUnixTime(quint32 mesaTime) {
+		return mesaTime - EPOCH_DIFF;
+	}
 };
 #endif

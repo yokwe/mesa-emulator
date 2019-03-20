@@ -29,12 +29,12 @@ OF SUCH DAMAGE.
 // Time.h
 //
 
-#ifndef RPC_TIME_H_
-#define RPC_TIME_H_
+#ifndef PEX_TIME_H_
+#define PEX_TIME_H_
 
 #include "../itp/IDP.h"
 
-namespace RPC {
+namespace PEX {
 class Time {
 public:
 	enum class Operation : quint16 {
@@ -50,8 +50,8 @@ public:
         IN_MILLI_SECONDS = 1,
     };
 
-    const quint32 PROGRAM_NUMBER = 15;
-    const quint32 VERSION_NUMBER = 2;
+    static const quint32 PROGRAM_NUMBER = 15;
+    static const quint32 VERSION_NUMBER = 2;
 
     class Request {
     public:
@@ -87,9 +87,9 @@ public:
 };
 }
 
-QString toString(const RPC::Time::Operation value);
-QString toString(const RPC::Time::OffsetDirection value);
-QString toString(const RPC::Time::ToleranceType value);
-QString toString(const RPC::Time& value);
+QString toString(const PEX::Time::Operation value);
+QString toString(const PEX::Time::OffsetDirection value);
+QString toString(const PEX::Time::ToleranceType value);
+QString toString(const PEX::Time& value);
 
-#endif /* RPC_TIME_H_ */
+#endif /* PEX_TIME_H_ */

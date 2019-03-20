@@ -36,15 +36,12 @@ static log4cpp::Category& logger = Logger::getLogger("manager");
 #include "../service/Manager.h"
 #include "../service/Echo.h"
 #include "../service/RIP.h"
+#include "../service/Time.h"
 
 #include "../itp/IDP.h"
-#include "../itp/Echo.h"
-#include "../itp/PEX.h"
-#include "../itp/RIP.h"
-#include "../itp/SPP.h"
 #include "../itp/Error.h"
 
-#include "../rpc/Time.h"
+//#include "../pex/Time.h"
 
 void Service::Manager::addListener(Listener* listener) {
 	QString          name   = listener->name;
@@ -66,12 +63,14 @@ void Service::Manager::main() {
 	// add listener
 	Echo echo;
 	RIP  rip;
+	Time time;
 
-	RIP::setMyNetwork((ITP::IDP::Network)0x11223344);
-	RIP::addNetwork((ITP::IDP::Network)0x11229999, (ITP::IDP::HopCount)1);
+	RIP::setMyNetwork((ITP::IDP::Network)111);
+	RIP::addNetwork((ITP::IDP::Network)222, (ITP::IDP::HopCount)1);
 
 	addListener(&echo);
 	addListener(&rip);
+	addListener(&time);
 
 	ITP::IDP::Network myNetwork = RIP::getMyNetwork();
 
@@ -140,9 +139,7 @@ void Service::Manager::main() {
 			}
 		}
 		if (transmitResponse) {
-			idp_response.netData.rewind();
 			idp_response.serialize(eth_response.netData);
-			eth_response.netData.rewind();
 			nic.transmit(eth_response);
 
 //			logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());

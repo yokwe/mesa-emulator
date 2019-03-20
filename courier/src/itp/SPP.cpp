@@ -61,6 +61,8 @@ void ITP::SPP::serialize(NetData& netData_) {
 	netData_.put16(allocation);
 
 	netData_.put(netData, 0);
+
+	netData_.rewind();
 }
 
 QString toString(const ITP::SPP::Control value) {

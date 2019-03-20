@@ -60,6 +60,8 @@ void ITP::RIP::serialize(NetData& netData_) {
 	for(Tupple tupple: tupples) {
 		tupple.serialize(netData_);
 	}
+
+	netData_.rewind();
 }
 
 QString toString(const ITP::RIP::Operation value) {

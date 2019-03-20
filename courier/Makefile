@@ -14,14 +14,14 @@ all:
 	(cd src/util;    make all)
 	(cd src/itp;     make all)
 	(cd src/service; make all)
-	(cd src/rpc;     make all)
+	(cd src/pex;     make all)
 	(cd src/app;     make all)
 
 qmake:
 	(cd src/util;    qmake)
 	(cd src/itp;     qmake)
 	(cd src/service; qmake)
-	(cd src/rpc;     qmake)
+	(cd src/pex;     qmake)
 	(cd src/app;     qmake)
 	qmake --version
 
@@ -35,7 +35,7 @@ clean:
 	mkdir  tmp/build/util
 	mkdir  tmp/build/itp
 	mkdir  tmp/build/service
-	mkdir  tmp/build/rpc
+	mkdir  tmp/build/pex
 	mkdir  tmp/build/app
 
 distclean: clean

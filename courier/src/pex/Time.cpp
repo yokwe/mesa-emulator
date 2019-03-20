@@ -31,16 +31,16 @@ OF SUCH DAMAGE.
 
 #include "../util/Debug.h"
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("time");
+static log4cpp::Category& logger = Logger::getLogger("pex/time");
 
-#include "../rpc/Time.h"
+#include "../pex/Time.h"
 
-void RPC::Time::Request::deserialize(NetData& /*netData_*/) {
+void PEX::Time::Request::deserialize(NetData& /*netData_*/) {
 }
-void RPC::Time::Request::serialize(NetData& /*netData_*/) {
+void PEX::Time::Request::serialize(NetData& /*netData_*/) {
 }
 
-void RPC::Time::Response::deserialize(NetData& netData_) {
+void PEX::Time::Response::deserialize(NetData& netData_) {
     currentTime     = netData_.get32();
     offsetDirection = (OffsetDirection)netData_.get16();
     offsetHours     = netData_.get16();
@@ -50,7 +50,7 @@ void RPC::Time::Response::deserialize(NetData& netData_) {
     toleranceType   = (ToleranceType)netData_.get16();
     tolerance       = netData_.get32();
 }
-void RPC::Time::Response::serialize(NetData& netData_) {
+void PEX::Time::Response::serialize(NetData& netData_) {
 	netData_.put32(currentTime);
 	netData_.put16((quint16)offsetDirection);
 	netData_.put16(offsetHours);
@@ -61,7 +61,9 @@ void RPC::Time::Response::serialize(NetData& netData_) {
 	netData_.put32(tolerance);
 }
 
-void RPC::Time::deserialize(NetData& netData_) {
+void PEX::Time::deserialize(NetData& netData_) {
+	netData_.reset();
+
 	version   = netData_.get16();
 	if (version != VERSION_NUMBER) {
 		logger.fatal("Unexpected %d", version);
@@ -82,11 +84,13 @@ void RPC::Time::deserialize(NetData& netData_) {
 		break;
 	}
 }
-void RPC::Time::serialize(NetData& netData_) {
+void PEX::Time::serialize(NetData& netData_) {
 	if (version != VERSION_NUMBER) {
 		logger.fatal("Unexpected %d", version);
 		RUNTIME_ERROR();
 	}
+
+	netData_.clear();
 
 	netData_.put16(version);
 	netData_.put16((quint16)operation);
@@ -102,12 +106,15 @@ void RPC::Time::serialize(NetData& netData_) {
 		logger.fatal("Unexpected %d", (quint16)operation);
 		RUNTIME_ERROR();
 		break;
-	}}
+	}
 
-QString toString(const RPC::Time::Operation value) {
-	static QMap<RPC::Time::Operation, QString> map = {
-		{RPC::Time::Operation::REQUEST,  "REQUEST"},
-		{RPC::Time::Operation::RESPONSE, "RESPONSE"},
+	netData_.rewind();
+}
+
+QString toString(const PEX::Time::Operation value) {
+	static QMap<PEX::Time::Operation, QString> map = {
+		{PEX::Time::Operation::REQUEST,  "REQUEST"},
+		{PEX::Time::Operation::RESPONSE, "RESPONSE"},
 	};
 
 	if (map.contains(value)) {
@@ -117,10 +124,10 @@ QString toString(const RPC::Time::Operation value) {
 	}
 }
 
-QString toString(const RPC::Time::OffsetDirection value) {
-	static QMap<RPC::Time::OffsetDirection, QString> map = {
-		{RPC::Time::OffsetDirection::EAST, "EAST"},
-		{RPC::Time::OffsetDirection::WEST, "WEST"},
+QString toString(const PEX::Time::OffsetDirection value) {
+	static QMap<PEX::Time::OffsetDirection, QString> map = {
+		{PEX::Time::OffsetDirection::EAST, "EAST"},
+		{PEX::Time::OffsetDirection::WEST, "WEST"},
 	};
 
 	if (map.contains(value)) {
@@ -130,10 +137,10 @@ QString toString(const RPC::Time::OffsetDirection value) {
 	}
 }
 
-QString toString(const RPC::Time::ToleranceType value) {
-	static QMap<RPC::Time::ToleranceType, QString> map = {
-		{RPC::Time::ToleranceType::UNKNOWN,          "UNKNOWN"},
-		{RPC::Time::ToleranceType::IN_MILLI_SECONDS, "IN_MILLI_SECONDS"},
+QString toString(const PEX::Time::ToleranceType value) {
+	static QMap<PEX::Time::ToleranceType, QString> map = {
+		{PEX::Time::ToleranceType::UNKNOWN,          "UNKNOWN"},
+		{PEX::Time::ToleranceType::IN_MILLI_SECONDS, "IN_MILLI_SECONDS"},
 	};
 
 	if (map.contains(value)) {
@@ -143,11 +150,11 @@ QString toString(const RPC::Time::ToleranceType value) {
 	}
 }
 
-QString toString(const RPC::Time::Request /*value*/) {
+QString toString(const PEX::Time::Request /*value*/) {
 	QString ret;
 	return ret;
 }
-QString toString(const RPC::Time::Response value) {
+QString toString(const PEX::Time::Response value) {
 	QString ret;
 	ret.append(QString("[%1 %2 %3 %4 %5 %6 %7 %8]")
 			.arg(value.currentTime)
@@ -160,16 +167,16 @@ QString toString(const RPC::Time::Response value) {
 			.arg(value.tolerance));
 	return ret;
 }
-QString toString(const RPC::Time& value) {
+QString toString(const PEX::Time& value) {
 	QString ret;
 	ret.append(QString("[%1 %2")
 			.arg(value.version)
 			.arg(toString(value.operation)));
 	switch(value.operation) {
-	case RPC::Time::Operation::REQUEST:
+	case PEX::Time::Operation::REQUEST:
 		ret.append(toString(value.value.request));
 		break;
-	case RPC::Time::Operation::RESPONSE:
+	case PEX::Time::Operation::RESPONSE:
 		ret.append(toString(value.value.response));
 		break;
 	default:
