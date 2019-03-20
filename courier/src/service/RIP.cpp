@@ -40,18 +40,11 @@ static log4cpp::Category& logger = Logger::getLogger("rip");
 #include "../service/RIP.h"
 
 
-ITP::IDP::Network Service::RIP::myNetwork = (ITP::IDP::Network)0;
-void Service::RIP::setMyNetwork(ITP::IDP::Network network) {
-	myNetwork = network;
-	logger.info("%s %s", __FUNCTION__, toString(myNetwork).toLocal8Bit().constData());
-}
-ITP::IDP::Network Service::RIP::getMyNetwork() {
-	return myNetwork;
-}
+ITP::IDP::Network Service::RIP::network = ITP::IDP::Network::UNKNOWN;
 
 QMap<ITP::IDP::Network, ITP::IDP::HopCount> Service::RIP::networkMap;
 void Service::RIP::addNetwork(ITP::IDP::Network network, ITP::IDP::HopCount hopCount) {
-	logger.info("%s %s %s", __FUNCTION__, toString(myNetwork).toLocal8Bit().constData(), toString(hopCount).toLocal8Bit().constData());
+	logger.info("%s %s %s", __FUNCTION__, toString(network).toLocal8Bit().constData(), toString(hopCount).toLocal8Bit().constData());
 
 	if ((quint16)hopCount == 0) {
 		logger.warn("Cannot add because hopCount == 0");
@@ -60,14 +53,14 @@ void Service::RIP::addNetwork(ITP::IDP::Network network, ITP::IDP::HopCount hopC
 	networkMap[network] = hopCount;
 }
 void Service::RIP::removeNetwork(ITP::IDP::Network network) {
-	logger.info("%s %s", __FUNCTION__, toString(myNetwork).toLocal8Bit().constData());
+	logger.info("%s %s", __FUNCTION__, toString(network).toLocal8Bit().constData());
 	networkMap.remove(network);
 }
 
 QList<ITP::RIP::Tupple> Service::RIP::getNetworkList() {
 	QList<ITP::RIP::Tupple> ret;
 
-	ret.append(ITP::RIP::Tupple(myNetwork, (ITP::IDP::HopCount)0));
+	ret.append(ITP::RIP::Tupple(network, (ITP::IDP::HopCount)0));
 
 	QMapIterator<ITP::IDP::Network, ITP::IDP::HopCount> i(networkMap);
 	while(i.hasNext()) {

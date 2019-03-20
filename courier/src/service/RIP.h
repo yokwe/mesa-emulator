@@ -39,8 +39,12 @@ OF SUCH DAMAGE.
 namespace Service {
 class RIP : public Listener {
 public:
-	static void setMyNetwork(ITP::IDP::Network network);
-	static ITP::IDP::Network getMyNetwork();
+	static void setNetwork(ITP::IDP::Network network_) {
+		network = network_;
+	}
+	static ITP::IDP::Network getNetwork() {
+		return network;
+	}
 
 	static void addNetwork(ITP::IDP::Network network, ITP::IDP::HopCount hopCout);
 	static void removeNetwork(ITP::IDP::Network network);
@@ -51,7 +55,7 @@ public:
 	bool process(ITP::IDP& request, ITP::IDP& response);
 
 private:
-	static ITP::IDP::Network                           myNetwork;
+	static ITP::IDP::Network                           network;
 	static QMap<ITP::IDP::Network, ITP::IDP::HopCount> networkMap;
 };
 }
