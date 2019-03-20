@@ -35,6 +35,10 @@ static log4cpp::Category& logger = Logger::getLogger("app");
 #include "../util/NIC.h"
 
 #include "../service/Manager.h"
+#include "../service/Echo.h"
+#include "../service/RIP.h"
+#include "../service/Time.h"
+
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -45,7 +49,20 @@ int main(int /*argc*/, char** /*argv*/) {
 	nic.attach("ens192", NIC::Type::IDP);
 
 	Service::Manager manager(nic);
-	manager.main();
+
+	// add listener
+	Service::Echo echo;
+	Service::RIP  rip;
+	Service::Time time;
+
+	Service::RIP::setNetwork((ITP::IDP::Network)111);
+	Service::RIP::addNetwork((ITP::IDP::Network)222, (ITP::IDP::HopCount)1);
+
+	manager.addListener(&echo);
+	manager.addListener(&rip);
+	manager.addListener(&time);
+
+	manager.main(false, true);
 
 	nic.detach();
 

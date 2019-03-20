@@ -34,9 +34,7 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("manager");
 
 #include "../service/Manager.h"
-#include "../service/Echo.h"
 #include "../service/RIP.h"
-#include "../service/Time.h"
 
 #include "../itp/IDP.h"
 #include "../itp/Error.h"
@@ -59,20 +57,8 @@ void Service::Manager::addListener(Listener* listener) {
 	listenerMap[socket] = listener;
 }
 
-void Service::Manager::main() {
-	// add listener
-	Echo echo;
-	RIP  rip;
-	Time time;
-
-	RIP::setMyNetwork((ITP::IDP::Network)111);
-	RIP::addNetwork((ITP::IDP::Network)222, (ITP::IDP::HopCount)1);
-
-	addListener(&echo);
-	addListener(&rip);
-	addListener(&time);
-
-	ITP::IDP::Network myNetwork = RIP::getMyNetwork();
+void Service::Manager::main(bool dumpEther, bool dumpIDP) {
+	ITP::IDP::Network network = RIP::getNetwork();
 
 	for(;;) {
 		NIC::Ethernet eth_request;
@@ -86,9 +72,9 @@ void Service::Manager::main() {
 		ITP::IDP idp_request;
 		idp_request.deserialize(eth_request.netData);
 
-		logger.info("----");
-//		logger.info(">> %8s %s", "ETHER", toString(eth_request).toLocal8Bit().constData());
-		dump(">> ", idp_request);
+		if (dumpEther || dumpIDP) logger.info("----");
+		if (dumpEther) logger.info(">> %8s %s", "ETHER", toString(eth_request).toLocal8Bit().constData());
+		if (dumpIDP) dump(">> ", idp_request);
 
 		ITP::IDP idp_response;
 	    idp_response.checksum   = (ITP::IDP::Checksum)0;  // dummy
@@ -96,10 +82,10 @@ void Service::Manager::main() {
 	    idp_response.hopCount   = (ITP::IDP::HopCount)0;
 		idp_response.packetType = idp_request.packetType;
 
-		idp_response.dst_net    = myNetwork;
+		idp_response.dst_net    = (idp_request.src_net == ITP::IDP::Network::UNKNOWN) ? network : idp_request.src_net;
 		idp_response.dst_host   = idp_request.src_host;
 		idp_response.dst_socket = idp_request.src_socket;
-		idp_response.src_net    = myNetwork;
+		idp_response.src_net    = network;
 		idp_response.src_host   = (ITP::IDP::Host)(quint64)nic.getAddress();
 		idp_response.src_socket = idp_request.dst_socket;
 
@@ -124,7 +110,7 @@ void Service::Manager::main() {
 			}
 			// Output response
 		} catch (const ITP::Error& error) {
-			logger.info("        Error %s", toString(error).toLocal8Bit().constData());
+			if (dumpEther || dumpIDP) logger.info("        Error %s", toString(error).toLocal8Bit().constData());
 
 			idp_response.packetType = ITP::IDP::PacketType::ERROR;
 			// Clear idp_response.netData
@@ -142,10 +128,10 @@ void Service::Manager::main() {
 			idp_response.serialize(eth_response.netData);
 			nic.transmit(eth_response);
 
-//			logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());
-			dump("<< ", idp_response);
+			if (dumpEther) logger.info("<< %8s %s", "ETHER", toString(eth_response).toLocal8Bit().constData());
+			if (dumpIDP) dump("<< ", idp_response);
 		} else {
-			logger.info("<< NO RESPONSE");
+			if (dumpEther || dumpIDP) logger.info("<< NO RESPONSE");
 		}
 	}
 }

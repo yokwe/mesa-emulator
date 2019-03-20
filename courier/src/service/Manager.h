@@ -42,7 +42,7 @@ namespace Service {
 class Manager {
 public:
 	void addListener(Listener* listener);
-	void main();
+	void main(bool dumpEther, bool dumpIDP);
 
 	Manager(NIC& nic_) : nic(nic_) {}
 
