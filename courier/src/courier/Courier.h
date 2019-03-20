@@ -37,7 +37,7 @@ OF SUCH DAMAGE.
 //
 // See APilot/15.0.1/Corier/Friends/CourierProtocol.mesa
 //
-namespace Courier {
+namespace Courier:: {
 class Courier {
 public:
     enum class ProtocolType : quint16 {
@@ -61,11 +61,21 @@ public:
     public:
         ProtocolType low;
         ProtocolType high;
+
+        ProtocolRange() : low(0), high(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
     };
     class VersionRange {
     public:
         quint16 low;
         quint16 high;
+
+        VersionRange() : low(0), high(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
     };
 
 	class Return {
@@ -73,6 +83,11 @@ public:
 
         quint8  data[ITP::IDP::DATA_SIZE];
         NetData netData; // access data through netData
+
+        Return() : transaction(0), netData(data, sizeof(data)) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
 	};
 	class Abort {
         quint16 transaction;
@@ -80,6 +95,11 @@ public:
 
         quint8  data[ITP::IDP::DATA_SIZE];
         NetData netData; // access data through netData
+
+        Abort() : transaction(0), abort(0), netData(data, sizeof(data)) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
 	};
 
 	class Call2 {
@@ -91,6 +111,11 @@ public:
 
         quint8  data[ITP::IDP::DATA_SIZE];
         NetData netData; // access data through netData
+
+        Call2() : transaction(0), program(0), version(0), procedure(0), netData(data, sizeof(data)) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
 	};
 
 	class Call3 {
@@ -102,12 +127,22 @@ public:
 
         quint8  data[ITP::IDP::DATA_SIZE];
         NetData netData; // access data through netData
+
+        Call3() : transaction(0), program(0), version(0), procedure(0), netData(data, sizeof(data)) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
 	};
 
 	class Reject2 {
 	public:
         quint16    transaction;
         RejectCode rejectCode;
+
+        Reject2() : transaction(0), rejectCode(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
     };
 
 	class Reject3 {
@@ -115,16 +150,13 @@ public:
         quint16    transaction;
         RejectCode tag;
         union union_choice {
-            struct {
-            } NO_SUCH_PROGRAM_NUMBER;
-            struct {
-            } NO_SUCH_PROCEDURE_VALUE;
-            struct {
-            } INVALID_ARGUMENTS;
-            struct {
-                VersionRange range;
-            } NO_SUCH_VERSION_NUMBER;
+        	VersionRange noSuchVersionNumber;
         } choice;
+
+        Reject3() : transaction(0), tag(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
 	};
 
     // Protocol2
@@ -137,6 +169,11 @@ public:
         	Return  return_;
         	Abort   abort;
         } choice;
+
+        Protocol2() : tag(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
     };
 
     // Protocol3
@@ -149,6 +186,11 @@ public:
         	Return  return_;
         	Abort   abort;
         } choice;
+
+        Protocol3() : tag(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
     };
 
     // Main
@@ -159,8 +201,28 @@ public:
             Protocol2 protocol2;
             Protocol3 protocol3;
         } choice;
+
+        Message() : tag(0) {}
+
+        void serialize  (NetData& netData);
+        void deserialize(NetData& netData);
     };
 };
 }
 
-#endif /* PEX_COURIER_H_ */
+QString toString(const Courier::Courier::ProtocolType& value);
+QString toString(const Courier::Courier::MessageType& value);
+QString toString(const Courier::Courier::RejectCode& value);
+QString toString(const Courier::Courier::ProtocolRange& value);
+QString toString(const Courier::Courier::VersionRange& value);
+QString toString(const Courier::Courier::Return& value);
+QString toString(const Courier::Courier::Abort& value);
+QString toString(const Courier::Courier::Call2& value);
+QString toString(const Courier::Courier::Reject2& value);
+QString toString(const Courier::Courier::Call3& value);
+QString toString(const Courier::Courier::Reject3& value);
+QString toString(const Courier::Courier::Protocol2& value);
+QString toString(const Courier::Courier::Protocol3& value);
+QString toString(const Courier::Courier::Message& value);
+
+#endif /* COURIER_COURIER_H_ */

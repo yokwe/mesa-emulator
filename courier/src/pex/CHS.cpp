@@ -26,26 +26,27 @@ OF SUCH DAMAGE.
 
 
 //
-// Courier.h
+// CHS.cpp
 //
 
-#ifndef COURIER_LISTENER_H_
-#define COURIER_LISTENER_H_
+#include "../util/Debug.h"
+#include "../util/Util.h"
+static log4cpp::Category& logger = Logger::getLogger("pex/chs");
 
-#include "../courier/Courier.h"
+#include "../pex/CHS.h"
 
-namespace Courier {
-class Listener {
-	const QString name;
-	const quint16 program;
-	const quint16 version;
+void PEX::CHS::serialize (NetData& netData_) {
+	netData_.clear();
 
-	Listener(const QString name_, quint16 program_, quint16 version_) : name(name_), program(program_), version(version_) {}
-	virtual ~Listener() {}
+//	protocolRange.serialize(netData_);
+//	protocol3.serialize(netData_);
 
-	// If process returns true, send response packet. Otherwise don't send response packet.
-	virtual bool process(Courier::Courier::Message& msg_request, Courier::Courier::Message& msg_response) = 0;
-};
+	netData_.rewind();
+}
+void PEX::CHS::deserialize (NetData& netData_) {
+	netData_.reset();
+
+//	protocolRange.deserialize(netData_);
+//	protocol3.deserialize(netData_);
 }
 
-#endif /* COURIER_LISTENER_H_ */

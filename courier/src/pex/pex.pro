@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Time.h
-SOURCES += Time.cpp
+HEADERS += Time.h   CHS.h
+SOURCES += Time.cpp CHS.cpp
 
 ###############################################
 

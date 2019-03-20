@@ -26,34 +26,24 @@ OF SUCH DAMAGE.
 
 
 //
-// ExpeditedCourier.h
+// CHS.h
 //
 
-#ifndef COURIER_EXPEDITEDCOURIER_H_
-#define COURIER_EXPEDITEDCOURIER_H_
+#ifndef PEX_CHS_H_
+#define PEX_CHS_H_
 
 #include "../itp/IDP.h"
-#include "../courier/Courier.h"
+//#include "../courier/Courier.h"
 
-//See ExpeditedCourier.mesa
-//   Header: TYPE = MACHINE DEPENDENT RECORD [
-//    protRange: CourierProtocol.ProtocolRange � [protocol3, protocol3],
-//    body: CourierProtocol.Protocol3Body];
-//0003 0003 0000 0000 0000 0002 0003 0000
-//PROTOCOL3
-//     PROTOCOL3
-//          CALL
-//               TRANSACTION
-//                    PROGRAM
-//                              VERSION
-//                                   PROCEDUER
-
-
-namespace Courier {
-class ExpeditedCourier {
+namespace PEX {
+class CHS {
 public:
-	Courier::ProtocolRange protocolRange; // support only protocol3
-	Courier::Protocol3     protocol3;
-};
+//	Courier::Courier::ProtocolRange protocolRange;
+//	Courier::Courier::Protocol3     protocol3;
 
-#endif /* COURIER_EXPEDITEDCOURIER_H_ */
+    void serialize  (NetData& netData);
+    void deserialize(NetData& netData);
+};
+}
+
+#endif /* PEX_CHS_H_ */
