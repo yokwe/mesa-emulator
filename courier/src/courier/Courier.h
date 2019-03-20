@@ -29,12 +29,15 @@ OF SUCH DAMAGE.
 // Courier.h
 //
 
-#ifndef PEX_COURIER_H_
-#define PEX_COURIER_H_
+#ifndef COURIER_COURIER_H_
+#define COURIER_COURIER_H_
 
 #include "../itp/IDP.h"
 
-namespace RPC {
+//
+// See APilot/15.0.1/Corier/Friends/CourierProtocol.mesa
+//
+namespace Courier {
 class Courier {
 public:
     enum class ProtocolType : quint16 {
@@ -54,42 +57,64 @@ public:
         INVALID_ARGUMENTS       = 3,
     };
 
-    // Protocol2
-    struct Protocol2Body {
-        MessageType tag;
-        union {
-            struct {
-                quint16 transaction;
-                quint16 program;
-                quint16 version;
-                quint16 procedure;
-            } CALL;
-            struct {
-                quint16 transaction;
-                RejectCode reject;
-            } REJECT;
-            struct {
-                quint16 transaction;
-            } RETURN;
-            struct {
-                quint16 transaction;
-                quint16 abort;
-            } ABORT;
-        };
-    };
-
-    // Protocol3
-    struct ProtocolRange {
+    class ProtocolRange {
+    public:
         ProtocolType low;
         ProtocolType high;
     };
-    struct VersionRange {
+    class VersionRange {
+    public:
         quint16 low;
         quint16 high;
     };
-    struct RejectBody {
+
+	class Return {
+        quint16 transaction;
+
+        quint8  data[ITP::IDP::DATA_SIZE];
+        NetData netData; // access data through netData
+	};
+	class Abort {
+        quint16 transaction;
+        quint16 abort;
+
+        quint8  data[ITP::IDP::DATA_SIZE];
+        NetData netData; // access data through netData
+	};
+
+	class Call2 {
+	public:
+        quint16 transaction;
+        quint16 program;
+        quint16 version;
+        quint16 procedure;
+
+        quint8  data[ITP::IDP::DATA_SIZE];
+        NetData netData; // access data through netData
+	};
+
+	class Call3 {
+	public:
+        quint16 transaction;
+        quint32 program;
+        quint16 version;
+        quint16 procedure;
+
+        quint8  data[ITP::IDP::DATA_SIZE];
+        NetData netData; // access data through netData
+	};
+
+	class Reject2 {
+	public:
+        quint16    transaction;
+        RejectCode rejectCode;
+    };
+
+	class Reject3 {
+	public:
+        quint16    transaction;
         RejectCode tag;
-        union {
+        union union_choice {
             struct {
             } NO_SUCH_PROGRAM_NUMBER;
             struct {
@@ -99,64 +124,43 @@ public:
             struct {
                 VersionRange range;
             } NO_SUCH_VERSION_NUMBER;
-        };
-    };
-    struct Protocol3Body {
+        } choice;
+	};
+
+    // Protocol2
+    class Protocol2 {
+    public:
         MessageType tag;
-        union {
-            struct {
-                quint16 transaction;
-                quint32 program;
-                quint16 version;
-                quint16 procedure;
-            } CALL;
-            struct {
-                quint16 transaction;
-                RejectBody rejectBody;
-            } REJECT;
-            struct {
-                quint16 transaction;
-            } RETURN;
-            struct {
-                quint16 transaction;
-                quint16 abort;
-            } ABORT;
-        };
+        union union_choice {
+        	Call2   call;
+        	Reject2 reject;
+        	Return  return_;
+        	Abort   abort;
+        } choice;
+    };
+
+    // Protocol3
+    class Protocol3 {
+    public:
+        MessageType tag;
+        union union_choice {
+        	Call3   call;
+        	Reject3 reject;
+        	Return  return_;
+        	Abort   abort;
+        } choice;
     };
 
     // Main
-    struct MessageObject {
-        ProtocolType tag;
-        union {
-            struct {
-                Protocol2Body protocol2Body;
-            } PROTOCOL2;
-            struct {
-                Protocol3Body protocol3Body;
-            } PROTOCOL3;
-        };
-    };
-
-    //See ExpeditedCourier.mesa
-    //   Header: TYPE = MACHINE DEPENDENT RECORD [
-    //    protRange: CourierProtocol.ProtocolRange � [protocol3, protocol3],
-    //    body: CourierProtocol.Protocol3Body];
-    //0003 0003 0000 0000 0000 0002 0003 0000
-    //PROTOCOL3
-    //     PROTOCOL3
-    //          CALL
-    //               TRANSACTION
-    //                    PROGRAM
-    //                              VERSION
-    //                                   PROCEDUER
-    class ExpeditedCourier {
+    class Message {
     public:
-    	Courier::ProtocolRange protocolRange;
-    	Courier::Protocol3Body body;
+        ProtocolType tag;
+        union union_choice {
+            Protocol2 protocol2;
+            Protocol3 protocol3;
+        } choice;
     };
 };
 }
-
-
 
 #endif /* PEX_COURIER_H_ */
