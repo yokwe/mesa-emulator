@@ -117,6 +117,12 @@ public:
 
 	// put that[from..limit) to this
 	void    put(const NetData& that, quint32 from);
+	void    putAll(const NetData& that) {
+		put(that, 0);
+	}
+	void    putRest(const NetData& that) {
+		put(that, that.getPos());
+	}
 };
 
 QString toString(const NetData value);
