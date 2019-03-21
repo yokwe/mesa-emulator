@@ -1,0 +1,125 @@
+/*
+ * Clearinghouse3.h
+ *
+ *  Created on: Mar 21, 2019
+ *      Author: hasegawa
+ */
+
+#ifndef COURIER_STUB_CLEARINGHOUSE3_H_
+#define COURIER_STUB_CLEARINGHOUSE3_H_
+
+#include <QtCore>
+
+namespace Courier {
+	using STRING = QString;
+	using CARDINAL = quint16;
+	using UNSPECIFIED = quint16;
+
+	class Exception {
+
+	};
+
+	template <typename T, int maxSize_ = 65535>
+	struct SEQUENCE {
+		const quint16 maxSize;
+
+		SEQUENCE(quint16 maxSize_) : maxSize(maxSize_) {}
+
+		void append(const T& newValue) {
+			if (maxSize <= size) {
+				throw Exception();
+			}
+			vector[size++] = newValue;
+		}
+		quint16 getSize() {
+			return size;
+		}
+
+		T& operator[](quint16 i) {
+			if (maxSize <= i) {
+				throw Exception();
+			}
+			return vector[i];
+		}
+		const T& operator[](quint16 i) const {
+			if (maxSize <= i) {
+				throw Exception();
+			}
+			return vector[i];
+		}
+
+	private:
+		quint16 size = 0;
+		T vector [maxSize_];
+	};
+
+	SEQUENCE<quint16> a;
+
+
+	template <typename T, int maxSize_>
+	struct ARRAY {
+		const quint16 maxSize;
+		QVector<T> values;
+
+		ARRAY(quint16 maxSize_) : maxSize(maxSize_) {}
+
+		T& operator[](quint16 i) {
+			if (maxSize <= i) {
+				throw Exception();
+			}
+			return values[i];
+		}
+		const T& operator[](quint16 i) const {
+			if (maxSize <= i) {
+				throw Exception();
+			}
+			return values[i];
+		}
+	};
+	using Key = ARRAY<UNSPECIFIED, 4>;
+	Key key;
+}
+namespace Courier {
+
+namespace Clearinghouse3 {
+
+
+using Organization = STRING;
+using Domain = STRING;
+using Object = STRING;
+
+static const CARDINAL maxOrganizationLength = 20;
+
+struct TwoPartName {
+	Organization organization;
+	Domain domain;
+};
+
+struct StreamOfDomain {
+	enum class Tag {nextSegment = 0, lastSegment = 1} tag;
+
+	struct ChoiceNextSegment {
+		SEQUENCE<Domain> segment;
+		StreamOfDomain restofStream;
+	} nextSegment;
+
+	struct ChoiceLastSegment {
+		SEQUENCE<Domain> segment;
+	} lastSegment;
+
+	using Item = SEQUENCE<UNSPECIFIED, 500>;
+};
+
+STRING wildcard = "*";
+
+enum class WhichArgument {
+	first = 1,
+	second = 2,
+};
+
+}
+}
+
+
+
+#endif /* COURIER_STUB_CLEARINGHOUSE3_H_ */
