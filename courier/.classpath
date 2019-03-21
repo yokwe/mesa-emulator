@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+        <classpathentry kind="src" path="src-java"/>
+        <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+        <classpathentry kind="lib" path="/Externals/jar/hamcrest-core-1.3.jar" sourcepath="/Externals/jar/hamcrest-core-1.3-sources.jar"/>
+        <classpathentry kind="lib" path="/Externals/jar/junit-4.11.jar" sourcepath="/Externals/jar/junit-4.11-sources.jar"/>
+        <classpathentry kind="lib" path="/Externals/jar/logback-classic-1.0.13.jar" sourcepath="/Externals/jar/logback-classic-1.0.13-sources.jar"/>
+        <classpathentry kind="lib" path="/Externals/jar/logback-core-1.0.13.jar" sourcepath="/Externals/jar/logback-core-1.0.13-sources.jar"/>
+        <classpathentry kind="lib" path="/Externals/jar/slf4j-api-1.7.5.jar" sourcepath="/Externals/jar/slf4j-api-1.7.5-sources.jar"/>
+        <classpathentry kind="lib" path="/Externals/jar/antlr-4.1-complete.jar" sourcepath="/Externals/jar/antlr4-4.1/runtime/Java/src"/>
+        <classpathentry kind="output" path="bin"/>
+</classpath>
