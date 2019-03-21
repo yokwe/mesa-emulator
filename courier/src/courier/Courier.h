@@ -32,197 +32,179 @@ OF SUCH DAMAGE.
 #ifndef COURIER_COURIER_H_
 #define COURIER_COURIER_H_
 
-#include "../itp/IDP.h"
+#include <QtCore>
 
-//
-// See APilot/15.0.1/Corier/Friends/CourierProtocol.mesa
-//
-namespace Courier:: {
-class Courier {
-public:
-    enum class ProtocolType : quint16 {
-        PROTOCOL2 = 2,
-        PROTOCOL3 = 3,
-    };
-    enum class MessageType : quint16 {
-        CALL   = 0,
-        REJECT = 1,
-        RETURN = 2,
-        ABORT  = 3,
-    };
-    enum class RejectCode : quint16 {
-        NO_SUCH_PROGRAM_NUMBER  = 0,
-        NO_SUCH_VERSION_NUMBER  = 1,
-        NO_SUCH_PROCEDURE_VALUE = 2,
-        INVALID_ARGUMENTS       = 3,
-    };
+#include "../util/NetData.h"
 
-    class ProtocolRange {
-    public:
-        ProtocolType low;
-        ProtocolType high;
+namespace Courier {
 
-        ProtocolRange() : low(0), high(0) {}
+// Use NetData as Block
+using Block = NetData;
 
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-    };
-    class VersionRange {
-    public:
-        quint16 low;
-        quint16 high;
+// define predefined Courier type
+using BOOLEAN       = quint16;
+using BYTE          = quint8;
+using CARDINAL      = quint16;
+using LONG_CARDINAL = quint32;
+using STRING        = QString;
+using UNSPECIFIED   = quint16;
+using UNSPECIFIED2  = quint32;
+using UNSPECIFIED3  = quint64;
 
-        VersionRange() : low(0), high(0) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-    };
-
-	class Return {
-        quint16 transaction;
-
-        quint8  data[ITP::IDP::DATA_SIZE];
-        NetData netData; // access data through netData
-
-        Return() : transaction(0), netData(data, sizeof(data)) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-	};
-	class Abort {
-        quint16 transaction;
-        quint16 abort;
-
-        quint8  data[ITP::IDP::DATA_SIZE];
-        NetData netData; // access data through netData
-
-        Abort() : transaction(0), abort(0), netData(data, sizeof(data)) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-	};
-
-	class Call2 {
-	public:
-        quint16 transaction;
-        quint16 program;
-        quint16 version;
-        quint16 procedure;
-
-        quint8  data[ITP::IDP::DATA_SIZE];
-        NetData netData; // access data through netData
-
-        Call2() : transaction(0), program(0), version(0), procedure(0), netData(data, sizeof(data)) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-	};
-
-	class Call3 {
-	public:
-        quint16 transaction;
-        quint32 program;
-        quint16 version;
-        quint16 procedure;
-
-        quint8  data[ITP::IDP::DATA_SIZE];
-        NetData netData; // access data through netData
-
-        Call3() : transaction(0), program(0), version(0), procedure(0), netData(data, sizeof(data)) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-	};
-
-	class Reject2 {
-	public:
-        quint16    transaction;
-        RejectCode rejectCode;
-
-        Reject2() : transaction(0), rejectCode(0) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-    };
-
-	class Reject3 {
-	public:
-        quint16    transaction;
-        RejectCode tag;
-        union union_choice {
-        	VersionRange noSuchVersionNumber;
-        } choice;
-
-        Reject3() : transaction(0), tag(0) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-	};
-
-    // Protocol2
-    class Protocol2 {
-    public:
-        MessageType tag;
-        union union_choice {
-        	Call2   call;
-        	Reject2 reject;
-        	Return  return_;
-        	Abort   abort;
-        } choice;
-
-        Protocol2() : tag(0) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-    };
-
-    // Protocol3
-    class Protocol3 {
-    public:
-        MessageType tag;
-        union union_choice {
-        	Call3   call;
-        	Reject3 reject;
-        	Return  return_;
-        	Abort   abort;
-        } choice;
-
-        Protocol3() : tag(0) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-    };
-
-    // Main
-    class Message {
-    public:
-        ProtocolType tag;
-        union union_choice {
-            Protocol2 protocol2;
-            Protocol3 protocol3;
-        } choice;
-
-        Message() : tag(0) {}
-
-        void serialize  (NetData& netData);
-        void deserialize(NetData& netData);
-    };
-};
+void serialize  (Block& block, const quint8& value) {
+	block.put8(value);
+}
+void deserialize(Block& block, quint8& value) {
+	value = block.get8();
 }
 
-QString toString(const Courier::Courier::ProtocolType& value);
-QString toString(const Courier::Courier::MessageType& value);
-QString toString(const Courier::Courier::RejectCode& value);
-QString toString(const Courier::Courier::ProtocolRange& value);
-QString toString(const Courier::Courier::VersionRange& value);
-QString toString(const Courier::Courier::Return& value);
-QString toString(const Courier::Courier::Abort& value);
-QString toString(const Courier::Courier::Call2& value);
-QString toString(const Courier::Courier::Reject2& value);
-QString toString(const Courier::Courier::Call3& value);
-QString toString(const Courier::Courier::Reject3& value);
-QString toString(const Courier::Courier::Protocol2& value);
-QString toString(const Courier::Courier::Protocol3& value);
-QString toString(const Courier::Courier::Message& value);
+void serialize  (Block& block, const quint16& value) {
+	block.put16(value);
+}
+void deserialize(Block& block, quint16& value) {
+	value = block.get16();
+}
+
+void serialize  (Block& block, const quint32& value) {
+	block.put32(value);
+}
+void deserialize(Block& block, quint32& value) {
+	value = block.get32();
+}
+
+void serialize  (Block& block, const quint64& value) {
+	block.put48(value);
+}
+void deserialize(Block& block, quint64& value) {
+	value = block.get48();
+}
+
+void serialize  (Block& block, const QString& value);
+void deserialize(Block& block, QString& value);
+
+template <typename T, int maxSize_ = 65535>
+struct SEQUENCE {
+public:
+	const quint16 maxSize;
+	SEQUENCE() : maxSize(maxSize_) {}
+
+	quint16 getSize() {
+		return size;
+	}
+	void clear() {
+		size = 0;
+	}
+
+	void append(const T& newValue) {
+		if (maxSize <= size) {
+			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
+			RUNTIME_ERROR();
+		}
+		data[size++] = newValue;
+	}
+	T& operator[](quint16 i) {
+		if (size <= i) {
+			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			RUNTIME_ERROR();
+		}
+		return data[i];
+	}
+	const T& operator[](quint16 i) const {
+		if (size <= i) {
+			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			RUNTIME_ERROR();
+		}
+		return data[i];
+	}
+
+	void serialize(Block& block) {
+		Courier::serialize(block, size);
+		for(quint16 i = 0; i < size; i++) {
+			Courier::serialize(block, data[i]);
+		}
+	}
+	void deserialize(Block& block) {
+		Courier::deserialize(block, size);
+		if (maxSize <= size) {
+			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
+			RUNTIME_ERROR();
+		}
+		for(quint16 i = 0; i < size; i++) {
+			Courier::deserialize(block, data[i]);
+		}
+	}
+
+private:
+	quint16 size = 0;
+	T data [maxSize_];
+};
+template <typename T, int maxSize_ = 65535>
+void deserialize (Block& block, SEQUENCE<T, maxSize_>& value) {
+	value.deserialize(block);
+}
+template <typename T, int maxSize_ = 65535>
+void serialize   (Block& block, SEQUENCE<T, maxSize_>& value) {
+	value.serialize(block);
+}
+
+template <typename T, int maxSize_>
+struct ARRAY {
+	const quint16 maxSize;
+
+	ARRAY() : maxSize(maxSize_) {}
+
+	void append(const T& newValue) {
+		if (maxSize <= size) {
+			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
+			RUNTIME_ERROR();
+		}
+		data[size++] = newValue;
+	}
+	quint16 getSize() {
+		return size;
+	}
+	void clear() {
+		size = 0;
+	}
+
+	T& operator[](quint16 i) {
+		if (maxSize <= i) {
+			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
+			RUNTIME_ERROR();
+		}
+		return data[i];
+	}
+	const T& operator[](quint16 i) const {
+		if (maxSize <= i) {
+			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
+			RUNTIME_ERROR();
+		}
+		return data[i];
+	}
+
+	void serialize(Block& block) {
+		for(quint16 i = 0; i < maxSize; i++) {
+			serialize(block, data[i]);
+		}
+	}
+	void deserialize(Block& block) {
+		for(quint16 i = 0; i < maxSize; i++) {
+			deserialize(block, data[i]);
+		}
+	}
+private:
+	quint16 size = 0;
+	T data [maxSize_];
+};
+template <typename T, int maxSize_>
+void deserialize (Block& block, ARRAY<T, maxSize_>& value) {
+	value.deserialize(block);
+}
+template <typename T, int maxSize_>
+void serialize   (Block& block, ARRAY<T, maxSize_>& value) {
+	value.serialize(block);
+}
+
+}
 
 #endif /* COURIER_COURIER_H_ */

@@ -33,314 +33,38 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("cr/courier");
 
-#include "../NetData.h"
 #include "../courier/Courier.h"
 
-void Courier::Courier::ProtocolRange::serialize(NetData& netData_) {
-	netData_.put16((quint16)low);
-	netData_.put16((quint16)high);
-}
-void Courier::Courier::ProtocolRange::deserialize(NetData& netData_) {
-	low  = netData_.get16();
-	high = netData_.get16();
-}
-
-void Courier::Courier::VersionRange::serialize(NetData& netData_) {
-	netData_.put16((quint16)low);
-	netData_.put16((quint16)high);
-}
-void Courier::Courier::VersionRange::deserialize(NetData& netData_) {
-	low  = netData_.get16();
-	high = netData_.get16();
-}
-
-void Courier::Courier::Return::serialize(NetData& netData_) {
-	netData_.put16(transaction);
-	netData_.put(netData, 0);
-}
-void Courier::Courier::Return::deserialize(NetData& netData_) {
-	transaction = netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-
-void Courier::Courier::Abort::serialize(NetData& netData_) {
-	netData_.put16(transaction);
-	netData_.put16(abort);
-	netData_.put(netData, 0);
-}
-void Courier::Courier::Abort::deserialize(NetData& netData_) {
-	transaction = netData_.get16();
-	abort = netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-
-void Courier::Courier::Call2::serialize(NetData& netData_) {
-	netData_.put16(transaction);
-	netData_.put16(program);
-	netData_.put16(version);
-	netData_.put16(procedure);
-	netData_.put(netData, 0);
-}
-void Courier::Courier::Call2::deserialize(NetData& netData_) {
-	transaction = netData_.get16();
-	program = netData_.get16();
-	version = netData_.get16();
-	procedure = netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-
-void Courier::Courier::Reject2::serialize(NetData& netData_) {
-	netData_.put16(transaction);
-	netData_.put16((quint16)rejectCode);
-}
-void Courier::Courier::Reject2::deserialize(NetData& netData_) {
-	transaction = netData_.get16();
-	rejectCode = (RejectCode)netData_.get16();
-}
-
-void Courier::Courier::Call3::serialize(NetData& netData_) {
-	netData_.put16(transaction);
-	netData_.put32(program);
-	netData_.put16(version);
-	netData_.put16(procedure);
-	netData_.put(netData, 0);
-}
-void Courier::Courier::Call3::deserialize(NetData& netData_) {
-	transaction = netData_.get16();
-	program = netData_.get32();
-	version = netData_.get16();
-	procedure = netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-
-void Courier::Courier::Reject3::serialize(NetData& netData_) {
-	netData_.put16(transaction);
-	netData_.put16((quint16)tag);
-	switch(tag) {
-	case Courier::Courier::RejectCode::NO_SUCH_PROGRAM_NUMBER:
-	case Courier::Courier::RejectCode::NO_SUCH_PROCEDURE_VALUE:
-	case Courier::Courier::RejectCode::INVALID_ARGUMENTS:
-		break;
-	case Courier::Courier::RejectCode::NO_SUCH_VERSION_NUMBER:
-		choice.noSuchVersionNumber.serialize(netData_);
-		break;
-	default:
+void Courier::serialize  (Block& block, const QString& value) {
+	int size = value.size();
+	if (65535 <= size) {
+		logger.error("Unexpected overflow  size = %ds", size);
 		RUNTIME_ERROR();
-		break;
+	}
+
+	Courier::serialize(block, (quint16)size);
+
+	quint8 c;
+	for(int i = 0; i < size; i++) {
+		c = (quint8)value.at(i).toLatin1();
+		Courier::serialize(block, c);
+	}
+	if (size & 1) {
+		c = 0;
+		Courier::serialize(block, c);
 	}
 }
-void Courier::Courier::Reject3::(NetData& netData_) {
-	transaction = netData_.get16();
-	tag = (RejectCode)netData_.get16();
-	switch(tag) {
-	case Courier::Courier::RejectCode::NO_SUCH_PROGRAM_NUMBER:
-	case Courier::Courier::RejectCode::NO_SUCH_PROCEDURE_VALUE:
-	case Courier::Courier::RejectCode::INVALID_ARGUMENTS:
-		break;
-	case Courier::Courier::RejectCode::NO_SUCH_VERSION_NUMBER:
-		choice.noSuchVersionNumber.deserialize(netData_);
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-}
+void Courier::deserialize(Block& block, QString& value) {
+	quint16 size;
+	Courier::deserialize(block, size);
 
-void Courier::Courier::Protocol2::serialize(NetData& netData_) {
-	netData_.put16((quint16)tag);
-	switch(tag) {
-	case Courier::Courier::MessageType::CALL:
-		choice.call.serialize(netData_);
-		break;
-	case Courier::Courier::MessageType::REJECT:
-		choice.reject.serialize(netData_);
-		break;
-	case Courier::Courier::MessageType::RETURN:
-		choice.return.serialize(netData_);
-		break;
-	case Courier::Courier::MessageType::ABORT:
-		choice.abort.serialize(netData_);
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
+	quint8 c;
+	value.resize(0);
+	for(quint16 i = 0; i < size; i++) {
+		Courier::deserialize(block, c);
+		value.append(c);
+	}
+	if (size & 1) {
+		Courier::deserialize(block, c);
 	}
 }
-void Courier::Courier::Protocol2::deserialize(NetData& netData_) {
-	tag = (MessageTag)netData_.get16();
-	switch(tag) {
-	case Courier::Courier::MessageType::CALL:
-		choice.call.deserialize(netData_);
-		break;
-	case Courier::Courier::MessageType::REJECT:
-		choice.reject.deserialize(netData_);
-		break;
-	case Courier::Courier::MessageType::RETURN:
-		choice.return.deserialize(netData_);
-		break;
-	case Courier::Courier::MessageType::ABORT:
-		choice.abort.desserialize(netData_);
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-}
-
-void Courier::Courier::Protocol3::serialize(NetData& netData_) {
-	netData_.put16((quint16)tag);
-	switch(tag) {
-	case Courier::Courier::MessageType::CALL:
-		choice.call.serialize(netData_);
-		break;
-	case Courier::Courier::MessageType::REJECT:
-		choice.reject.serialize(netData_);
-		break;
-	case Courier::Courier::MessageType::RETURN:
-		choice.return.serialize(netData_);
-		break;
-	case Courier::Courier::MessageType::ABORT:
-		choice.abort.serialize(netData_);
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-}
-void Courier::Courier::Protocol3::deserialize(NetData& netData_) {
-	tag = (MessageTag)netData_.get16();
-	switch(tag) {
-	case Courier::Courier::MessageType::CALL:
-		choice.call.deserialize(netData_);
-		break;
-	case Courier::Courier::MessageType::REJECT:
-		choice.reject.deserialize(netData_);
-		break;
-	case Courier::Courier::MessageType::RETURN:
-		choice.return.deserialize(netData_);
-		break;
-	case Courier::Courier::MessageType::ABORT:
-		choice.abort.desserialize(netData_);
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-}
-
-void Courier::Courier::Message::deserialize(NetData& netData_) {
-	tag = (ProtocolType)netData_.get16();
-	switch(tag) {
-	case Courier::Courier::ProtocolType::PROTOCOL2:
-		choice.protocol2.deserialize(netData_);
-		break;
-	case Courier::Courier::ProtocolType::PROTOCOL3:
-		choice.protocol3.deserialize(netData_);
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-}
-
-//QString toString(const Courier::Courier::ProtocolType& value) {}
-//QString toString(const Courier::Courier::MessageType& value) {}
-//QString toString(const Courier::Courier::RejectCode& value) {}
-//QString toString(const Courier::Courier::ProtocolRange& value) {}
-//QString toString(const Courier::Courier::VersionRange& value) {}
-//QString toString(const Courier::Courier::Return& value) {}
-//QString toString(const Courier::Courier::Abort& value) {}
-//QString toString(const Courier::Courier::Call2& value) {}
-//QString toString(const Courier::Courier::Reject2& value) {}
-//QString toString(const Courier::Courier::Call3& value) {}
-
-QString toString(const Courier::Courier::Reject3& value) {
-	QString ret = QString("[%1 %2 ").arg(transaction).arg(toString(rejectCodes);
-	switch(tag) {
-	case Courier::Courier::RejectCode::NO_SUCH_PROGRAM_NUMBER:
-	case Courier::Courier::RejectCode::NO_SUCH_PROCEDURE_VALUE:
-	case Courier::Courier::RejectCode::INVALID_ARGUMENTS:
-		break;
-	case Courier::Courier::RejectCode::NO_SUCH_VERSION_NUMBER:
-		ret.append(toString(choice.noSuchVersionNumber));
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-	ret.append("]");
-	return ret;
-}
-QString toString(const Courier::Courier::Protocol2& value) {
-	QString ret = QString("[%1 ").arg(toString(tag);
-	switch(tag) {
-	case Courier::Courier::MessageType::CALL:
-		ret.append(toString(choice.call));
-		break;
-	case Courier::Courier::MessageType::REJECT:
-		ret.append(toString(choice.reject));
-		break;
-	case Courier::Courier::MessageType::RETURN:
-		ret.append(toString(choice.return_));
-		break;
-	case Courier::Courier::MessageType::ABORT:
-		ret.append(toString(choice.abort));
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-	ret.append("]");
-	return ret;
-}
-QString toString(const Courier::Courier::Protocol3& value) {
-	QString ret = QString("[%1 ").arg(toString(tag);
-	switch(tag) {
-	case Courier::Courier::MessageType::CALL:
-		ret.append(toString(choice.call));
-		break;
-	case Courier::Courier::MessageType::REJECT:
-		ret.append(toString(choice.reject));
-		break;
-	case Courier::Courier::MessageType::RETURN:
-		ret.append(toString(choice.return_));
-		break;
-	case Courier::Courier::MessageType::ABORT:
-		ret.append(toString(choice.abort));
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-	ret.append("]");
-	return ret;
-}
-QString toString(const Courier::Courier::Message& value) {
-	QString ret = QString("[%1 ").arg(toString(tag);
-	switch(tag) {
-	case Courier::Courier::ProtocolType::PROTOCOL2:
-		ret.append(toString(choice.protocol2));
-		break;
-	case Courier::Courier::ProtocolType::PROTOCOL3:
-		ret.append(toString(choice.protocol3));
-		break;
-	default:
-		RUNTIME_ERROR();
-		break;
-	}
-	ret.append("]");
-	return ret;
-}
-
