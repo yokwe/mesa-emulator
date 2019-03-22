@@ -82,7 +82,7 @@ public:
 	void deserialize(quint16& value);
 	void deserialize(quint32& value);
 	void deserialize(quint64& value); // read 48 bit
-	void deserialize(BLOCK&  value); // read rest of block
+	void deserialize(BLOCK&   value); // read rest of block
 
 private:
 	quint16 pos;
@@ -92,7 +92,7 @@ private:
 
 	// low level methods
 	quint8 get();
-	void put(const quint8 value);
+	void   put(const quint8 value);
 };
 
 // serialize - write value to block
