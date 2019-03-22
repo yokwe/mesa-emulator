@@ -82,11 +82,16 @@ void deserialize(Block& block, quint64& value) {
 void serialize  (Block& block, const QString& value);
 void deserialize(Block& block, QString& value);
 
-template <typename T, int maxSize_ = 65535>
+template <typename T>
 struct SEQUENCE {
 public:
 	const quint16 maxSize;
-	SEQUENCE() : maxSize(maxSize_) {}
+	SEQUENCE(quint16 maxSize_ = 65535) : maxSize(maxSize_) {
+		data = new T [maxSize];
+	}
+	~SEQUENCE() {
+		delete[] data;
+	}
 
 	quint16 getSize() {
 		return size;
@@ -136,22 +141,27 @@ public:
 
 private:
 	quint16 size = 0;
-	T data [maxSize_];
+	T* data;
 };
-template <typename T, int maxSize_ = 65535>
-void deserialize (Block& block, SEQUENCE<T, maxSize_>& value) {
+template <typename T>
+void deserialize (Block& block, SEQUENCE<T>& value) {
 	value.deserialize(block);
 }
-template <typename T, int maxSize_ = 65535>
-void serialize   (Block& block, SEQUENCE<T, maxSize_>& value) {
+template <typename T>
+void serialize   (Block& block, SEQUENCE<T>& value) {
 	value.serialize(block);
 }
 
-template <typename T, int maxSize_>
+template <typename T>
 struct ARRAY {
 	const quint16 maxSize;
 
-	ARRAY() : maxSize(maxSize_) {}
+	ARRAY(quint16 maxSize_) : maxSize(maxSize_) {
+		data = new T [maxSize];
+	}
+	~ARRAY() {
+		delete[] data;
+	}
 
 	void append(const T& newValue) {
 		if (maxSize <= size) {
@@ -194,14 +204,14 @@ struct ARRAY {
 	}
 private:
 	quint16 size = 0;
-	T data [maxSize_];
+	T* data;
 };
-template <typename T, int maxSize_>
-void deserialize (Block& block, ARRAY<T, maxSize_>& value) {
+template <typename T>
+void deserialize (Block& block, ARRAY<T>& value) {
 	value.deserialize(block);
 }
-template <typename T, int maxSize_>
-void serialize   (Block& block, ARRAY<T, maxSize_>& value) {
+template <typename T>
+void serialize   (Block& block, ARRAY<T>& value) {
 	value.serialize(block);
 }
 
