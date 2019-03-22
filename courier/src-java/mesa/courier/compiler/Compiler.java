@@ -10,6 +10,7 @@ import mesa.courier.program.Program;
 import mesa.courier.program.Type;
 import mesa.courier.program.Type.Correspondence;
 import mesa.courier.program.Type.Field;
+import mesa.courier.program.TypeChoice.Candidate;
 import mesa.courier.program.TypeArray;
 import mesa.courier.program.TypeBlock;
 import mesa.courier.program.TypeChoice;
@@ -172,20 +173,20 @@ public class Compiler {
 				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
 				break;
 			case BLOCK:
-				outh.indent().format("// FIXME TypeDecl %s %s", type.toString(), name).println();
+				outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 				break;
 			case SEQUENCE:
 				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
 				break;
 			case RECORD:
-				genTypeDeclRecod(outh, outc, (TypeRecord)type, name);
+				genTypeDeclRecord(outh, outc, (TypeRecord)type, name);
 				break;
 			case CHOICE:
 				genTypeDeclChoice(outh, outc, (TypeChoice)type, name);
 				break;
 			case PROCEDURE:
 			case ERROR:
-				outh.indent().format("// FIXME TypeDecl %s %s", type.toString(), name).println();
+				outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 				break;
 			// reference
 			case REFERENCE:
@@ -196,7 +197,7 @@ public class Compiler {
 			}
 		}
 	}
-	public void genTypeDeclRecod(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
+	public void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
 		for(Field field: type.fields) {
@@ -215,9 +216,78 @@ public class Compiler {
 		outh.indent().format("};").println();
 	}
 	public void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name) {
-		outh.indent().format("// TypeDecl %s %s", type.toString(), name).println();
+		outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
+		
+		if (type instanceof TypeChoice.Typed) {
+			TypeChoice.Typed typed = (TypeChoice.Typed)type;
+			
+			outh.indent().format("using CHOICE_TAG = %s;", toTypeString(typed.type)).println();
+			outh.indent().format("CHOICE_TAG choice_tag;").println();
+
+			for(Candidate<String> candidate: typed.candidates) {
+				Type candidateType = candidate.type;
+				
+				for(String id: candidate.designators) {
+//					outh.indent().format("// %s => %s", id, candidate.type.toString()).println();
+					String candidateTypeName = String.format("CHOICE_%s", id);
+					String candidateVarName  = String.format("choice_%s", id);
+					if (candidateType.kind == Type.Kind.RECORD) {
+						TypeRecord typeRecord = (TypeRecord)candidateType;
+						if (typeRecord.fields.size() == 0) {
+							//
+						} else {
+							outh.indent().println();
+							genTypeDeclRecord(outh, outc, typeRecord, candidateTypeName);
+							outh.indent().format("%s %s;", candidateTypeName, candidateVarName).println();
+						}
+					} else {
+						throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+					}
+				}
+			}
+		
+		} else if (type instanceof TypeChoice.Anon) {
+			TypeChoice.Anon anon = (TypeChoice.Anon)type;
+			outh.indent().format("enum class CHOICE_TAG {").println();
+			outh.nest();
+			for(Candidate<Correspondence> candidate: anon.candidates) {
+				for(Correspondence correspondence: candidate.designators) {
+					outh.indent().format("%s = %s,", correspondence.id, correspondence.numericValue).println();
+				}
+//				outh.indent().format("// %s", candidate.toString()).println();
+			}
+			outh.unnest();
+			outh.indent().format("};").println();
+			outh.indent().format("CHOICE_TAG choice_tag;").println();
+			
+			for(Candidate<Correspondence> candidate: anon.candidates) {
+				Type candidateType = candidate.type;
+				
+				for(Correspondence correspondence: candidate.designators) {
+//					outh.indent().format("// %s => %s", correspondence.id, candidate.type.toString()).println();
+					String candidateTypeName = String.format("CHOICE_%s", correspondence.id);
+					String candidateVarName  = String.format("choice_%s", correspondence.id);
+					if (candidateType.kind == Type.Kind.RECORD) {
+						TypeRecord typeRecord = (TypeRecord)candidateType;
+						if (typeRecord.fields.size() == 0) {
+							//
+						} else {
+							outh.indent().println();
+							genTypeDeclRecord(outh, outc, typeRecord, candidateTypeName);
+							outh.indent().format("%s %s;", candidateTypeName, candidateVarName).println();
+						}
+					} else {
+						throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+					}
+				}
+			}
+
+		} else {
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+		
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
