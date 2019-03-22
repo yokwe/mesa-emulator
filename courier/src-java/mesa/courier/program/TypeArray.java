@@ -1,8 +1,8 @@
 package mesa.courier.program;
 
 public class TypeArray extends Type {
-	final long size;
-	final Type type;
+	public final long size;
+	public final Type type;
 	
 	public TypeArray(long size, Type type) {
 		super(Kind.ARRAY);

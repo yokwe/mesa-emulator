@@ -1,7 +1,7 @@
 package mesa.courier.program;
 
 public class TypeBlock extends Type {
-	final long size;
+	public final long size;
 	
 	public TypeBlock(long size) {
 		super(Kind.BLOCK);
