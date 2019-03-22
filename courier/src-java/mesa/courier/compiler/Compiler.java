@@ -79,7 +79,6 @@ public class Compiler {
 			outh.indent().format("const quint32 PROGRAM_NUMBER = %d;", program.info.program).println();
 			outh.indent().format("const quint32 VERSION_NUMBER = %d;", program.info.version).println();
 		}
-		outh.indent().println();
 
 		
 		// for outc
@@ -116,7 +115,7 @@ public class Compiler {
 		case ARRAY:
 		{
 			TypeArray typeArray = (TypeArray)type;
-			return String.format("ARRAY<%s,%d>", toTypeString(typeArray.type), typeArray.size);
+			return String.format("ARRAY<%s>", toTypeString(typeArray.type));
 		}
 		case BLOCK:
 			break;
@@ -127,7 +126,7 @@ public class Compiler {
 			if (typeSequence.size == TypeSequence.MAX_SIZE) {
 				return String.format("SEQUENCE<%s>", toTypeString(typeSequence.type));
 			} else {
-				return String.format("SEQUENCE<%s,%d>", toTypeString(typeSequence.type), typeSequence.size);
+				return String.format("SEQUENCE<%s>", toTypeString(typeSequence.type));
 			}
 		}
 		case RECORD:
@@ -148,8 +147,16 @@ public class Compiler {
 		}
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
+	
 	public void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc) {
+		outh.indent().println("");
+		outh.indent().println("//");
+		outh.indent().println("// Type Declaration");
+		outh.indent().println("//");
+
 		for(Program.DeclType declType: program.typeList) {
+			outh.indent().println();
+
 			Type   type = declType.type;
 			String name = declType.name;
 			
@@ -170,14 +177,16 @@ public class Compiler {
 				genTypeDeclEnum(outh, outc, (TypeEnum)type, name);
 				break;
 			case ARRAY:
-				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
-				break;
+				logger.error("Rewrite \"ARRAY N OF T\" to \"RECORD [value: ARRAY N OF T]\"");
+				logger.error("  {}  {}", name, type.toString());
+				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			case BLOCK:
 				outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 				break;
 			case SEQUENCE:
-				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
-				break;
+				logger.error("Rewrite \"SEQUENCE N OF T\" to \"RECORD [value: SEQUENCE N OF T]\"");
+				logger.error("  {}  {}", name, type.toString());
+				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			case RECORD:
 				genTypeDeclRecord(outh, outc, (TypeRecord)type, name);
 				break;
@@ -197,15 +206,33 @@ public class Compiler {
 			}
 		}
 	}
+	
 	public void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
 		for(Field field: type.fields) {
-			outh.indent().format("%s %s;", toTypeString(field.type), field.name).println();
+			switch(field.type.kind) {
+			case ARRAY:
+			{
+				TypeArray typeSequence = (TypeArray)field.type;
+				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeSequence.size).println();
+			}
+				break;
+			case SEQUENCE:
+			{
+				TypeSequence typeSequence = (TypeSequence)field.type;
+				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeSequence.size).println();
+			}
+				break;
+			default:
+				outh.indent().format("%s %s;", toTypeString(field.type), field.name).println();
+				break;
+			}
 		}
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
+	
 	public void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name) {
 		outh.indent().format("enum class %s : quint16 {", name).println();
 		outh.nest();
@@ -215,6 +242,7 @@ public class Compiler {
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
+	
 	public void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name) {
 		outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 		outh.indent().format("struct %s {", name).println();
