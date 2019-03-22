@@ -38,6 +38,74 @@ OF SUCH DAMAGE.
 
 namespace Courier {
 
+class BLOCK {
+public:
+	const quint16 capacity;
+
+	BLOCK(quint16 capacity_) : capacity(capacity_), pos(0), limit(0) {
+		data = new quint16[capacity];
+	}
+	~BLOCK() {
+		delete[] data;
+	}
+
+	// reset buffer for fresh write
+	void clear() {
+		limit = capacity;
+		pos   = 0;
+	}
+	// fill data[0..capacity) with zero
+	void zero();
+	// reset buffer for read written content
+	void rewind() {
+		limit = pos;
+		pos   = 0;
+	}
+	// reset position for read
+	void reset() {
+		pos = 0;
+	}
+	// remaining
+	quint16 remaining() const {
+		return limit - pos;
+	}
+
+	// serialize - write value to block
+	void serialize  (const quint8  value);
+	void serialize  (const quint16 value);
+	void serialize  (const quint32 value);
+	void serialize  (const quint64 value); // write 48 bit
+	void serialize  (const BLOCK&  value); // write whole value
+
+	// deserialize - read from block and write to value
+	void deserialize(quint8  value);
+	void deserialize(quint16 value);
+	void deserialize(quint32 value);
+	void deserialize(quint64 value); // read 48 bit
+	void deserialize(BLOCK&  value); // read rest of block
+
+private:
+	quint16 pos;
+	quint16 limit;
+
+	quint16* data;
+};
+
+// serialize - write value to block
+void serialize  (BLOCK& block, const quint8  value);
+void serialize  (BLOCK& block, const quint16 value);
+void serialize  (BLOCK& block, const quint32 value);
+void serialize  (BLOCK& block, const quint64 value); // write 48 bit
+void serialize  (BLOCK& block, const BLOCK&  value); // write whole value
+
+// deserialize - read from block and write to value
+void deserialize(BLOCK& block, quint8  value);
+void deserialize(BLOCK& block, quint16 value);
+void deserialize(BLOCK& block, quint32 value);
+void deserialize(BLOCK& block, quint64 value); // read 48 bit
+void deserialize(BLOCK& block, BLOCK&  value); // read rest of block
+
+
 // Use NetData as Block
 using Block = NetData;
 
