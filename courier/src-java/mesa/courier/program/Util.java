@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public class Util {
 	public static long parseLong(String text) {
@@ -19,7 +19,7 @@ public class Util {
 				return Long.parseLong(text, 10);
 			}
 		} catch (NumberFormatException e) {
-			throw new CompilerException(String.format("text = %s", text), e);
+			throw new ProgramException(String.format("text = %s", text), e);
 		}
 	}
 	public static String toJavaConstName(String name) {
@@ -42,7 +42,7 @@ public class Util {
 				}
 				lastCharIsUpper = true;
 			} else {
-				throw new CompilerException(String.format("Unknown character type = %c - %04X", c, c));
+				throw new ProgramException(String.format("Unknown character type = %c - %04X", c, c));
 			}
 		}
 		return ret.toString();

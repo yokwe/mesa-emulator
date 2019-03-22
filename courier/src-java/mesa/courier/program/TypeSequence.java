@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public class TypeSequence extends Type {
 	public static final long MAX_SIZE = 65535;

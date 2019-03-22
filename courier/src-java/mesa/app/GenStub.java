@@ -1,7 +1,8 @@
 package mesa.app;
 
-import mesa.courier.compiler.*;
 import mesa.courier.compiler.Compiler;
+import mesa.courier.program.Program;
+import mesa.courier.program.ProgramBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

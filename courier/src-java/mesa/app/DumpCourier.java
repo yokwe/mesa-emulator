@@ -3,8 +3,8 @@ package mesa.app;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mesa.courier.compiler.Program;
-import mesa.courier.compiler.ProgramBuilder;
+import mesa.courier.program.Program;
+import mesa.courier.program.ProgramBuilder;
 
 public class DumpCourier {
 	protected static final Logger logger = LoggerFactory.getLogger(DumpCourier.class);

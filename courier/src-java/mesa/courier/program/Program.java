@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +108,7 @@ public final class Program {
 				return e;
 			}
 		}
-		throw new CompilerException(String.format("Unknown program = %s", program));
+		throw new ProgramException(String.format("Unknown program = %s", program));
 	}
 	public String getLocalRefName(TypeReference typeRef) {
 		if (typeRef.value.program.equals(info.getProgramVersion())) {
@@ -177,14 +177,14 @@ public final class Program {
 		if (Program.all.containsKey(programName)) {
 			return Program.all.get(programName);
 		} else {
-			throw new CompilerException(String.format("Unknown program.  programName = %s", programName));
+			throw new ProgramException(String.format("Unknown program.  programName = %s", programName));
 		}
 	}
 	public Type getType(String typeName) {
 		if (typeMap.containsKey(typeName)) {
 			return typeMap.get(typeName).type;
 		} else {
-			throw new CompilerException(String.format("Unknown type.  typeName = %s", typeName));
+			throw new ProgramException(String.format("Unknown type.  typeName = %s", typeName));
 		}
 	}
 	public static Type dereference(TypeReference typeRef) {

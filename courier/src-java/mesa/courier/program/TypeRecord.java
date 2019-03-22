@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 import java.util.ArrayList;
 import java.util.List;

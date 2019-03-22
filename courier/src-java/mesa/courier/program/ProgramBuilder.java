@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -11,9 +11,9 @@ import mesa.courier.antlr.CourierBaseVisitor;
 import mesa.courier.antlr.CourierLexer;
 import mesa.courier.antlr.CourierParser;
 import mesa.courier.antlr.CourierParser.*;
-import mesa.courier.compiler.Constant.*;
-import mesa.courier.compiler.Program.Info;
-import mesa.courier.compiler.Type.*;
+import mesa.courier.program.Constant.*;
+import mesa.courier.program.Program.Info;
+import mesa.courier.program.Type.*;
 
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -56,9 +56,9 @@ public class ProgramBuilder {
 		boolean hasError = false;
 
 		File directory = new File(directoryPath);
-		if (!directory.isDirectory()) throw new CompilerException(String.format("no such directory. directoryPath = %s", directoryPath));
+		if (!directory.isDirectory()) throw new ProgramException(String.format("no such directory. directoryPath = %s", directoryPath));
 		File[] courierFiles = directory.listFiles(courierFileFilter);
-		if (courierFiles.length == 0) throw new CompilerException(String.format("no courier file. directoryPath = %s", directoryPath));
+		if (courierFiles.length == 0) throw new ProgramException(String.format("no courier file. directoryPath = %s", directoryPath));
 
 		for(File courierFile: courierFiles) {
 			String fileName = courierFile.getName();
@@ -81,10 +81,10 @@ public class ProgramBuilder {
 
 			programCache.put(key, new Cache(builder, tree, program));
 		}
-		if (hasError) throw new CompilerException("hasError");
+		if (hasError) throw new ProgramException("hasError");
 	}
 	public static Program getProgram(String name) {
-		if (!programCache.containsKey(name)) throw new CompilerException(String.format("Unknown program  name = %s", name));
+		if (!programCache.containsKey(name)) throw new ProgramException(String.format("Unknown program  name = %s", name));
 		
 		Cache cache = programCache.get(name);
 		return cache.program;
@@ -101,7 +101,7 @@ public class ProgramBuilder {
 				return;
 			}
 		}
-		throw new CompilerException(String.format("Unknown program = %s", program.info.toString()));
+		throw new ProgramException(String.format("Unknown program = %s", program.info.toString()));
 	}
 
 
@@ -110,7 +110,7 @@ public class ProgramBuilder {
 		try {
 			input = new ANTLRFileStream(path);
 		} catch (IOException e) {
-			throw new CompilerException("IOException", e);
+			throw new ProgramException("IOException", e);
 		}
 		CourierLexer          lexer   = new CourierLexer(input);
 		CommonTokenStream     tokens  = new CommonTokenStream(lexer);
@@ -148,7 +148,7 @@ public class ProgramBuilder {
 				} else {
 					String msg = String.format("Unknonw declarationContext = %s", declarationContext.getText());
 					logger.error(msg);
-					throw new CompilerException(msg);
+					throw new ProgramException(msg);
 				}
 			}
 		}
@@ -169,7 +169,7 @@ public class ProgramBuilder {
 				} else {
 					String msg = String.format("Unknonw declarationContext = %s", declarationContext.getText());
 					logger.error(msg);
-					throw new CompilerException(msg);
+					throw new ProgramException(msg);
 				}
 			}
 		}
@@ -182,7 +182,7 @@ public class ProgramBuilder {
 		public static Program getProgram(CourierProgramContext tree) {
 			ProgramVisitor visitor = new ProgramVisitor();
 			visitor.visit(tree);
-			if (visitor.program == null) throw new CompilerException("program == null");
+			if (visitor.program == null) throw new ProgramException("program == null");
 			return visitor.program;
 		}
 		
@@ -486,7 +486,7 @@ public class ProgramBuilder {
 			} else {
 				String msg = String.format("Unknonw referencedContext = %s", referencedContext.getText());
 				logger.error(msg);
-				throw new CompilerException(msg);
+				throw new ProgramException(msg);
 			}
 		}
 	}

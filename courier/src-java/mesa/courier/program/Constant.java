@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public abstract class Constant {
 	public static enum Kind {

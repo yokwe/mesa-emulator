@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public class ConstantBoolean extends Constant {
 	public final boolean value;

@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public class ConstantNumber extends Constant {
 	public final long value;

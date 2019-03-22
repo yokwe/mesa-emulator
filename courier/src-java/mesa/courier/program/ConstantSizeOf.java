@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public class ConstantSizeOf extends Constant {
 	public final ReferencedConstant value;

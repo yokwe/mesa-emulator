@@ -1,4 +1,4 @@
-package mesa.courier.compiler;
+package mesa.courier.program;
 
 public class TypePredefined extends Type {
 	public TypePredefined(Kind kind) {
@@ -18,7 +18,7 @@ public class TypePredefined extends Type {
 		case UNSPECIFIED3:
 			break;
 		default:
-			throw new CompilerException(String.format("Unknown type = %s", kind.toString()));
+			throw new ProgramException(String.format("Unknown type = %s", kind.toString()));
 		}
 	}
 	
