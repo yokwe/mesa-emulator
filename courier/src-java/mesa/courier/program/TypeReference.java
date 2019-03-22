@@ -19,6 +19,7 @@ public class TypeReference extends Type {
 		all.add(this);
 	}
 	
+	@Override
 	public String toString() {
 		return String.format("[REF %s]", value.toString());
 	}

@@ -10,6 +10,7 @@ public class TypeArray extends Type {
 		this.type = type;
 	}
 	
+	@Override
 	public String toString() {
 		return String.format("[%s (%d)%s]]", kind, size, type.toString());
 	}

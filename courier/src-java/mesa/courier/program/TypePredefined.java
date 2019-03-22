@@ -22,6 +22,7 @@ public class TypePredefined extends Type {
 		}
 	}
 	
+	@Override
 	public String toString() {
 		return kind.toString();
 	}

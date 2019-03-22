@@ -24,6 +24,8 @@ public class TypeProcedure extends Type {
 	public void addError(String name) {
 		errroList.add(name);
 	}
+	
+	@Override
 	public String toString() {
 		StringBuilder param  = new StringBuilder();
 		StringBuilder result = new StringBuilder();

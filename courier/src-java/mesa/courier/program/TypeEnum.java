@@ -15,6 +15,7 @@ public class TypeEnum extends Type {
 		elements.add(element);
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		int count = 0;

@@ -15,6 +15,7 @@ public class TypeError extends Type {
 		paramList.add(field);
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder param = new StringBuilder();
 		

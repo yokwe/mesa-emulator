@@ -10,7 +10,7 @@ public class TypeSequence extends Type {
 		this.size = size;
 		this.type = type;
 	}
-	
+	@Override
 	public String toString() {
 		return String.format("[%s (%d)%s]]", kind, size, type.toString());
 	}
