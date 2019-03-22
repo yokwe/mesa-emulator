@@ -48,14 +48,14 @@ BEGIN
 
 Time: TYPE = Time.Time; -- the standard time and date format --
 
-RequestID: TYPE = ARRAY 5 OF UNSPECIFIED; -- the standard time and date format --
+RequestID: TYPE = RECORD [value: ARRAY 5 OF UNSPECIFIED]; -- the standard time and date format --
 
 PrintAttributeChoice: TYPE = CHOICE OF {
 	printObjectName(0) => RECORD [value: STRING], -- default is implementation-dependent --
 	printObjectCreateDate(1) => RECORD [value: Time], -- default is implementation-dependent --
 	senderName(2) => RECORD [value: STRING] }; -- default is implementation-dependent --
 	
-PrintAttributes: TYPE = SEQUENCE 3 OF PrintAttributeChoice;
+PrintAttributes: TYPE = RECORD [value: SEQUENCE 3 OF PrintAttributeChoice];
 
 PaperSize: TYPE = {
         usLetter(1),    -- defined as 8.5" x 11.0" or 216mm x 297mm --
@@ -76,7 +76,7 @@ Paper: TYPE = CHOICE OF {
 Medium: TYPE = CHOICE OF {
 	paper(0) => RECORD[paper: Paper]};
 
-Media: TYPE = SEQUENCE 100 OF Medium;
+Media: TYPE = RECORD [value: SEQUENCE 100 OF Medium];
 Priority: TYPE = {low(0), normal(1), high(2)};
 PrintOptionChoice: TYPE = CHOICE OF {
 	printObjectSize(0) => RECORD [value: LONG CARDINAL], -- default is size of master --
@@ -91,13 +91,13 @@ PrintOptionChoice: TYPE = CHOICE OF {
 	releaseKey(7) => RECORD [value: Authentication.HashedPassword], -- default is 177777B --
 	staple(8) => RECORD [value: BOOLEAN], -- default is FALSE --
 	twoSided(9) => RECORD [value: BOOLEAN] }; -- default is FALSE --
-PrintOptions: TYPE = SEQUENCE 10 OF PrintOptionChoice;
+PrintOptions: TYPE = RECORD [value: SEQUENCE 10 OF PrintOptionChoice];
 
 PrinterPropertyChoice: TYPE = CHOICE OF {
 	ppmedia(0) => RECORD [value: Media],
 	ppstaple(1) => RECORD [value: BOOLEAN], -- default is FALSE --
 	pptwoSided(2) => RECORD [value: BOOLEAN]}; -- default is FALSE --
-PrinterProperties: TYPE = SEQUENCE 3 OF PrinterPropertyChoice;
+PrinterProperties: TYPE = RECORD [value: SEQUENCE 3 OF PrinterPropertyChoice];
 
 SpoolerStatusEnum: TYPE = {available(0), busy(1), disabled(2), full(3)};
 FormatterStatusEnum: TYPE = {available(0), busy(1), disabled(2)};
@@ -107,7 +107,7 @@ PrinterStatusChoice: TYPE = CHOICE OF {
 	formatter(1) => RECORD [value: FormatterStatusEnum],
 	printer(2) => RECORD [value: PrinterStatusEnum],
 	media(3) => RECORD [value: Media] };
-PrinterStatus: TYPE = SEQUENCE 4 OF PrinterStatusChoice;
+PrinterStatus: TYPE = RECORD [value: SEQUENCE 4 OF PrinterStatusChoice];
 
 RequestStatusCode: TYPE = {pending(0), inProgress(1), completed(2),
 		completedWithWarning(3), unknown(4), rejected(5), aborted(6),
@@ -115,7 +115,7 @@ RequestStatusCode: TYPE = {pending(0), inProgress(1), completed(2),
 RequestStatusChoice: TYPE = CHOICE OF {
 	status(0) => RECORD [value: RequestStatusCode],
 	statusMessage(1) => RECORD [value: STRING]}; -- default is "" --
-RequestStatus: TYPE = SEQUENCE 2 OF RequestStatusChoice;
+RequestStatus: TYPE = RECORD [value: SEQUENCE 2 OF RequestStatusChoice];
 
 -- Remote Errors --
 

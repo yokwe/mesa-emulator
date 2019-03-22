@@ -43,7 +43,7 @@ simpleCredentials: CredentialsType = 0;
 
 SimpleCredentials: TYPE = Clearinghouse.Name;
 
-Verifier: TYPE = SEQUENCE 12 OF UNSPECIFIED;
+Verifier: TYPE = RECORD[value: SEQUENCE 12 OF UNSPECIFIED];
 
 HashedPassword: TYPE = CARDINAL;
 

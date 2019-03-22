@@ -51,7 +51,7 @@ BEGIN
 -- Attributes (individual attributes defined later) --
 
 AttributeType: TYPE = LONG CARDINAL;
-AttributeTypeSequence: TYPE = SEQUENCE OF AttributeType;
+AttributeTypeSequence: TYPE = RECORD [value: SEQUENCD OF AttributeType];
 allAttributeTypes: AttributeTypeSequence = [37777777777B];
 Attribute: TYPE = RECORD [type: AttributeType, value: SEQUENCE OF UNSPECIFIED];
 AttributeSequence: TYPE = RECORD [value: SEQUENCE OF Attribute];
@@ -59,7 +59,7 @@ AttributeSequence: TYPE = RECORD [value: SEQUENCE OF Attribute];
 -- Controls --
 
 ControlType: TYPE = {lockControl(0), timeoutControl(1), accessControl(2)};
-ControlTypeSequence: TYPE = SEQUENCE 3 OF ControlType;
+ControlTypeSequence: TYPE = RECORD [value: SEQUENCD 3 OF ControlType];
 
 Lock: TYPE = {lockNone(0), share(1), exclusive(2)};
 
@@ -69,14 +69,14 @@ defaultTimeout: Timeout = 177777B;	-- actual value impl.-dependent --
 AccessType: TYPE = {
 	readAccess(0), writeAccess(1), ownerAccess(2),	-- all files --
 	addAccess(3), removeAccess(4) };		-- directories only --
-AccessSequence: TYPE = SEQUENCE 5 OF AccessType;
+AccessSequence: TYPE = RECORD [value: SEQUENCD 5 OF AccessType];
 -- fullAccess: AccessSequence = [177777B]; --
 
 Control: TYPE = CHOICE ControlType OF {
 	lockControl => RECORD [value: Lock],
 	timeoutControl => RECORD [value: Timeout],
 	accessControl => RECORD [value: AccessSequence]};
-ControlSequence: TYPE = SEQUENCE 3 OF Control;
+ControlSequence: TYPE = RECORD [value: SEQUENCD 3 OF Control];
 
 -- Scopes --
 
@@ -126,7 +126,7 @@ Scope: TYPE = CHOICE ScopeType OF {
 	depth => RECORD [value: ScopeDepth],
 	direction => RECORD [value: ScopeDirection],
 	filter => RECORD [value: ScopeFilter] };
-ScopeSequence: TYPE = SEQUENCE 4 OF Scope;
+ScopeSequence: TYPE = RECORD [value: SEQUENCD 4 OF Scope];
 
 -- Handles and Authentication --
 
@@ -491,7 +491,7 @@ dataSize: AttributeType = 16;
 DataSize: TYPE = LONG CARDINAL;
 
 fileID: AttributeType = 4;
-FileID: TYPE = ARRAY 5 OF UNSPECIFIED;
+FileID: TYPE = RECORD [value: ARRAY 5 OF UNSPECIFIED];
 nullFileID: FileID = [0,0,0,0,0];
 
 isDirectory: AttributeType = 5;
@@ -524,7 +524,7 @@ pathname: AttributeType = 21;
 Pathname: TYPE = STRING;
 
 position: AttributeType = 11;
-Position: TYPE = SEQUENCE 100 OF UNSPECIFIED;
+Position: TYPE = RECORD [value: SEQUENCD 100 OF UNSPECIFIED];
 firstPosition: Position = [0];
 lastPosition: Position = [177777B];
 
