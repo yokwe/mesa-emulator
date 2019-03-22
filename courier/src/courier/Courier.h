@@ -78,10 +78,10 @@ public:
 	void serialize  (const BLOCK&  value); // write whole value
 
 	// deserialize - read from block and write to value
-	void deserialize(quint8  value);
-	void deserialize(quint16 value);
-	void deserialize(quint32 value);
-	void deserialize(quint64 value); // read 48 bit
+	void deserialize(quint8&  value);
+	void deserialize(quint16& value);
+	void deserialize(quint32& value);
+	void deserialize(quint64& value); // read 48 bit
 	void deserialize(BLOCK&  value); // read rest of block
 
 private:
@@ -89,21 +89,49 @@ private:
 	quint16 limit;
 
 	quint16* data;
+
+	// low level methods
+	quint8 get();
+	void put(const quint8 value);
 };
 
 // serialize - write value to block
-void serialize  (BLOCK& block, const quint8  value);
-void serialize  (BLOCK& block, const quint16 value);
-void serialize  (BLOCK& block, const quint32 value);
-void serialize  (BLOCK& block, const quint64 value); // write 48 bit
-void serialize  (BLOCK& block, const BLOCK&  value); // write whole value
+void serialize  (BLOCK& block, const quint8  value) {
+	block.serialize(value);
+}
+void serialize  (BLOCK& block, const quint16 value) {
+	block.serialize(value);
+}
+void serialize  (BLOCK& block, const quint32 value) {
+	block.serialize(value);
+}
+// write 48 bit of value
+void serialize  (BLOCK& block, const quint64 value) {
+	block.serialize(value);
+}
+// write whole value
+void serialize  (BLOCK& block, const BLOCK&  value) {
+	block.serialize(value);
+}
 
 // deserialize - read from block and write to value
-void deserialize(BLOCK& block, quint8  value);
-void deserialize(BLOCK& block, quint16 value);
-void deserialize(BLOCK& block, quint32 value);
-void deserialize(BLOCK& block, quint64 value); // read 48 bit
-void deserialize(BLOCK& block, BLOCK&  value); // read rest of block
+void deserialize(BLOCK& block, quint8  value) {
+	block.deserialize(value);
+}
+void deserialize(BLOCK& block, quint16 value) {
+	block.deserialize(value);
+}
+void deserialize(BLOCK& block, quint32 value) {
+	block.deserialize(value);
+}
+// read 48 bit of block
+void deserialize(BLOCK& block, quint64 value) {
+	block.deserialize(value);
+}
+// read rest of block
+void deserialize(BLOCK& block, BLOCK&  value) {
+	block.deserialize(value);
+}
 
 
 // Use NetData as Block

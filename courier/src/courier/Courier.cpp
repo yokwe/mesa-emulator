@@ -35,6 +35,104 @@ static log4cpp::Category& logger = Logger::getLogger("cr/courier");
 
 #include "../courier/Courier.h"
 
+void Courier::BLOCK::put(quint8 value) {
+	if (limit <= pos) {
+		// ERROR
+	}
+	data[pos++] = value;
+}
+// serialize - write value to block
+void Courier::BLOCK::serialize  (const quint8  value) {
+	put(value);
+}
+void Courier::BLOCK::serialize  (const quint16 value) {
+	quint8 p1 = (quint8)(value >> 0);
+	quint8 p0 = (quint8)(value >> 8);
+
+	put(p0);
+	put(p1);
+}
+void Courier::BLOCK::serialize  (const quint32 value) {
+	quint8 p3 = (quint8)(value >> 0);
+	quint8 p2 = (quint8)(value >> 8);
+	quint8 p1 = (quint8)(value >> 16);
+	quint8 p0 = (quint8)(value >> 24);
+
+	put(p0);
+	put(p1);
+	put(p2);
+	put(p3);
+}
+void Courier::BLOCK::serialize  (const quint64 value) {
+	quint8 p5 = (quint8)(value >> 0);
+	quint8 p4 = (quint8)(value >> 8);
+	quint8 p3 = (quint8)(value >> 16);
+	quint8 p2 = (quint8)(value >> 24);
+	quint8 p1 = (quint8)(value >> 32);
+	quint8 p0 = (quint8)(value >> 40);
+
+	put(p0);
+	put(p1);
+	put(p2);
+	put(p3);
+	put(p4);
+	put(p5);
+}
+// write whole value
+void Courier::BLOCK::serialize  (const BLOCK&  value) {
+	for(quint16 i = 0; i < value.limit; i++) {
+		quint8 c = value.data[i];
+		put(c);
+	}
+}
+
+// deserialize - read from block and write to value
+quint8 Courier::BLOCK::get() {
+	if (limit <= pos) {
+		// ERROR
+	}
+	return data[pos++];
+}
+
+void Courier::BLOCK::deserialize(quint8&  value) {
+	if (limit <= pos) {
+		// ERROR
+	}
+	value = get();
+}
+void Courier::BLOCK::deserialize(quint16& value) {
+	quint16 p0 = get();
+	quint16 p1 = get();
+
+	value = (p0 << 8) | (p1 << 0);
+}
+void Courier::BLOCK::deserialize(quint32& value) {
+	quint32 p0 = get();
+	quint32 p1 = get();
+	quint32 p2 = get();
+	quint32 p3 = get();
+
+	value = (p0 << 24) | (p1 << 16) | (p2 << 8) | (p3 << 0);
+}
+// read 48 bit
+void Courier::BLOCK::deserialize(quint64& value) {
+	quint64 p0 = get();
+	quint64 p1 = get();
+	quint64 p2 = get();
+	quint64 p3 = get();
+	quint64 p4 = get();
+	quint64 p5 = get();
+
+	value = (p0 << 40) | (p1 << 32) | (p2 << 24) | (p3 << 16) | (p4 << 8) | (p5 << 0);
+}
+// read rest of block
+void Courier::BLOCK::deserialize(BLOCK&  value) {
+	for(;;) {
+		if (limit <= pos) break;
+		value.put(data[pos++]);
+	}
+}
+
 void Courier::serialize  (Block& block, const QString& value) {
 	int size = value.size();
 	if (65535 <= size) {
