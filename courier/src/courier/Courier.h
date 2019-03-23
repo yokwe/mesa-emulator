@@ -38,17 +38,6 @@ OF SUCH DAMAGE.
 
 namespace Courier {
 
-
-// Forward declaration
-struct BYTE;
-struct CARDINAL;
-struct LONG_CARDINAL;
-struct STRING;
-struct UNSPECIFIED;
-struct UNSPECIFIED2;
-struct UNSPECIFIED3;
-
-
 class BLOCK {
 public:
 	const quint16 capacity;
@@ -81,7 +70,7 @@ public:
 	}
 
 
-// serialize - write value to block
+	// serialize - write value to block
 	void serialize8 (const quint8  value);
 	void serialize16(const quint16 value);
 	void serialize32(const quint32 value);
