@@ -37,11 +37,52 @@ static log4cpp::Category& logger = Logger::getLogger("testCourier");
 class testCourier : public testBase {
 	CPPUNIT_TEST_SUITE(testCourier);
 	CPPUNIT_TEST(testBlock);
+	CPPUNIT_TEST(testBlock8);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
 	void testBlock() {
-		logger.info("testBlock");
+		const quint16 capacity = 256;
+		quint8 data[capacity];
+		for(quint16 i = 0; i < capacity; i++) {
+			data[i] = i;
+		}
+		Courier::BLOCK block(data, sizeof(data));
+
+		CPPUNIT_ASSERT_EQUAL(capacity, block.capacity);
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+	}
+	void testBlock8() {
+		const quint16 capacity = 2;
+		quint8 data[capacity];
+		for(quint16 i = 0; i < capacity; i++) {
+			data[i] = i;
+		}
+		Courier::BLOCK block(data, sizeof(data));
+
+		quint8 a0 = 0x11;
+		quint8 a1 = 0x22;
+		block.serialize8(a0);
+		block.serialize8(a1);
+
+		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+
+		block.rewind();
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+
+		quint8 b0, b1;
+		block.deserialize8(b0);
+		block.deserialize8(b1);
+
+		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+
+		CPPUNIT_ASSERT_EQUAL(a0, b0);
+		CPPUNIT_ASSERT_EQUAL(a1, b1);
 	}
 };
 
