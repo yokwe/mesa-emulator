@@ -36,7 +36,7 @@ static log4cpp::Category& logger = Logger::getLogger("cr/courier");
 #include "../courier/Courier.h"
 
 // serialize - write value to block
-void Courier::BLOCK::serialize  (const quint8  value) {
+void Courier::BLOCK::serialize8(const quint8  value) {
 	const quint16 size = 1;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -47,7 +47,7 @@ void Courier::BLOCK::serialize  (const quint8  value) {
 }
 
 
-void Courier::BLOCK::serialize  (const quint16 value) {
+void Courier::BLOCK::serialize16(const quint16 value) {
 	const quint16 size = 2;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -61,7 +61,7 @@ void Courier::BLOCK::serialize  (const quint16 value) {
 	data[pos++] = p1;
 
 }
-void Courier::BLOCK::serialize  (const quint32 value) {
+void Courier::BLOCK::serialize32(const quint32 value) {
 	const quint16 size = 4;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -78,7 +78,7 @@ void Courier::BLOCK::serialize  (const quint32 value) {
 	data[pos++] = p2;
 	data[pos++] = p3;
 }
-void Courier::BLOCK::serialize  (const quint64 value) {
+void Courier::BLOCK::serialize48(const quint64 value) {
 	const quint16 size = 6;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -99,8 +99,31 @@ void Courier::BLOCK::serialize  (const quint64 value) {
 	data[pos++] = p4;
 	data[pos++] = p5;
 }
+
+void Courier::BLOCK::serialize(const QString& value) {
+	int size = value.size();
+	if (65535 <= size) {
+		logger.error("Unexpected overflow  size = %ds", size);
+		RUNTIME_ERROR();
+	}
+
+	// size of string
+	serialize16((quint16)size);
+
+	quint8 c;
+	for(int i = 0; i < size; i++) {
+		c = (quint8)value.at(i).toLatin1();
+		serialize8(c);
+	}
+	// add padding to make even size
+	if (size & 1) {
+		c = 0;
+		serialize8(c);
+	}
+}
+
 // write whole value
-void Courier::BLOCK::serialize  (const BLOCK&  value) {
+void Courier::BLOCK::serialize(const BLOCK&  value) {
 	quint16 size = value.limit;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -113,7 +136,7 @@ void Courier::BLOCK::serialize  (const BLOCK&  value) {
 }
 
 // deserialize - read from block and write to value
-void Courier::BLOCK::deserialize(quint8&  value) {
+void Courier::BLOCK::deserialize8(quint8&  value) {
 	quint16 size = 1;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -121,7 +144,7 @@ void Courier::BLOCK::deserialize(quint8&  value) {
 	}
 	value = data[pos++];
 }
-void Courier::BLOCK::deserialize(quint16& value) {
+void Courier::BLOCK::deserialize16(quint16& value) {
 	quint16 size = 2;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -133,7 +156,7 @@ void Courier::BLOCK::deserialize(quint16& value) {
 
 	value = (p0 << 8) | (p1 << 0);
 }
-void Courier::BLOCK::deserialize(quint32& value) {
+void Courier::BLOCK::deserialize32(quint32& value) {
 	quint16 size = 4;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -148,7 +171,7 @@ void Courier::BLOCK::deserialize(quint32& value) {
 	value = (p0 << 24) | (p1 << 16) | (p2 << 8) | (p3 << 0);
 }
 // read 48 bit
-void Courier::BLOCK::deserialize(quint64& value) {
+void Courier::BLOCK::deserialize48(quint64& value) {
 	quint16 size = 6;
 	if (limit <= (pos + size)) {
 		logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
@@ -164,6 +187,23 @@ void Courier::BLOCK::deserialize(quint64& value) {
 
 	value = (p0 << 40) | (p1 << 32) | (p2 << 24) | (p3 << 16) | (p4 << 8) | (p5 << 0);
 }
+
+void Courier::BLOCK::deserialize(QString& value) {
+	quint16 size;
+	deserialize16(size);
+
+	value.resize(0);
+
+	quint8 c;
+	for(quint16 i = 0; i < size; i++) {
+		deserialize8(c);
+		value.append(c);
+	}
+	if (size & 1) {
+		deserialize8(c);
+	}
+}
+
 // read rest of block
 void Courier::BLOCK::deserialize(BLOCK&  value) {
 	quint16 size = remaining();
@@ -174,39 +214,5 @@ void Courier::BLOCK::deserialize(BLOCK&  value) {
 
 	for(quint16 i = 0; i < size; i++) {
 		value.data[value.pos++] = data[pos++];
-	}
-}
-
-void Courier::serialize  (Block& block, const QString& value) {
-	int size = value.size();
-	if (65535 <= size) {
-		logger.error("Unexpected overflow  size = %ds", size);
-		RUNTIME_ERROR();
-	}
-
-	Courier::serialize(block, (quint16)size);
-
-	quint8 c;
-	for(int i = 0; i < size; i++) {
-		c = (quint8)value.at(i).toLatin1();
-		Courier::serialize(block, c);
-	}
-	if (size & 1) {
-		c = 0;
-		Courier::serialize(block, c);
-	}
-}
-void Courier::deserialize(Block& block, QString& value) {
-	quint16 size;
-	Courier::deserialize(block, size);
-
-	quint8 c;
-	value.resize(0);
-	for(quint16 i = 0; i < size; i++) {
-		Courier::deserialize(block, c);
-		value.append(c);
-	}
-	if (size & 1) {
-		Courier::deserialize(block, c);
 	}
 }

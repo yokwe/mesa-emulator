@@ -38,15 +38,25 @@ OF SUCH DAMAGE.
 
 namespace Courier {
 
+
+// Forward declaration
+struct BYTE;
+struct CARDINAL;
+struct LONG_CARDINAL;
+struct STRING;
+struct UNSPECIFIED;
+struct UNSPECIFIED2;
+struct UNSPECIFIED3;
+
+
 class BLOCK {
 public:
 	const quint16 capacity;
 
-	BLOCK(quint16 capacity_) : capacity(capacity_), pos(0), limit(0) {
-		data = new quint16[capacity];
-	}
+	BLOCK(quint16 capacity_) : capacity(capacity_), pos(0), limit(0), freeData(true), data(new quint8[capacity]) {}
+	BLOCK(quint8* data_, quint16 capacity_) : capacity(capacity_), pos(0), limit(0), freeData(false), data(data_) {}
 	~BLOCK() {
-		delete[] data;
+		if (freeData) delete[] data;
 	}
 
 	// reset buffer for fresh write
@@ -70,109 +80,186 @@ public:
 		return limit - pos;
 	}
 
-	// serialize - write value to block
-	void serialize  (const quint8  value);
-	void serialize  (const quint16 value);
-	void serialize  (const quint32 value);
-	void serialize  (const quint64 value); // write 48 bit
-	void serialize  (const BLOCK&  value); // write whole value. pos of value will not be change.
+
+// serialize - write value to block
+	void serialize8 (const quint8  value);
+	void serialize16(const quint16 value);
+	void serialize32(const quint32 value);
+	void serialize48(const quint64 value);
+
+	void serialize(const QString& value);
+	void serialize(const BLOCK&   value); // write whole value. pos of value will not be change.
 
 	// deserialize - read from block and write to value
-	void deserialize(quint8&  value);
-	void deserialize(quint16& value);
-	void deserialize(quint32& value);
-	void deserialize(quint64& value); // read 48 bit
-	void deserialize(BLOCK&   value); // read rest of block. pos of value will be change.
+	void deserialize8(quint8&   value);
+	void deserialize16(quint16& value);
+	void deserialize32(quint32& value);
+	void deserialize48(quint64& value);
+
+	void deserialize(QString& value);
+	void deserialize(BLOCK&   value); // write whole value. pos of value will not be change.
 
 private:
 	quint16 pos;
 	quint16 limit;
 
-	quint16* data;
+	const bool    freeData;
+	quint8* data;
+};
+
+
+template <typename T>
+struct RAW_TYPE {
+protected:
+	T value;
+
+public:
+	// Default constructor
+	RAW_TYPE() {
+		value = 0;
+	}
+	// BYTE a; BYTE b(a);
+	RAW_TYPE(const T& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	RAW_TYPE(const T value_) {
+		value = value_;
+	}
+	virtual ~RAW_TYPE() {}
+
+	// BYTE a, b; a = b;s
+	RAW_TYPE& operator= (const RAW_TYPE& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	RAW_TYPE& operator= (const T rhs) {
+		this->value = rhs;
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator T() const {
+		return value;
+	}
+
+	virtual void serialize  (BLOCK& block) = 0;
+	virtual void deserialize(BLOCK& block) = 0;
+};
+
+
+struct BYTE          : public RAW_TYPE<quint8>  {
+	void serialize(BLOCK& block) const {
+		block.serialize8(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize8(value);
+	}
+};
+struct CARDINAL      : public RAW_TYPE<quint16> {
+	void serialize(BLOCK& block) const {
+		block.serialize16(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize16(value);
+	}
+};
+struct LONG_CARDINAL : public RAW_TYPE<quint32> {
+	void serialize(BLOCK& block) const {
+		block.serialize32(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize32(value);
+	}
+};
+struct STRING        : public RAW_TYPE<QString> {
+	void serialize(BLOCK& block) const {
+		block.serialize(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize(value);
+	}
+};
+struct UNSPECIFIED   : public RAW_TYPE<quint16> {
+	void serialize(BLOCK& block) const {
+		block.serialize16(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize16(value);
+	}
+};
+struct UNSPECIFIED2  : public RAW_TYPE<quint32> {
+	void serialize(BLOCK& block) const {
+		block.serialize32(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize32(value);
+	}
+};
+struct UNSPECIFIED3  : public RAW_TYPE<quint64> {
+	void serialize(BLOCK& block) const {
+		block.serialize48(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize48(value);
+	}
 };
 
 // serialize - write value to block
-void serialize  (BLOCK& block, const quint8  value) {
-	block.serialize(value);
+void serialize(BLOCK& block, const BYTE&          value) {
+	value.serialize(block);
 }
-void serialize  (BLOCK& block, const quint16 value) {
-	block.serialize(value);
+void serialize(BLOCK& block, const CARDINAL&      value) {
+	value.serialize(block);
 }
-void serialize  (BLOCK& block, const quint32 value) {
-	block.serialize(value);
+void serialize(BLOCK& block, const LONG_CARDINAL& value) {
+	value.serialize(block);
 }
-// write 48 bit of value
-void serialize  (BLOCK& block, const quint64 value) {
-	block.serialize(value);
+void serialize(BLOCK& block, const STRING&        value) {
+	value.serialize(block);
+}
+void serialize(BLOCK& block, const UNSPECIFIED&   value) {
+	value.serialize(block);
+}
+void serialize(BLOCK& block, const UNSPECIFIED2&  value) {
+	value.serialize(block);
+}
+void serialize(BLOCK& block, const UNSPECIFIED3&  value) {
+	value.serialize(block);
 }
 // write whole value
-void serialize  (BLOCK& block, const BLOCK&  value) {
+void serialize(BLOCK& block, const BLOCK&         value) {
 	block.serialize(value);
 }
 
+
 // deserialize - read from block and write to value
-void deserialize(BLOCK& block, quint8  value) {
-	block.deserialize(value);
+void deserialize(BLOCK& block, BYTE&          value) {
+	value.deserialize(block);
 }
-void deserialize(BLOCK& block, quint16 value) {
-	block.deserialize(value);
+void deserialize(BLOCK& block, CARDINAL&      value) {
+	value.deserialize(block);
 }
-void deserialize(BLOCK& block, quint32 value) {
-	block.deserialize(value);
+void deserialize(BLOCK& block, LONG_CARDINAL& value) {
+	value.deserialize(block);
 }
-// read 48 bit of block
-void deserialize(BLOCK& block, quint64 value) {
-	block.deserialize(value);
+void deserialize(BLOCK& block, STRING&        value) {
+	value.deserialize(block);
 }
-// read rest of block
-void deserialize(BLOCK& block, BLOCK&  value) {
-	block.deserialize(value);
+void deserialize(BLOCK& block, UNSPECIFIED&   value) {
+	value.deserialize(block);
 }
-
-
-// Use NetData as Block
-using Block = NetData;
-
-// define predefined Courier type
-using BOOLEAN       = quint16;
-using BYTE          = quint8;
-using CARDINAL      = quint16;
-using LONG_CARDINAL = quint32;
-using STRING        = QString;
-using UNSPECIFIED   = quint16;
-using UNSPECIFIED2  = quint32;
-using UNSPECIFIED3  = quint64;
-
-void serialize  (Block& block, const quint8& value) {
-	block.put8(value);
+void deserialize(BLOCK& block, UNSPECIFIED2&  value) {
+	value.deserialize(block);
 }
-void deserialize(Block& block, quint8& value) {
-	value = block.get8();
+void deserialize(BLOCK& block, UNSPECIFIED3&  value) {
+	value.deserialize(block);
+}
+// read rest of value
+void deserialize(BLOCK& block, BLOCK&         value) {
+	value.deserialize(block);
 }
 
-void serialize  (Block& block, const quint16& value) {
-	block.put16(value);
-}
-void deserialize(Block& block, quint16& value) {
-	value = block.get16();
-}
-
-void serialize  (Block& block, const quint32& value) {
-	block.put32(value);
-}
-void deserialize(Block& block, quint32& value) {
-	value = block.get32();
-}
-
-void serialize  (Block& block, const quint64& value) {
-	block.put48(value);
-}
-void deserialize(Block& block, quint64& value) {
-	value = block.get48();
-}
-
-void serialize  (Block& block, const QString& value);
-void deserialize(Block& block, QString& value);
 
 template <typename T>
 struct SEQUENCE {
@@ -214,20 +301,20 @@ public:
 		return data[i];
 	}
 
-	void serialize(Block& block) {
-		Courier::serialize(block, size);
+	void serialize(BLOCK& block) {
+		block.serialize16(size);
 		for(quint16 i = 0; i < size; i++) {
-			Courier::serialize(block, data[i]);
+			block.serialize8(data[i]);
 		}
 	}
-	void deserialize(Block& block) {
-		Courier::deserialize(block, size);
+	void deserialize(BLOCK& block) {
+		block.deserialize16(size);
 		if (maxSize <= size) {
 			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
 			RUNTIME_ERROR();
 		}
 		for(quint16 i = 0; i < size; i++) {
-			Courier::deserialize(block, data[i]);
+			block.deserialize8(data[i]);
 		}
 	}
 
@@ -235,14 +322,6 @@ private:
 	quint16 size = 0;
 	T* data;
 };
-template <typename T>
-void deserialize (Block& block, SEQUENCE<T>& value) {
-	value.deserialize(block);
-}
-template <typename T>
-void serialize   (Block& block, SEQUENCE<T>& value) {
-	value.serialize(block);
-}
 
 template <typename T>
 struct ARRAY {
@@ -284,12 +363,12 @@ struct ARRAY {
 		return data[i];
 	}
 
-	void serialize(Block& block) {
+	void serialize(BLOCK& block) {
 		for(quint16 i = 0; i < maxSize; i++) {
 			serialize(block, data[i]);
 		}
 	}
-	void deserialize(Block& block) {
+	void deserialize(BLOCK& block) {
 		for(quint16 i = 0; i < maxSize; i++) {
 			deserialize(block, data[i]);
 		}
@@ -298,14 +377,6 @@ private:
 	quint16 size = 0;
 	T* data;
 };
-template <typename T>
-void deserialize (Block& block, ARRAY<T>& value) {
-	value.deserialize(block);
-}
-template <typename T>
-void serialize   (Block& block, ARRAY<T>& value) {
-	value.serialize(block);
-}
 
 }
 
