@@ -68,6 +68,12 @@ public:
 	quint16 remaining() const {
 		return limit - pos;
 	}
+	quint16 getPos() {
+		return pos;
+	}
+	quint16 getLimit() {
+		return limit;
+	}
 
 
 	// serialize - write value to block
@@ -93,7 +99,7 @@ private:
 	quint16 limit;
 
 	const bool    freeData;
-	quint8* data;
+	quint8* const data;
 };
 
 
