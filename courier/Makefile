@@ -57,7 +57,7 @@ run-app: all
 	tmp/build/app/app
 
 run-test: all
-	echo -n >tmp/debeug.log
+	echo -n >tmp/debug.log
 	tmp/build/test/test
 	
 ##
