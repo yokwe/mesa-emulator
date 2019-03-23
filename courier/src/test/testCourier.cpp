@@ -34,10 +34,8 @@ static log4cpp::Category& logger = Logger::getLogger("testCourier");
 
 #include "testBase.h"
 
-#include "../courier/Courier.h"
-
-class testByteBuffer : public testBase {
-	CPPUNIT_TEST_SUITE(testByteBuffer);
+class testCourier : public testBase {
+	CPPUNIT_TEST_SUITE(testCourier);
 	CPPUNIT_TEST(testBlock);
 	CPPUNIT_TEST_SUITE_END();
 
@@ -47,4 +45,4 @@ public:
 	}
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(testByteBuffer);
+CPPUNIT_TEST_SUITE_REGISTRATION(testCourier);
