@@ -75,24 +75,20 @@ public:
 	void serialize  (const quint16 value);
 	void serialize  (const quint32 value);
 	void serialize  (const quint64 value); // write 48 bit
-	void serialize  (const BLOCK&  value); // write whole value
+	void serialize  (const BLOCK&  value); // write whole value. pos of value will not be change.
 
 	// deserialize - read from block and write to value
 	void deserialize(quint8&  value);
 	void deserialize(quint16& value);
 	void deserialize(quint32& value);
 	void deserialize(quint64& value); // read 48 bit
-	void deserialize(BLOCK&   value); // read rest of block
+	void deserialize(BLOCK&   value); // read rest of block. pos of value will be change.
 
 private:
 	quint16 pos;
 	quint16 limit;
 
 	quint16* data;
-
-	// low level methods
-	quint8 get();
-	void   put(const quint8 value);
 };
 
 // serialize - write value to block
