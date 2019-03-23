@@ -17,7 +17,8 @@ all:
 	(cd src/service; make all)
 	(cd src/pex;     make all)
 	(cd src/app;     make all)
-
+	(cd src/test;    make all)
+	
 qmake:
 	(cd src/util;    qmake)
 	(cd src/courier; qmake)
@@ -25,6 +26,7 @@ qmake:
 	(cd src/service; qmake)
 	(cd src/pex;     qmake)
 	(cd src/app;     qmake)
+	(cd src/test;    qmake)
 	qmake --version
 
 qt5-default:
@@ -40,6 +42,7 @@ clean:
 	mkdir  tmp/build/service
 	mkdir  tmp/build/pex
 	mkdir  tmp/build/app
+	mkdir  tmp/build/test
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -53,7 +56,10 @@ run-app: all
 	echo -n >tmp/debug.log
 	tmp/build/app/app
 
-
+run-test: all
+	echo -n >tmp/debeug.log
+	tmp/build/test/test
+	
 ##
 ## courier related targets
 ##
