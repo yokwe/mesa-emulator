@@ -116,7 +116,6 @@ protected:
 public:
 	// Default constructor
 	RAW_TYPE() {
-		value = 0;
 	}
 	// BYTE a; BYTE b(a);
 	RAW_TYPE(const T& rhs) {
@@ -148,7 +147,10 @@ public:
 };
 
 
-struct BYTE          : public RAW_TYPE<quint8>  {
+struct BYTE : public RAW_TYPE<quint8> {
+	BYTE() {
+		value = 0;
+	}
 	void serialize(BLOCK& block) const {
 		block.serialize8(value);
 	}
@@ -156,7 +158,10 @@ struct BYTE          : public RAW_TYPE<quint8>  {
 		block.deserialize8(value);
 	}
 };
-struct CARDINAL      : public RAW_TYPE<quint16> {
+struct CARDINAL : public RAW_TYPE<quint16> {
+	CARDINAL() {
+		value = 0;
+	}
 	void serialize(BLOCK& block) const {
 		block.serialize16(value);
 	}
@@ -165,6 +170,9 @@ struct CARDINAL      : public RAW_TYPE<quint16> {
 	}
 };
 struct LONG_CARDINAL : public RAW_TYPE<quint32> {
+	LONG_CARDINAL() {
+		value = 0;
+	}
 	void serialize(BLOCK& block) const {
 		block.serialize32(value);
 	}
@@ -172,7 +180,8 @@ struct LONG_CARDINAL : public RAW_TYPE<quint32> {
 		block.deserialize32(value);
 	}
 };
-struct STRING        : public RAW_TYPE<QString> {
+struct STRING : public RAW_TYPE<QString> {
+	STRING() {}
 	void serialize(BLOCK& block) const {
 		block.serialize(value);
 	}
@@ -180,7 +189,10 @@ struct STRING        : public RAW_TYPE<QString> {
 		block.deserialize(value);
 	}
 };
-struct UNSPECIFIED   : public RAW_TYPE<quint16> {
+struct UNSPECIFIED : public RAW_TYPE<quint16> {
+	UNSPECIFIED() {
+		value = 0;
+	}
 	void serialize(BLOCK& block) const {
 		block.serialize16(value);
 	}
@@ -188,7 +200,10 @@ struct UNSPECIFIED   : public RAW_TYPE<quint16> {
 		block.deserialize16(value);
 	}
 };
-struct UNSPECIFIED2  : public RAW_TYPE<quint32> {
+struct UNSPECIFIED2 : public RAW_TYPE<quint32> {
+	UNSPECIFIED2() {
+		value = 0;
+	}
 	void serialize(BLOCK& block) const {
 		block.serialize32(value);
 	}
@@ -196,7 +211,10 @@ struct UNSPECIFIED2  : public RAW_TYPE<quint32> {
 		block.deserialize32(value);
 	}
 };
-struct UNSPECIFIED3  : public RAW_TYPE<quint64> {
+struct UNSPECIFIED3 : public RAW_TYPE<quint64> {
+	UNSPECIFIED3() {
+		value = 0;
+	}
 	void serialize(BLOCK& block) const {
 		block.serialize48(value);
 	}
@@ -206,59 +224,27 @@ struct UNSPECIFIED3  : public RAW_TYPE<quint64> {
 };
 
 // serialize - write value to block
-void serialize(BLOCK& block, const BYTE&          value) {
-	value.serialize(block);
-}
-void serialize(BLOCK& block, const CARDINAL&      value) {
-	value.serialize(block);
-}
-void serialize(BLOCK& block, const LONG_CARDINAL& value) {
-	value.serialize(block);
-}
-void serialize(BLOCK& block, const STRING&        value) {
-	value.serialize(block);
-}
-void serialize(BLOCK& block, const UNSPECIFIED&   value) {
-	value.serialize(block);
-}
-void serialize(BLOCK& block, const UNSPECIFIED2&  value) {
-	value.serialize(block);
-}
-void serialize(BLOCK& block, const UNSPECIFIED3&  value) {
-	value.serialize(block);
-}
+void serialize(BLOCK& block, const BYTE&          value);
+void serialize(BLOCK& block, const CARDINAL&      value);
+void serialize(BLOCK& block, const LONG_CARDINAL& value);
+void serialize(BLOCK& block, const STRING&        value);
+void serialize(BLOCK& block, const UNSPECIFIED&   value);
+void serialize(BLOCK& block, const UNSPECIFIED2&  value);
+void serialize(BLOCK& block, const UNSPECIFIED3&  value);
 // write whole value
-void serialize(BLOCK& block, const BLOCK&         value) {
-	block.serialize(value);
-}
+void serialize(BLOCK& block, const BLOCK&         value);
 
 
 // deserialize - read from block and write to value
-void deserialize(BLOCK& block, BYTE&          value) {
-	value.deserialize(block);
-}
-void deserialize(BLOCK& block, CARDINAL&      value) {
-	value.deserialize(block);
-}
-void deserialize(BLOCK& block, LONG_CARDINAL& value) {
-	value.deserialize(block);
-}
-void deserialize(BLOCK& block, STRING&        value) {
-	value.deserialize(block);
-}
-void deserialize(BLOCK& block, UNSPECIFIED&   value) {
-	value.deserialize(block);
-}
-void deserialize(BLOCK& block, UNSPECIFIED2&  value) {
-	value.deserialize(block);
-}
-void deserialize(BLOCK& block, UNSPECIFIED3&  value) {
-	value.deserialize(block);
-}
+void deserialize(BLOCK& block, BYTE&          value);
+void deserialize(BLOCK& block, CARDINAL&      value);
+void deserialize(BLOCK& block, LONG_CARDINAL& value);
+void deserialize(BLOCK& block, STRING&        value);
+void deserialize(BLOCK& block, UNSPECIFIED&   value);
+void deserialize(BLOCK& block, UNSPECIFIED2&  value);
+void deserialize(BLOCK& block, UNSPECIFIED3&  value);
 // read rest of value
-void deserialize(BLOCK& block, BLOCK&         value) {
-	value.deserialize(block);
-}
+void deserialize(BLOCK& block, BLOCK&         value);
 
 
 template <typename T>

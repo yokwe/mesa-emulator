@@ -216,3 +216,60 @@ void Courier::BLOCK::deserialize(BLOCK&  value) {
 		value.data[value.pos++] = data[pos++];
 	}
 }
+
+
+// serialize - write value to block
+void Courier::serialize(BLOCK& block, const BYTE&          value) {
+	value.serialize(block);
+}
+void Courier::serialize(BLOCK& block, const CARDINAL&      value) {
+	value.serialize(block);
+}
+void Courier::serialize(BLOCK& block, const LONG_CARDINAL& value) {
+	value.serialize(block);
+}
+void Courier::serialize(BLOCK& block, const STRING&        value) {
+	value.serialize(block);
+}
+void Courier::serialize(BLOCK& block, const UNSPECIFIED&   value) {
+	value.serialize(block);
+}
+void Courier::serialize(BLOCK& block, const UNSPECIFIED2&  value) {
+	value.serialize(block);
+}
+void Courier::serialize(BLOCK& block, const UNSPECIFIED3&  value) {
+	value.serialize(block);
+}
+// write whole value
+void Courier::serialize(BLOCK& block, const BLOCK&         value) {
+	block.serialize(value);
+}
+
+
+// deserialize - read from block and write to value
+void Courier::deserialize(BLOCK& block, BYTE&          value) {
+	value.deserialize(block);
+}
+void Courier::deserialize(BLOCK& block, CARDINAL&      value) {
+	value.deserialize(block);
+}
+void Courier::deserialize(BLOCK& block, LONG_CARDINAL& value) {
+	value.deserialize(block);
+}
+void Courier::deserialize(BLOCK& block, STRING&        value) {
+	value.deserialize(block);
+}
+void Courier::deserialize(BLOCK& block, UNSPECIFIED&   value) {
+	value.deserialize(block);
+}
+void Courier::deserialize(BLOCK& block, UNSPECIFIED2&  value) {
+	value.deserialize(block);
+}
+void Courier::deserialize(BLOCK& block, UNSPECIFIED3&  value) {
+	value.deserialize(block);
+}
+// read rest of value
+void Courier::deserialize(BLOCK& block, BLOCK&         value) {
+	value.deserialize(block);
+}
+
