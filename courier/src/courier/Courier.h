@@ -54,39 +54,48 @@ class BLOCK {
 public:
 	const quint16 capacity;
 
-	BLOCK(quint16 capacity_) : capacity(capacity_), pos(0), limit(0), freeData(true), data(new quint8[capacity]) {}
-	BLOCK(quint8* data_, quint16 capacity_) : capacity(capacity_), pos(0), limit(0), freeData(false), data(data_) {}
+	BLOCK(quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(true), data(new quint8[capacity]) {
+		zero();
+	}
+	BLOCK(quint8* data_, quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(false), data(data_) {
+		zero();
+	}
 	~BLOCK() {
 		if (freeData) delete[] data;
 	}
 
-	// reset buffer for fresh write
+	QString toString() const;
+
+	// Set pos with 0 for fresh write
 	void clear() {
-		limit = capacity;
+		state = State::write;
+		limit = 0;
 		pos   = 0;
 	}
-	// fill data[0..capacity) with zero
+	// Fill data[0..capacity) with zero
 	void zero();
-	// reset buffer for read written content
-	void rewind() {
-		limit = pos;
-		pos   = 0;
-	}
-	// reset position for read
-	void reset() {
-		pos = 0;
-	}
-	// remaining
-	quint16 remaining() const {
-		return limit - pos;
-	}
-	quint16 getPos() {
+	// Set pos with 0 for read after serialization
+	void rewind();
+	// Set pos with 0 for read after deserialization
+	void reset();
+	// Return remaining byte for read
+	quint16 remaining() const;
+	quint16 getPos() const {
 		return pos;
 	}
-	quint16 getLimit() {
+	quint16 getLimit() const {
 		return limit;
 	}
-
+	bool equals(const BLOCK& that) const {
+		if (this->limit == that.limit) {
+			for(quint16 i = 0; i < limit; i++) {
+				if (this->data[i] != that.data[i]) return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	// serialize - write value to block
 	void serialize8 (const quint8  value);
@@ -107,6 +116,8 @@ public:
 	void deserialize(BLOCK&   value); // write whole value. pos of value will not be change.
 
 private:
+	enum class State {read, write};
+	State   state;
 	quint16 pos;
 	quint16 limit;
 
