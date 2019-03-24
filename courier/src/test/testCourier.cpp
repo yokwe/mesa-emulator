@@ -47,6 +47,11 @@ class testCourier : public testBase {
 
 	CPPUNIT_TEST(testBYTE);
 	CPPUNIT_TEST(testCARDINAL);
+	CPPUNIT_TEST(testLONGCARDINAL);
+	CPPUNIT_TEST(testSTRING);
+	CPPUNIT_TEST(testUNSPECIFIED);
+	CPPUNIT_TEST(testUNSPECIFIED2);
+	CPPUNIT_TEST(testUNSPECIFIED3);
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -558,7 +563,257 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
 		}
 	}
+	void testLONGCARDINAL() {
+		quint8 data[100];
+		Courier::BLOCK block(data, sizeof(data));
 
+		const quint8  v0 = 0x11;
+		const quint8  v1 = 0x22;
+		const quint8  v2 = 0x33;
+		const quint8  v3 = 0x44;
+		const quint32 v = (quint32)(v0 << 24 | v1 << 16 | v2 << 8 | v3 << 0);
+
+		{
+			Courier::LONG_CARDINAL a;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)a);
+		}
+		{
+			Courier::LONG_CARDINAL b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)b);
+			Courier::LONG_CARDINAL a(b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+		}
+		{
+			Courier::LONG_CARDINAL b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)b);
+			Courier::LONG_CARDINAL a;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)a);
+			a = b;
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+		}
+		{
+			Courier::LONG_CARDINAL a;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)a);
+			a = v;
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+		}
+
+		{
+			block.zero();
+			block.clear();
+
+			Courier::LONG_CARDINAL a(v);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
+			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
+			CPPUNIT_ASSERT_EQUAL(v2, data[2]);
+			CPPUNIT_ASSERT_EQUAL(v3, data[3]);
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+
+			block.rewind();
+			Courier::LONG_CARDINAL b;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+		}
+	}
+	void testSTRING() {
+		// TODO
+	}
+	void testUNSPECIFIED() {
+		quint8 data[100];
+		Courier::BLOCK block(data, sizeof(data));
+
+		const quint8  v0 = 0x11;
+		const quint8  v1 = 0x22;
+		const quint16 v = (quint16)(v0 << 8 | v1 << 0);
+
+		{
+			Courier::UNSPECIFIED a;
+			CPPUNIT_ASSERT_EQUAL((quint8)0, (quint8)a);
+		}
+		{
+			Courier::UNSPECIFIED b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint16)b);
+			Courier::UNSPECIFIED a(b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint16)a);
+		}
+		{
+			Courier::UNSPECIFIED b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint16)b);
+			Courier::UNSPECIFIED a;
+			CPPUNIT_ASSERT_EQUAL((quint16)0, (quint16)a);
+			a = b;
+			CPPUNIT_ASSERT_EQUAL(v, (quint16)a);
+		}
+		{
+			Courier::UNSPECIFIED a;
+			CPPUNIT_ASSERT_EQUAL((quint16)0, (quint16)a);
+			a = v;
+			CPPUNIT_ASSERT_EQUAL(v, (quint16)a);
+		}
+
+		{
+			block.zero();
+			block.clear();
+
+			Courier::UNSPECIFIED a(v);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
+			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+
+			block.rewind();
+			Courier::UNSPECIFIED b;
+			CPPUNIT_ASSERT_EQUAL((quint8)0, (quint8)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint16)a);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+		}
+	}
+	void testUNSPECIFIED2() {
+		quint8 data[100];
+		Courier::BLOCK block(data, sizeof(data));
+
+		const quint8  v0 = 0x11;
+		const quint8  v1 = 0x22;
+		const quint8  v2 = 0x33;
+		const quint8  v3 = 0x44;
+		const quint32 v = (quint32)(v0 << 24 | v1 << 16 | v2 << 8 | v3 << 0);
+
+		{
+			Courier::UNSPECIFIED2 a;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)a);
+		}
+		{
+			Courier::UNSPECIFIED2 b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)b);
+			Courier::UNSPECIFIED2 a(b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+		}
+		{
+			Courier::UNSPECIFIED2 b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)b);
+			Courier::UNSPECIFIED2 a;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)a);
+			a = b;
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+		}
+		{
+			Courier::UNSPECIFIED2 a;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)a);
+			a = v;
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+		}
+
+		{
+			block.zero();
+			block.clear();
+
+			Courier::UNSPECIFIED2 a(v);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
+			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
+			CPPUNIT_ASSERT_EQUAL(v2, data[2]);
+			CPPUNIT_ASSERT_EQUAL(v3, data[3]);
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+
+			block.rewind();
+			Courier::UNSPECIFIED2 b;
+			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+		}
+	}
+	void testUNSPECIFIED3() {
+		quint8 data[100];
+		Courier::BLOCK block(data, sizeof(data));
+
+		const quint8  v0 = 0x11;
+		const quint8  v1 = 0x22;
+		const quint8  v2 = 0x33;
+		const quint8  v3 = 0x44;
+		const quint8  v4 = 0x55;
+		const quint8  v5 = 0x66;
+		const quint64 v = (quint64)((quint64)v0 << 40 | ((quint64)v1) << 32 | ((quint64)v2) << 24 | ((quint64)v3) << 16 | ((quint64)v4) << 8 | ((quint64)v5) << 0);
+
+		{
+			Courier::UNSPECIFIED3 a;
+			CPPUNIT_ASSERT_EQUAL((quint64)0, (quint64)a);
+		}
+		{
+			Courier::UNSPECIFIED3 b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint64)b);
+			Courier::UNSPECIFIED3 a(b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
+		}
+		{
+			Courier::UNSPECIFIED3 b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (quint64)b);
+			Courier::UNSPECIFIED3 a;
+			CPPUNIT_ASSERT_EQUAL((quint64)0, (quint64)a);
+			a = b;
+			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
+		}
+		{
+			Courier::UNSPECIFIED3 a;
+			CPPUNIT_ASSERT_EQUAL((quint64)0, (quint64)a);
+			a = v;
+			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
+		}
+
+		{
+			block.zero();
+			block.clear();
+
+			Courier::UNSPECIFIED3 a(v);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
+			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
+			CPPUNIT_ASSERT_EQUAL(v2, data[2]);
+			CPPUNIT_ASSERT_EQUAL(v3, data[3]);
+			CPPUNIT_ASSERT_EQUAL(v4, data[4]);
+			CPPUNIT_ASSERT_EQUAL(v5, data[5]);
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
+
+			block.rewind();
+			Courier::UNSPECIFIED3 b;
+			CPPUNIT_ASSERT_EQUAL((quint64)0, (quint64)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
+		}
+	}
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(testCourier);
