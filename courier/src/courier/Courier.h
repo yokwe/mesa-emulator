@@ -100,6 +100,8 @@ public:
 	// serialize - write value to block
 	void serialize8 (const quint8  value);
 	void serialize16(const quint16 value);
+	// for update of checksum field
+	void serialize16(const quint16 offset, const quint16 value);
 	void serialize32(const quint32 value);
 	void serialize48(const quint64 value);
 
