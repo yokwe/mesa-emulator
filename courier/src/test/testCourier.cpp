@@ -42,6 +42,8 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testBlock32);
 	CPPUNIT_TEST(testBlock48);
 	CPPUNIT_TEST(testBlockQString);
+	CPPUNIT_TEST(testBlockBlockSerialize);
+	CPPUNIT_TEST(testBlockBlockDeserialize);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -81,7 +83,7 @@ public:
 		}
 
 		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
 
 		block.rewind();
 
@@ -132,7 +134,7 @@ public:
 		}
 
 		CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
 
 		block.rewind();
 
@@ -183,7 +185,7 @@ public:
 		}
 
 		CPPUNIT_ASSERT_EQUAL((quint16)8, block.getPos());
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)8, block.getLimit());
 
 		block.rewind();
 
@@ -234,11 +236,11 @@ public:
 		}
 
 		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getPos());
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
 
 		block.rewind();
 
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0,  block.getPos());
 		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
 
 		quint64 b0, b1;
@@ -285,11 +287,11 @@ public:
 		}
 
 		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getPos());
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
 
 		block.rewind();
 
-		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0,  block.getPos());
 		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
 
 		QString b0, b1;
@@ -306,6 +308,132 @@ public:
 			bool errorObserved = false;
 			try {
 				block.deserialize(b1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+	void testBlockBlockSerialize() {
+		const quint16 capacity = 4;
+		quint8 src_data[capacity + 2];
+		Courier::BLOCK src(src_data, sizeof(src_data));
+
+		quint8 dst_data[capacity + 2 + 2];
+		Courier::BLOCK dst(dst_data, sizeof(dst_data));
+
+		quint8 expect_data[capacity + 2 + 2];
+		Courier::BLOCK expect(expect_data, sizeof(expect_data));
+
+		{
+			quint8 c = 0x11;
+			src.serialize8(c);
+			src.serialize8(c);
+			// src = 1111
+			c = 0x22;
+			src.serialize8(c);
+			src.serialize8(c);
+			// src = 11112222
+			src.rewind();
+			src.deserialize8(c);
+			src.deserialize8(c);
+		}
+		CPPUNIT_ASSERT_EQUAL((quint16)2, src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)4, src.getLimit());
+
+		{
+			quint8 c = 0x33;
+			dst.serialize8(c);
+			dst.serialize8(c);
+			// dst = 3333
+		}
+		CPPUNIT_ASSERT_EQUAL((quint16)2, dst.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)2, dst.getLimit());
+
+		dst.serialize(src);
+		// dst = 333311112222
+		CPPUNIT_ASSERT_EQUAL((quint16)6, dst.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)6, dst.getLimit());
+
+
+		// expect = 333311112222
+		{
+			quint8 c = 0x33;
+			expect.serialize8(c);
+			expect.serialize8(c);
+			c = 0x11;
+			expect.serialize8(c);
+			expect.serialize8(c);
+			c = 0x22;
+			expect.serialize8(c);
+			expect.serialize8(c);
+		}
+		CPPUNIT_ASSERT_EQUAL(true, expect.equals(dst));
+
+		{
+			bool errorObserved = false;
+			try {
+				dst.serialize(src);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+	void testBlockBlockDeserialize() {
+		const quint16 capacity = 4;
+		quint8 src_data[capacity + 2];
+		Courier::BLOCK src(src_data, sizeof(src_data));
+
+		quint8 dst_data[capacity + 2 + 2];
+		Courier::BLOCK dst(dst_data, sizeof(dst_data));
+
+		quint8 expect_data[capacity + 2 + 2];
+		Courier::BLOCK expect(expect_data, sizeof(expect_data));
+
+		{
+			quint8 c;
+			c = 0x11;
+			src.serialize8(c);
+			src.serialize8(c);
+			// src = 1111
+			c = 0x22;
+			src.serialize8(c);
+			src.serialize8(c);
+			// src = 11112222
+			src.rewind();
+			src.deserialize8(c);
+			src.deserialize8(c);
+		}
+
+		{
+			quint8 c;
+			c = 0x33;
+			dst.serialize8(c);
+			dst.serialize8(c);
+			// dst = 33
+		}
+		src.deserialize(dst);
+		// dst = 33332222
+
+		{
+			quint8 c;
+			c = 0x33;
+			expect.serialize8(c);
+			expect.serialize8(c);
+			c = 0x22;
+			expect.serialize8(c);
+			expect.serialize8(c);
+		}
+		// expect = 33332222
+
+		CPPUNIT_ASSERT_EQUAL(true, expect.equals(dst));
+
+		{
+			bool errorObserved = false;
+			try {
+				src.reset();
+				dst.deserialize(src);
 			} catch (Courier::CourierError& e) {
 				errorObserved = true;
 			}
