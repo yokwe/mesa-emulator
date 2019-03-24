@@ -44,6 +44,9 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testBlockQString);
 	CPPUNIT_TEST(testBlockBlockSerialize);
 	CPPUNIT_TEST(testBlockBlockDeserialize);
+
+	CPPUNIT_TEST(testBYTE);
+
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -438,6 +441,22 @@ public:
 				errorObserved = true;
 			}
 			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+
+	void testBYTE() {
+		{
+			Courier::BLOCK block(100);
+
+			Courier::BYTE a;
+			a = 100;
+
+			Courier::serialize(block, a);
+		}
+
+		{
+			Courier::ARRAY<Courier::CARDINAL> ac(10);
+
 		}
 	}
 };
