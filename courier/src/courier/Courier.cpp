@@ -73,7 +73,6 @@ quint16 Courier::BLOCK::remaining() const {
 		COURIER_ERROR();
 	}
 }
-
 // serialize - write value to block
 void Courier::BLOCK::serialize8(const quint8  value) {
 	const quint16 size = 1;
@@ -88,8 +87,6 @@ void Courier::BLOCK::serialize8(const quint8  value) {
 		limit = pos;
 	}
 }
-
-
 void Courier::BLOCK::serialize16(const quint16 value) {
 	if (state == State::write) {
 		const quint16 size = 2;
@@ -111,6 +108,17 @@ void Courier::BLOCK::serialize16(const quint16 value) {
 		logger.error("Unexpected state");
 		COURIER_ERROR();
 	}
+}
+void Courier::BLOCK::serialize16(const quint16 offset, const quint16 value) {
+	const quint16 size = 2;
+	if (limit < (offset + size)) {
+		logger.error("Unexpected overflow  limit = %d  offset = %d  size = %d", limit, offset, size);
+		COURIER_ERROR();
+	}
+	quint16 savePos = pos;
+	pos = offset;
+	serialize16(value);
+	pos = savePos;
 }
 void Courier::BLOCK::serialize32(const quint32 value) {
 	if (state == State::write) {
