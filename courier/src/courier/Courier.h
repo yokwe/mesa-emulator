@@ -455,7 +455,7 @@ public:
 	// BYTE a(10);
 	UNSPECIFIED3(const long long value) {
 		if (0 <= value && value <= MAX_VALUE) {
-			this->value = (quint32)value;
+			this->value = (quint64)value;
 		} else {
 			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
 			COURIER_ERROR();
@@ -470,7 +470,7 @@ public:
 	// BYTE a; a = 100;
 	UNSPECIFIED3& operator= (const long long value) {
 		if (0 <= value && value <= MAX_VALUE) {
-			this->value = (quint32)value;
+			this->value = (quint64)value;
 		} else {
 			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
 			COURIER_ERROR();
