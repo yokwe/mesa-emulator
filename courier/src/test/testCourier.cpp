@@ -38,6 +38,10 @@ class testCourier : public testBase {
 	CPPUNIT_TEST_SUITE(testCourier);
 	CPPUNIT_TEST(testBlock);
 	CPPUNIT_TEST(testBlock8);
+	CPPUNIT_TEST(testBlock16);
+	CPPUNIT_TEST(testBlock32);
+	CPPUNIT_TEST(testBlock48);
+	CPPUNIT_TEST(testBlockQString);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -66,6 +70,16 @@ public:
 		block.serialize8(a0);
 		block.serialize8(a1);
 
+		{
+			bool errorObserved = false;
+			try {
+				block.serialize8(a1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+
 		CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
 		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
 
@@ -83,6 +97,220 @@ public:
 
 		CPPUNIT_ASSERT_EQUAL(a0, b0);
 		CPPUNIT_ASSERT_EQUAL(a1, b1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.deserialize8(b1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+	void testBlock16() {
+		const quint16 capacity = 4;
+		quint8 data[capacity];
+		for(quint16 i = 0; i < capacity; i++) {
+			data[i] = i;
+		}
+		Courier::BLOCK block(data, sizeof(data));
+
+		quint16 a0 = 0x1111;
+		quint16 a1 = 0x2222;
+		block.serialize16(a0);
+		block.serialize16(a1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.serialize16(a1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+
+		CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+
+		block.rewind();
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+
+		quint16 b0, b1;
+		block.deserialize16(b0);
+		block.deserialize16(b1);
+
+		CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+
+		CPPUNIT_ASSERT_EQUAL(a0, b0);
+		CPPUNIT_ASSERT_EQUAL(a1, b1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.deserialize16(b1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+	void testBlock32() {
+		const quint16 capacity = 8;
+		quint8 data[capacity];
+		for(quint16 i = 0; i < capacity; i++) {
+			data[i] = i;
+		}
+		Courier::BLOCK block(data, sizeof(data));
+
+		quint32 a0 = 0x1111;
+		quint32 a1 = 0x2222;
+		block.serialize32(a0);
+		block.serialize32(a1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.serialize16(a1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+
+		CPPUNIT_ASSERT_EQUAL((quint16)8, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+
+		block.rewind();
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8, block.getLimit());
+
+		quint32 b0, b1;
+		block.deserialize32(b0);
+		block.deserialize32(b1);
+
+		CPPUNIT_ASSERT_EQUAL((quint16)8, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8, block.getLimit());
+
+		CPPUNIT_ASSERT_EQUAL(a0, b0);
+		CPPUNIT_ASSERT_EQUAL(a1, b1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.deserialize32(b1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+	void testBlock48() {
+		const quint16 capacity = 12;
+		quint8 data[capacity];
+		for(quint16 i = 0; i < capacity; i++) {
+			data[i] = i;
+		}
+		Courier::BLOCK block(data, sizeof(data));
+
+		quint64 a0 = 0x111111;
+		quint64 a1 = 0x222222;
+		block.serialize48(a0);
+		block.serialize48(a1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.serialize16(a1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+
+		block.rewind();
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
+
+		quint64 b0, b1;
+		block.deserialize48(b0);
+		block.deserialize48(b1);
+
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
+
+		CPPUNIT_ASSERT_EQUAL(a0, b0);
+		CPPUNIT_ASSERT_EQUAL(a1, b1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.deserialize48(b1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+	}
+	void testBlockQString() {
+		const quint16 capacity = 12;
+		quint8 data[capacity];
+		for(quint16 i = 0; i < capacity; i++) {
+			data[i] = i;
+		}
+		Courier::BLOCK block(data, sizeof(data));
+
+		QString a0("ABCD");
+		QString a1("EFG");
+		block.serialize(a0);
+		block.serialize(a1);
+
+		{
+			bool errorObserved = false;
+			try {
+				block.serialize(a1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+
+		block.rewind();
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
+
+		QString b0, b1;
+		block.deserialize(b0);
+		block.deserialize(b1);
+
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)12, block.getLimit());
+
+		CPPUNIT_ASSERT_EQUAL(0, QString::compare(a0, b0));
+		CPPUNIT_ASSERT_EQUAL(0, QString::compare(a1, b1));
+
+		{
+			bool errorObserved = false;
+			try {
+				block.deserialize(b1);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
 	}
 };
 
