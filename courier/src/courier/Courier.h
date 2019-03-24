@@ -36,7 +36,19 @@ OF SUCH DAMAGE.
 
 #include "../util/NetData.h"
 
+#define COURIER_ERROR() { logger.fatal("ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); throw Courier::CourierError(__FILE__, __LINE__, __FUNCTION__); }
+
 namespace Courier {
+
+class CourierError {
+public:
+	const char *file;
+	const int   line;
+	const char *func;
+
+	CourierError(const char *file_, const int line_, const char *func_) : file(file_), line(line_), func(func_) {}
+};
+
 
 class BLOCK {
 public:
