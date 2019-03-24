@@ -126,49 +126,59 @@ private:
 };
 
 
-template <typename T>
-struct RAW_TYPE {
-protected:
-	T value;
+struct Serializable {
+	virtual ~Serializable() {}
 
-public:
-	// Default constructor
-	RAW_TYPE() {
-	}
-	// BYTE a; BYTE b(a);
-	RAW_TYPE(const T& rhs) {
-		this->value = rhs.value;
-	}
-	// BYTE a(10);
-	RAW_TYPE(const T value_) {
-		value = value_;
-	}
-	virtual ~RAW_TYPE() {}
-
-	// BYTE a, b; a = b;s
-	RAW_TYPE& operator= (const RAW_TYPE& rhs) {
-		this->value = rhs.value;
-		return *this;
-	}
-	// BYTE a; a = 100;
-	RAW_TYPE& operator= (const T rhs) {
-		this->value = rhs;
-		return *this;
-	}
-	// BYTE b; quint8 a = b;
-	operator T() const {
-		return value;
-	}
-
-	virtual void serialize  (BLOCK& block) = 0;
+	// read this and write to block
+	virtual void serialize  (BLOCK& block) const = 0;
+	// read block and write to this
 	virtual void deserialize(BLOCK& block) = 0;
 };
 
 
-struct BYTE : public RAW_TYPE<quint8> {
+struct BYTE : public Serializable {
+private:
+	static const int MAX_VALUE = 0xFF;
+	quint8 value;
+
+public:
 	BYTE() {
 		value = 0;
 	}
+
+	BYTE(const BYTE& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	BYTE(const int value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint8)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	BYTE& operator= (const BYTE& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	BYTE& operator= (const int value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint8)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint8() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize8(value);
 	}
@@ -176,10 +186,49 @@ struct BYTE : public RAW_TYPE<quint8> {
 		block.deserialize8(value);
 	}
 };
-struct CARDINAL : public RAW_TYPE<quint16> {
+struct CARDINAL : public Serializable {
+private:
+	static const int MAX_VALUE = 0xFFFF;
+	quint16 value;
+
+public:
 	CARDINAL() {
 		value = 0;
 	}
+
+	CARDINAL(const CARDINAL& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	CARDINAL(const int value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint16)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	CARDINAL& operator= (const CARDINAL& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	CARDINAL& operator= (const int value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint16)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint16() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize16(value);
 	}
@@ -187,10 +236,49 @@ struct CARDINAL : public RAW_TYPE<quint16> {
 		block.deserialize16(value);
 	}
 };
-struct LONG_CARDINAL : public RAW_TYPE<quint32> {
+struct LONG_CARDINAL : public Serializable {
+private:
+	static const long long MAX_VALUE = 0xFFFFFFFFLL;
+	quint32 value;
+
+public:
 	LONG_CARDINAL() {
 		value = 0;
 	}
+
+	LONG_CARDINAL(const LONG_CARDINAL& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	LONG_CARDINAL(const long long value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint32)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	LONG_CARDINAL& operator= (const LONG_CARDINAL& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	LONG_CARDINAL& operator= (const long long value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint32)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint32() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize32(value);
 	}
@@ -198,8 +286,50 @@ struct LONG_CARDINAL : public RAW_TYPE<quint32> {
 		block.deserialize32(value);
 	}
 };
-struct STRING : public RAW_TYPE<QString> {
-	STRING() {}
+struct STRING : public Serializable {
+private:
+	static const int MAX_SIZE = 65535;
+	QString value;
+
+public:
+	STRING() {
+	}
+
+	STRING(const STRING& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	STRING(const QString& value) {
+		int size = value.size();
+		if (size <= MAX_SIZE) {
+			this->value = value;
+		} else {
+			logger.error("Overflow  size = %d  MAX_SIZE = %d", size, MAX_SIZE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	STRING& operator= (const STRING& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	STRING& operator= (const QString& value) {
+		int size = value.size();
+		if (size <= MAX_SIZE) {
+			this->value = value;
+		} else {
+			logger.error("Overflow  size = %d  MAX_SIZE = %d", size, MAX_SIZE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator QString() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize(value);
 	}
@@ -207,10 +337,49 @@ struct STRING : public RAW_TYPE<QString> {
 		block.deserialize(value);
 	}
 };
-struct UNSPECIFIED : public RAW_TYPE<quint16> {
+struct UNSPECIFIED : public Serializable {
+private:
+	static const int MAX_VALUE = 0xFFFF;
+	quint16 value;
+
+public:
 	UNSPECIFIED() {
 		value = 0;
 	}
+
+	UNSPECIFIED(const UNSPECIFIED& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	UNSPECIFIED(const int value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint16)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	UNSPECIFIED& operator= (const UNSPECIFIED& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	UNSPECIFIED& operator= (const int value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint16)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint16() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize16(value);
 	}
@@ -218,10 +387,49 @@ struct UNSPECIFIED : public RAW_TYPE<quint16> {
 		block.deserialize16(value);
 	}
 };
-struct UNSPECIFIED2 : public RAW_TYPE<quint32> {
+struct UNSPECIFIED2 : public Serializable {
+private:
+	static const long long MAX_VALUE = 0xFFFFFFFFLL;
+	quint32 value;
+
+public:
 	UNSPECIFIED2() {
 		value = 0;
 	}
+
+	UNSPECIFIED2(const UNSPECIFIED2& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	UNSPECIFIED2(const long long value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint32)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	UNSPECIFIED2& operator= (const UNSPECIFIED2& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	UNSPECIFIED2& operator= (const long long value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint32)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint32() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize32(value);
 	}
@@ -229,10 +437,49 @@ struct UNSPECIFIED2 : public RAW_TYPE<quint32> {
 		block.deserialize32(value);
 	}
 };
-struct UNSPECIFIED3 : public RAW_TYPE<quint64> {
+struct UNSPECIFIED3 : public Serializable {
+private:
+	static const long long MAX_VALUE = 0xFFFFFFFFFFFFLL;
+	quint64 value;
+
+public:
 	UNSPECIFIED3() {
 		value = 0;
 	}
+
+	UNSPECIFIED3(const UNSPECIFIED3& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	UNSPECIFIED3(const long long value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint32)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	UNSPECIFIED3& operator= (const UNSPECIFIED3& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	UNSPECIFIED3& operator= (const long long value) {
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint32)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint64() const {
+		return value;
+	}
+
 	void serialize(BLOCK& block) const {
 		block.serialize48(value);
 	}
@@ -240,6 +487,7 @@ struct UNSPECIFIED3 : public RAW_TYPE<quint64> {
 		block.deserialize48(value);
 	}
 };
+
 
 // serialize - write value to block
 void serialize(BLOCK& block, const BYTE&          value);
@@ -265,12 +513,19 @@ void deserialize(BLOCK& block, UNSPECIFIED3&  value);
 void deserialize(BLOCK& block, BLOCK&         value);
 
 
+// Suppose T implements Serializable
 template <typename T>
-struct SEQUENCE {
+struct SEQUENCE : public Serializable {
 public:
-	const quint16 maxSize;
-	SEQUENCE(quint16 maxSize_ = 65535) : maxSize(maxSize_) {
-		data = new T [maxSize];
+	static const int MAX_SIZE = 65535;
+	const int maxSize;
+	SEQUENCE(int maxSize_ = MAX_SIZE) : maxSize(maxSize_) {
+		if (0 <= maxSize && maxSize <= MAX_SIZE) {
+			data = new T [maxSize];
+		} else {
+			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+			COURIER_ERROR();
+		}
 	}
 	~SEQUENCE() {
 		delete[] data;
@@ -286,53 +541,75 @@ public:
 	void append(const T& newValue) {
 		if (maxSize <= size) {
 			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
-			RUNTIME_ERROR();
+			COURIER_ERROR();
 		}
 		data[size++] = newValue;
 	}
-	T& operator[](quint16 i) {
-		if (size <= i) {
+	T& operator[](int i) {
+		if (0 <= i && i < maxSize) {
+			// OK
+		} else {
 			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
-			RUNTIME_ERROR();
+			COURIER_ERROR();
 		}
 		return data[i];
 	}
-	const T& operator[](quint16 i) const {
-		if (size <= i) {
+	const T& operator[](int i) const {
+		if (0 <= i && i < maxSize) {
+			// OK
+		} else {
 			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
-			RUNTIME_ERROR();
+			COURIER_ERROR();
 		}
 		return data[i];
 	}
 
-	void serialize(BLOCK& block) {
+	// read this and write to block
+	void serialize(BLOCK& block) const {
 		block.serialize16(size);
 		for(quint16 i = 0; i < size; i++) {
-			block.serialize8(data[i]);
+			data[i].serialize(block);
 		}
 	}
+	// read block and write to this
 	void deserialize(BLOCK& block) {
-		block.deserialize16(size);
+		quint16 t;
+		block.deserialize16(t);
+		size = t;
 		if (maxSize <= size) {
 			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
-			RUNTIME_ERROR();
+			COURIER_ERROR();
 		}
 		for(quint16 i = 0; i < size; i++) {
-			block.deserialize8(data[i]);
+			data[i].deserialize(block);
 		}
 	}
 
 private:
-	quint16 size = 0;
+	int size = 0;
 	T* data;
 };
+template <typename T>
+void serialize(BLOCK& block, SEQUENCE<T> value) {
+	value.serialize(block);
+}
+template <typename T>
+void deserialize(BLOCK& block, SEQUENCE<T> value) {
+	value.serialize(block);
+}
 
 template <typename T>
-struct ARRAY {
-	const quint16 maxSize;
+struct ARRAY : public Serializable {
+	static const int MAX_SIZE = 65535;
+	const int maxSize;
 
-	ARRAY(quint16 maxSize_) : maxSize(maxSize_) {
-		data = new T [maxSize];
+	ARRAY(int maxSize_) : maxSize(maxSize_) {
+		if (0 <= maxSize && maxSize <= MAX_SIZE) {
+			data = new T [maxSize];
+		} else {
+			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+			COURIER_ERROR();
+		}
 	}
 	~ARRAY() {
 		delete[] data;
@@ -341,7 +618,7 @@ struct ARRAY {
 	void append(const T& newValue) {
 		if (maxSize <= size) {
 			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
-			RUNTIME_ERROR();
+			COURIER_ERROR();
 		}
 		data[size++] = newValue;
 	}
@@ -353,34 +630,46 @@ struct ARRAY {
 	}
 
 	T& operator[](quint16 i) {
-		if (maxSize <= i) {
-			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
-			RUNTIME_ERROR();
+		if (0 <= i && i < maxSize) {
+			// OK
+		} else {
+			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			COURIER_ERROR();
 		}
 		return data[i];
 	}
 	const T& operator[](quint16 i) const {
-		if (maxSize <= i) {
-			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
-			RUNTIME_ERROR();
+		if (0 <= i && i < maxSize) {
+			// OK
+		} else {
+			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			COURIER_ERROR();
 		}
 		return data[i];
 	}
 
-	void serialize(BLOCK& block) {
+	void serialize(BLOCK& block) const {
 		for(quint16 i = 0; i < maxSize; i++) {
-			serialize(block, data[i]);
+			data[i].serialize(block);
 		}
 	}
 	void deserialize(BLOCK& block) {
 		for(quint16 i = 0; i < maxSize; i++) {
-			deserialize(block, data[i]);
+			data[i].deserialize(block);
 		}
 	}
 private:
-	quint16 size = 0;
+	int size = 0;
 	T* data;
 };
+template <typename T>
+void serialize(BLOCK& block, ARRAY<T> value) {
+	value.serialize(block);
+}
+template <typename T>
+void deserialize(BLOCK& block, ARRAY<T> value) {
+	value.serialize(block);
+}
 
 }
 
