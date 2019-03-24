@@ -6,3 +6,4 @@ tmp/
 data/GVWin*/
 src/*/Makefile
 src/*/.qmake.stash
+src/stub/
