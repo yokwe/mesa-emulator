@@ -97,6 +97,7 @@ public class Compiler {
 		outc.indent().format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion()).println();
 		outc.indent().println();
 		outc.indent().format("#include \"../stub/%s.h\"", program.info.getProgramVersion()).println();
+		outc.indent().println();
 	}
 	public void genClosing(IndentPrintWriter outh, IndentPrintWriter outc) {
 		// for outh
@@ -351,6 +352,56 @@ public class Compiler {
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
+	
+	void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
+		boolean firstTime = true;
+		for(Program.DeclType declType: program.typeList) {
+			if (declType.type.kind != Type.Kind.ENUM) continue;
+			
+			if (firstTime) {
+				outh.indent().println("");
+				outh.indent().println("//");
+				outh.indent().println("// Enum Function Declaration");
+				outh.indent().println("//");
+
+				outc.indent().println("");
+				outc.indent().println("//");
+				outc.indent().println("// Enum Function Definition");
+				outc.indent().println("//");
+				
+				firstTime = false;
+			}
+
+			TypeEnum type = (TypeEnum)declType.type;
+			String   name     = declType.name;
+			String   programName = program.info.name;
+			outh.indent().format("QString toString(const Courier::%s::%s value);", programName, name).println();
+			
+			outc.indent().println();
+			outc.indent().format("QString toString(const Courier::%s::%s value) {", programName, name).println();
+			outc.nest();
+			outc.indent().format("static QMap<Courier::%s::%s, QString> map = {", programName, name).println();
+			outc.nest();	
+			for(Correspondence correspondence: type.elements) {
+				String enumName   = correspondence.id;
+				outc.indent().format("{Courier::%s::%s::%s,  \"%s\"},", programName, name, enumName, enumName).println();
+			}
+			outc.unnest();
+			outc.indent().format("};").println();
+			outc.indent().println();
+			outc.indent().format("if (map.contains(value)) {").println();
+			outc.nest();
+			outc.indent().format("return map[value];").println();
+			outc.unnest();
+			outc.indent().format("} else {").println();
+			outc.nest();
+			outc.indent().format("return QString(\"%%1\").arg((quint16)value);").println();
+			outc.unnest();
+			outc.indent().format("}").println();
+			outc.unnest();
+			outc.indent().format("}").println();
+		}
+	}
 
 	public void genStub() {
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, program.info.getProgramVersion());
@@ -368,11 +419,13 @@ public class Compiler {
 			
 			// generate constant declaration
 			
-			// generate serialize/deserialize for Record
-			// generate toString for enum
-			
+			// generate serialize/deserialize for Record			
 			
 			genClosing(outh, outc);
+			
+			// generate toString for enum
+			genEnumFunc(outh, outc);
+			
 		} catch (FileNotFoundException e) {
 			throw new CompilerException("FileNotFoundException", e);
 		}
