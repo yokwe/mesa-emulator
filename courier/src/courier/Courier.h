@@ -128,17 +128,7 @@ private:
 };
 
 
-struct Serializable {
-	virtual ~Serializable() {}
-
-	// read this and write to block
-	virtual void serialize  (BLOCK& block) const = 0;
-	// read block and write to this
-	virtual void deserialize(BLOCK& block) = 0;
-};
-
-
-struct BYTE : public Serializable {
+struct BYTE {
 private:
 	static const int MAX_VALUE = 0xFF;
 	quint8 value;
@@ -191,7 +181,7 @@ public:
 		block.deserialize8(value);
 	}
 };
-struct CARDINAL : public Serializable {
+struct CARDINAL {
 private:
 	static const int MAX_VALUE = 0xFFFF;
 	quint16 value;
@@ -246,7 +236,7 @@ public:
 		block.deserialize16(value);
 	}
 };
-struct LONG_CARDINAL : public Serializable {
+struct LONG_CARDINAL {
 private:
 	static const long long MAX_VALUE = 0xFFFFFFFFLL;
 	quint32 value;
@@ -299,7 +289,7 @@ public:
 		block.deserialize32(value);
 	}
 };
-struct STRING : public Serializable {
+struct STRING {
 private:
 	static const int MAX_SIZE = 65535;
 	QString value;
@@ -353,7 +343,7 @@ public:
 		block.deserialize(value);
 	}
 };
-struct UNSPECIFIED : public Serializable {
+struct UNSPECIFIED {
 private:
 	static const int MAX_VALUE = 0xFFFF;
 	quint16 value;
@@ -406,7 +396,7 @@ public:
 		block.deserialize16(value);
 	}
 };
-struct UNSPECIFIED2 : public Serializable {
+struct UNSPECIFIED2 {
 private:
 	static const long long MAX_VALUE = 0xFFFFFFFFLL;
 	quint32 value;
@@ -459,7 +449,7 @@ public:
 		block.deserialize32(value);
 	}
 };
-struct UNSPECIFIED3 : public Serializable {
+struct UNSPECIFIED3 {
 private:
 	static const long long MAX_VALUE = 0xFFFFFFFFFFFFLL;
 	quint64 value;
@@ -540,7 +530,7 @@ void deserialize(BLOCK& block, BLOCK&         value);
 
 // Suppose T implements Serializable
 template <typename T>
-struct SEQUENCE : public Serializable {
+struct SEQUENCE {
 public:
 	static const int MAX_SIZE = 65535;
 	const int maxSize;
@@ -560,7 +550,7 @@ public:
 		delete[] data;
 	}
 
-	quint16 getSize() {
+	int getSize() {
 		return size;
 	}
 	void clear() {
@@ -602,10 +592,10 @@ public:
 	}
 	// read block and write to this
 	void deserialize(BLOCK& block) {
-		quint16 t;
-		block.deserialize16(t);
-		size = t;
-		if (maxSize <= size) {
+		quint16 size16;
+		block.deserialize16(size16);
+		size = size16;
+		if (maxSize < size) {
 			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
 			COURIER_ERROR();
 		}
@@ -616,19 +606,19 @@ public:
 
 private:
 	int size = 0;
-	T* data;
+	T*  data;
 };
 template <typename T>
-void serialize(BLOCK& block, SEQUENCE<T> value) {
+void serialize(BLOCK& block, SEQUENCE<T>& value) {
 	value.serialize(block);
 }
 template <typename T>
-void deserialize(BLOCK& block, SEQUENCE<T> value) {
+void deserialize(BLOCK& block, SEQUENCE<T>& value) {
 	value.deserialize(block);
 }
 
 template <typename T>
-struct ARRAY : public Serializable {
+struct ARRAY {
 	static const int MAX_SIZE = 65535;
 	const int maxSize;
 
@@ -655,7 +645,7 @@ struct ARRAY : public Serializable {
 		}
 		data[size++] = newValue;
 	}
-	quint16 getSize() {
+	int getSize() {
 		return size;
 	}
 	void clear() {
@@ -682,25 +672,25 @@ struct ARRAY : public Serializable {
 	}
 
 	void serialize(BLOCK& block) const {
-		for(quint16 i = 0; i < maxSize; i++) {
+		for(int i = 0; i < maxSize; i++) {
 			data[i].serialize(block);
 		}
 	}
 	void deserialize(BLOCK& block) {
-		for(quint16 i = 0; i < maxSize; i++) {
+		for(int i = 0; i < maxSize; i++) {
 			data[i].deserialize(block);
 		}
 	}
 private:
 	int size = 0;
-	T* data;
+	T*  data;
 };
 template <typename T>
-void serialize(BLOCK& block, ARRAY<T> value) {
+void serialize(BLOCK& block, ARRAY<T>& value) {
 	value.serialize(block);
 }
 template <typename T>
-void deserialize(BLOCK& block, ARRAY<T> value) {
+void deserialize(BLOCK& block, ARRAY<T>& value) {
 	value.deserialize(block);
 }
 
