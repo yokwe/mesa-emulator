@@ -46,6 +46,7 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testBlockBlockDeserialize);
 
 	CPPUNIT_TEST(testBYTE);
+	CPPUNIT_TEST(testBOOLEAN);
 	CPPUNIT_TEST(testCARDINAL);
 	CPPUNIT_TEST(testLONGCARDINAL);
 	CPPUNIT_TEST(testSTRING);
@@ -506,6 +507,90 @@ public:
 			CPPUNIT_ASSERT_EQUAL(v, (quint8)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getLimit());
+		}
+	}
+	void testBOOLEAN() {
+		quint8 data[100];
+		Courier::BLOCK block(data, sizeof(data));
+
+		{
+			Courier::BOOLEAN b;
+			CPPUNIT_ASSERT_EQUAL((quint16)0, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL(false,      (bool)b);
+		}
+
+		{
+			Courier::BOOLEAN b(false);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL(false,      (bool)b);
+		}
+		{
+			Courier::BOOLEAN b(true);
+			CPPUNIT_ASSERT_EQUAL((quint16)1, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL(true,       (bool)b);
+		}
+
+		{
+			Courier::BOOLEAN a(false);
+			Courier::BOOLEAN b(a);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL(false,      (bool)b);
+		}
+		{
+			Courier::BOOLEAN a(true);
+			Courier::BOOLEAN b(a);
+			CPPUNIT_ASSERT_EQUAL((quint16)1, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL(true,       (bool)b);
+		}
+
+
+		{
+			block.zero();
+			block.clear();
+
+			Courier::BOOLEAN a(false);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[1]);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+
+			block.rewind();
+			Courier::BOOLEAN b(true);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(false, (bool)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)0	, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+		}
+		{
+			block.zero();
+			block.clear();
+
+			Courier::BOOLEAN a(true);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint8)1, data[1]);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+
+			block.rewind();
+			Courier::BOOLEAN b(false);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(true, (bool)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)1	, (quint16)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
 		}
 	}
 	void testCARDINAL() {
