@@ -54,7 +54,11 @@ class BLOCK {
 public:
 	const quint16 capacity;
 
-	BLOCK(quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(true), data(new quint8[capacity]) {
+	BLOCK(quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(true), data(new (std::nothrow) quint8[capacity]) {
+		if (data == nullptr) {
+			logger.error("Failed to allocate memory.  capacity = %d", capacity);
+			COURIER_ERROR();
+		}
 		zero();
 	}
 	BLOCK(quint8* data_, quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(false), data(data_) {
