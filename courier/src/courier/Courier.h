@@ -180,6 +180,9 @@ public:
 	operator quint8() const {
 		return value;
 	}
+	bool equals(const BYTE& that) const {
+		return value == that.value;
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize8(value);
@@ -196,6 +199,10 @@ private:
 public:
 	CARDINAL() {
 		value = 0;
+		logger.info("CARDINAL::CARDINAL()");
+	}
+	~CARDINAL() {
+		logger.info("CARDINAL::~CARDINAL()");
 	}
 
 	CARDINAL(const CARDINAL& rhs) {
@@ -229,6 +236,9 @@ public:
 	// BYTE b; quint8 a = b;
 	operator quint16() const {
 		return value;
+	}
+	bool equals(const CARDINAL& that) const {
+		return value == that.value;
 	}
 
 	void serialize(BLOCK& block) const {
@@ -279,6 +289,9 @@ public:
 	// BYTE b; quint8 a = b;
 	operator quint32() const {
 		return value;
+	}
+	bool equals(const LONG_CARDINAL& that) const {
+		return value == that.value;
 	}
 
 	void serialize(BLOCK& block) const {
@@ -331,6 +344,9 @@ public:
 	operator QString() const {
 		return value;
 	}
+	bool equals(const STRING& that) const {
+		return value.compare(that.value) == 0;
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize(value);
@@ -380,6 +396,9 @@ public:
 	// BYTE b; quint8 a = b;
 	operator quint16() const {
 		return value;
+	}
+	bool equals(const UNSPECIFIED& that) const {
+		return value == that.value;
 	}
 
 	void serialize(BLOCK& block) const {
@@ -431,6 +450,9 @@ public:
 	operator quint32() const {
 		return value;
 	}
+	bool equals(const UNSPECIFIED2& that) const {
+		return value == that.value;
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize32(value);
@@ -480,6 +502,9 @@ public:
 	// BYTE b; quint8 a = b;
 	operator quint64() const {
 		return value;
+	}
+	bool equals(const UNSPECIFIED3& that) const {
+		return value == that.value;
 	}
 
 	void serialize(BLOCK& block) const {
@@ -597,7 +622,7 @@ void serialize(BLOCK& block, SEQUENCE<T> value) {
 }
 template <typename T>
 void deserialize(BLOCK& block, SEQUENCE<T> value) {
-	value.serialize(block);
+	value.deserialize(block);
 }
 
 template <typename T>
@@ -607,7 +632,11 @@ struct ARRAY : public Serializable {
 
 	ARRAY(int maxSize_) : maxSize(maxSize_) {
 		if (0 <= maxSize && maxSize <= MAX_SIZE) {
-			data = new T [maxSize];
+			data = new (std::nothrow) T [maxSize];
+			if (data == nullptr) {
+				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+				COURIER_ERROR();
+			}
 		} else {
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
 			COURIER_ERROR();
@@ -631,7 +660,7 @@ struct ARRAY : public Serializable {
 		size = 0;
 	}
 
-	T& operator[](quint16 i) {
+	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
 			// OK
 		} else {
@@ -640,7 +669,7 @@ struct ARRAY : public Serializable {
 		}
 		return data[i];
 	}
-	const T& operator[](quint16 i) const {
+	const T& operator[](int i) const {
 		if (0 <= i && i < maxSize) {
 			// OK
 		} else {
@@ -652,12 +681,12 @@ struct ARRAY : public Serializable {
 
 	void serialize(BLOCK& block) const {
 		for(quint16 i = 0; i < maxSize; i++) {
-			data[i].serialize(block);
+			(data[i]).serialize(block);
 		}
 	}
 	void deserialize(BLOCK& block) {
 		for(quint16 i = 0; i < maxSize; i++) {
-			data[i].deserialize(block);
+			(data[i]).deserialize(block);
 		}
 	}
 private:
@@ -670,9 +699,18 @@ void serialize(BLOCK& block, ARRAY<T> value) {
 }
 template <typename T>
 void deserialize(BLOCK& block, ARRAY<T> value) {
-	value.serialize(block);
+	value.deserialize(block);
 }
 
 }
+
+// Declare operator == outside namespace Courier
+bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b);
+bool operator==(const Courier::CARDINAL&      a, const Courier::CARDINAL&      b);
+bool operator==(const Courier::LONG_CARDINAL& a, const Courier::LONG_CARDINAL& b);
+bool operator==(const Courier::STRING&        a, const Courier::STRING&        b);
+bool operator==(const Courier::UNSPECIFIED&   a, const Courier::UNSPECIFIED&   b);
+bool operator==(const Courier::UNSPECIFIED2&  a, const Courier::UNSPECIFIED2&  b);
+bool operator==(const Courier::UNSPECIFIED3&  a, const Courier::UNSPECIFIED3&  b);
 
 #endif /* COURIER_COURIER_H_ */

@@ -41,7 +41,7 @@ QString Courier::BLOCK::toString() const {
 		quint8 c = data[i];
 		hexString.append(QString("%1").arg((quint16)c, 2, 16, QChar('0')));
 	}
-	return QString("(%1)%2").arg(limit).arg(hexString);
+	return QString("(%1 %2 %3)%4").arg(pos).arg(limit).arg(capacity).arg(hexString);
 }
 
 void Courier::BLOCK::zero() {
@@ -405,4 +405,28 @@ void Courier::deserialize(BLOCK& block, UNSPECIFIED3&  value) {
 void Courier::deserialize(BLOCK& block, BLOCK&         value) {
 	value.deserialize(block);
 }
+
+
+bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::CARDINAL&      a, const Courier::CARDINAL&      b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::LONG_CARDINAL& a, const Courier::LONG_CARDINAL& b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::STRING&        a, const Courier::STRING&        b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::UNSPECIFIED&   a, const Courier::UNSPECIFIED&   b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::UNSPECIFIED2&  a, const Courier::UNSPECIFIED2&  b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::UNSPECIFIED3&  a, const Courier::UNSPECIFIED3&  b) {
+	return a.equals(b);
+}
+
 
