@@ -53,6 +53,9 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testUNSPECIFIED2);
 	CPPUNIT_TEST(testUNSPECIFIED3);
 
+	CPPUNIT_TEST(testARRAY);
+	CPPUNIT_TEST(testSEQUENCE);
+
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -625,6 +628,9 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
 		}
 	}
+
+#define CPPUNIT_ASSERT_EQUAL_QSTRING(a,b) CPPUNIT_ASSERT_EQUAL((a).toStdString(), ((QString)b).toStdString())
+
 	void testSTRING() {
 		quint8 data[100];
 		Courier::BLOCK block(data, sizeof(data));
@@ -640,27 +646,28 @@ public:
 
 		{
 			Courier::STRING a;
-			CPPUNIT_ASSERT_EQUAL(true, z.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(z, a);
 		}
 		{
 			Courier::STRING b(v);
-			CPPUNIT_ASSERT_EQUAL(true, v.compare((QString)b) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(v, b);
 			Courier::STRING a(b);
-			CPPUNIT_ASSERT_EQUAL(true, v.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(v, a);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(v, (QString)a);
 		}
 		{
 			Courier::STRING b(v);
-			CPPUNIT_ASSERT_EQUAL(true, v.compare((QString)b) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(v, b);
 			Courier::STRING a;
-			CPPUNIT_ASSERT_EQUAL(true, z.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(z, a);
 			a = b;
-			CPPUNIT_ASSERT_EQUAL(true, v.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(v, a);
 		}
 		{
 			Courier::STRING a;
-			CPPUNIT_ASSERT_EQUAL(true, z.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(z, a);
 			a = v;
-			CPPUNIT_ASSERT_EQUAL(true, v.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL_QSTRING(v, a);
 		}
 
 		{
@@ -681,11 +688,11 @@ public:
 
 			block.rewind();
 			Courier::STRING b;
-			CPPUNIT_ASSERT_EQUAL(true, z.compare((QString)b) == 0);
+			CPPUNIT_ASSERT_EQUAL(z.toStdString(), ((QString)b).toStdString());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
 			Courier::deserialize(block, b);
-			CPPUNIT_ASSERT_EQUAL(true, v.compare((QString)a) == 0);
+			CPPUNIT_ASSERT_EQUAL(v.toStdString(), ((QString)a).toStdString());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
 		}
@@ -874,6 +881,191 @@ public:
 			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
+		}
+	}
+	void testARRAY() {
+		{
+			int s = 2;
+			Courier::ARRAY<Courier::CARDINAL> a{s};
+			CPPUNIT_ASSERT_EQUAL(s, a.maxSize);
+
+			Courier::CARDINAL v1 = 0x1111;
+			Courier::CARDINAL v2 = 0x2222;
+			a.append(v1);
+			CPPUNIT_ASSERT_EQUAL(1, a.getSize());
+			a.append(v2);
+			CPPUNIT_ASSERT_EQUAL(2, a.getSize());
+
+			CPPUNIT_ASSERT_EQUAL(v1, a[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, a[1]);
+
+			bool errorObserved = false;
+			try {
+				a.append(v2);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+		{
+			int s = 2;
+			Courier::ARRAY<Courier::CARDINAL> a{s};
+			CPPUNIT_ASSERT_EQUAL(s, a.maxSize);
+
+			Courier::CARDINAL v1 = 0x1111;
+			Courier::CARDINAL v2 = 0x2222;
+			a[0] = v1;
+			a[1] = v2;
+
+			CPPUNIT_ASSERT_EQUAL(v1, a[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, a[1]);
+
+			{
+				bool errorObserved = false;
+				try {
+					Courier::CARDINAL t = 0x3333;
+					a[s + 1] = t;
+				} catch (Courier::CourierError& e) {
+					errorObserved = true;
+				}
+				CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+			}
+			{
+				bool errorObserved = false;
+				try {
+					Courier::CARDINAL t;
+					t = a[s + 1];
+				} catch (Courier::CourierError& e) {
+					errorObserved = true;
+				}
+				CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+			}
+		}
+		{
+			Courier::ARRAY<Courier::CARDINAL> a{2};
+			CPPUNIT_ASSERT_EQUAL(2, a.maxSize);
+
+			Courier::CARDINAL v1 = 0x1122;
+			Courier::CARDINAL v2 = 0x3344;
+			a[0] = v1;
+			a[1] = v2;
+
+			CPPUNIT_ASSERT_EQUAL(v1, a[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, a[1]);
+
+			quint8 data[6];
+			Courier::BLOCK block(data, sizeof(data));
+
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
+			CPPUNIT_ASSERT_EQUAL((quint8)0x11, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x22, data[1]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x33, data[2]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x44, data[3]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x00, data[4]);
+
+			Courier::ARRAY<Courier::CARDINAL> b{2};
+			block.rewind();
+			Courier::deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(a.maxSize, b.maxSize);
+			CPPUNIT_ASSERT_EQUAL(a[0], b[0]);
+			CPPUNIT_ASSERT_EQUAL(a[1], b[1]);
+		}
+	}
+	void testSEQUENCE() {
+		{
+			int s = 2;
+			Courier::SEQUENCE<Courier::CARDINAL> a{s};
+			CPPUNIT_ASSERT_EQUAL(s, a.maxSize);
+
+			Courier::CARDINAL v1 = 0x1111;
+			Courier::CARDINAL v2 = 0x2222;
+			a.append(v1);
+			CPPUNIT_ASSERT_EQUAL(1, a.getSize());
+			a.append(v2);
+			CPPUNIT_ASSERT_EQUAL(2, a.getSize());
+
+			CPPUNIT_ASSERT_EQUAL(v1, a[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, a[1]);
+
+			bool errorObserved = false;
+			try {
+				a.append(v2);
+			} catch (Courier::CourierError& e) {
+				errorObserved = true;
+			}
+			CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+		}
+		{
+			int s = 2;
+			Courier::SEQUENCE<Courier::CARDINAL> a{s};
+			CPPUNIT_ASSERT_EQUAL(s, a.maxSize);
+
+			Courier::CARDINAL v1 = 0x1111;
+			Courier::CARDINAL v2 = 0x2222;
+			a[0] = v1;
+			a[1] = v2;
+
+			CPPUNIT_ASSERT_EQUAL(v1, a[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, a[1]);
+
+			{
+				bool errorObserved = false;
+				try {
+					Courier::CARDINAL t = 0x3333;
+					a[s + 1] = t;
+				} catch (Courier::CourierError& e) {
+					errorObserved = true;
+				}
+				CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+			}
+			{
+				bool errorObserved = false;
+				try {
+					Courier::CARDINAL t;
+					t = a[s + 1];
+				} catch (Courier::CourierError& e) {
+					errorObserved = true;
+				}
+				CPPUNIT_ASSERT_EQUAL(true, errorObserved);
+			}
+		}
+		{
+			Courier::SEQUENCE<Courier::CARDINAL> a{4};
+			CPPUNIT_ASSERT_EQUAL(4, a.maxSize);
+
+			Courier::CARDINAL v1 = 0x1122;
+			Courier::CARDINAL v2 = 0x3344;
+			a.append(v1);
+			a.append(v2);
+
+			CPPUNIT_ASSERT_EQUAL(4, a.maxSize);
+			CPPUNIT_ASSERT_EQUAL(2, a.getSize());
+			CPPUNIT_ASSERT_EQUAL(v1, a[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, a[1]);
+
+			quint8 data[10];
+			Courier::BLOCK block(data, sizeof(data));
+
+			Courier::serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
+			CPPUNIT_ASSERT_EQUAL((quint8)0x00, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x02, data[1]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x11, data[2]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x22, data[3]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x33, data[4]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x44, data[5]);
+			CPPUNIT_ASSERT_EQUAL((quint8)0x00, data[6]);
+
+			Courier::SEQUENCE<Courier::CARDINAL> b{2};
+			block.rewind();
+			Courier::deserialize(block, b);
+//			CPPUNIT_ASSERT_EQUAL(a.maxSize,   b.maxSize);
+			CPPUNIT_ASSERT_EQUAL(a.getSize(), b.getSize());
+			CPPUNIT_ASSERT_EQUAL(a[0], b[0]);
+			CPPUNIT_ASSERT_EQUAL(a[1], b[1]);
 		}
 	}
 };
