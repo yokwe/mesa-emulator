@@ -555,7 +555,7 @@ public:
 
 // serialize - write value to block
 void serialize(BLOCK& block, const BYTE&          value);
-void serialize(BLOCK& block, const BOOLEAN&      value);
+void serialize(BLOCK& block, const BOOLEAN&       value);
 void serialize(BLOCK& block, const CARDINAL&      value);
 void serialize(BLOCK& block, const LONG_CARDINAL& value);
 void serialize(BLOCK& block, const STRING&        value);
@@ -747,7 +747,7 @@ void deserialize(BLOCK& block, ARRAY<T>& value) {
 
 }
 
-// Declare operator == outside namespace Courier
+// Declare operator == outside namespace Courier for cppunit CPPUNIT_ASSERT_EQUAL
 bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b);
 bool operator==(const Courier::BOOLEAN&       a, const Courier::BOOLEAN&       b);
 bool operator==(const Courier::CARDINAL&      a, const Courier::CARDINAL&      b);
