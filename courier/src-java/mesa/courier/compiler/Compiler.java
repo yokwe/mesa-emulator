@@ -118,7 +118,7 @@ public class Compiler {
 			return String.format("ARRAY<%s>", toTypeString(typeArray.type));
 		}
 		case BLOCK:
-			break;
+			return String.format("%s", type.kind.toString());
 		case SEQUENCE:
 		{
 			TypeSequence typeSequence = (TypeSequence)type;
@@ -181,8 +181,9 @@ public class Compiler {
 				logger.error("  {}  {}", name, type.toString());
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			case BLOCK:
-				outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
-				break;
+				logger.error("Rewrite \"RECORD N OF BYTE\" to \"RECORD [value: RECORD N OF BYTE]\"");
+				logger.error("  {}  {}", name, type.toString());
+				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			case SEQUENCE:
 				logger.error("Rewrite \"SEQUENCE N OF T\" to \"RECORD [value: SEQUENCE N OF T]\"");
 				logger.error("  {}  {}", name, type.toString());
@@ -222,6 +223,12 @@ public class Compiler {
 			{
 				TypeSequence typeSequence = (TypeSequence)field.type;
 				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeSequence.size).println();
+			}
+				break;
+			case BLOCK:
+			{
+				TypeBlock typeBlock = (TypeBlock)field.type;
+				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeBlock.size).println();
 			}
 				break;
 			default:
