@@ -546,7 +546,11 @@ public:
 	const int maxSize;
 	SEQUENCE(int maxSize_ = MAX_SIZE) : maxSize(maxSize_) {
 		if (0 <= maxSize && maxSize <= MAX_SIZE) {
-			data = new T [maxSize];
+			data = new (std::nothrow) T [maxSize];
+			if (data == nullptr) {
+				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+				COURIER_ERROR();
+			}
 		} else {
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
 			COURIER_ERROR();
@@ -679,12 +683,12 @@ struct ARRAY : public Serializable {
 
 	void serialize(BLOCK& block) const {
 		for(quint16 i = 0; i < maxSize; i++) {
-			(data[i]).serialize(block);
+			data[i].serialize(block);
 		}
 	}
 	void deserialize(BLOCK& block) {
 		for(quint16 i = 0; i < maxSize; i++) {
-			(data[i]).deserialize(block);
+			data[i].deserialize(block);
 		}
 	}
 private:
