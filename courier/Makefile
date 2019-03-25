@@ -56,7 +56,10 @@ run-app: all
 	echo -n >tmp/debug.log
 	tmp/build/app/app
 
-run-test: all
+run-test:
+	(cd src/util;    make all)
+	(cd src/courier; make all)
+	(cd src/test;    make all)
 	echo -n >tmp/debug.log
 	tmp/build/test/test
 	
