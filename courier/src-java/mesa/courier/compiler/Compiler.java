@@ -24,6 +24,12 @@ public class Compiler {
 
 	public static String STUB_DIR_PATH = "src/stub/";
 
+	static final int USING_LEFT_WIDTH  = -22;
+	static final int FIELD_TYPE_WIDTH  = -26;
+	static final int ENUM_NAME_WIDTH   = -30;
+	static final int ENUM_NUMBER_WIDTH = 4;
+
+
 	private static class IndentPrintWriter implements AutoCloseable {
 		private static final String INDENT = "    ";
 
@@ -47,6 +53,11 @@ public class Compiler {
 			for(int i = 0; i < level; i++) out.print(INDENT);
 			return out;
 		}
+	}
+	
+	static String pad(int width, String string) {
+		String format = String.format("%%%ds", width);
+		return String.format(format, string);
 	}
 
 	private final Program program;
@@ -170,7 +181,7 @@ public class Compiler {
 			case UNSPECIFIED:
 			case UNSPECIFIED2:
 			case UNSPECIFIED3:
-				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
+				outh.indent().format("using %s = %s;", pad(USING_LEFT_WIDTH, name), toTypeString(type)).println();
 				break;
 			// constructed
 			case ENUM:
@@ -200,7 +211,7 @@ public class Compiler {
 				break;
 			// reference
 			case REFERENCE:
-				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
+				outh.indent().format("using %s = %s;", pad(USING_LEFT_WIDTH, name), toTypeString(type)).println();
 				break;
 			default:
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
@@ -212,29 +223,41 @@ public class Compiler {
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
 		for(Field field: type.fields) {
+			String fieldType;
+			String fieldName;
 			switch(field.type.kind) {
 			case ARRAY:
 			{
-				TypeArray typeSequence = (TypeArray)field.type;
-				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeSequence.size).println();
+				TypeArray typeArray = (TypeArray)field.type;
+				fieldType = toTypeString(field.type);
+				fieldName = String.format("%s{%d}", field.name, typeArray.size);	
 			}
 				break;
 			case SEQUENCE:
 			{
 				TypeSequence typeSequence = (TypeSequence)field.type;
-				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeSequence.size).println();
+				fieldType = toTypeString(field.type);
+				if (typeSequence.size == TypeSequence.MAX_SIZE) {
+					fieldName = field.name;
+				} else {
+					fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
+				}
 			}
 				break;
 			case BLOCK:
 			{
 				TypeBlock typeBlock = (TypeBlock)field.type;
-				outh.indent().format("%s %s{%d};", toTypeString(field.type), field.name, typeBlock.size).println();
+				fieldType = toTypeString(field.type);
+				fieldName = String.format("%s{%d}", field.name, typeBlock.size);	
 			}
 				break;
 			default:
-				outh.indent().format("%s %s;", toTypeString(field.type), field.name).println();
+				fieldType = toTypeString(field.type);
+				fieldName = field.name;
 				break;
 			}
+			
+			outh.indent().format("%s %s;", pad(FIELD_TYPE_WIDTH, fieldType), fieldName).println();
 		}
 		outh.unnest();
 		outh.indent().format("};").println();
@@ -244,7 +267,9 @@ public class Compiler {
 		outh.indent().format("enum class %s : quint16 {", name).println();
 		outh.nest();
 		for(Correspondence correspondence: type.elements) {
-			outh.indent().format("%s = %d,", correspondence.id, correspondence.numericValue).println();
+			String enumName   = correspondence.id;
+			String enumNumber = String.format("%d", correspondence.numericValue);
+			outh.indent().format("%s = %s,", pad(ENUM_NAME_WIDTH, enumName), pad(ENUM_NUMBER_WIDTH, enumNumber)).println();
 		}
 		outh.unnest();
 		outh.indent().format("};").println();
