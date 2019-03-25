@@ -181,6 +181,51 @@ public:
 		block.deserialize8(value);
 	}
 };
+struct BOOLEAN {
+private:
+	quint16 value;
+
+public:
+	BOOLEAN() {
+		value = 0;
+	}
+
+	BOOLEAN(const BOOLEAN& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	BOOLEAN(const bool value) {
+		this->value = value ? 1 : 0;
+	}
+
+	// BYTE a, b; a = b;s
+	BOOLEAN& operator= (const BOOLEAN& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	BOOLEAN& operator= (const bool value) {
+		this->value = value ? 1 : 0;
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator quint16() const {
+		return value;
+	}
+	operator bool() const {
+		return value != 0;
+	}
+	bool equals(const BOOLEAN& that) const {
+		return value == that.value;
+	}
+
+	void serialize(BLOCK& block) const {
+		block.serialize16(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize16(value);
+	}
+};
 struct CARDINAL {
 private:
 	static const int MAX_VALUE = 0xFFFF;
@@ -506,6 +551,7 @@ public:
 
 // serialize - write value to block
 void serialize(BLOCK& block, const BYTE&          value);
+void serialize(BLOCK& block, const BOOLEAN&      value);
 void serialize(BLOCK& block, const CARDINAL&      value);
 void serialize(BLOCK& block, const LONG_CARDINAL& value);
 void serialize(BLOCK& block, const STRING&        value);
@@ -518,6 +564,7 @@ void serialize(BLOCK& block, const BLOCK&         value);
 
 // deserialize - read from block and write to value
 void deserialize(BLOCK& block, BYTE&          value);
+void deserialize(BLOCK& block, BOOLEAN&       value);
 void deserialize(BLOCK& block, CARDINAL&      value);
 void deserialize(BLOCK& block, LONG_CARDINAL& value);
 void deserialize(BLOCK& block, STRING&        value);
@@ -698,6 +745,7 @@ void deserialize(BLOCK& block, ARRAY<T>& value) {
 
 // Declare operator == outside namespace Courier
 bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b);
+bool operator==(const Courier::BOOLEAN&       a, const Courier::BOOLEAN&       b);
 bool operator==(const Courier::CARDINAL&      a, const Courier::CARDINAL&      b);
 bool operator==(const Courier::LONG_CARDINAL& a, const Courier::LONG_CARDINAL& b);
 bool operator==(const Courier::STRING&        a, const Courier::STRING&        b);

@@ -355,6 +355,9 @@ void Courier::BLOCK::deserialize(BLOCK&  value) {
 void Courier::serialize(BLOCK& block, const BYTE&          value) {
 	value.serialize(block);
 }
+void Courier::serialize(BLOCK& block, const BOOLEAN&       value) {
+	value.serialize(block);
+}
 void Courier::serialize(BLOCK& block, const CARDINAL&      value) {
 	value.serialize(block);
 }
@@ -383,6 +386,9 @@ void Courier::serialize(BLOCK& block, const BLOCK&         value) {
 void Courier::deserialize(BLOCK& block, BYTE&          value) {
 	value.deserialize(block);
 }
+void Courier::deserialize(BLOCK& block, BOOLEAN&       value) {
+	value.deserialize(block);
+}
 void Courier::deserialize(BLOCK& block, CARDINAL&      value) {
 	value.deserialize(block);
 }
@@ -408,6 +414,9 @@ void Courier::deserialize(BLOCK& block, BLOCK&         value) {
 
 
 bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b) {
+	return a.equals(b);
+}
+bool operator==(const Courier::BOOLEAN&       a, const Courier::BOOLEAN&       b) {
 	return a.equals(b);
 }
 bool operator==(const Courier::CARDINAL&      a, const Courier::CARDINAL&      b) {
