@@ -553,32 +553,6 @@ public:
 };
 
 
-// serialize - write value to block
-void serialize(BLOCK& block, const BYTE&          value);
-void serialize(BLOCK& block, const BOOLEAN&       value);
-void serialize(BLOCK& block, const CARDINAL&      value);
-void serialize(BLOCK& block, const LONG_CARDINAL& value);
-void serialize(BLOCK& block, const STRING&        value);
-void serialize(BLOCK& block, const UNSPECIFIED&   value);
-void serialize(BLOCK& block, const UNSPECIFIED2&  value);
-void serialize(BLOCK& block, const UNSPECIFIED3&  value);
-// write whole value
-void serialize(BLOCK& block, const BLOCK&         value);
-
-
-// deserialize - read from block and write to value
-void deserialize(BLOCK& block, BYTE&          value);
-void deserialize(BLOCK& block, BOOLEAN&       value);
-void deserialize(BLOCK& block, CARDINAL&      value);
-void deserialize(BLOCK& block, LONG_CARDINAL& value);
-void deserialize(BLOCK& block, STRING&        value);
-void deserialize(BLOCK& block, UNSPECIFIED&   value);
-void deserialize(BLOCK& block, UNSPECIFIED2&  value);
-void deserialize(BLOCK& block, UNSPECIFIED3&  value);
-// read rest of value
-void deserialize(BLOCK& block, BLOCK&         value);
-
-
 // Suppose T implements Serializable
 template <typename T>
 struct SEQUENCE {
@@ -659,14 +633,6 @@ private:
 	int size = 0;
 	T*  data;
 };
-template <typename T>
-void serialize(BLOCK& block, SEQUENCE<T>& value) {
-	value.serialize(block);
-}
-template <typename T>
-void deserialize(BLOCK& block, SEQUENCE<T>& value) {
-	value.deserialize(block);
-}
 
 template <typename T>
 struct ARRAY {
@@ -736,16 +702,54 @@ private:
 	int size = 0;
 	T*  data;
 };
+
+}
+
+// serialize - write value to block
+void serialize(Courier::BLOCK& block, const Courier::BYTE&          value);
+void serialize(Courier::BLOCK& block, const Courier::BOOLEAN&       value);
+void serialize(Courier::BLOCK& block, const Courier::CARDINAL&      value);
+void serialize(Courier::BLOCK& block, const Courier::LONG_CARDINAL& value);
+void serialize(Courier::BLOCK& block, const Courier::STRING&        value);
+void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED&   value);
+void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED2&  value);
+void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED3&  value);
+// write whole value
+void serialize(Courier::BLOCK& block, const Courier::BLOCK&         value);
+
+
+// deserialize - read from block and write to value
+void deserialize(Courier::BLOCK& block, Courier::BYTE&          value);
+void deserialize(Courier::BLOCK& block, Courier::BOOLEAN&       value);
+void deserialize(Courier::BLOCK& block, Courier::CARDINAL&      value);
+void deserialize(Courier::BLOCK& block, Courier::LONG_CARDINAL& value);
+void deserialize(Courier::BLOCK& block, Courier::STRING&        value);
+void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED&   value);
+void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED2&  value);
+void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED3&  value);
+// read rest of value
+void deserialize(Courier::BLOCK& block, Courier::BLOCK&         value);
+
+// For SEQUENCE
 template <typename T>
-void serialize(BLOCK& block, ARRAY<T>& value) {
+void serialize(Courier::BLOCK& block, Courier::SEQUENCE<T>& value) {
 	value.serialize(block);
 }
 template <typename T>
-void deserialize(BLOCK& block, ARRAY<T>& value) {
+void deserialize(Courier::BLOCK& block, Courier::SEQUENCE<T>& value) {
 	value.deserialize(block);
 }
 
+// For ARRAY
+template <typename T>
+void serialize(Courier::BLOCK& block, Courier::ARRAY<T>& value) {
+	value.serialize(block);
 }
+template <typename T>
+void deserialize(Courier::BLOCK& block, Courier::ARRAY<T>& value) {
+	value.deserialize(block);
+}
+
 
 // Declare operator == outside namespace Courier for cppunit CPPUNIT_ASSERT_EQUAL
 bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b);

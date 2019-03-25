@@ -352,63 +352,63 @@ void Courier::BLOCK::deserialize(BLOCK&  value) {
 
 
 // serialize - write value to block
-void Courier::serialize(BLOCK& block, const BYTE&          value) {
+void serialize(Courier::BLOCK& block, const Courier::BYTE&          value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const BOOLEAN&       value) {
+void serialize(Courier::BLOCK& block, const Courier::BOOLEAN&       value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const CARDINAL&      value) {
+void serialize(Courier::BLOCK& block, const Courier::CARDINAL&      value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const LONG_CARDINAL& value) {
+void serialize(Courier::BLOCK& block, const Courier::LONG_CARDINAL& value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const STRING&        value) {
+void serialize(Courier::BLOCK& block, const Courier::STRING&        value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const UNSPECIFIED&   value) {
+void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED&   value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const UNSPECIFIED2&  value) {
+void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED2&  value) {
 	value.serialize(block);
 }
-void Courier::serialize(BLOCK& block, const UNSPECIFIED3&  value) {
+void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED3&  value) {
 	value.serialize(block);
 }
 // write whole value
-void Courier::serialize(BLOCK& block, const BLOCK&         value) {
+void serialize(Courier::BLOCK& block, const Courier::BLOCK&         value) {
 	block.serialize(value);
 }
 
 
 // deserialize - read from block and write to value
-void Courier::deserialize(BLOCK& block, BYTE&          value) {
+void deserialize(Courier::BLOCK& block, Courier::BYTE&          value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, BOOLEAN&       value) {
+void deserialize(Courier::BLOCK& block, Courier::BOOLEAN&       value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, CARDINAL&      value) {
+void deserialize(Courier::BLOCK& block, Courier::CARDINAL&      value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, LONG_CARDINAL& value) {
+void deserialize(Courier::BLOCK& block, Courier::LONG_CARDINAL& value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, STRING&        value) {
+void deserialize(Courier::BLOCK& block, Courier::STRING&        value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, UNSPECIFIED&   value) {
+void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED&   value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, UNSPECIFIED2&  value) {
+void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED2&  value) {
 	value.deserialize(block);
 }
-void Courier::deserialize(BLOCK& block, UNSPECIFIED3&  value) {
+void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED3&  value) {
 	value.deserialize(block);
 }
 // read rest of value
-void Courier::deserialize(BLOCK& block, BLOCK&         value) {
+void deserialize(Courier::BLOCK& block, Courier::BLOCK&         value) {
 	value.deserialize(block);
 }
 
@@ -437,5 +437,3 @@ bool operator==(const Courier::UNSPECIFIED2&  a, const Courier::UNSPECIFIED2&  b
 bool operator==(const Courier::UNSPECIFIED3&  a, const Courier::UNSPECIFIED3&  b) {
 	return a.equals(b);
 }
-
-

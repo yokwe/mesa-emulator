@@ -493,7 +493,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL(v, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getLimit());
@@ -503,7 +503,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, (quint8)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v, (quint8)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)1, block.getLimit());
@@ -552,7 +552,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[1]);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
@@ -562,7 +562,7 @@ public:
 			Courier::BOOLEAN b(true);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(false, (bool)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0	, (quint16)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
@@ -576,7 +576,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint8)1, data[1]);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
@@ -586,7 +586,7 @@ public:
 			Courier::BOOLEAN b(false);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(true, (bool)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)1	, (quint16)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
@@ -634,7 +634,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
 			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
@@ -645,7 +645,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, (quint8)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v, (quint16)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
@@ -694,7 +694,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
 			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
 			CPPUNIT_ASSERT_EQUAL(v2, data[2]);
@@ -707,7 +707,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
@@ -763,7 +763,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint8)2, data[1]);
 			CPPUNIT_ASSERT_EQUAL(v0, data[2]);
@@ -776,7 +776,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL(z.toStdString(), ((QString)b).toStdString());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v.toStdString(), ((QString)a).toStdString());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
@@ -823,7 +823,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
 			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
@@ -834,7 +834,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, (quint8)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v, (quint16)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
@@ -883,7 +883,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
 			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
 			CPPUNIT_ASSERT_EQUAL(v2, data[2]);
@@ -896,7 +896,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint32)0, (quint32)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v, (quint32)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
@@ -947,7 +947,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL(v0, data[0]);
 			CPPUNIT_ASSERT_EQUAL(v1, data[1]);
 			CPPUNIT_ASSERT_EQUAL(v2, data[2]);
@@ -962,7 +962,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint64)0, (quint64)b);
 			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
@@ -1041,7 +1041,7 @@ public:
 			quint8 data[6];
 			Courier::BLOCK block(data, sizeof(data));
 
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)4, block.getLimit());
 			CPPUNIT_ASSERT_EQUAL((quint8)0x11, data[0]);
@@ -1052,7 +1052,7 @@ public:
 
 			Courier::ARRAY<Courier::CARDINAL> b{2};
 			block.rewind();
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 			CPPUNIT_ASSERT_EQUAL(a.maxSize, b.maxSize);
 			CPPUNIT_ASSERT_EQUAL(a[0], b[0]);
 			CPPUNIT_ASSERT_EQUAL(a[1], b[1]);
@@ -1133,7 +1133,7 @@ public:
 			quint8 data[10];
 			Courier::BLOCK block(data, sizeof(data));
 
-			Courier::serialize(block, a);
+			serialize(block, a);
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
 			CPPUNIT_ASSERT_EQUAL((quint8)0x00, data[0]);
@@ -1146,7 +1146,7 @@ public:
 
 			Courier::SEQUENCE<Courier::CARDINAL> b{2};
 			block.rewind();
-			Courier::deserialize(block, b);
+			deserialize(block, b);
 //			CPPUNIT_ASSERT_EQUAL(a.maxSize,   b.maxSize);
 			CPPUNIT_ASSERT_EQUAL(a.getSize(), b.getSize());
 			CPPUNIT_ASSERT_EQUAL(a[0], b[0]);
