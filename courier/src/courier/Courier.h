@@ -199,10 +199,8 @@ private:
 public:
 	CARDINAL() {
 		value = 0;
-		logger.info("CARDINAL::CARDINAL()");
 	}
 	~CARDINAL() {
-		logger.info("CARDINAL::~CARDINAL()");
 	}
 
 	CARDINAL(const CARDINAL& rhs) {
