@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -341,66 +343,108 @@ public class Compiler {
 			TypeChoice.Typed typed = (TypeChoice.Typed)type;
 			
 			outh.indent().format("using CHOICE_TAG = %s;", toTypeString(typed.type)).println();
-			outh.indent().format("CHOICE_TAG choice_tag;").println();
-
-			for(Candidate<String> candidate: typed.candidates) {
-				Type candidateType = candidate.type;
-				
-				for(String id: candidate.designators) {
-//					outh.indent().format("// %s => %s", id, candidate.type.toString()).println();
-					String candidateTypeName = String.format("CHOICE_%s", id);
-					String candidateVarName  = String.format("choice_%s", id);
+			
+			List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
+			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
+			int                  maxStructNumber = 0;
+			{
+				for(Candidate<String> candidate: typed.candidates) {
+					maxStructNumber++;
+					Type candidateType = candidate.type;
+					
+					// build choiceMap
+					for(String id: candidate.designators) {
+						String choiceName = id;
+						choiceNameList.add(choiceName);
+						choiceMap.put(choiceName, maxStructNumber);
+					}
+					
+					// generate choice struct
 					if (candidateType.kind == Type.Kind.RECORD) {
 						TypeRecord typeRecord = (TypeRecord)candidateType;
+						String structName = String.format("CHOICE_%02d", maxStructNumber);
 						if (typeRecord.fields.size() == 0) {
-							//
+							outh.indent().format("struct %s {};", structName).println();
 						} else {
-							outh.indent().println();
-							genTypeDeclRecord(outh, outc, typeRecord, candidateTypeName);
-							outh.indent().format("%s %s;", candidateTypeName, candidateVarName).println();
+							genTypeDeclRecord(outh, outc, typeRecord, structName);
 						}
 					} else {
 						throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 					}
 				}
 			}
-		
+			
+			outh.indent().println();
+			outh.indent().format("CHOICE_TAG choiceTag;").println();
+			for(int i = 1; i <= maxStructNumber; i++) {
+				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
+			}
+			outh.indent().println();
+
+			for(String choiceName: choiceNameList) {
+				int structNumber = choiceMap.get(choiceName);
+				outh.indent().format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName)).println();
+				outh.nest();
+				outh.indent().format("return choice_%02d;", structNumber).println();
+				outh.unnest();
+				outh.indent().format("}").println();
+			}
 		} else if (type instanceof TypeChoice.Anon) {
 			TypeChoice.Anon anon = (TypeChoice.Anon)type;
+
+			List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
+			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
+			int                  maxStructNumber = 0;
+
 			outh.indent().format("enum class CHOICE_TAG {").println();
 			outh.nest();
 			for(Candidate<Correspondence> candidate: anon.candidates) {
 				for(Correspondence correspondence: candidate.designators) {
 					outh.indent().format("%s = %s,", correspondence.id, correspondence.numericValue).println();
 				}
-//				outh.indent().format("// %s", candidate.toString()).println();
 			}
 			outh.unnest();
 			outh.indent().format("};").println();
-			outh.indent().format("CHOICE_TAG choice_tag;").println();
 			
 			for(Candidate<Correspondence> candidate: anon.candidates) {
+				maxStructNumber++;
 				Type candidateType = candidate.type;
 				
+				// build choiceMap
 				for(Correspondence correspondence: candidate.designators) {
-//					outh.indent().format("// %s => %s", correspondence.id, candidate.type.toString()).println();
-					String candidateTypeName = String.format("CHOICE_%s", correspondence.id);
-					String candidateVarName  = String.format("choice_%s", correspondence.id);
-					if (candidateType.kind == Type.Kind.RECORD) {
-						TypeRecord typeRecord = (TypeRecord)candidateType;
-						if (typeRecord.fields.size() == 0) {
-							//
-						} else {
-							outh.indent().println();
-							genTypeDeclRecord(outh, outc, typeRecord, candidateTypeName);
-							outh.indent().format("%s %s;", candidateTypeName, candidateVarName).println();
-						}
+					String choiceName = correspondence.id;
+					choiceNameList.add(choiceName);
+					choiceMap.put(choiceName, maxStructNumber);
+				}
+				
+				// generate choice struct
+				if (candidateType.kind == Type.Kind.RECORD) {
+					TypeRecord typeRecord = (TypeRecord)candidateType;
+					String structName = String.format("CHOICE_%02d", maxStructNumber);
+					if (typeRecord.fields.size() == 0) {
+						outh.indent().format("struct %s {};", structName).println();
 					} else {
-						throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+						genTypeDeclRecord(outh, outc, typeRecord, structName);
 					}
+				} else {
+					throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 				}
 			}
+			outh.indent().println();
+			outh.indent().format("CHOICE_TAG choiceTag;").println();
+			for(int i = 1; i <= maxStructNumber; i++) {
+				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
+			}
+			outh.indent().println();
 
+			for(String choiceName: choiceNameList) {
+				int structNumber = choiceMap.get(choiceName);
+				outh.indent().format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName)).println();
+				outh.nest();
+				outh.indent().format("return choice_%02d;", structNumber).println();
+				outh.unnest();
+				outh.indent().format("}").println();
+			}
 		} else {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
