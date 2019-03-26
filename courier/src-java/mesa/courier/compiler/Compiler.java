@@ -376,11 +376,7 @@ public class Compiler {
 			
 			outh.indent().println();
 			outh.indent().format("CHOICE_TAG choiceTag;").println();
-			for(int i = 1; i <= maxStructNumber; i++) {
-				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
-			}
-			outh.indent().println();
-
+			
 			for(String choiceName: choiceNameList) {
 				int structNumber = choiceMap.get(choiceName);
 				outh.indent().format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName)).println();
@@ -389,6 +385,20 @@ public class Compiler {
 				outh.unnest();
 				outh.indent().format("}").println();
 			}
+			outh.indent().println();
+			
+			outh.indent().format("// Declare friend functions that need access private fields.").println();
+			String   programName = program.info.getProgramVersion();
+			outh.indent().format("friend void serialize  (Courier::BLOCK& block, const Courier::%s::%s& value);", programName, name).println();
+			outh.indent().format("friend void deserialize(Courier::BLOCK& block,       Courier::%s::%s& value);", programName, name).println();
+			outh.indent().println();
+			
+			outh.unnest();
+			outh.indent().format("private:").println();
+			outh.nest();
+			for(int i = 1; i <= maxStructNumber; i++) {
+				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
+			}
 		} else if (type instanceof TypeChoice.Anon) {
 			TypeChoice.Anon anon = (TypeChoice.Anon)type;
 
@@ -396,7 +406,7 @@ public class Compiler {
 			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 			int                  maxStructNumber = 0;
 
-			outh.indent().format("enum class CHOICE_TAG {").println();
+			outh.indent().format("enum class CHOICE_TAG : quint16 {").println();
 			outh.nest();
 			for(Candidate<Correspondence> candidate: anon.candidates) {
 				for(Correspondence correspondence: candidate.designators) {
@@ -431,11 +441,6 @@ public class Compiler {
 				}
 			}
 			outh.indent().println();
-			outh.indent().format("CHOICE_TAG choiceTag;").println();
-			for(int i = 1; i <= maxStructNumber; i++) {
-				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
-			}
-			outh.indent().println();
 
 			for(String choiceName: choiceNameList) {
 				int structNumber = choiceMap.get(choiceName);
@@ -445,6 +450,21 @@ public class Compiler {
 				outh.unnest();
 				outh.indent().format("}").println();
 			}
+			outh.indent().println();
+
+			outh.indent().format("// Declare friend functions that need access private fields.").println();
+			String   programName = program.info.getProgramVersion();
+			outh.indent().format("friend void serialize  (Courier::BLOCK& block, const Courier::%s::%s& value);", programName, name).println();
+			outh.indent().format("friend void deserialize(Courier::BLOCK& block,       Courier::%s::%s& value);", programName, name).println();
+			outh.indent().println();
+			
+			outh.unnest();
+			outh.indent().format("private:").println();
+			outh.nest();
+			for(int i = 1; i <= maxStructNumber; i++) {
+				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
+			}
+
 		} else {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
@@ -559,6 +579,11 @@ public class Compiler {
 				// void serialize(Courier::BLOCK& block, const Courier::BYTE&          value);
 				leftList.add(String.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s&", programName, name));
 				rightList.add("value);");
+				
+				if (declType.type.kind == Type.Kind.CHOICE) {
+					// TODO output function for CHOICE_TAG
+					// TODO output function for CHOICE_XX
+				}
 			}
 			
 			for(String line: layoutStringString(leftList, rightList)) {
@@ -581,6 +606,11 @@ public class Compiler {
 				// void deserialize(Courier::BLOCK& block, Courier::BYTE&          value);
 				leftList.add(String.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s&", programName, name));
 				rightList.add("value);");
+
+				if (declType.type.kind == Type.Kind.CHOICE) {
+					// TODO output function for CHOICE_TAG
+					// TODO output function for CHOICE_XX
+				}
 			}
 			
 			for(String line: layoutStringString(leftList, rightList)) {
@@ -614,6 +644,10 @@ public class Compiler {
 					outc.indent().format("}").println();
 				}
 				if (declType.type.kind == Type.Kind.CHOICE) {
+					// TODO output function for struct for choice
+					// TODO output function for CHOICE_TAG
+					// TODO output function for CHOICE_XX
+
 					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
 					outc.nest();
 //					outc.indent().format("block.clear();").println();
@@ -626,7 +660,6 @@ public class Compiler {
 								// TODO
 							}
 						}
-						
 					} else if (typeChoice instanceof TypeChoice.Typed) {
 						TypeChoice.Typed typeTyped = (TypeChoice.Typed)typeChoice;
 						for(Candidate<String> candidate: typeTyped.candidates) {
@@ -653,6 +686,71 @@ public class Compiler {
 		}
 
 		// TODO output deserialization function definition
+		outc.indent().println("");
+		outc.indent().println("//");
+		outc.indent().println("// Deserialize Function Definition");
+		outc.indent().println("//");
+		{
+			for(Program.DeclType declType: declTypeList) {
+				String   name        = declType.name;
+				String   programName = program.info.getProgramVersion();
+
+				if (declType.type.kind == Type.Kind.RECORD) {
+					outc.indent().format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name).println();
+					outc.nest();
+//					outc.indent().format("block.clear();").println();
+
+					TypeRecord typeRecord = (TypeRecord)declType.type;
+					for(Field field: typeRecord.fields) {
+						String fieldName = Util.sanitizeSymbol(field.name);
+						outc.indent().format("deserialize(block, value.%s);", fieldName).println();
+					}
+					
+//					outc.indent().format("block.rewind();").println();
+					outc.unnest();
+					outc.indent().format("}").println();
+				}
+				if (declType.type.kind == Type.Kind.CHOICE) {
+					// TODO output function for struct for choice
+					// TODO output function for CHOICE_TAG
+					// TODO output function for CHOICE_XX
+
+					outc.indent().format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name).println();
+					outc.nest();
+//					outc.indent().format("block.clear();").println();
+
+					TypeChoice typeChoice = (TypeChoice)declType.type;
+					if (typeChoice instanceof TypeChoice.Anon) {
+						TypeChoice.Anon typeAnon = (TypeChoice.Anon)typeChoice;
+						for(Candidate<Correspondence> candidate: typeAnon.candidates) {
+							for(Correspondence correspondence: candidate.designators) {
+								// TODO
+							}
+						}
+					} else if (typeChoice instanceof TypeChoice.Typed) {
+						TypeChoice.Typed typeTyped = (TypeChoice.Typed)typeChoice;
+						for(Candidate<String> candidate: typeTyped.candidates) {
+							for(String choiceName: candidate.designators) {
+								// TODO
+							}
+						}
+					}
+					
+//					outc.indent().format("block.rewind();").println();
+					outc.unnest();
+					outc.indent().format("}").println();
+				}
+				if (declType.type.kind == Type.Kind.ENUM) {
+					outc.indent().format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name).println();
+					outc.nest();
+					outc.indent().format("Courier::UNSPECIFIED u = (quint16)value;").println();
+					outc.indent().format("deserialize(block, u);").println();
+					outc.unnest();
+					outc.indent().format("}").println();
+				}
+				
+			}
+		}
 
 	}
 	public void genStub() {
