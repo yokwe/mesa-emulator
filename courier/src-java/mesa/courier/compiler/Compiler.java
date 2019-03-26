@@ -432,7 +432,7 @@ public class Compiler {
 			
 			outh.indent().println("");
 			outh.indent().println("//");
-			outh.indent().println("// Enum Function Declaration");
+			outh.indent().println("// Enum toString Declaration");
 			outh.indent().println("//");
 			for(String line: layoutStringString(leftList, rightList)) {
 				outh.indent().println(line);
@@ -448,15 +448,26 @@ public class Compiler {
 			String   name        = declType.name;
 			String   programName = program.info.getProgramVersion();
 			
+			List<String> leftList  = new ArrayList<>();
+			List<String> rightList = new ArrayList<>();
+
+			for(Correspondence correspondence: type.elements) {
+				String enumName   = correspondence.id;
+				leftList. add(String.format("{Courier::%s::%s::%s,", programName, name, Util.sanitizeSymbol(enumName)));
+				rightList.add(String.format("\"%s\"},", enumName));
+//				outc.indent().format("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName).println();
+			}
+
 			outc.indent().println();
 			outc.indent().format("QString toString(const Courier::%s::%s value) {", programName, name).println();
 			outc.nest();
 			outc.indent().format("static QMap<Courier::%s::%s, QString> map = {", programName, name).println();
-			outc.nest();	
-			for(Correspondence correspondence: type.elements) {
-				String enumName   = correspondence.id;
-				outc.indent().format("{Courier::%s::%s::%s,  \"%s\"},", programName, name, enumName, enumName).println();
+			outc.nest();
+			
+			for(String line: layoutStringString(leftList, rightList)) {
+				outc.indent().println(line);
 			}
+			
 			outc.unnest();
 			outc.indent().format("};").println();
 			outc.indent().println();
@@ -481,6 +492,9 @@ public class Compiler {
 				declTypeList.add(declType);
 			};
 			if (declType.type.kind == Type.Kind.CHOICE) {
+				declTypeList.add(declType);
+			};
+			if (declType.type.kind == Type.Kind.ENUM) {
 				declTypeList.add(declType);
 			};
 		}
@@ -531,6 +545,69 @@ public class Compiler {
 		}
 
 		// TODO output serialization function definition
+		outc.indent().println("");
+		outc.indent().println("//");
+		outc.indent().println("// Serialize Function Definition");
+		outc.indent().println("//");
+		{
+			for(Program.DeclType declType: declTypeList) {
+				String   name        = declType.name;
+				String   programName = program.info.getProgramVersion();
+
+				if (declType.type.kind == Type.Kind.RECORD) {
+					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
+					outc.nest();
+//					outc.indent().format("block.clear();").println();
+
+					TypeRecord typeRecord = (TypeRecord)declType.type;
+					for(Field field: typeRecord.fields) {
+						String fieldName = Util.sanitizeSymbol(field.name);
+						outc.indent().format("serialize(block, value.%s);", fieldName).println();
+					}
+					
+//					outc.indent().format("block.rewind();").println();
+					outc.unnest();
+					outc.indent().format("}").println();
+				}
+				if (declType.type.kind == Type.Kind.CHOICE) {
+					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
+					outc.nest();
+//					outc.indent().format("block.clear();").println();
+
+					TypeChoice typeChoice = (TypeChoice)declType.type;
+					if (typeChoice instanceof TypeChoice.Anon) {
+						TypeChoice.Anon typeAnon = (TypeChoice.Anon)typeChoice;
+						for(Candidate<Correspondence> candidate: typeAnon.candidates) {
+							for(Correspondence correspondence: candidate.designators) {
+								// TODO
+							}
+						}
+						
+					} else if (typeChoice instanceof TypeChoice.Typed) {
+						TypeChoice.Typed typeTyped = (TypeChoice.Typed)typeChoice;
+						for(Candidate<String> candidate: typeTyped.candidates) {
+							for(String choiceName: candidate.designators) {
+								// TODO
+							}
+						}
+					}
+					
+//					outc.indent().format("block.rewind();").println();
+					outc.unnest();
+					outc.indent().format("}").println();
+				}
+				if (declType.type.kind == Type.Kind.ENUM) {
+					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
+					outc.nest();
+					outc.indent().format("Courier::UNSPECIFIED u = (quint16)value;").println();
+					outc.indent().format("serialize(block, u);").println();
+					outc.unnest();
+					outc.indent().format("}").println();
+				}
+				
+			}
+		}
+
 		// TODO output deserialization function definition
 
 	}
