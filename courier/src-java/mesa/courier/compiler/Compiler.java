@@ -271,8 +271,6 @@ public class Compiler {
 	}
 	
 	public void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
-		outh.indent().format("struct %s {", name).println();
-		outh.nest();
 		List<String> leftList  = new ArrayList<>();
 		List<String> rightList = new ArrayList<>();
 		for(Field field: type.fields) {
@@ -312,8 +310,10 @@ public class Compiler {
 			
 			leftList.add(fieldType);
 			rightList.add(String.format("%s;", fieldName));
-//			outh.indent().format("%s %s;", pad(FIELD_TYPE_WIDTH, fieldType), fieldName).println();
 		}
+
+		outh.indent().format("struct %s {", name).println();
+		outh.nest();
 		for(String line: layoutStringString(leftList, rightList)) {
 			outh.indent().println(line);
 		}
@@ -322,8 +322,6 @@ public class Compiler {
 	}
 	
 	public void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name) {
-		outh.indent().format("enum class %s : quint16 {", name).println();
-		outh.nest();
 		List<String>  leftList  = new ArrayList<>();
 		List<Integer> rightList = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -331,10 +329,11 @@ public class Compiler {
 			rightList.add((int)correspondence.numericValue);
 		}
 		
+		outh.indent().format("enum class %s : quint16 {", name).println();
+		outh.nest();	
 		for(String line: layoutStringInteger(leftList, rightList)) {
 			outh.indent().println(line);
 		}
-		
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
@@ -436,8 +435,8 @@ public class Compiler {
 			}
 
 			TypeEnum type = (TypeEnum)declType.type;
-			String   name     = declType.name;
-			String   programName = program.info.name;
+			String   name        = declType.name;
+			String   programName = program.info.getProgramVersion();
 			outh.indent().format("QString toString(const Courier::%s::%s value);", programName, name).println();
 			
 			outc.indent().println();
