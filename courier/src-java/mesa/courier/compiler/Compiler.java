@@ -2,6 +2,8 @@ package mesa.courier.compiler;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +25,59 @@ public class Compiler {
 	protected static final Logger logger = LoggerFactory.getLogger(Compiler.class);
 
 	public static String STUB_DIR_PATH = "src/stub/";
-
-	static final int USING_LEFT_WIDTH  = -22;
-	static final int FIELD_TYPE_WIDTH  = -26;
-	static final int ENUM_NAME_WIDTH   = -30;
-	static final int ENUM_NUMBER_WIDTH = 4;
+	
+	static List<String> layoutStringString(List<String> leftList, List<String> rightList) {
+		if (leftList.size() != rightList.size()) {
+			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
+		}
+		int size = leftList.size();
+		
+		int leftMaxLength = 0;
+		for(String value: leftList) {
+			int length = value.trim().length();
+			if (leftMaxLength < length) leftMaxLength = length;
+		}
+		int rightMaxLength = 0;
+		for(String value: leftList) {
+			int length = value.trim().length();
+			if (rightMaxLength < length) rightMaxLength = length;
+		}
+		
+		leftMaxLength  = -leftMaxLength;
+		rightMaxLength = -rightMaxLength;
+		String format = String.format("%%%ds %%%ds", leftMaxLength, rightMaxLength);
+		List<String> ret = new ArrayList<>();
+		for(int i = 0; i < size; i++) {
+			ret.add(String.format(format, leftList.get(i).trim(), rightList.get(i).trim()));
+		}
+		return ret;
+	}
+	static List<String> layoutStringInteger(List<String> leftList, List<Integer> rightList) {
+		if (leftList.size() != rightList.size()) {
+			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
+		}
+		int size = leftList.size();
+		
+		int leftMaxLength = 0;
+		for(String value: leftList) {
+			int length = value.trim().length();
+			if (leftMaxLength < length) leftMaxLength = length;
+		}
+		
+		int rightMaxLength = 0;
+		for(Integer value: rightList) {
+			String string = String.format("%d", value);
+			int length = string.length();
+			if (rightMaxLength < length) rightMaxLength = length;
+		}
+		
+		String format = String.format("%%%ds = %%%ds,", -leftMaxLength, rightMaxLength);
+		List<String> ret = new ArrayList<>();
+		for(int i = 0; i < size; i++) {
+			ret.add(String.format(format, leftList.get(i).trim(), rightList.get(i).intValue()));
+		}
+		return ret;
+	}
 
 
 	private static class IndentPrintWriter implements AutoCloseable {
@@ -182,7 +232,7 @@ public class Compiler {
 			case UNSPECIFIED:
 			case UNSPECIFIED2:
 			case UNSPECIFIED3:
-				outh.indent().format("using %s = %s;", pad(USING_LEFT_WIDTH, name), toTypeString(type)).println();
+				outh.indent().format("using %s = %s;", name, type).println();
 				break;
 			// constructed
 			case ENUM:
@@ -212,7 +262,7 @@ public class Compiler {
 				break;
 			// reference
 			case REFERENCE:
-				outh.indent().format("using %s = %s;", pad(USING_LEFT_WIDTH, name), toTypeString(type)).println();
+				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
 				break;
 			default:
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
@@ -223,6 +273,8 @@ public class Compiler {
 	public void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
+		List<String> leftList  = new ArrayList<>();
+		List<String> rightList = new ArrayList<>();
 		for(Field field: type.fields) {
 			String fieldType;
 			String fieldName;
@@ -258,7 +310,12 @@ public class Compiler {
 				break;
 			}
 			
-			outh.indent().format("%s %s;", pad(FIELD_TYPE_WIDTH, fieldType), fieldName).println();
+			leftList.add(fieldType);
+			rightList.add(String.format("%s;", fieldName));
+//			outh.indent().format("%s %s;", pad(FIELD_TYPE_WIDTH, fieldType), fieldName).println();
+		}
+		for(String line: layoutStringString(leftList, rightList)) {
+			outh.indent().println(line);
 		}
 		outh.unnest();
 		outh.indent().format("};").println();
@@ -267,11 +324,17 @@ public class Compiler {
 	public void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name) {
 		outh.indent().format("enum class %s : quint16 {", name).println();
 		outh.nest();
+		List<String>  leftList  = new ArrayList<>();
+		List<Integer> rightList = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
-			String enumName   = correspondence.id;
-			String enumNumber = String.format("%d", correspondence.numericValue);
-			outh.indent().format("%s = %s,", pad(ENUM_NAME_WIDTH, enumName), pad(ENUM_NUMBER_WIDTH, enumNumber)).println();
+			leftList.add(correspondence.id);
+			rightList.add((int)correspondence.numericValue);
 		}
+		
+		for(String line: layoutStringInteger(leftList, rightList)) {
+			outh.indent().println(line);
+		}
+		
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
