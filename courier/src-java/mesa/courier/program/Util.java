@@ -1,5 +1,8 @@
 package mesa.courier.program;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 public class Util {
 	public static long parseLong(String text) {
 		int length = text.length();
@@ -46,6 +49,21 @@ public class Util {
 			}
 		}
 		return ret.toString();
+	}
+	
+	private static Map<String, String> sanitizeMap = new TreeMap<>();
+	static {
+		sanitizeMap.put("and",    "and__");
+		sanitizeMap.put("not",    "not__");
+		sanitizeMap.put("or",     "or__");
+		sanitizeMap.put("return", "return__");
+	}
+
+	public static String sanitizeSymbol(String symbol) {
+		if (sanitizeMap.containsKey(symbol)) {
+			return sanitizeMap.get(symbol);
+		}
+		return symbol;
 	}
 
 }
