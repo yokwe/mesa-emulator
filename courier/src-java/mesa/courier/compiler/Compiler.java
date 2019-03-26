@@ -20,6 +20,7 @@ import mesa.courier.program.TypeEnum;
 import mesa.courier.program.TypeRecord;
 import mesa.courier.program.TypeReference;
 import mesa.courier.program.TypeSequence;
+import mesa.courier.program.Util;
 
 public class Compiler {
 	protected static final Logger logger = LoggerFactory.getLogger(Compiler.class);
@@ -37,15 +38,8 @@ public class Compiler {
 			int length = value.trim().length();
 			if (leftMaxLength < length) leftMaxLength = length;
 		}
-		int rightMaxLength = 0;
-		for(String value: leftList) {
-			int length = value.trim().length();
-			if (rightMaxLength < length) rightMaxLength = length;
-		}
-		
 		leftMaxLength  = -leftMaxLength;
-		rightMaxLength = -rightMaxLength;
-		String format = String.format("%%%ds %%%ds", leftMaxLength, rightMaxLength);
+		String format = String.format("%%%ds %%s;", leftMaxLength);
 		List<String> ret = new ArrayList<>();
 		for(int i = 0; i < size; i++) {
 			ret.add(String.format(format, leftList.get(i).trim(), rightList.get(i).trim()));
@@ -220,7 +214,7 @@ public class Compiler {
 			outh.indent().println();
 
 			Type   type = declType.type;
-			String name = declType.name;
+			String name = Util.sanitizeSymbol(declType.name);
 			
 			switch(type.kind) {
 			// predefined
@@ -309,7 +303,7 @@ public class Compiler {
 			}
 			
 			leftList.add(fieldType);
-			rightList.add(String.format("%s;", fieldName));
+			rightList.add(String.format("%s", Util.sanitizeSymbol(fieldName)));
 		}
 
 		outh.indent().format("struct %s {", name).println();
@@ -325,7 +319,7 @@ public class Compiler {
 		List<String>  leftList  = new ArrayList<>();
 		List<Integer> rightList = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
-			leftList.add(correspondence.id);
+			leftList.add(Util.sanitizeSymbol(correspondence.id));
 			rightList.add((int)correspondence.numericValue);
 		}
 		
