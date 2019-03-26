@@ -39,14 +39,14 @@ public class Compiler {
 			if (leftMaxLength < length) leftMaxLength = length;
 		}
 		leftMaxLength  = -leftMaxLength;
-		String format = String.format("%%%ds %%s;", leftMaxLength);
+		String format = String.format("%%%ds %%s", leftMaxLength);
 		List<String> ret = new ArrayList<>();
 		for(int i = 0; i < size; i++) {
 			ret.add(String.format(format, leftList.get(i).trim(), rightList.get(i).trim()));
 		}
 		return ret;
 	}
-	static List<String> layoutStringInteger(List<String> leftList, List<Integer> rightList) {
+	static List<String> layoutEnumElement(List<String> leftList, List<Integer> rightList) {
 		if (leftList.size() != rightList.size()) {
 			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
 		}
@@ -303,7 +303,7 @@ public class Compiler {
 			}
 			
 			leftList.add(fieldType);
-			rightList.add(String.format("%s", Util.sanitizeSymbol(fieldName)));
+			rightList.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 		}
 
 		outh.indent().format("struct %s {", name).println();
@@ -325,7 +325,7 @@ public class Compiler {
 		
 		outh.indent().format("enum class %s : quint16 {", name).println();
 		outh.nest();	
-		for(String line: layoutStringInteger(leftList, rightList)) {
+		for(String line: layoutEnumElement(leftList, rightList)) {
 			outh.indent().println(line);
 		}
 		outh.unnest();
@@ -410,28 +410,43 @@ public class Compiler {
 	}
 	
 	void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
-		boolean firstTime = true;
+		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
-			if (declType.type.kind != Type.Kind.ENUM) continue;
+			if (declType.type.kind == Type.Kind.ENUM) {
+				declTypeList.add(declType);
+			};
+		}
+		if (declTypeList.isEmpty()) return;
+		
+		{
+			List<String> leftList  = new ArrayList<>();
+			List<String> rightList = new ArrayList<>();
 			
-			if (firstTime) {
-				outh.indent().println("");
-				outh.indent().println("//");
-				outh.indent().println("// Enum Function Declaration");
-				outh.indent().println("//");
-
-				outc.indent().println("");
-				outc.indent().println("//");
-				outc.indent().println("// Enum Function Definition");
-				outc.indent().println("//");
+			for(Program.DeclType declType: declTypeList) {				
+				String   name        = declType.name;
+				String   programName = program.info.getProgramVersion();
 				
-				firstTime = false;
+				leftList.add(String.format("QString toString(const Courier::%s::%s", programName, name));
+				rightList.add("value);");
 			}
-
+			
+			outh.indent().println("");
+			outh.indent().println("//");
+			outh.indent().println("// Enum Function Declaration");
+			outh.indent().println("//");
+			for(String line: layoutStringString(leftList, rightList)) {
+				outh.indent().println(line);
+			}
+		}
+		
+		outc.indent().println("");
+		outc.indent().println("//");
+		outc.indent().println("// Enum Function Definition");
+		outc.indent().println("//");
+		for(Program.DeclType declType: declTypeList) {			
 			TypeEnum type = (TypeEnum)declType.type;
 			String   name        = declType.name;
 			String   programName = program.info.getProgramVersion();
-			outh.indent().format("QString toString(const Courier::%s::%s value);", programName, name).println();
 			
 			outc.indent().println();
 			outc.indent().format("QString toString(const Courier::%s::%s value) {", programName, name).println();
