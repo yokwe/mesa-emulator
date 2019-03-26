@@ -474,6 +474,66 @@ public class Compiler {
 		}
 	}
 
+	void genSerializeFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
+		List<Program.DeclType> declTypeList = new ArrayList<>();
+		for(Program.DeclType declType: program.typeList) {
+			if (declType.type.kind == Type.Kind.RECORD) {
+				declTypeList.add(declType);
+			};
+			if (declType.type.kind == Type.Kind.CHOICE) {
+				declTypeList.add(declType);
+			};
+		}
+		if (declTypeList.isEmpty()) return;
+		
+		outh.indent().println("");
+		outh.indent().println("//");
+		outh.indent().println("// Serialize Function Declaration");
+		outh.indent().println("//");
+		{
+			List<String> leftList  = new ArrayList<>();
+			List<String> rightList = new ArrayList<>();
+			
+			for(Program.DeclType declType: declTypeList) {				
+				String   name        = declType.name;
+				String   programName = program.info.getProgramVersion();
+				
+				// void serialize(Courier::BLOCK& block, const Courier::BYTE&          value);
+				leftList.add(String.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s&", programName, name));
+				rightList.add("value);");
+			}
+			
+			for(String line: layoutStringString(leftList, rightList)) {
+				outh.indent().println(line);
+			}
+		}
+		
+		outh.indent().println("");
+		outh.indent().println("//");
+		outh.indent().println("// Deserizlize Function Declaration");
+		outh.indent().println("//");
+		{
+			List<String> leftList  = new ArrayList<>();
+			List<String> rightList = new ArrayList<>();
+			
+			for(Program.DeclType declType: declTypeList) {				
+				String   name        = declType.name;
+				String   programName = program.info.getProgramVersion();
+				
+				// void deserialize(Courier::BLOCK& block, Courier::BYTE&          value);
+				leftList.add(String.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s&", programName, name));
+				rightList.add("value);");
+			}
+			
+			for(String line: layoutStringString(leftList, rightList)) {
+				outh.indent().println(line);
+			}
+		}
+
+		// TODO output serialization function definition
+		// TODO output deserialization function definition
+
+	}
 	public void genStub() {
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, program.info.getProgramVersion());
 		String pathh = String.format("%s%s.h",   STUB_DIR_PATH, program.info.getProgramVersion());
@@ -490,10 +550,11 @@ public class Compiler {
 			
 			// generate constant declaration
 			
-			// generate serialize/deserialize for Record			
-			
 			genClosing(outh, outc);
 			
+			// generate serialize/deserialize for Record
+			genSerializeFunc(outh, outc);
+
 			// generate toString for enum
 			genEnumFunc(outh, outc);
 			
