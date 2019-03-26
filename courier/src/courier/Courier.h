@@ -732,7 +732,7 @@ void deserialize(Courier::BLOCK& block, Courier::BLOCK&         value);
 
 // For SEQUENCE
 template <typename T>
-void serialize(Courier::BLOCK& block, Courier::SEQUENCE<T>& value) {
+void serialize(Courier::BLOCK& block, const Courier::SEQUENCE<T>& value) {
 	value.serialize(block);
 }
 template <typename T>
@@ -742,7 +742,7 @@ void deserialize(Courier::BLOCK& block, Courier::SEQUENCE<T>& value) {
 
 // For ARRAY
 template <typename T>
-void serialize(Courier::BLOCK& block, Courier::ARRAY<T>& value) {
+void serialize(Courier::BLOCK& block, const Courier::ARRAY<T>& value) {
 	value.serialize(block);
 }
 template <typename T>
