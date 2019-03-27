@@ -29,7 +29,7 @@ public class Compiler {
 
 	public static String STUB_DIR_PATH = "src/stub/";
 	
-	static List<String> layoutStringString(List<String> leftList, List<String> rightList) {
+	private static List<String> layoutStringString(List<String> leftList, List<String> rightList) {
 		if (leftList.size() != rightList.size()) {
 			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
 		}
@@ -48,7 +48,7 @@ public class Compiler {
 		}
 		return ret;
 	}
-	static List<String> layoutEnumElement(List<String> leftList, List<Integer> rightList) {
+	private static List<String> layoutEnumElement(List<String> leftList, List<Integer> rightList) {
 		if (leftList.size() != rightList.size()) {
 			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
 		}
@@ -101,17 +101,12 @@ public class Compiler {
 		}
 	}
 	
-	static String pad(int width, String string) {
-		String format = String.format("%%%ds", width);
-		return String.format(format, string);
-	}
-
 	private final Program program;
 	public Compiler(Program program) {
 		this.program = program;
 	}
 
-	public void genOpening(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genOpening(IndentPrintWriter outh, IndentPrintWriter outc) {
 		// for outh
 		// write opening lines
 		outh.indent().format("#ifndef STUB_%s_H__", program.info.getProgramVersion()).println();
@@ -145,7 +140,7 @@ public class Compiler {
 		outc.indent().format("#include \"../stub/%s.h\"", program.info.getProgramVersion()).println();
 		outc.indent().println();
 	}
-	public void genClosing(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genClosing(IndentPrintWriter outh, IndentPrintWriter outc) {
 		// for outh
 		outh.indent().println();
 		outh.indent().println("}"); // for namespace for progaram
@@ -155,7 +150,7 @@ public class Compiler {
 		// nothing for now
 	}
 	
-	String toTypeString(Type type) {
+	private String toTypeString(Type type) {
 		switch(type.kind) {
 		// predefined
 		case BOOLEAN:
@@ -206,7 +201,7 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	public void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc) {
 		outh.indent().println("");
 		outh.indent().println("//");
 		outh.indent().println("// Type Declaration");
@@ -266,7 +261,7 @@ public class Compiler {
 		}
 	}
 	
-	public void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
+	private void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
 		List<String> leftList  = new ArrayList<>();
 		List<String> rightList = new ArrayList<>();
 		for(Field field: type.fields) {
@@ -317,7 +312,7 @@ public class Compiler {
 		outh.indent().format("};").println();
 	}
 	
-	public void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name) {
+	private void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name) {
 		List<String>  leftList  = new ArrayList<>();
 		List<Integer> rightList = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -334,7 +329,7 @@ public class Compiler {
 		outh.indent().format("};").println();
 	}
 	
-	public void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name) {
+	private void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name) {
 		outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
@@ -473,7 +468,7 @@ public class Compiler {
 		outh.indent().format("};").println();
 	}
 	
-	void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.ENUM) {
@@ -549,7 +544,7 @@ public class Compiler {
 		}
 	}
 
-	void genSerializeFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genSerializeFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.RECORD) {
