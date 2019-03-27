@@ -29,61 +29,89 @@ public class Compiler {
 
 	public static String STUB_DIR_PATH = "src/stub/";
 	
-	private static List<String> layoutStringString(List<String> leftList, List<String> rightList) {
-		if (leftList.size() != rightList.size()) {
-			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
+	private static List<String> layoutStringString(List<String> c1, List<String> c2) {
+		if (c1.size() != c2.size()) {
+			throw new CompilerException(String.format("Unexpected size  c1 = %d  c2 = %d", c1.size(), c2.size()));
 		}
-		int size = leftList.size();
+		int size = c1.size();
 		
-		int leftMaxLength = 0;
-		for(String value: leftList) {
+		int w1 = 0;
+		for(String value: c1) {
 			int length = value.trim().length();
-			if (leftMaxLength < length) leftMaxLength = length;
+			if (w1 < length) w1 = length;
 		}
-		leftMaxLength  = -leftMaxLength;
-		String format = String.format("%%%ds %%s", leftMaxLength);
+		String format = String.format("%%%ds %%s", -w1);
+		
 		List<String> ret = new ArrayList<>();
 		for(int i = 0; i < size; i++) {
-			ret.add(String.format(format, leftList.get(i).trim(), rightList.get(i).trim()));
+			ret.add(String.format(format, c1.get(i).trim(), c2.get(i).trim()));
 		}
 		return ret;
 	}
-	private static List<String> layoutEnumElement(List<String> leftList, List<Integer> rightList) {
-		if (leftList.size() != rightList.size()) {
-			throw new CompilerException(String.format("Unexpected size  leftList = %d  rightList = %d", leftList.size(), rightList.size()));
+	private static List<String> layoutStringString(List<String> c1, List<String> c2, List<String> c3) {
+		if (c1.size() != c2.size()) {
+			throw new CompilerException(String.format("Unexpected size  c1 = %d  c2 = %d", c1.size(), c2.size()));
 		}
-		int size = leftList.size();
+		if (c1.size() != c3.size()) {
+			throw new CompilerException(String.format("Unexpected size  c1 = %d  c3 = %d", c1.size(), c3.size()));
+		}
+		int size = c1.size();
 		
-		int leftMaxLength = 0;
-		for(String value: leftList) {
+		int w1 = 0;
+		for(String value: c1) {
 			int length = value.trim().length();
-			if (leftMaxLength < length) leftMaxLength = length;
+			if (w1 < length) w1 = length;
 		}
+		int w2 = 0;
+		for(String value: c2) {
+			int length = value.trim().length();
+			if (w2 < length) w2 = length;
+		}
+		String format = String.format("%%%ds %%%ds %%s", -w1, -w2);
 		
-		int rightMaxLength = 0;
-		for(Integer value: rightList) {
+		List<String> ret = new ArrayList<>();
+		for(int i = 0; i < size; i++) {
+			ret.add(String.format(format, c1.get(i).trim(), c2.get(i).trim(), c3.get(i).trim()));
+		}
+		return ret;
+	}
+	private static List<String> layoutEnumElement(List<String> c1, List<Integer> c2) {
+		if (c1.size() != c2.size()) {
+			throw new CompilerException(String.format("Unexpected size  c1 = %d  c2 = %d", c1.size(), c2.size()));
+		}
+		int size = c1.size();
+		
+		int w1 = 0;
+		for(String value: c1) {
+			int length = value.trim().length();
+			if (w1 < length) w1 = length;
+		}
+		int w2 = 0;
+		for(Integer value: c2) {
 			String string = String.format("%d", value);
 			int length = string.length();
-			if (rightMaxLength < length) rightMaxLength = length;
+			if (w2 < length) w2 = length;
 		}
+		String format = String.format("%%%ds = %%%ds,", -w1, w2);
 		
-		String format = String.format("%%%ds = %%%ds,", -leftMaxLength, rightMaxLength);
 		List<String> ret = new ArrayList<>();
 		for(int i = 0; i < size; i++) {
-			ret.add(String.format(format, leftList.get(i).trim(), rightList.get(i).intValue()));
+			ret.add(String.format(format, c1.get(i).trim(), c2.get(i).intValue()));
 		}
 		return ret;
 	}
 
 
-	private static class IndentPrintWriter implements AutoCloseable {
-		private static final String INDENT = "    ";
+	public static class Printer implements AutoCloseable {
+		public static final String INDENT = "    ";
+		public static final String NEST   = "!!<<NEST>>!!";
+		public static final String UNNEST = "!!<<UNNEST>>!!";
 
 		private final PrintWriter out;
 		
 		private int level = 0;
 
-		public IndentPrintWriter(PrintWriter out) {
+		public Printer(PrintWriter out) {
 			this.out = out;
 		}
 		public void close() {
@@ -102,6 +130,18 @@ public class Compiler {
 			out.format(format, args);
 			out.println();
 		}
+		public void println(String[] stringArray) {
+			for(String string: stringArray) {
+				if (string.equals(NEST)) {
+					nest();
+				} else if (string.equals(UNNEST)) {
+					unnest();
+				} else {
+					for(int i = 0; i < level; i++) out.print(INDENT);
+					out.println(string);
+				}
+			}
+		}
 		public void println() {
 			out.println();
 		}
@@ -112,7 +152,7 @@ public class Compiler {
 		this.program = program;
 	}
 
-	private void genOpening(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genOpening(Printer outh, Printer outc) {
 		// for outh
 		// write opening lines
 		outh.println("#ifndef STUB_%s_H__", program.info.getProgramVersion());
@@ -146,7 +186,7 @@ public class Compiler {
 		outc.println("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 		outc.println();
 	}
-	private void genClosing(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genClosing(Printer outh, Printer outc) {
 		// for outh
 		outh.println();
 		outh.println("}"); // for namespace for progaram
@@ -212,7 +252,7 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc, String namePrefix) {
+	private void genTypeDecl(Printer outh, Printer outc, String namePrefix) {
 		outh.println("");
 		outh.println("//");
 		outh.println("// Type Declaration");
@@ -272,9 +312,9 @@ public class Compiler {
 		}
 	}
 	
-	private void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name, String namePrefix) {
-		List<String> leftList  = new ArrayList<>();
-		List<String> rightList = new ArrayList<>();
+	private void genTypeDeclRecord(Printer outh, Printer outc, TypeRecord type, String name, String namePrefix) {
+		List<String> c1 = new ArrayList<>();
+		List<String> c2 = new ArrayList<>();
 		for(Field field: type.fields) {
 			String fieldType;
 			String fieldName;
@@ -310,43 +350,45 @@ public class Compiler {
 				break;
 			}
 			
-			leftList.add(fieldType);
-			rightList.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			c1.add(fieldType);
+			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 		}
 
 		outh.println("struct %s {", name);
 		outh.nest();
-		for(String line: layoutStringString(leftList, rightList)) {
+		for(String line: layoutStringString(c1, c2)) {
 			outh.println(line);
 		}
 		
 		outh.println();
-		outh.println("void serialize  (BLOCK& block) const;");
-		outh.println("void deserialize(BLOCK& block);");
-		outh.println("QString toString();", name);
+		outh.println(new String[] {
+			"void serialize  (BLOCK& block) const;",
+			"void deserialize(BLOCK& block);",
+			"QString toString();"
+			});
 
 		outh.unnest();
 		outh.println("};");
 	}
 	
-	private void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name, String namePrefix) {
-		List<String>  leftList  = new ArrayList<>();
-		List<Integer> rightList = new ArrayList<>();
+	private void genTypeDeclEnum(Printer outh, Printer outc, TypeEnum type, String name, String namePrefix) {
+		List<String>  c1 = new ArrayList<>();
+		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
-			leftList.add(Util.sanitizeSymbol(correspondence.id));
-			rightList.add((int)correspondence.numericValue);
+			c1.add(Util.sanitizeSymbol(correspondence.id));
+			c2.add((int)correspondence.numericValue);
 		}
 		
 		outh.println("enum class %s : quint16 {", name);
 		outh.nest();	
-		for(String line: layoutEnumElement(leftList, rightList)) {
+		for(String line: layoutEnumElement(c1, c2)) {
 			outh.println(line);
 		}
 		outh.unnest();
 		outh.println("};");
 	}
 	
-	private void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name, String namePrefix) {
+	private void genTypeDeclChoice(Printer outh, Printer outc, TypeChoice type, String name, String namePrefix) {
 		outh.println("// FIXME TypeDecl %s %s", name, type.toString());
 		outh.println("struct %s {", name);
 		outh.nest();
@@ -399,9 +441,11 @@ public class Compiler {
 			}
 			
 			outh.println();
-			outh.println("void serialize  (BLOCK& block) const;");
-			outh.println("void deserialize(BLOCK& block);");
-			outh.println("QString toString();", name);
+			outh.println(new String[] {
+					"void serialize  (BLOCK& block) const;",
+					"void deserialize(BLOCK& block);",
+					"QString toString();"
+					});
 
 			outh.unnest();
 			outh.println("private:");
@@ -464,9 +508,11 @@ public class Compiler {
 			outh.println();
 
 			outh.println();
-			outh.println("void serialize  (BLOCK& block) const;");
-			outh.println("void deserialize(BLOCK& block);");
-			outh.println("QString toString();", name);
+			outh.println(new String[] {
+					"void serialize  (BLOCK& block) const;",
+					"void deserialize(BLOCK& block);",
+					"QString toString();"
+					});
 
 			outh.unnest();
 			outh.println("private:");
@@ -483,7 +529,7 @@ public class Compiler {
 		outh.println("};");
 	}
 	
-	private void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc, String namePrefix) {
+	private void genEnumFunc(Printer outh, Printer outc, String namePrefix) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.ENUM) {
@@ -493,42 +539,47 @@ public class Compiler {
 		if (declTypeList.isEmpty()) return;
 		
 		{
-			List<String> leftList  = new ArrayList<>();
-			List<String> rightList = new ArrayList<>();
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
 			
 			for(Program.DeclType declType: declTypeList) {				
-				String   name        = declType.name;
-				String   programName = program.info.getProgramVersion();
+				String name        = declType.name;
+				String programName = program.info.getProgramVersion();
 				
-				leftList.add(String.format("QString toString(const %s::%s::%s", namePrefix, programName, name));
-				rightList.add("value);");
+				c1.add(String.format("QString toString(const %s::%s::%s", namePrefix, programName, name));
+				c2.add("value);");
 			}
 			
-			outh.println("");
-			outh.println("//");
-			outh.println("// Enum toString Declaration");
-			outh.println("//");
-			for(String line: layoutStringString(leftList, rightList)) {
+			outh.println();
+			outh.println(new String[] {
+					"//",
+					"// Enum toString Declaration",
+					"//"
+					});
+			for(String line: layoutStringString(c1, c2)) {
 				outh.println(line);
 			}
 		}
 		
-		outc.println("");
-		outc.println("//");
-		outc.println("// Enum Function Definition");
-		outc.println("//");
+		outc.println();
+		outh.println(new String[] {
+				"//",
+				"// Enum Function Definition",
+				"//"
+				});
+
 		for(Program.DeclType declType: declTypeList) {			
 			TypeEnum type = (TypeEnum)declType.type;
 			String   name        = declType.name;
 			String   programName = program.info.getProgramVersion();
 			
-			List<String> leftList  = new ArrayList<>();
-			List<String> rightList = new ArrayList<>();
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
 
 			for(Correspondence correspondence: type.elements) {
 				String enumName   = correspondence.id;
-				leftList. add(String.format("{%s::%s::%s::%s,", namePrefix, programName, name, Util.sanitizeSymbol(enumName)));
-				rightList.add(String.format("\"%s\"},", enumName));
+				c1.add(String.format("{%s::%s::%s::%s,", namePrefix, programName, name, Util.sanitizeSymbol(enumName)));
+				c2.add(String.format("\"%s\"},", enumName));
 //				outc.println("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName);
 			}
 
@@ -538,29 +589,47 @@ public class Compiler {
 			outc.println("static QMap<%s::%s::%s, QString> map = {", namePrefix, programName, name);
 			outc.nest();
 			
-			for(String line: layoutStringString(leftList, rightList)) {
+			for(String line: layoutStringString(c1, c2)) {
 				outc.println(line);
 			}
 			
-			outc.unnest();
-			outc.println("};");
-			outc.println();
-			outc.println("if (map.contains(value)) {");
-			outc.nest();
-			outc.println("return map[value];");
-			outc.unnest();
-			outc.println("} else {");
-			outc.nest();
-			outc.println("return QString(\"%%1\").arg((quint16)value);");
-			outc.unnest();
-			outc.println("}");
-			outc.unnest();
-			outc.println("}");
+//			outc.unnest();
+//			outc.println("};");
+//			outc.println();
+//			outc.println("if (map.contains(value)) {");
+//			outc.nest();
+//			outc.println("return map[value];");
+//			outc.unnest();
+//			outc.println("} else {");
+//			outc.nest();
+//			outc.println("return QString(\"%%1\").arg((quint16)value);");
+//			outc.unnest();
+//			outc.println("}");
+//			outc.unnest();
+//			outc.println("}");
+			
+			outc.println(new String[] {
+					Printer.UNNEST,
+					"};",
+					"",
+					"if (map.contains(value)) {",
+					Printer.NEST,
+						"return map[value];",
+					Printer.UNNEST,
+					"} else {",
+					Printer.NEST,
+						"return QString(\"%1\").arg((quint16)value);",
+					Printer.UNNEST,
+					"}",
+					Printer.UNNEST,
+				"}",
+					});
+
 		}
 	}
 
-/*
-	private void genSerializeFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
+/**/
+	private void genSerializeFunc(Printer outh, Printer outc) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.RECORD) {
@@ -580,16 +649,16 @@ public class Compiler {
 		outh.println("// Serialize Function Declaration");
 		outh.println("//");
 		{
-			List<String> leftList  = new ArrayList<>();
-			List<String> rightList = new ArrayList<>();
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
 			
 			for(Program.DeclType declType: declTypeList) {				
 				String   name        = declType.name;
 				String   programName = program.info.getProgramVersion();
 				
 				// void serialize(Courier::BLOCK& block, const Courier::BYTE&          value);
-				leftList.add(String.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s&", programName, name));
-				rightList.add("value);");
+				c1.add(String.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s&", programName, name));
+				c2.add("value);");
 				
 				if (declType.type.kind == Type.Kind.CHOICE) {
 					// TODO output function for CHOICE_TAG
@@ -597,7 +666,7 @@ public class Compiler {
 				}
 			}
 			
-			for(String line: layoutStringString(leftList, rightList)) {
+			for(String line: layoutStringString(c1, c2)) {
 				outh.println(line);
 			}
 		}
@@ -607,16 +676,16 @@ public class Compiler {
 		outh.println("// Deserizlize Function Declaration");
 		outh.println("//");
 		{
-			List<String> leftList  = new ArrayList<>();
-			List<String> rightList = new ArrayList<>();
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
 			
 			for(Program.DeclType declType: declTypeList) {				
 				String   name        = declType.name;
 				String   programName = program.info.getProgramVersion();
 				
 				// void deserialize(Courier::BLOCK& block, Courier::BYTE&          value);
-				leftList.add(String.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s&", programName, name));
-				rightList.add("value);");
+				c1.add(String.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s&", programName, name));
+				c2.add("value);");
 
 				if (declType.type.kind == Type.Kind.CHOICE) {
 					// TODO output function for CHOICE_TAG
@@ -624,7 +693,7 @@ public class Compiler {
 				}
 			}
 			
-			for(String line: layoutStringString(leftList, rightList)) {
+			for(String line: layoutStringString(c1, c2)) {
 				outh.println(line);
 			}
 		}
@@ -763,7 +832,7 @@ public class Compiler {
 			}
 		}
 	}
-*/
+/**/
 	
 	public void genStub() {
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, program.info.getProgramVersion());
@@ -774,8 +843,8 @@ public class Compiler {
 		String namePrefix = "Courier";
 		
 		try (
-				IndentPrintWriter outc = new IndentPrintWriter(new PrintWriter(pathc));
-				IndentPrintWriter outh = new IndentPrintWriter(new PrintWriter(pathh));) {
+				Printer outc = new Printer(new PrintWriter(pathc));
+				Printer outh = new Printer(new PrintWriter(pathh));) {
 			genOpening(outh, outc);
 			
 			// generate type declaration (exclude error and procedure)
