@@ -80,6 +80,7 @@ public class Compiler {
 		private static final String INDENT = "    ";
 
 		private final PrintWriter out;
+		
 		private int level = 0;
 
 		public IndentPrintWriter(PrintWriter out) {
@@ -95,9 +96,14 @@ public class Compiler {
 			level--;
 			if (level < 0) throw new CompilerException("level < 0");
 		}
-		public PrintWriter indent() {
+
+		public void println(String format, Object... args) {
 			for(int i = 0; i < level; i++) out.print(INDENT);
-			return out;
+			out.format(format, args);
+			out.println();
+		}
+		public void println() {
+			out.println();
 		}
 	}
 	
@@ -109,42 +115,42 @@ public class Compiler {
 	private void genOpening(IndentPrintWriter outh, IndentPrintWriter outc) {
 		// for outh
 		// write opening lines
-		outh.indent().format("#ifndef STUB_%s_H__", program.info.getProgramVersion()).println();
-		outh.indent().format("#define STUB_%s_H__", program.info.getProgramVersion()).println();
-		outh.indent().println();
+		outh.println("#ifndef STUB_%s_H__", program.info.getProgramVersion());
+		outh.println("#define STUB_%s_H__", program.info.getProgramVersion());
+		outh.println();
 
 		// include courier header
-		outh.indent().println("#include \"../courier/Courier.h\"");			
+		outh.println("#include \"../courier/Courier.h\"");			
 		// include depend module
 		for(Program.Info info: program.depends) {
-			outh.indent().format("#include \"../stub/%s.h\"", info.getProgramVersion()).println();
+			outh.println("#include \"../stub/%s.h\"", info.getProgramVersion());
 		}
 
 		// output namespace
-		outh.indent().println();
-		outh.indent().println("namespace Courier {");
+		outh.println();
+		outh.println("namespace Courier {");
 
 		// output main namespace
-		outh.indent().format("namespace %s {", program.info.getProgramVersion()).println();
+		outh.println("namespace %s {", program.info.getProgramVersion());
 		if (program.info.version != 0) {
-			outh.indent().println();
-			outh.indent().format("const quint32 PROGRAM_NUMBER = %d;", program.info.program).println();
-			outh.indent().format("const quint32 VERSION_NUMBER = %d;", program.info.version).println();
+			outh.println();
+			outh.println("const quint32 PROGRAM_NUMBER = %d;", program.info.program);
+			outh.println("const quint32 VERSION_NUMBER = %d;", program.info.version);
 		}
 
 		
 		// for outc
-		outc.indent().format("#include \"../../util/Util.h\"").println();
-		outc.indent().format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion()).println();
-		outc.indent().println();
-		outc.indent().format("#include \"../stub/%s.h\"", program.info.getProgramVersion()).println();
-		outc.indent().println();
+		outc.println("#include \"../../util/Util.h\"");
+		outc.println("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion());
+		outc.println();
+		outc.println("#include \"../stub/%s.h\"", program.info.getProgramVersion());
+		outc.println();
 	}
 	private void genClosing(IndentPrintWriter outh, IndentPrintWriter outc) {
 		// for outh
-		outh.indent().println();
-		outh.indent().println("}"); // for namespace for progaram
-		outh.indent().println("}"); // for namespace Courier
+		outh.println();
+		outh.println("}"); // for namespace for progaram
+		outh.println("}"); // for namespace Courier
 		
 		// for outc
 		// nothing for now
@@ -207,13 +213,13 @@ public class Compiler {
 	}
 	
 	private void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc, String namePrefix) {
-		outh.indent().println("");
-		outh.indent().println("//");
-		outh.indent().println("// Type Declaration");
-		outh.indent().println("//");
+		outh.println("");
+		outh.println("//");
+		outh.println("// Type Declaration");
+		outh.println("//");
 
 		for(Program.DeclType declType: program.typeList) {
-			outh.indent().println();
+			outh.println();
 
 			Type   type = declType.type;
 			String name = Util.sanitizeSymbol(declType.name);
@@ -228,7 +234,7 @@ public class Compiler {
 			case UNSPECIFIED:
 			case UNSPECIFIED2:
 			case UNSPECIFIED3:
-				outh.indent().format("using %s = %s;", name, type).println();
+				outh.println("using %s = %s;", name, type);
 				break;
 			// constructed
 			case ENUM:
@@ -254,11 +260,11 @@ public class Compiler {
 				break;
 			case PROCEDURE:
 			case ERROR:
-				outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
+				outh.println("// FIXME TypeDecl %s %s", name, type.toString());
 				break;
 			// reference
 			case REFERENCE:
-				outh.indent().format("using %s = %s;", name, toTypeString(type)).println();
+				outh.println("using %s = %s;", name, toTypeString(type));
 				break;
 			default:
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
@@ -308,19 +314,19 @@ public class Compiler {
 			rightList.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 		}
 
-		outh.indent().format("struct %s {", name).println();
+		outh.println("struct %s {", name);
 		outh.nest();
 		for(String line: layoutStringString(leftList, rightList)) {
-			outh.indent().println(line);
+			outh.println(line);
 		}
 		
-		outh.indent().println();
-		outh.indent().format("void serialize  (BLOCK& block) const;").println();
-		outh.indent().format("void deserialize(BLOCK& block);").println();
-		outh.indent().format("QString toString();", name).println();
+		outh.println();
+		outh.println("void serialize  (BLOCK& block) const;");
+		outh.println("void deserialize(BLOCK& block);");
+		outh.println("QString toString();", name);
 
 		outh.unnest();
-		outh.indent().format("};").println();
+		outh.println("};");
 	}
 	
 	private void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name, String namePrefix) {
@@ -331,24 +337,24 @@ public class Compiler {
 			rightList.add((int)correspondence.numericValue);
 		}
 		
-		outh.indent().format("enum class %s : quint16 {", name).println();
+		outh.println("enum class %s : quint16 {", name);
 		outh.nest();	
 		for(String line: layoutEnumElement(leftList, rightList)) {
-			outh.indent().println(line);
+			outh.println(line);
 		}
 		outh.unnest();
-		outh.indent().format("};").println();
+		outh.println("};");
 	}
 	
 	private void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name, String namePrefix) {
-		outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
-		outh.indent().format("struct %s {", name).println();
+		outh.println("// FIXME TypeDecl %s %s", name, type.toString());
+		outh.println("struct %s {", name);
 		outh.nest();
 		
 		if (type instanceof TypeChoice.Typed) {
 			TypeChoice.Typed typed = (TypeChoice.Typed)type;
 			
-			outh.indent().format("using CHOICE_TAG = %s;", toTypeString(typed.type)).println();
+			outh.println("using CHOICE_TAG = %s;", toTypeString(typed.type));
 			
 			List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
@@ -370,7 +376,7 @@ public class Compiler {
 						TypeRecord typeRecord = (TypeRecord)candidateType;
 						String structName = String.format("CHOICE_%02d", maxStructNumber);
 						if (typeRecord.fields.size() == 0) {
-							outh.indent().format("struct %s {};", structName).println();
+							outh.println("struct %s {};", structName);
 						} else {
 							genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
 						}
@@ -380,28 +386,28 @@ public class Compiler {
 				}
 			}
 			
-			outh.indent().println();
-			outh.indent().format("CHOICE_TAG choiceTag;").println();
+			outh.println();
+			outh.println("CHOICE_TAG choiceTag;");
 			
 			for(String choiceName: choiceNameList) {
 				int structNumber = choiceMap.get(choiceName);
-				outh.indent().format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName)).println();
+				outh.println("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
 				outh.nest();
-				outh.indent().format("return choice_%02d;", structNumber).println();
+				outh.println("return choice_%02d;", structNumber);
 				outh.unnest();
-				outh.indent().format("}").println();
+				outh.println("}");
 			}
 			
-			outh.indent().println();
-			outh.indent().format("void serialize  (BLOCK& block) const;").println();
-			outh.indent().format("void deserialize(BLOCK& block);").println();
-			outh.indent().format("QString toString();", name).println();
+			outh.println();
+			outh.println("void serialize  (BLOCK& block) const;");
+			outh.println("void deserialize(BLOCK& block);");
+			outh.println("QString toString();", name);
 
 			outh.unnest();
-			outh.indent().format("private:").println();
+			outh.println("private:");
 			outh.nest();
 			for(int i = 1; i <= maxStructNumber; i++) {
-				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
+				outh.println("CHOICE_%02d  choice_%02d;", i, i);
 			}
 		} else if (type instanceof TypeChoice.Anon) {
 			TypeChoice.Anon anon = (TypeChoice.Anon)type;
@@ -410,15 +416,15 @@ public class Compiler {
 			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 			int                  maxStructNumber = 0;
 
-			outh.indent().format("enum class CHOICE_TAG : quint16 {").println();
+			outh.println("enum class CHOICE_TAG : quint16 {");
 			outh.nest();
 			for(Candidate<Correspondence> candidate: anon.candidates) {
 				for(Correspondence correspondence: candidate.designators) {
-					outh.indent().format("%s = %s,", correspondence.id, correspondence.numericValue).println();
+					outh.println("%s = %s,", correspondence.id, correspondence.numericValue);
 				}
 			}
 			outh.unnest();
-			outh.indent().format("};").println();
+			outh.println("};");
 			
 			for(Candidate<Correspondence> candidate: anon.candidates) {
 				maxStructNumber++;
@@ -436,7 +442,7 @@ public class Compiler {
 					TypeRecord typeRecord = (TypeRecord)candidateType;
 					String structName = String.format("CHOICE_%02d", maxStructNumber);
 					if (typeRecord.fields.size() == 0) {
-						outh.indent().format("struct %s {};", structName).println();
+						outh.println("struct %s {};", structName);
 					} else {
 						genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
 
@@ -445,28 +451,28 @@ public class Compiler {
 					throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 				}
 			}
-			outh.indent().println();
+			outh.println();
 
 			for(String choiceName: choiceNameList) {
 				int structNumber = choiceMap.get(choiceName);
-				outh.indent().format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName)).println();
+				outh.println("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
 				outh.nest();
-				outh.indent().format("return choice_%02d;", structNumber).println();
+				outh.println("return choice_%02d;", structNumber);
 				outh.unnest();
-				outh.indent().format("}").println();
+				outh.println("}");
 			}
-			outh.indent().println();
+			outh.println();
 
-			outh.indent().println();
-			outh.indent().format("void serialize  (BLOCK& block) const;").println();
-			outh.indent().format("void deserialize(BLOCK& block);").println();
-			outh.indent().format("QString toString();", name).println();
+			outh.println();
+			outh.println("void serialize  (BLOCK& block) const;");
+			outh.println("void deserialize(BLOCK& block);");
+			outh.println("QString toString();", name);
 
 			outh.unnest();
-			outh.indent().format("private:").println();
+			outh.println("private:");
 			outh.nest();
 			for(int i = 1; i <= maxStructNumber; i++) {
-				outh.indent().format("CHOICE_%02d  choice_%02d;", i, i).println();
+				outh.println("CHOICE_%02d  choice_%02d;", i, i);
 			}
 
 		} else {
@@ -474,7 +480,7 @@ public class Compiler {
 		}
 		
 		outh.unnest();
-		outh.indent().format("};").println();
+		outh.println("};");
 	}
 	
 	private void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc, String namePrefix) {
@@ -498,19 +504,19 @@ public class Compiler {
 				rightList.add("value);");
 			}
 			
-			outh.indent().println("");
-			outh.indent().println("//");
-			outh.indent().println("// Enum toString Declaration");
-			outh.indent().println("//");
+			outh.println("");
+			outh.println("//");
+			outh.println("// Enum toString Declaration");
+			outh.println("//");
 			for(String line: layoutStringString(leftList, rightList)) {
-				outh.indent().println(line);
+				outh.println(line);
 			}
 		}
 		
-		outc.indent().println("");
-		outc.indent().println("//");
-		outc.indent().println("// Enum Function Definition");
-		outc.indent().println("//");
+		outc.println("");
+		outc.println("//");
+		outc.println("// Enum Function Definition");
+		outc.println("//");
 		for(Program.DeclType declType: declTypeList) {			
 			TypeEnum type = (TypeEnum)declType.type;
 			String   name        = declType.name;
@@ -523,33 +529,33 @@ public class Compiler {
 				String enumName   = correspondence.id;
 				leftList. add(String.format("{%s::%s::%s::%s,", namePrefix, programName, name, Util.sanitizeSymbol(enumName)));
 				rightList.add(String.format("\"%s\"},", enumName));
-//				outc.indent().format("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName).println();
+//				outc.println("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName);
 			}
 
-			outc.indent().println();
-			outc.indent().format("QString toString(const %s::%s::%s value) {", namePrefix, programName, name).println();
+			outc.println();
+			outc.println("QString toString(const %s::%s::%s value) {", namePrefix, programName, name);
 			outc.nest();
-			outc.indent().format("static QMap<%s::%s::%s, QString> map = {", namePrefix, programName, name).println();
+			outc.println("static QMap<%s::%s::%s, QString> map = {", namePrefix, programName, name);
 			outc.nest();
 			
 			for(String line: layoutStringString(leftList, rightList)) {
-				outc.indent().println(line);
+				outc.println(line);
 			}
 			
 			outc.unnest();
-			outc.indent().format("};").println();
-			outc.indent().println();
-			outc.indent().format("if (map.contains(value)) {").println();
+			outc.println("};");
+			outc.println();
+			outc.println("if (map.contains(value)) {");
 			outc.nest();
-			outc.indent().format("return map[value];").println();
+			outc.println("return map[value];");
 			outc.unnest();
-			outc.indent().format("} else {").println();
+			outc.println("} else {");
 			outc.nest();
-			outc.indent().format("return QString(\"%%1\").arg((quint16)value);").println();
+			outc.println("return QString(\"%%1\").arg((quint16)value);");
 			outc.unnest();
-			outc.indent().format("}").println();
+			outc.println("}");
 			outc.unnest();
-			outc.indent().format("}").println();
+			outc.println("}");
 		}
 	}
 
@@ -569,10 +575,10 @@ public class Compiler {
 		}
 		if (declTypeList.isEmpty()) return;
 		
-		outh.indent().println("");
-		outh.indent().println("//");
-		outh.indent().println("// Serialize Function Declaration");
-		outh.indent().println("//");
+		outh.println("");
+		outh.println("//");
+		outh.println("// Serialize Function Declaration");
+		outh.println("//");
 		{
 			List<String> leftList  = new ArrayList<>();
 			List<String> rightList = new ArrayList<>();
@@ -592,14 +598,14 @@ public class Compiler {
 			}
 			
 			for(String line: layoutStringString(leftList, rightList)) {
-				outh.indent().println(line);
+				outh.println(line);
 			}
 		}
 		
-		outh.indent().println("");
-		outh.indent().println("//");
-		outh.indent().println("// Deserizlize Function Declaration");
-		outh.indent().println("//");
+		outh.println("");
+		outh.println("//");
+		outh.println("// Deserizlize Function Declaration");
+		outh.println("//");
 		{
 			List<String> leftList  = new ArrayList<>();
 			List<String> rightList = new ArrayList<>();
@@ -619,43 +625,43 @@ public class Compiler {
 			}
 			
 			for(String line: layoutStringString(leftList, rightList)) {
-				outh.indent().println(line);
+				outh.println(line);
 			}
 		}
 
 		// TODO output serialization function definition
-		outc.indent().println("");
-		outc.indent().println("//");
-		outc.indent().println("// Serialize Function Definition");
-		outc.indent().println("//");
+		outc.println("");
+		outc.println("//");
+		outc.println("// Serialize Function Definition");
+		outc.println("//");
 		{
 			for(Program.DeclType declType: declTypeList) {
 				String   name        = declType.name;
 				String   programName = program.info.getProgramVersion();
 
 				if (declType.type.kind == Type.Kind.RECORD) {
-					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
+					outc.println("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name);
 					outc.nest();
-//					outc.indent().format("block.clear();").println();
+//					outc.println("block.clear();");
 
 					TypeRecord typeRecord = (TypeRecord)declType.type;
 					for(Field field: typeRecord.fields) {
 						String fieldName = Util.sanitizeSymbol(field.name);
-						outc.indent().format("serialize(block, value.%s);", fieldName).println();
+						outc.println("serialize(block, value.%s);", fieldName);
 					}
 					
-//					outc.indent().format("block.rewind();").println();
+//					outc.println("block.rewind();");
 					outc.unnest();
-					outc.indent().format("}").println();
+					outc.println("}");
 				}
 				if (declType.type.kind == Type.Kind.CHOICE) {
 					// TODO output function for struct for choice
 					// TODO output function for CHOICE_TAG
 					// TODO output function for CHOICE_XX
 
-					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
+					outc.println("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name);
 					outc.nest();
-//					outc.indent().format("block.clear();").println();
+//					outc.println("block.clear();");
 
 					TypeChoice typeChoice = (TypeChoice)declType.type;
 					if (typeChoice instanceof TypeChoice.Anon) {
@@ -674,55 +680,55 @@ public class Compiler {
 						}
 					}
 					
-//					outc.indent().format("block.rewind();").println();
+//					outc.println("block.rewind();");
 					outc.unnest();
-					outc.indent().format("}").println();
+					outc.println("}");
 				}
 				if (declType.type.kind == Type.Kind.ENUM) {
-					outc.indent().format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name).println();
+					outc.println("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name);
 					outc.nest();
-					outc.indent().format("Courier::UNSPECIFIED u = (quint16)value;").println();
-					outc.indent().format("serialize(block, u);").println();
+					outc.println("Courier::UNSPECIFIED u = (quint16)value;");
+					outc.println("serialize(block, u);");
 					outc.unnest();
-					outc.indent().format("}").println();
+					outc.println("}");
 				}
 				
 			}
 		}
 
 		// TODO output deserialization function definition
-		outc.indent().println("");
-		outc.indent().println("//");
-		outc.indent().println("// Deserialize Function Definition");
-		outc.indent().println("//");
+		outc.println("");
+		outc.println("//");
+		outc.println("// Deserialize Function Definition");
+		outc.println("//");
 		{
 			for(Program.DeclType declType: declTypeList) {
 				String   name        = declType.name;
 				String   programName = program.info.getProgramVersion();
 
 				if (declType.type.kind == Type.Kind.RECORD) {
-					outc.indent().format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name).println();
+					outc.println("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name);
 					outc.nest();
-//					outc.indent().format("block.clear();").println();
+//					outc.println("block.clear();");
 
 					TypeRecord typeRecord = (TypeRecord)declType.type;
 					for(Field field: typeRecord.fields) {
 						String fieldName = Util.sanitizeSymbol(field.name);
-						outc.indent().format("deserialize(block, value.%s);", fieldName).println();
+						outc.println("deserialize(block, value.%s);", fieldName);
 					}
 					
-//					outc.indent().format("block.rewind();").println();
+//					outc.println("block.rewind();");
 					outc.unnest();
-					outc.indent().format("}").println();
+					outc.println("}");
 				}
 				if (declType.type.kind == Type.Kind.CHOICE) {
 					// TODO output function for struct for choice
 					// TODO output function for CHOICE_TAG
 					// TODO output function for CHOICE_XX
 
-					outc.indent().format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name).println();
+					outc.println("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name);
 					outc.nest();
-//					outc.indent().format("block.clear();").println();
+//					outc.println("block.clear();");
 
 					TypeChoice typeChoice = (TypeChoice)declType.type;
 					if (typeChoice instanceof TypeChoice.Anon) {
@@ -741,17 +747,17 @@ public class Compiler {
 						}
 					}
 					
-//					outc.indent().format("block.rewind();").println();
+//					outc.println("block.rewind();");
 					outc.unnest();
-					outc.indent().format("}").println();
+					outc.println("}");
 				}
 				if (declType.type.kind == Type.Kind.ENUM) {
-					outc.indent().format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name).println();
+					outc.println("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name);
 					outc.nest();
-					outc.indent().format("Courier::UNSPECIFIED u = (quint16)value;").println();
-					outc.indent().format("deserialize(block, u);").println();
+					outc.println("Courier::UNSPECIFIED u = (quint16)value;");
+					outc.println("deserialize(block, u);");
 					outc.unnest();
-					outc.indent().format("}").println();
+					outc.println("}");
 				}
 				
 			}
