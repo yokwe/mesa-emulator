@@ -703,6 +703,66 @@ private:
 	T*  data;
 };
 
+// Wrapper class of "enum class"
+template <typename T>
+struct ENUM {
+	quint16 value;
+
+	static const int MAX_VALUE = 65535;
+
+	ENUM() : value(0) {}
+
+	ENUM(const ENUM& rhs) {
+		this->value = rhs.value;
+	}
+	// BYTE a(10);
+	ENUM(const T rhs) {
+		int value = (int)rhs;
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint16)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+	}
+
+	// BYTE a, b; a = b;s
+	ENUM& operator= (const ENUM<T>& rhs) {
+		this->value = rhs.value;
+		return *this;
+	}
+	// BYTE a; a = 100;
+	ENUM& operator= (const T rhs) {
+		int value = (int)rhs;
+		if (0 <= value && value <= MAX_VALUE) {
+			this->value = (quint16)value;
+		} else {
+			logger.error("Overflow  value = %d  MAX_VALUE = %d", value, MAX_VALUE);
+			COURIER_ERROR();
+		}
+		return *this;
+	}
+	// BYTE b; quint8 a = b;
+	operator T() const {
+		return (T)value;
+	}
+	bool equals(const ENUM<T>& that) const {
+		return value == that.value;
+	}
+
+	QString toString() {
+		T t = (T)value;
+		return toString(t);
+	}
+
+	void serialize(BLOCK& block) const {
+		block.serialize16(value);
+	}
+	void deserialize(BLOCK& block) {
+		block.deserialize16(value);
+	}
+};
+
 }
 
 // serialize - write value to block
@@ -750,6 +810,16 @@ void deserialize(Courier::BLOCK& block, Courier::ARRAY<T>& value) {
 	value.deserialize(block);
 }
 
+// For ENUM
+template <typename T>
+void serialize(Courier::BLOCK& block, const Courier::ENUM<T>& value) {
+	value.serialize(block);
+}
+template <typename T>
+void deserialize(Courier::BLOCK& block, Courier::ENUM<T>& value) {
+	value.deserialize(block);
+}
+
 
 // Declare operator == outside namespace Courier for cppunit CPPUNIT_ASSERT_EQUAL
 bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b);
@@ -760,5 +830,9 @@ bool operator==(const Courier::STRING&        a, const Courier::STRING&        b
 bool operator==(const Courier::UNSPECIFIED&   a, const Courier::UNSPECIFIED&   b);
 bool operator==(const Courier::UNSPECIFIED2&  a, const Courier::UNSPECIFIED2&  b);
 bool operator==(const Courier::UNSPECIFIED3&  a, const Courier::UNSPECIFIED3&  b);
+template <typename T>
+bool operator==(const Courier::ENUM<T>&  a, const Courier::ENUM<T>&  b) {
+	return a.equals(b);
+}
 
 #endif /* COURIER_COURIER_H_ */
