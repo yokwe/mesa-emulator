@@ -110,7 +110,8 @@ public:
 	void serialize48(const quint64 value);
 
 	void serialize(const QString& value);
-	void serialize(const BLOCK&   value); // write whole value. pos of value will not be change.
+	// write whole value. pos of value will not be change.
+	void serialize(const BLOCK&   value);
 
 	// deserialize - read from block and write to value
 	void deserialize8(quint8&   value);
@@ -119,7 +120,8 @@ public:
 	void deserialize48(quint64& value);
 
 	void deserialize(QString& value);
-	void deserialize(BLOCK&   value); // write whole value. pos of value will not be change.
+	// read rest of value and pos of value will change
+	void deserialize(BLOCK&   value);
 
 private:
 	enum class State {read, write};
@@ -222,6 +224,9 @@ public:
 	bool equals(const BOOLEAN& that) const {
 		return value == that.value;
 	}
+	QString toString() {
+		return value ? "T" : "F";
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize16(value);
@@ -277,6 +282,9 @@ public:
 	bool equals(const CARDINAL& that) const {
 		return value == that.value;
 	}
+	QString toString() {
+		return QString("%1").arg(value);
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize16(value);
@@ -329,6 +337,9 @@ public:
 	}
 	bool equals(const LONG_CARDINAL& that) const {
 		return value == that.value;
+	}
+	QString toString() {
+		return QString("%1").arg(value);
 	}
 
 	void serialize(BLOCK& block) const {
@@ -384,6 +395,9 @@ public:
 	bool equals(const STRING& that) const {
 		return value.compare(that.value) == 0;
 	}
+	QString toString() {
+		return QString("%1").arg(value);
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize(value);
@@ -436,6 +450,9 @@ public:
 	}
 	bool equals(const UNSPECIFIED& that) const {
 		return value == that.value;
+	}
+	QString toString() {
+		return QString("%1").arg(value);
 	}
 
 	void serialize(BLOCK& block) const {
@@ -490,6 +507,9 @@ public:
 	bool equals(const UNSPECIFIED2& that) const {
 		return value == that.value;
 	}
+	QString toString() {
+		return QString("%1").arg(value);
+	}
 
 	void serialize(BLOCK& block) const {
 		block.serialize32(value);
@@ -542,6 +562,9 @@ public:
 	}
 	bool equals(const UNSPECIFIED3& that) const {
 		return value == that.value;
+	}
+	QString toString() {
+		return QString("%1").arg(value);
 	}
 
 	void serialize(BLOCK& block) const {
@@ -606,6 +629,14 @@ public:
 			COURIER_ERROR();
 		}
 		return data[i];
+	}
+
+	QString toString() {
+		QStringList list;
+		for(int i = 0; i < size; i++) {
+			list << data[i].toString();
+		}
+		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 	}
 
 	// read this and write to block
@@ -688,6 +719,14 @@ struct ARRAY {
 		return data[i];
 	}
 
+	QString toString() {
+		QStringList list;
+		for(int i = 0; i < maxSize; i++) {
+			list << data[i].toString();
+		}
+		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
+	}
+
 	void serialize(BLOCK& block) const {
 		for(int i = 0; i < maxSize; i++) {
 			data[i].serialize(block);
@@ -764,62 +803,6 @@ struct ENUM {
 };
 
 }
-
-// serialize - write value to block
-void serialize(Courier::BLOCK& block, const Courier::BYTE&          value);
-void serialize(Courier::BLOCK& block, const Courier::BOOLEAN&       value);
-void serialize(Courier::BLOCK& block, const Courier::CARDINAL&      value);
-void serialize(Courier::BLOCK& block, const Courier::LONG_CARDINAL& value);
-void serialize(Courier::BLOCK& block, const Courier::STRING&        value);
-void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED&   value);
-void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED2&  value);
-void serialize(Courier::BLOCK& block, const Courier::UNSPECIFIED3&  value);
-// write whole value
-void serialize(Courier::BLOCK& block, const Courier::BLOCK&         value);
-
-
-// deserialize - read from block and write to value
-void deserialize(Courier::BLOCK& block, Courier::BYTE&          value);
-void deserialize(Courier::BLOCK& block, Courier::BOOLEAN&       value);
-void deserialize(Courier::BLOCK& block, Courier::CARDINAL&      value);
-void deserialize(Courier::BLOCK& block, Courier::LONG_CARDINAL& value);
-void deserialize(Courier::BLOCK& block, Courier::STRING&        value);
-void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED&   value);
-void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED2&  value);
-void deserialize(Courier::BLOCK& block, Courier::UNSPECIFIED3&  value);
-// read rest of value
-void deserialize(Courier::BLOCK& block, Courier::BLOCK&         value);
-
-// For SEQUENCE
-template <typename T>
-void serialize(Courier::BLOCK& block, const Courier::SEQUENCE<T>& value) {
-	value.serialize(block);
-}
-template <typename T>
-void deserialize(Courier::BLOCK& block, Courier::SEQUENCE<T>& value) {
-	value.deserialize(block);
-}
-
-// For ARRAY
-template <typename T>
-void serialize(Courier::BLOCK& block, const Courier::ARRAY<T>& value) {
-	value.serialize(block);
-}
-template <typename T>
-void deserialize(Courier::BLOCK& block, Courier::ARRAY<T>& value) {
-	value.deserialize(block);
-}
-
-// For ENUM
-template <typename T>
-void serialize(Courier::BLOCK& block, const Courier::ENUM<T>& value) {
-	value.serialize(block);
-}
-template <typename T>
-void deserialize(Courier::BLOCK& block, Courier::ENUM<T>& value) {
-	value.deserialize(block);
-}
-
 
 // Declare operator == outside namespace Courier for cppunit CPPUNIT_ASSERT_EQUAL
 bool operator==(const Courier::BYTE&          a, const Courier::BYTE&          b);
