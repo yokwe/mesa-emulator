@@ -3,6 +3,7 @@ package mesa.courier.compiler;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -130,8 +131,8 @@ public class Compiler {
 			out.format(format, args);
 			out.println();
 		}
-		public void println(String[] stringArray) {
-			for(String string: stringArray) {
+		public void println(List<String> stringList) {
+			for(String string: stringList) {
 				if (string.equals(NEST)) {
 					nest();
 				} else if (string.equals(UNNEST)) {
@@ -141,6 +142,9 @@ public class Compiler {
 					out.println(string);
 				}
 			}
+		}
+		public void println(String[] stringArray) {
+			println(Arrays.asList(stringArray));
 		}
 		public void println() {
 			out.println();
