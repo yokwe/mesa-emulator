@@ -193,7 +193,12 @@ public class Compiler {
 		case REFERENCE:
 		{
 			TypeReference typeReference = (TypeReference)type;
-			return program.getLocalRefName(typeReference);
+			Type realType = typeReference.getConcreteType();
+			if (realType.kind == Type.Kind.ENUM) {
+				return String.format("ENUM<%s>", program.getLocalRefName(typeReference));
+			} else {
+				return program.getLocalRefName(typeReference);
+			}
 		}
 		default:
 			break;
@@ -201,7 +206,7 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genTypeDecl(IndentPrintWriter outh, IndentPrintWriter outc, String namePrefix) {
 		outh.indent().println("");
 		outh.indent().println("//");
 		outh.indent().println("// Type Declaration");
@@ -227,7 +232,7 @@ public class Compiler {
 				break;
 			// constructed
 			case ENUM:
-				genTypeDeclEnum(outh, outc, (TypeEnum)type, name);
+				genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
 				break;
 			case ARRAY:
 				logger.error("Rewrite \"ARRAY N OF T\" to \"RECORD [value: ARRAY N OF T]\"");
@@ -242,10 +247,10 @@ public class Compiler {
 				logger.error("  {}  {}", name, type.toString());
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			case RECORD:
-				genTypeDeclRecord(outh, outc, (TypeRecord)type, name);
+				genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
 				break;
 			case CHOICE:
-				genTypeDeclChoice(outh, outc, (TypeChoice)type, name);
+				genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix);
 				break;
 			case PROCEDURE:
 			case ERROR:
@@ -261,7 +266,7 @@ public class Compiler {
 		}
 	}
 	
-	private void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name) {
+	private void genTypeDeclRecord(IndentPrintWriter outh, IndentPrintWriter outc, TypeRecord type, String name, String namePrefix) {
 		List<String> leftList  = new ArrayList<>();
 		List<String> rightList = new ArrayList<>();
 		for(Field field: type.fields) {
@@ -308,11 +313,17 @@ public class Compiler {
 		for(String line: layoutStringString(leftList, rightList)) {
 			outh.indent().println(line);
 		}
+		
+		outh.indent().println();
+		outh.indent().format("void serialize  (BLOCK& block) const;").println();
+		outh.indent().format("void deserialize(BLOCK& block);").println();
+		outh.indent().format("QString toString();", name).println();
+
 		outh.unnest();
 		outh.indent().format("};").println();
 	}
 	
-	private void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name) {
+	private void genTypeDeclEnum(IndentPrintWriter outh, IndentPrintWriter outc, TypeEnum type, String name, String namePrefix) {
 		List<String>  leftList  = new ArrayList<>();
 		List<Integer> rightList = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -329,7 +340,7 @@ public class Compiler {
 		outh.indent().format("};").println();
 	}
 	
-	private void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name) {
+	private void genTypeDeclChoice(IndentPrintWriter outh, IndentPrintWriter outc, TypeChoice type, String name, String namePrefix) {
 		outh.indent().format("// FIXME TypeDecl %s %s", name, type.toString()).println();
 		outh.indent().format("struct %s {", name).println();
 		outh.nest();
@@ -361,7 +372,7 @@ public class Compiler {
 						if (typeRecord.fields.size() == 0) {
 							outh.indent().format("struct %s {};", structName).println();
 						} else {
-							genTypeDeclRecord(outh, outc, typeRecord, structName);
+							genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
 						}
 					} else {
 						throw new CompilerException(String.format("Unexpected type %s", type.toString()));
@@ -380,14 +391,12 @@ public class Compiler {
 				outh.unnest();
 				outh.indent().format("}").println();
 			}
-			outh.indent().println();
 			
-			outh.indent().format("// Declare friend functions that need access private fields.").println();
-			String   programName = program.info.getProgramVersion();
-			outh.indent().format("friend void serialize  (Courier::BLOCK& block, const Courier::%s::%s& value);", programName, name).println();
-			outh.indent().format("friend void deserialize(Courier::BLOCK& block,       Courier::%s::%s& value);", programName, name).println();
 			outh.indent().println();
-			
+			outh.indent().format("void serialize  (BLOCK& block) const;").println();
+			outh.indent().format("void deserialize(BLOCK& block);").println();
+			outh.indent().format("QString toString();", name).println();
+
 			outh.unnest();
 			outh.indent().format("private:").println();
 			outh.nest();
@@ -429,7 +438,8 @@ public class Compiler {
 					if (typeRecord.fields.size() == 0) {
 						outh.indent().format("struct %s {};", structName).println();
 					} else {
-						genTypeDeclRecord(outh, outc, typeRecord, structName);
+						genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
+
 					}
 				} else {
 					throw new CompilerException(String.format("Unexpected type %s", type.toString()));
@@ -447,12 +457,11 @@ public class Compiler {
 			}
 			outh.indent().println();
 
-			outh.indent().format("// Declare friend functions that need access private fields.").println();
-			String   programName = program.info.getProgramVersion();
-			outh.indent().format("friend void serialize  (Courier::BLOCK& block, const Courier::%s::%s& value);", programName, name).println();
-			outh.indent().format("friend void deserialize(Courier::BLOCK& block,       Courier::%s::%s& value);", programName, name).println();
 			outh.indent().println();
-			
+			outh.indent().format("void serialize  (BLOCK& block) const;").println();
+			outh.indent().format("void deserialize(BLOCK& block);").println();
+			outh.indent().format("QString toString();", name).println();
+
 			outh.unnest();
 			outh.indent().format("private:").println();
 			outh.nest();
@@ -468,7 +477,7 @@ public class Compiler {
 		outh.indent().format("};").println();
 	}
 	
-	private void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
+	private void genEnumFunc(IndentPrintWriter outh, IndentPrintWriter outc, String namePrefix) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.ENUM) {
@@ -485,7 +494,7 @@ public class Compiler {
 				String   name        = declType.name;
 				String   programName = program.info.getProgramVersion();
 				
-				leftList.add(String.format("QString toString(const Courier::%s::%s", programName, name));
+				leftList.add(String.format("QString toString(const %s::%s::%s", namePrefix, programName, name));
 				rightList.add("value);");
 			}
 			
@@ -512,15 +521,15 @@ public class Compiler {
 
 			for(Correspondence correspondence: type.elements) {
 				String enumName   = correspondence.id;
-				leftList. add(String.format("{Courier::%s::%s::%s,", programName, name, Util.sanitizeSymbol(enumName)));
+				leftList. add(String.format("{%s::%s::%s::%s,", namePrefix, programName, name, Util.sanitizeSymbol(enumName)));
 				rightList.add(String.format("\"%s\"},", enumName));
 //				outc.indent().format("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName).println();
 			}
 
 			outc.indent().println();
-			outc.indent().format("QString toString(const Courier::%s::%s value) {", programName, name).println();
+			outc.indent().format("QString toString(const %s::%s::%s value) {", namePrefix, programName, name).println();
 			outc.nest();
-			outc.indent().format("static QMap<Courier::%s::%s, QString> map = {", programName, name).println();
+			outc.indent().format("static QMap<%s::%s::%s, QString> map = {", namePrefix, programName, name).println();
 			outc.nest();
 			
 			for(String line: layoutStringString(leftList, rightList)) {
@@ -544,6 +553,7 @@ public class Compiler {
 		}
 	}
 
+/*
 	private void genSerializeFunc(IndentPrintWriter outh, IndentPrintWriter outc) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
@@ -746,13 +756,16 @@ public class Compiler {
 				
 			}
 		}
-
 	}
+*/
+	
 	public void genStub() {
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, program.info.getProgramVersion());
 		String pathh = String.format("%s%s.h",   STUB_DIR_PATH, program.info.getProgramVersion());
 		logger.info(String.format("pathc = %s", pathc));
 		logger.info(String.format("pathh = %s", pathh));
+		
+		String namePrefix = "Courier";
 		
 		try (
 				IndentPrintWriter outc = new IndentPrintWriter(new PrintWriter(pathc));
@@ -760,17 +773,17 @@ public class Compiler {
 			genOpening(outh, outc);
 			
 			// generate type declaration (exclude error and procedure)
-			genTypeDecl(outh, outc);
+			genTypeDecl(outh, outc, namePrefix);
 			
 			// generate constant declaration
 			
 			genClosing(outh, outc);
 			
 			// generate serialize/deserialize for Record
-			genSerializeFunc(outh, outc);
+			// genSerializeFunc(outh, outc);
 
 			// generate toString for enum
-			genEnumFunc(outh, outc);
+			genEnumFunc(outh, outc, namePrefix);
 			
 		} catch (FileNotFoundException e) {
 			throw new CompilerException("FileNotFoundException", e);
