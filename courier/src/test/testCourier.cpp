@@ -53,6 +53,7 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testUNSPECIFIED);
 	CPPUNIT_TEST(testUNSPECIFIED2);
 	CPPUNIT_TEST(testUNSPECIFIED3);
+	CPPUNIT_TEST(testENUM);
 
 	CPPUNIT_TEST(testARRAY);
 	CPPUNIT_TEST(testSEQUENCE);
@@ -966,6 +967,65 @@ public:
 			CPPUNIT_ASSERT_EQUAL(v, (quint64)a);
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)6, block.getLimit());
+		}
+	}
+	void testENUM() {
+		quint8 data[100];
+		Courier::BLOCK block(data, sizeof(data));
+
+		enum class ABC : quint16 {A = 0x11, B = 0x22, C = 0x33};
+		ABC v = ABC::A;
+		quint8 v1 = (quint8)(((quint16)v) << 8);
+		quint8 v2 = (quint8)(((quint16)v) << 0);
+
+		{
+			Courier::ENUM<ABC> a;
+			CPPUNIT_ASSERT_EQUAL((ABC)0, (ABC)a);
+		}
+		{
+			Courier::ENUM<ABC> b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (ABC)b);
+			Courier::ENUM<ABC> a(b);
+			CPPUNIT_ASSERT_EQUAL(v, (ABC)a);
+		}
+		{
+			Courier::ENUM<ABC> b(v);
+			CPPUNIT_ASSERT_EQUAL(v, (ABC)b);
+			Courier::ENUM<ABC> a;
+			CPPUNIT_ASSERT_EQUAL((ABC)0, (ABC)a);
+			a = b;
+			CPPUNIT_ASSERT_EQUAL(v, (ABC)a);
+		}
+		{
+			Courier::ENUM<ABC> a;
+			CPPUNIT_ASSERT_EQUAL((ABC)0, (ABC)a);
+			a = v;
+			CPPUNIT_ASSERT_EQUAL(v, (ABC)a);
+		}
+
+		{
+			block.zero();
+			block.clear();
+
+			Courier::ENUM<ABC> a(v);
+			CPPUNIT_ASSERT_EQUAL((quint8)0, data[0]);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
+			serialize(block, a);
+			CPPUNIT_ASSERT_EQUAL(v1, data[0]);
+			CPPUNIT_ASSERT_EQUAL(v2, data[1]);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+
+			block.rewind();
+			Courier::UNSPECIFIED b;
+			CPPUNIT_ASSERT_EQUAL((quint8)0, (quint8)b);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
+			deserialize(block, b);
+			CPPUNIT_ASSERT_EQUAL(v, (ABC)a);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)2, block.getLimit());
 		}
 	}
 	void testARRAY() {
