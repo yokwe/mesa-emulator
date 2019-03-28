@@ -155,49 +155,6 @@ public class CompilerRaw {
 		this.program = program;
 	}
 
-	private void genOpening(IndentationPrinter outh, IndentationPrinter outc) {
-		// for outh
-		// write opening lines
-		outh.format("#ifndef STUB_%s_H__", program.info.getProgramVersion());
-		outh.format("#define STUB_%s_H__", program.info.getProgramVersion());
-		outh.line();
-
-		// include courier header
-		outh.line("#include \"../courier/CourierRaw.h\"");			
-		// include depend module
-		for(Program.Info info: program.depends) {
-			outh.format("#include \"../stub/%s.h\"", info.getProgramVersion());
-		}
-
-		// output namespace
-		outh.line();
-		outh.line("namespace Courier {");
-
-		// output main namespace
-		outh.format("namespace %s {", program.info.getProgramVersion());
-		if (program.info.version != 0) {
-			outh.line();
-			outh.format("const quint32 PROGRAM_NUMBER = %d;", program.info.program);
-			outh.format("const quint32 VERSION_NUMBER = %d;", program.info.version);
-		}
-
-		// for outc
-		outc.line("#include \"../../util/Util.h\"");
-		outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion());
-		outc.line();
-		outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
-		outc.line();
-	}
-	private void genClosing(IndentationPrinter outh, IndentationPrinter outc) {
-		// for outh
-		outh.line();
-		outh.line("}"); // for namespace for progaram
-		outh.line("}"); // for namespace Courier
-		
-		// for outc
-		// nothing for now
-	}
-	
 	private String toTypeString(Type type) {
 		switch(type.kind) {
 		// predefined
@@ -652,7 +609,7 @@ public class CompilerRaw {
 					outc.format("QString value_ = %s;", fieldName);
 					break;
 				case ENUM:
-					outc.format("QString value_ = toString(%s);", fieldName);
+					outc.format("QString value_ = Courier::toString(%s);", fieldName);
 					break;
 				case BLOCK:
 				case RECORD:
@@ -881,7 +838,7 @@ public class CompilerRaw {
 		outh.line("};");
 	}
 	
-	private void genEnumFunc(IndentationPrinter outh, IndentationPrinter outc, String namePrefix) {
+	private void genEnumToString(IndentationPrinter outh, IndentationPrinter outc, String namePrefix) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.ENUM) {
@@ -934,7 +891,7 @@ public class CompilerRaw {
 			}
 
 			outc.line();
-			outc.format("QString toString(const %s::%s value) {", namePrefix, name);
+			outc.format("QString Courier::toString(const %s::%s value) {", namePrefix, name);
 			outc.format("static QMap<%s::%s, QString> map = {", namePrefix, name);
 			
 			for(String line: layoutStringString(c1, c2)) {
@@ -967,19 +924,52 @@ public class CompilerRaw {
 		try (
 				IndentationPrinter outc = new IndentationPrinter(new PrintWriter(pathc));
 				IndentationPrinter outh = new IndentationPrinter(new PrintWriter(pathh));) {
-			genOpening(outh, outc);
+			// for outh
+			// write opening lines
+			outh.format("#ifndef STUB_%s_H__", program.info.getProgramVersion());
+			outh.format("#define STUB_%s_H__", program.info.getProgramVersion());
+			outh.line();
+
+			// include courier header
+			outh.line("#include \"../courier/CourierRaw.h\"");			
+			// include depend module
+			for(Program.Info info: program.depends) {
+				outh.format("#include \"../stub/%s.h\"", info.getProgramVersion());
+			}
+
+			// output namespace
+			outh.line();
+			outh.line("namespace Courier {");
+
+			// output main namespace
+			outh.format("namespace %s {", program.info.getProgramVersion());
+			if (program.info.version != 0) {
+				outh.line();
+				outh.format("const quint32 PROGRAM_NUMBER = %d;", program.info.program);
+				outh.format("const quint32 VERSION_NUMBER = %d;", program.info.version);
+			}
+
+			// for outc
+			outc.line("#include \"../../util/Util.h\"");
+			outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion());
+			outc.line();
+			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
+			outc.line();
 			
 			// generate type declaration (exclude error and procedure)
 			// and generate serialize/deserialize/toString() for record and choice
 			genTypeDecl(outh, outc, namePrefix);
 			
-			// generate constant declaration
+			// TODO generate constant declaration
 			
-			genClosing(outh, outc);
+			// Close program namespace
+			outh.line("}");
 			
 			// generate toString for enum
-			genEnumFunc(outh, outc, namePrefix);
+			genEnumToString(outh, outc, namePrefix);
 			
+			// Close courier namespace
+			outh.line("}");
 		} catch (FileNotFoundException e) {
 			throw new CompilerException("FileNotFoundException", e);
 		}
