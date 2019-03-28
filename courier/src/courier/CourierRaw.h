@@ -89,17 +89,18 @@ public:
 	}
 
 	void append(const T& newValue) {
-		if (maxSize <= size) {
+		if (size < maxSize) {
+			data[size++] = newValue;
+		} else {
 			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
 			COURIER_ERROR();
 		}
-		data[size++] = newValue;
 	}
 	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
 			COURIER_ERROR();
 		}
 		return data[i];
@@ -108,7 +109,7 @@ public:
 		if (0 <= i && i < maxSize) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
 			COURIER_ERROR();
 		}
 		return data[i];
@@ -140,13 +141,6 @@ struct ARRAY {
 		delete[] data;
 	}
 
-	void append(const T& newValue) {
-		if (maxSize <= size) {
-			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
-			COURIER_ERROR();
-		}
-		data[size++] = newValue;
-	}
 	int getSize() {
 		return size;
 	}
@@ -154,11 +148,19 @@ struct ARRAY {
 		size = 0;
 	}
 
+	void append(const T& newValue) {
+		if (size < maxSize) {
+			data[size++] = newValue;
+		} else {
+			logger.error("Unexpected overflow  size = %d  maxSize = %d", size, maxSize);
+			COURIER_ERROR();
+		}
+	}
 	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
 			COURIER_ERROR();
 		}
 		return data[i];
@@ -167,7 +169,7 @@ struct ARRAY {
 		if (0 <= i && i < maxSize) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
 			COURIER_ERROR();
 		}
 		return data[i];
