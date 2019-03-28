@@ -346,6 +346,7 @@ public class CompilerRaw {
 		case UNSPECIFIED3:
 			return String.format("block.%s48(%s);", methodName, fieldName);
 		case STRING:
+			return String.format("block.%s(%s);", methodName, fieldName);
 		case BLOCK:
 		case RECORD:
 		case CHOICE:
@@ -356,6 +357,12 @@ public class CompilerRaw {
 	}
 	
 	private void genTypeDeclRecord(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+		genRecordDecl(outh, outc, type, name, namePrefix);
+		genRecordSerialize(outh, outc, type, name, namePrefix);
+		genRecordDeserialize(outh, outc, type, name, namePrefix);
+		genRecordToString(outh, outc, type, name, namePrefix);
+	}
+	private void genRecordDecl(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output declaration of class
 		{
 			List<String> c1 = new ArrayList<>();
@@ -414,7 +421,9 @@ public class CompilerRaw {
 
 			outh.line("};");
 		}
-		
+	}
+	
+	private void genRecordSerialize(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output definition of serialize()
 		{
 			MethodType methodType = MethodType.SERIALIZE;
@@ -509,9 +518,9 @@ public class CompilerRaw {
 			}
 			outc.line("}");
 		}
-		
-		// TODO write implementation of deserizlie
-		// Output definition of serialize()
+	}
+	private void genRecordDeserialize(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+		// Output definition of deserialize()
 		{
 			MethodType methodType = MethodType.DESERIALIZE;
 			outc.format("void %s::%s::%s(BLOCK& block) {", namePrefix, name, methodType);
@@ -539,7 +548,7 @@ public class CompilerRaw {
 				case BLOCK:
 				case RECORD:
 				case CHOICE:
-					outc.line(getMethodLine(concreteType, methodType, fieldName));
+//					outc.line(getMethodLine(concreteType, methodType, fieldName));
 					break;
 				case ARRAY:
 				{
@@ -562,7 +571,7 @@ public class CompilerRaw {
 					case BLOCK:
 					case RECORD:
 					case CHOICE:
-						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+//						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
 						break;
 					default:
 						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
@@ -576,8 +585,8 @@ public class CompilerRaw {
 					Type elementType = typeSequence.type.getConcreteType();
 					outc.format("//   %s", typeSequence.type);
 					outc.format("//   %s", elementType);
-					outc.format("block.%s16(%s.size);", methodType, fieldName);
-					outc.format("%s.size32 = %s.size; // maintain size32", fieldName, fieldName);
+//					outc.format("block.%s16(%s.size);", methodType, fieldName);
+//					outc.format("%s.size32 = %s.size; // maintain size32", fieldName, fieldName);
 					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
 					switch(elementType.kind) {
 					case BOOLEAN:
@@ -592,7 +601,7 @@ public class CompilerRaw {
 					case BLOCK:
 					case RECORD:
 					case CHOICE:
-						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+//						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
 						break;
 					default:
 						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
@@ -606,9 +615,126 @@ public class CompilerRaw {
 			}
 			outc.line("}");
 		}
-		
+	}
+	private void genRecordToString(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
 		// TODO write implementation of toString
+		{
+			outc.format("QString %s::%s::toString() {", namePrefix, name);
+			outc.line("QStringList list_;");
+			
+			for(Field field: type.fields) {
+				String fieldName    = field.name;
+				Type   fieldType    = field.type;
+				Type   concreteType = fieldType.getConcreteType();
 
+				outc.format("// %s", fieldName);
+				outc.format("//   %s", fieldType);
+				if (fieldType.isReference()) {
+					outc.format("//   %s", concreteType);
+				}
+				
+				outc.line("{");
+				outc.format("QString name_ = \"%s\";", fieldName);
+				
+				switch(concreteType.kind) {
+				case BOOLEAN:
+					outc.format("QString value_ = %s ? \"T\" : \"F\";", fieldName);
+					break;
+				case BYTE:
+				case CARDINAL:
+				case UNSPECIFIED:
+				case LONG_CARDINAL:
+				case UNSPECIFIED2:
+				case UNSPECIFIED3:
+					outc.format("QString value_ = QString(\"%%1\").arg(%s);", fieldName);
+					break;
+				case STRING:
+					outc.format("QString value_ = %s;", fieldName);
+					break;
+				case ENUM:
+					outc.format("QString value_ = toString(%s);", fieldName);
+					break;
+				case BLOCK:
+				case RECORD:
+				case CHOICE:
+					outc.format("QString value_ = %s.toString();", fieldName);
+					break;
+				case ARRAY:
+				{
+					TypeArray typeArray = (TypeArray)concreteType;
+					Type elementType = typeArray.type.getConcreteType();
+					outc.format("//   %s", typeArray.type);
+					if (typeArray.type.isReference()) {
+						outc.format("//   %s", elementType);
+					}
+					outc.line("QString value_;");
+					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
+					switch(elementType.kind) {
+					case BOOLEAN:
+					case ENUM:
+					case BYTE:
+					case CARDINAL:
+					case UNSPECIFIED:
+					case LONG_CARDINAL:
+					case UNSPECIFIED2:
+					case UNSPECIFIED3:
+					case STRING:
+					case BLOCK:
+					case RECORD:
+					case CHOICE:
+//						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+						break;
+					default:
+						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
+					}
+					outc.line("}");
+				}
+					break;
+				case SEQUENCE:
+				{
+					TypeSequence typeSequence = (TypeSequence)concreteType;
+					Type elementType = typeSequence.type.getConcreteType();
+					outc.format("//   %s", typeSequence.type);
+					if (typeSequence.type.isReference()) {
+						outc.format("//   %s", elementType);
+					}
+//					outc.format("block.%s16(%s.size);", methodType, fieldName);
+//					outc.format("%s.size32 = %s.size; // maintain size32", fieldName, fieldName);
+					outc.line("QString value_;");
+					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
+					switch(elementType.kind) {
+					case BOOLEAN:
+					case ENUM:
+					case BYTE:
+					case CARDINAL:
+					case UNSPECIFIED:
+					case LONG_CARDINAL:
+					case UNSPECIFIED2:
+					case UNSPECIFIED3:
+					case STRING:
+					case BLOCK:
+					case RECORD:
+					case CHOICE:
+//						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+						break;
+					default:
+						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
+					}
+					outc.line("}");
+				}
+					break;
+				default:
+					throw new CompilerException(String.format("Unexpected concreteType %s", concreteType.toString()));
+				}
+				outc.line("list_ << QString(\"%1: %2\").arg(name_).arg(value_);");
+
+				outc.line("}");
+
+			}
+			
+			outc.line("return list_.join(' ');");
+			outc.line("}");
+		}
 	}
 	
 	private void genTypeDeclEnum(IndentationPrinter outh, IndentationPrinter outc, TypeEnum type, String name, String namePrefix) {
@@ -815,21 +941,6 @@ public class CompilerRaw {
 				outc.line(line);
 			}
 			
-//			outc.unnest();
-//			outc.println("};");
-//			outc.println();
-//			outc.println("if (map.contains(value)) {");
-//			outc.nest();
-//			outc.println("return map[value];");
-//			outc.unnest();
-//			outc.println("} else {");
-//			outc.nest();
-//			outc.println("return QString(\"%%1\").arg((quint16)value);");
-//			outc.unnest();
-//			outc.println("}");
-//			outc.unnest();
-//			outc.println("}");
-			
 			outc.line(
 					"};",
 					"",
@@ -844,201 +955,6 @@ public class CompilerRaw {
 		}
 	}
 
-/**/
-	private void genSerializeFunc(IndentationPrinter outh, IndentationPrinter outc) {
-		List<Program.DeclType> declTypeList = new ArrayList<>();
-		for(Program.DeclType declType: program.typeList) {
-			if (declType.type.kind == Type.Kind.RECORD) {
-				declTypeList.add(declType);
-			};
-			if (declType.type.kind == Type.Kind.CHOICE) {
-				declTypeList.add(declType);
-			};
-			if (declType.type.kind == Type.Kind.ENUM) {
-				declTypeList.add(declType);
-			};
-		}
-		if (declTypeList.isEmpty()) return;
-		
-		outh.line("");
-		outh.line("//");
-		outh.line("// Serialize Function Declaration");
-		outh.line("//");
-		{
-			List<String> c1 = new ArrayList<>();
-			List<String> c2 = new ArrayList<>();
-			
-			for(Program.DeclType declType: declTypeList) {				
-				String   name        = declType.name;
-				String   programName = program.info.getProgramVersion();
-				
-				// void serialize(Courier::BLOCK& block, const Courier::BYTE&          value);
-				c1.add(String.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s&", programName, name));
-				c2.add("value);");
-				
-				if (declType.type.kind == Type.Kind.CHOICE) {
-					// TODO output function for CHOICE_TAG
-					// TODO output function for CHOICE_XX
-				}
-			}
-			
-			for(String line: layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
-		}
-		
-		outh.line("");
-		outh.line("//");
-		outh.line("// Deserizlize Function Declaration");
-		outh.line("//");
-		{
-			List<String> c1 = new ArrayList<>();
-			List<String> c2 = new ArrayList<>();
-			
-			for(Program.DeclType declType: declTypeList) {				
-				String   name        = declType.name;
-				String   programName = program.info.getProgramVersion();
-				
-				// void deserialize(Courier::BLOCK& block, Courier::BYTE&          value);
-				c1.add(String.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s&", programName, name));
-				c2.add("value);");
-
-				if (declType.type.kind == Type.Kind.CHOICE) {
-					// TODO output function for CHOICE_TAG
-					// TODO output function for CHOICE_XX
-				}
-			}
-			
-			for(String line: layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
-		}
-
-		// TODO output serialization function definition
-		outc.line("");
-		outc.line("//");
-		outc.line("// Serialize Function Definition");
-		outc.line("//");
-		{
-			for(Program.DeclType declType: declTypeList) {
-				String   name        = declType.name;
-				String   programName = program.info.getProgramVersion();
-
-				if (declType.type.kind == Type.Kind.RECORD) {
-					outc.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name);
-//					outc.println("block.clear();");
-
-					TypeRecord typeRecord = (TypeRecord)declType.type;
-					for(Field field: typeRecord.fields) {
-						String fieldName = Util.sanitizeSymbol(field.name);
-						outc.format("serialize(block, value.%s);", fieldName);
-					}
-					
-//					outc.println("block.rewind();");
-					outc.line("}");
-				}
-				if (declType.type.kind == Type.Kind.CHOICE) {
-					// TODO output function for struct for choice
-					// TODO output function for CHOICE_TAG
-					// TODO output function for CHOICE_XX
-
-					outc.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name);
-//					outc.println("block.clear();");
-
-					TypeChoice typeChoice = (TypeChoice)declType.type;
-					if (typeChoice instanceof TypeChoice.Anon) {
-						TypeChoice.Anon typeAnon = (TypeChoice.Anon)typeChoice;
-						for(Candidate<Correspondence> candidate: typeAnon.candidates) {
-							for(Correspondence correspondence: candidate.designators) {
-								// TODO
-							}
-						}
-					} else if (typeChoice instanceof TypeChoice.Typed) {
-						TypeChoice.Typed typeTyped = (TypeChoice.Typed)typeChoice;
-						for(Candidate<String> candidate: typeTyped.candidates) {
-							for(String choiceName: candidate.designators) {
-								// TODO
-							}
-						}
-					}
-					
-//					outc.println("block.rewind();");
-					outc.line("}");
-				}
-				if (declType.type.kind == Type.Kind.ENUM) {
-					outc.format("void serialize(Courier::BLOCK& block, const Courier::%s::%s& value) {", programName, name);
-					outc.line("Courier::UNSPECIFIED u = (quint16)value;");
-					outc.line("serialize(block, u);");
-					outc.line("}");
-				}
-				
-			}
-		}
-
-		// TODO output deserialization function definition
-		outc.line("");
-		outc.line("//");
-		outc.line("// Deserialize Function Definition");
-		outc.line("//");
-		{
-			for(Program.DeclType declType: declTypeList) {
-				String   name        = declType.name;
-				String   programName = program.info.getProgramVersion();
-
-				if (declType.type.kind == Type.Kind.RECORD) {
-					outc.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name);
-//					outc.println("block.clear();");
-
-					TypeRecord typeRecord = (TypeRecord)declType.type;
-					for(Field field: typeRecord.fields) {
-						String fieldName = Util.sanitizeSymbol(field.name);
-						outc.format("deserialize(block, value.%s);", fieldName);
-					}
-					
-//					outc.println("block.rewind();");
-					outc.line("}");
-				}
-				if (declType.type.kind == Type.Kind.CHOICE) {
-					// TODO output function for struct for choice
-					// TODO output function for CHOICE_TAG
-					// TODO output function for CHOICE_XX
-
-					outc.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name);
-//					outc.println("block.clear();");
-
-					TypeChoice typeChoice = (TypeChoice)declType.type;
-					if (typeChoice instanceof TypeChoice.Anon) {
-						TypeChoice.Anon typeAnon = (TypeChoice.Anon)typeChoice;
-						for(Candidate<Correspondence> candidate: typeAnon.candidates) {
-							for(Correspondence correspondence: candidate.designators) {
-								// TODO
-							}
-						}
-					} else if (typeChoice instanceof TypeChoice.Typed) {
-						TypeChoice.Typed typeTyped = (TypeChoice.Typed)typeChoice;
-						for(Candidate<String> candidate: typeTyped.candidates) {
-							for(String choiceName: candidate.designators) {
-								// TODO
-							}
-						}
-					}
-					
-//					outc.println("block.rewind();");
-					outc.line("}");
-				}
-				if (declType.type.kind == Type.Kind.ENUM) {
-					outc.format("void deserialize(Courier::BLOCK& block, Courier::%s::%s& value) {", programName, name);
-					outc.line(
-							"Courier::UNSPECIFIED u = (quint16)value;",
-							"deserialize(block, u);",
-							"}");
-				}
-				
-			}
-		}
-	}
-/**/
-	
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, programName);
@@ -1054,15 +970,13 @@ public class CompilerRaw {
 			genOpening(outh, outc);
 			
 			// generate type declaration (exclude error and procedure)
+			// and generate serialize/deserialize/toString() for record and choice
 			genTypeDecl(outh, outc, namePrefix);
 			
 			// generate constant declaration
 			
 			genClosing(outh, outc);
 			
-			// generate serialize/deserialize for Record
-			// genSerializeFunc(outh, outc);
-
 			// generate toString for enum
 			genEnumFunc(outh, outc, namePrefix);
 			
