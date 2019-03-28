@@ -11,6 +11,9 @@ CONFIG  += staticlib
 HEADERS += Courier.h
 SOURCES += Courier.cpp
 
+HEADERS += CourierRaw.h Block.h
+SOURCES +=              Block.cpp
+
 ###############################################
 
 INCLUDEPATH += .
