@@ -311,62 +311,304 @@ public class CompilerRaw {
 		}
 	}
 	
-	private void genTypeDeclRecord(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
-		List<String> c1 = new ArrayList<>();
-		List<String> c2 = new ArrayList<>();
-		for(Field field: type.fields) {
-			String fieldType;
-			String fieldName;
-			switch(field.type.kind) {
-			case ARRAY:
-			{
-				TypeArray typeArray = (TypeArray)field.type;
-				fieldType = toTypeString(field.type);
-				fieldName = String.format("%s{%d}", field.name, typeArray.size);	
+	enum MethodType {
+		SERIALIZE {
+			@Override
+			public String toString() {
+				return "serialize";
 			}
-				break;
-			case SEQUENCE:
-			{
-				TypeSequence typeSequence = (TypeSequence)field.type;
-				fieldType = toTypeString(field.type);
-				if (typeSequence.size == TypeSequence.MAX_SIZE) {
-					fieldName = field.name;
-				} else {
-					fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
-				}
+		},
+		DESERIALIZE {
+			@Override
+			public String toString() {
+				return "deserialize";
 			}
-				break;
-			case BLOCK:
-			{
-				TypeBlock typeBlock = (TypeBlock)field.type;
-				fieldType = toTypeString(field.type);
-				fieldName = String.format("%s{%d}", field.name, typeBlock.size);	
-			}
-				break;
-			default:
-				fieldType = toTypeString(field.type);
-				fieldName = field.name;
-				break;
-			}
-			
-			c1.add(fieldType);
-			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			};
 		}
-
-		outh.format("struct %s {", name);
-		for(String line: layoutStringString(c1, c2)) {
-			outh.line(line);
+	private static String getMethodLine(Type type, MethodType methodType, String fieldName) {
+		String methodName = methodType.toString();
+		if (methodName == null) {
+			throw new CompilerException(String.format("Unexpected methodType %s", methodType.toString()));
 		}
 		
-		outh.line(
-			"",
-			"// Standard methods",
-			"void serialize  (BLOCK& block) const;",
-			"void deserialize(BLOCK& block);",
-			"QString toString();"
-			);
+		switch(type.kind) {
+		case BOOLEAN:
+		case ENUM:
+			return String.format("block.%s16((quint16)%s);", methodName, fieldName);
+		case BYTE:
+			return String.format("block.%s8(%s);", methodName, fieldName);
+		case CARDINAL:
+		case UNSPECIFIED:
+			return String.format("block.%s16(%s);", methodName, fieldName);
+		case LONG_CARDINAL:
+		case UNSPECIFIED2:
+			return String.format("block.%s32(%s);", methodName, fieldName);
+		case UNSPECIFIED3:
+			return String.format("block.%s48(%s);", methodName, fieldName);
+		case STRING:
+		case BLOCK:
+		case RECORD:
+		case CHOICE:
+			return String.format("%s.%s(block);", fieldName, methodName);
+		default:
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+	}
+	
+	private void genTypeDeclRecord(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+		// Output declaration of class
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			for(Field field: type.fields) {
+				String fieldType;
+				String fieldName;
+				switch(field.type.kind) {
+				case ARRAY:
+				{
+					TypeArray typeArray = (TypeArray)field.type;
+					fieldType = toTypeString(field.type);
+					fieldName = String.format("%s{%d}", field.name, typeArray.size);	
+				}
+					break;
+				case SEQUENCE:
+				{
+					TypeSequence typeSequence = (TypeSequence)field.type;
+					fieldType = toTypeString(field.type);
+					if (typeSequence.size == TypeSequence.MAX_SIZE) {
+						fieldName = field.name;
+					} else {
+						fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
+					}
+				}
+					break;
+				case BLOCK:
+				{
+					TypeBlock typeBlock = (TypeBlock)field.type;
+					fieldType = toTypeString(field.type);
+					fieldName = String.format("%s{%d}", field.name, typeBlock.size);	
+				}
+					break;
+				default:
+					fieldType = toTypeString(field.type);
+					fieldName = field.name;
+					break;
+				}
+				
+				c1.add(fieldType);
+				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			}
 
-		outh.line("};");
+			outh.format("struct %s {", name);
+			for(String line: layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+			
+			outh.line(
+				"",
+				"// Standard methods",
+				"void serialize  (BLOCK& block) const;",
+				"void deserialize(BLOCK& block);",
+				"QString toString();"
+				);
+
+			outh.line("};");
+		}
+		
+		// Output definition of serialize()
+		{
+			MethodType methodType = MethodType.SERIALIZE;
+			outc.format("void %s::%s::%s(BLOCK& block) const {", namePrefix, name, methodType);
+			
+			for(Field field: type.fields) {
+				String fieldName    = field.name;
+				Type   fieldType    = field.type;
+				Type   concreteType = fieldType.getConcreteType();
+
+				outc.format("// %s", fieldName);
+				outc.format("//   %s", fieldType);
+				if (fieldType.isReference()) {
+					outc.format("//   %s", concreteType);
+				}
+				switch(concreteType.kind) {
+				case BOOLEAN:
+				case ENUM:
+				case BYTE:
+				case CARDINAL:
+				case UNSPECIFIED:
+				case LONG_CARDINAL:
+				case UNSPECIFIED2:
+				case UNSPECIFIED3:
+				case STRING:
+				case BLOCK:
+				case RECORD:
+				case CHOICE:
+					outc.line(getMethodLine(concreteType, methodType, fieldName));
+					break;
+				case ARRAY:
+				{
+					TypeArray typeArray = (TypeArray)concreteType;
+					Type elementType = typeArray.type.getConcreteType();
+					outc.format("//   %s", typeArray.type);
+					outc.format("//   %s", elementType);
+					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
+										
+					switch(elementType.kind) {
+					case BOOLEAN:
+					case ENUM:
+					case BYTE:
+					case CARDINAL:
+					case UNSPECIFIED:
+					case LONG_CARDINAL:
+					case UNSPECIFIED2:
+					case UNSPECIFIED3:
+					case STRING:
+					case BLOCK:
+					case RECORD:
+					case CHOICE:
+						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+						break;
+					default:
+						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
+					}
+					outc.line("}");
+				}
+					break;
+				case SEQUENCE:
+				{
+					TypeSequence typeSequence = (TypeSequence)concreteType;
+					Type elementType = typeSequence.type.getConcreteType();
+					outc.format("//   %s", typeSequence.type);
+					outc.format("//   %s", elementType);
+					outc.format("block.%s16(%s.size);", methodType, fieldName);
+					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
+					switch(elementType.kind) {
+					case BOOLEAN:
+					case ENUM:
+					case BYTE:
+					case CARDINAL:
+					case UNSPECIFIED:
+					case LONG_CARDINAL:
+					case UNSPECIFIED2:
+					case UNSPECIFIED3:
+					case STRING:
+					case BLOCK:
+					case RECORD:
+					case CHOICE:
+						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+						break;
+					default:
+						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
+					}
+					outc.line("}");
+				}
+					break;
+				default:
+					throw new CompilerException(String.format("Unexpected concreteType %s", concreteType.toString()));
+				}
+			}
+			outc.line("}");
+		}
+		
+		// TODO write implementation of deserizlie
+		// Output definition of serialize()
+		{
+			MethodType methodType = MethodType.DESERIALIZE;
+			outc.format("void %s::%s::%s(BLOCK& block) {", namePrefix, name, methodType);
+			
+			for(Field field: type.fields) {
+				String fieldName    = field.name;
+				Type   fieldType    = field.type;
+				Type   concreteType = fieldType.getConcreteType();
+
+				outc.format("// %s", fieldName);
+				outc.format("//   %s", fieldType);
+				if (fieldType.isReference()) {
+					outc.format("//   %s", concreteType);
+				}
+				switch(concreteType.kind) {
+				case BOOLEAN:
+				case ENUM:
+				case BYTE:
+				case CARDINAL:
+				case UNSPECIFIED:
+				case LONG_CARDINAL:
+				case UNSPECIFIED2:
+				case UNSPECIFIED3:
+				case STRING:
+				case BLOCK:
+				case RECORD:
+				case CHOICE:
+					outc.line(getMethodLine(concreteType, methodType, fieldName));
+					break;
+				case ARRAY:
+				{
+					TypeArray typeArray = (TypeArray)concreteType;
+					Type elementType = typeArray.type.getConcreteType();
+					outc.format("//   %s", typeArray.type);
+					outc.format("//   %s", elementType);
+					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
+										
+					switch(elementType.kind) {
+					case BOOLEAN:
+					case ENUM:
+					case BYTE:
+					case CARDINAL:
+					case UNSPECIFIED:
+					case LONG_CARDINAL:
+					case UNSPECIFIED2:
+					case UNSPECIFIED3:
+					case STRING:
+					case BLOCK:
+					case RECORD:
+					case CHOICE:
+						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+						break;
+					default:
+						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
+					}
+					outc.line("}");
+				}
+					break;
+				case SEQUENCE:
+				{
+					TypeSequence typeSequence = (TypeSequence)concreteType;
+					Type elementType = typeSequence.type.getConcreteType();
+					outc.format("//   %s", typeSequence.type);
+					outc.format("//   %s", elementType);
+					outc.format("block.%s16(%s.size);", methodType, fieldName);
+					outc.format("%s.size32 = %s.size; // maintain size32", fieldName, fieldName);
+					outc.format("for(int i = 0; i < %s; i++) {", fieldName);
+					switch(elementType.kind) {
+					case BOOLEAN:
+					case ENUM:
+					case BYTE:
+					case CARDINAL:
+					case UNSPECIFIED:
+					case LONG_CARDINAL:
+					case UNSPECIFIED2:
+					case UNSPECIFIED3:
+					case STRING:
+					case BLOCK:
+					case RECORD:
+					case CHOICE:
+						outc.line(getMethodLine(elementType, MethodType.SERIALIZE, String.format("%s[i]", fieldName)));
+						break;
+					default:
+						throw new CompilerException(String.format("Unexpected elementType %s", elementType.toString()));
+					}
+					outc.line("}");
+				}
+					break;
+				default:
+					throw new CompilerException(String.format("Unexpected concreteType %s", concreteType.toString()));
+				}
+			}
+			outc.line("}");
+		}
+		
+		// TODO write implementation of toString
+
 	}
 	
 	private void genTypeDeclEnum(IndentationPrinter outh, IndentationPrinter outc, TypeEnum type, String name, String namePrefix) {
@@ -528,9 +770,8 @@ public class CompilerRaw {
 			
 			for(Program.DeclType declType: declTypeList) {				
 				String name        = declType.name;
-				String programName = program.info.getProgramVersion();
 				
-				c1.add(String.format("QString toString(const %s::%s::%s", namePrefix, programName, name));
+				c1.add(String.format("QString toString(const %s::%s", namePrefix, name));
 				c2.add("value);");
 			}
 			
@@ -555,21 +796,20 @@ public class CompilerRaw {
 		for(Program.DeclType declType: declTypeList) {			
 			TypeEnum type = (TypeEnum)declType.type;
 			String   name        = declType.name;
-			String   programName = program.info.getProgramVersion();
 			
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 
 			for(Correspondence correspondence: type.elements) {
 				String enumName   = correspondence.id;
-				c1.add(String.format("{%s::%s::%s::%s,", namePrefix, programName, name, Util.sanitizeSymbol(enumName)));
+				c1.add(String.format("{%s::%s::%s,", namePrefix, name, Util.sanitizeSymbol(enumName)));
 				c2.add(String.format("\"%s\"},", enumName));
 //				outc.println("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName);
 			}
 
 			outc.line();
-			outc.format("QString toString(const %s::%s::%s value) {", namePrefix, programName, name);
-			outc.format("static QMap<%s::%s::%s, QString> map = {", namePrefix, programName, name);
+			outc.format("QString toString(const %s::%s value) {", namePrefix, name);
+			outc.format("static QMap<%s::%s, QString> map = {", namePrefix, name);
 			
 			for(String line: layoutStringString(c1, c2)) {
 				outc.line(line);
@@ -800,12 +1040,13 @@ public class CompilerRaw {
 /**/
 	
 	public void genStub() {
-		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, program.info.getProgramVersion());
-		String pathh = String.format("%s%s.h",   STUB_DIR_PATH, program.info.getProgramVersion());
+		String programName = program.info.getProgramVersion();
+		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, programName);
+		String pathh = String.format("%s%s.h",   STUB_DIR_PATH, programName);
 		logger.info(String.format("pathc = %s", pathc));
 		logger.info(String.format("pathh = %s", pathh));
 		
-		String namePrefix = "Courier";
+		String namePrefix = String.format("Courier::%s", programName);
 		
 		try (
 				IndentationPrinter outc = new IndentationPrinter(new PrintWriter(pathc));
