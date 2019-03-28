@@ -29,127 +29,6 @@ public class CompilerRaw {
 
 	public static String STUB_DIR_PATH = "src/stub/";
 	
-	private static List<String> layoutStringString(List<String> c1, List<String> c2) {
-		if (c1.size() != c2.size()) {
-			throw new CompilerException(String.format("Unexpected size  c1 = %d  c2 = %d", c1.size(), c2.size()));
-		}
-		int size = c1.size();
-		
-		int w1 = 0;
-		for(String value: c1) {
-			int length = value.trim().length();
-			if (w1 < length) w1 = length;
-		}
-		String format = String.format("%%%ds %%s", -w1);
-		
-		List<String> ret = new ArrayList<>();
-		for(int i = 0; i < size; i++) {
-			ret.add(String.format(format, c1.get(i).trim(), c2.get(i).trim()));
-		}
-		return ret;
-	}
-	private static List<String> layoutStringString(List<String> c1, List<String> c2, List<String> c3) {
-		if (c1.size() != c2.size()) {
-			throw new CompilerException(String.format("Unexpected size  c1 = %d  c2 = %d", c1.size(), c2.size()));
-		}
-		if (c1.size() != c3.size()) {
-			throw new CompilerException(String.format("Unexpected size  c1 = %d  c3 = %d", c1.size(), c3.size()));
-		}
-		int size = c1.size();
-		
-		int w1 = 0;
-		for(String value: c1) {
-			int length = value.trim().length();
-			if (w1 < length) w1 = length;
-		}
-		int w2 = 0;
-		for(String value: c2) {
-			int length = value.trim().length();
-			if (w2 < length) w2 = length;
-		}
-		String format = String.format("%%%ds %%%ds %%s", -w1, -w2);
-		
-		List<String> ret = new ArrayList<>();
-		for(int i = 0; i < size; i++) {
-			ret.add(String.format(format, c1.get(i).trim(), c2.get(i).trim(), c3.get(i).trim()));
-		}
-		return ret;
-	}
-	private static List<String> layoutEnumElement(List<String> c1, List<Integer> c2) {
-		if (c1.size() != c2.size()) {
-			throw new CompilerException(String.format("Unexpected size  c1 = %d  c2 = %d", c1.size(), c2.size()));
-		}
-		int size = c1.size();
-		
-		int w1 = 0;
-		for(String value: c1) {
-			int length = value.trim().length();
-			if (w1 < length) w1 = length;
-		}
-		int w2 = 0;
-		for(Integer value: c2) {
-			String string = String.format("%d", value);
-			int length = string.length();
-			if (w2 < length) w2 = length;
-		}
-		String format = String.format("%%%ds = %%%ds,", -w1, w2);
-		
-		List<String> ret = new ArrayList<>();
-		for(int i = 0; i < size; i++) {
-			ret.add(String.format(format, c1.get(i).trim(), c2.get(i).intValue()));
-		}
-		return ret;
-	}
-
-
-	public static class IndentationPrinter implements AutoCloseable {
-		public static final String INDENT = "    ";
-
-		private final PrintWriter out;
-		private int level = 0;
-
-		public IndentationPrinter(PrintWriter out) {
-			this.out = out;
-		}
-		public void close() {
-			out.close();
-		}
-
-		public IndentationPrinter format(String format, Object... args) {
-			return line(String.format(format, args));
-		}
-		public IndentationPrinter line(String message) {
-			if (message.length() == 0) {
-				out.println();
-			} else if (message.equals("public:") || message.equals("private:")) {
-				for(int i = 1; i < level; i++) out.print(INDENT);
-				out.println(message);
-			} else {
-				if (message.startsWith("}")) {
-					level--;
-					if (level < 0) throw new CompilerException("level < 0");
-				}
-				for(int i = 0; i < level; i++) out.print(INDENT);
-				out.println(message);
-				if (message.endsWith("{")) {
-					level++;
-				}
-			}
-			return this;
-		}
-		public IndentationPrinter line(String arg0, String... args) {
-			line(arg0);
-			for(String message: args) {
-				line(message);
-			}
-			return this;
-		}
-		public IndentationPrinter line() {
-			out.println();
-			return this;
-		}
-	}
-	
 	private final Program program;
 	public CompilerRaw(Program program) {
 		this.program = program;
@@ -206,7 +85,7 @@ public class CompilerRaw {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genTypeDecl(IndentationPrinter outh, IndentationPrinter outc, String namePrefix) {
+	private void genTypeDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
 		outh.line(
 				"",
 				"//",
@@ -313,13 +192,13 @@ public class CompilerRaw {
 		}
 	}
 	
-	private void genTypeDeclRecord(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		genRecordDecl(outh, outc, type, name, namePrefix);
 		genRecordSerialize(outh, outc, type, name, namePrefix);
 		genRecordDeserialize(outh, outc, type, name, namePrefix);
 		genRecordToString(outh, outc, type, name, namePrefix);
 	}
-	private void genRecordDecl(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+	private void genRecordDecl(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output declaration of class
 		{
 			List<String> c1 = new ArrayList<>();
@@ -364,7 +243,7 @@ public class CompilerRaw {
 			}
 
 			outh.format("struct %s {", name);
-			for(String line: layoutStringString(c1, c2)) {
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
 			
@@ -380,7 +259,7 @@ public class CompilerRaw {
 		}
 	}
 	
-	private void genRecordSerialize(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+	private void genRecordSerialize(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output definition of serialize()
 		{
 			MethodType methodType = MethodType.SERIALIZE;
@@ -476,7 +355,7 @@ public class CompilerRaw {
 			outc.line("}");
 		}
 	}
-	private void genRecordDeserialize(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+	private void genRecordDeserialize(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output definition of deserialize()
 		{
 			MethodType methodType = MethodType.DESERIALIZE;
@@ -573,7 +452,7 @@ public class CompilerRaw {
 			outc.line("}");
 		}
 	}
-	private void genRecordToString(IndentationPrinter outh, IndentationPrinter outc, TypeRecord type, String name, String namePrefix) {
+	private void genRecordToString(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// TODO write implementation of toString
 		{
 			outc.format("QString %s::%s::toString() {", namePrefix, name);
@@ -694,7 +573,7 @@ public class CompilerRaw {
 		}
 	}
 	
-	private void genTypeDeclEnum(IndentationPrinter outh, IndentationPrinter outc, TypeEnum type, String name, String namePrefix) {
+	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
 		List<String>  c1 = new ArrayList<>();
 		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -703,13 +582,13 @@ public class CompilerRaw {
 		}
 		
 		outh.format("enum class %s : quint16 {", name);
-		for(String line: layoutEnumElement(c1, c2)) {
+		for(String line: ColumnLayout.layoutEnumElement(c1, c2)) {
 			outh.line(line);
 		}
 		outh.line("};");
 	}
 	
-	private void genTypeDeclChoice(IndentationPrinter outh, IndentationPrinter outc, TypeChoice type, String name, String namePrefix) {
+	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice type, String name, String namePrefix) {
 		outh.format("// FIXME TypeDecl %s %s", name, type.toString());
 		outh.format("struct %s {", name);
 		
@@ -838,7 +717,7 @@ public class CompilerRaw {
 		outh.line("};");
 	}
 	
-	private void genEnumToString(IndentationPrinter outh, IndentationPrinter outc, String namePrefix) {
+	private void genEnumToString(LinePrinter outh, LinePrinter outc, String namePrefix) {
 		List<Program.DeclType> declTypeList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.ENUM) {
@@ -864,7 +743,7 @@ public class CompilerRaw {
 					"// Enum toString Declaration",
 					"//"
 					);
-			for(String line: layoutStringString(c1, c2)) {
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
 		}
@@ -894,7 +773,7 @@ public class CompilerRaw {
 			outc.format("QString Courier::toString(const %s::%s value) {", namePrefix, name);
 			outc.format("static QMap<%s::%s, QString> map = {", namePrefix, name);
 			
-			for(String line: layoutStringString(c1, c2)) {
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outc.line(line);
 			}
 			
@@ -922,8 +801,8 @@ public class CompilerRaw {
 		String namePrefix = String.format("Courier::%s", programName);
 		
 		try (
-				IndentationPrinter outc = new IndentationPrinter(new PrintWriter(pathc));
-				IndentationPrinter outh = new IndentationPrinter(new PrintWriter(pathh));) {
+				LinePrinter outc = new LinePrinter(new PrintWriter(pathc));
+				LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
 			// for outh
 			// write opening lines
 			outh.format("#ifndef STUB_%s_H__", program.info.getProgramVersion());
