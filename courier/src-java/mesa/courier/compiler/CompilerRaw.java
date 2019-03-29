@@ -146,10 +146,45 @@ public class CompilerRaw {
 			}
 		}
 	}
-	
+
+	private void logField(LinePrinter out, Type type, String name) {
+		Type concreteType = type.getConcreteType();
+
+		out.format("// %s", name);
+		out.format("//   %s", type);
+		if (type.isReference()) {
+			out.format("//   %s", concreteType);
+		}
+						
+		switch(concreteType.kind) {
+		case ARRAY:
+		{
+			TypeArray typeArray = (TypeArray)concreteType;
+			out.format("//     %s", typeArray.type);
+			if (typeArray.type.isReference()) {
+				Type elementType = typeArray.type.getConcreteType();
+				out.format("//       %s", elementType);
+			}
+		}
+			break;
+		case SEQUENCE:
+		{
+			TypeSequence typeSequence = (TypeSequence)concreteType;
+			out.format("//     %s", typeSequence.type);
+			if (typeSequence.type.isReference()) {
+				Type elementType = typeSequence.type.getConcreteType();
+				out.format("//       %s", elementType);
+			}
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
 	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
-		genRecordDecl(outh, outc, type, name, namePrefix);
-		genRecordSerialize(outh, outc, type, name, namePrefix);
+		genRecordDecl       (outh, outc, type, name, namePrefix);
+		genRecordSerialize  (outh, outc, type, name, namePrefix);
 		genRecordDeserialize(outh, outc, type, name, namePrefix);
 	}
 	private void genRecordDecl(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
@@ -209,43 +244,6 @@ public class CompilerRaw {
 
 		outh.line("};");
 	}
-	
-	private void logField(LinePrinter out, Field field) {
-		String fieldName    = field.name;
-		Type   fieldType    = field.type;
-		Type   concreteType = fieldType.getConcreteType();
-
-		out.format("// %s", fieldName);
-		out.format("//   %s", fieldType);
-		if (fieldType.isReference()) {
-			out.format("//   %s", concreteType);
-		}
-						
-		switch(concreteType.kind) {
-		case ARRAY:
-		{
-			TypeArray typeArray = (TypeArray)concreteType;
-			out.format("//     %s", typeArray.type);
-			if (typeArray.type.isReference()) {
-				Type elementType = typeArray.type.getConcreteType();
-				out.format("//       %s", elementType);
-			}
-		}
-			break;
-		case SEQUENCE:
-		{
-			TypeSequence typeSequence = (TypeSequence)concreteType;
-			out.format("//     %s", typeSequence.type);
-			if (typeSequence.type.isReference()) {
-				Type elementType = typeSequence.type.getConcreteType();
-				out.format("//       %s", elementType);
-			}
-		}
-			break;
-		default:
-			break;
-		}
-	}
 	private void genRecordSerialize(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output definition of serialize()
 		outc.format("void %s::%s::serialize(BLOCK& block) const {", namePrefix, name);
@@ -254,7 +252,7 @@ public class CompilerRaw {
 			String fieldName    = field.name;
 			Type   concreteType = field.type.getConcreteType();
 
-			logField(outc, field);
+			logField(outc, field.type, field.name);
 			outc.line(TypeUtil.genSerialize(concreteType, fieldName));
 		}
 		outc.line("}");
@@ -267,11 +265,12 @@ public class CompilerRaw {
 			String fieldName    = field.name;
 			Type   concreteType = field.type.getConcreteType();
 
-			logField(outc, field);
+			logField(outc, field.type, field.name);
 			outc.line(TypeUtil.genDeserialize(concreteType, fieldName));
 		}
 		outc.line("}");
 	}
+	
 	private void genRecordToString(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// TODO write implementation of toString
 		{
@@ -558,6 +557,7 @@ public class CompilerRaw {
 		}
 		if (enumInfoList.isEmpty()) return;
 		
+		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
@@ -578,42 +578,44 @@ public class CompilerRaw {
 			}
 		}
 		
-		outc.line(
-				"",
-				"//",
-				"// Enum Function Definition",
-				"//"
-				);
-
-		for(EnumInfo enumInfo: enumInfoList) {							
-			List<String> c1 = new ArrayList<>();
-			List<String> c2 = new ArrayList<>();
-
-			for(Correspondence correspondence: enumInfo.typeEnum.elements) {
-				String enumName = correspondence.id;
-				c1.add(String.format("{%s::%s::%s,", enumInfo.namePrefix, enumInfo.name, Util.sanitizeSymbol(enumName)));
-				c2.add(String.format("\"%s\"},", enumName));
-			}
-
-			outc.line();
-			outc.format("QString Courier::toString(const %s::%s value) {", enumInfo.namePrefix, enumInfo.name);
-			outc.format("static QMap<%s::%s, QString> map = {", enumInfo.namePrefix, enumInfo.name);
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outc.line(line);
-			}
-			
+		// Definition
+		{
 			outc.line(
-					"};",
 					"",
-					"if (map.contains(value)) {",
-						"return map[value];",
-					"} else {",
-						"return QString(\"%1\").arg((quint16)value);",
-					"}",
-				"}"
+					"//",
+					"// Enum Function Definition",
+					"//"
 					);
 
+			for(EnumInfo enumInfo: enumInfoList) {							
+				List<String> c1 = new ArrayList<>();
+				List<String> c2 = new ArrayList<>();
+
+				for(Correspondence correspondence: enumInfo.typeEnum.elements) {
+					String enumName = correspondence.id;
+					c1.add(String.format("{%s::%s::%s,", enumInfo.namePrefix, enumInfo.name, Util.sanitizeSymbol(enumName)));
+					c2.add(String.format("\"%s\"},", enumName));
+				}
+
+				outc.line();
+				outc.format("QString Courier::toString(const %s::%s value) {", enumInfo.namePrefix, enumInfo.name);
+				outc.format("static QMap<%s::%s, QString> map = {", enumInfo.namePrefix, enumInfo.name);
+				
+				for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+					outc.line(line);
+				}
+				
+				outc.line(
+						"};",
+						"",
+						"if (map.contains(value)) {",
+							"return map[value];",
+						"} else {",
+							"return QString(\"%1\").arg((quint16)value);",
+						"}",
+					"}"
+				);
+			}
 		}
 	}
 	
@@ -697,9 +699,18 @@ public class CompilerRaw {
 			// TODO
 		}
 		
-		
-
-		
+		// Record toString definiion
+		for(RecordInfo recordInfo: recordInfoList) {
+			outc.format("QString toString(const %s::%s value) {", recordInfo.namePrefix, recordInfo.name);
+			outc.line("QStringList list;");
+			
+			for(Field field: recordInfo.typeRecord.fields) {
+				logField(outc, field.type, field.name);
+			}
+			
+			outc.line("return list.join(\" \");");
+			outc.line("}");
+		}
 	}
 	
 	public void genStub() {
