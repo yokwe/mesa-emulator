@@ -210,46 +210,51 @@ public class CompilerRaw {
 		outh.line("};");
 	}
 	
+	private void logField(LinePrinter out, Field field) {
+		String fieldName    = field.name;
+		Type   fieldType    = field.type;
+		Type   concreteType = fieldType.getConcreteType();
+
+		out.format("// %s", fieldName);
+		out.format("//   %s", fieldType);
+		if (fieldType.isReference()) {
+			out.format("//   %s", concreteType);
+		}
+						
+		switch(concreteType.kind) {
+		case ARRAY:
+		{
+			TypeArray typeArray = (TypeArray)concreteType;
+			out.format("//     %s", typeArray.type);
+			if (typeArray.type.isReference()) {
+				Type elementType = typeArray.type.getConcreteType();
+				out.format("//       %s", elementType);
+			}
+		}
+			break;
+		case SEQUENCE:
+		{
+			TypeSequence typeSequence = (TypeSequence)concreteType;
+			out.format("//     %s", typeSequence.type);
+			if (typeSequence.type.isReference()) {
+				Type elementType = typeSequence.type.getConcreteType();
+				out.format("//       %s", elementType);
+			}
+		}
+			break;
+		default:
+			break;
+		}
+	}
 	private void genRecordSerialize(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output definition of serialize()
 		outc.format("void %s::%s::serialize(BLOCK& block) const {", namePrefix, name);
 		
 		for(Field field: type.fields) {
 			String fieldName    = field.name;
-			Type   fieldType    = field.type;
-			Type   concreteType = fieldType.getConcreteType();
+			Type   concreteType = field.type.getConcreteType();
 
-			outc.format("// %s", fieldName);
-			outc.format("//   %s", fieldType);
-			if (fieldType.isReference()) {
-				outc.format("//   %s", concreteType);
-			}
-							
-			switch(concreteType.kind) {
-			case ARRAY:
-			{
-				TypeArray typeArray = (TypeArray)concreteType;
-				outc.format("//     %s", typeArray.type);
-				if (typeArray.type.isReference()) {
-					Type elementType = typeArray.type.getConcreteType();
-					outc.format("//       %s", elementType);
-				}
-			}
-				break;
-			case SEQUENCE:
-			{
-				TypeSequence typeSequence = (TypeSequence)concreteType;
-				outc.format("//     %s", typeSequence.type);
-				if (typeSequence.type.isReference()) {
-					Type elementType = typeSequence.type.getConcreteType();
-					outc.format("//       %s", elementType);
-				}
-			}
-				break;
-			default:
-				break;
-			}
-			
+			logField(outc, field);
 			outc.line(TypeUtil.genSerialize(concreteType, fieldName));
 		}
 		outc.line("}");
@@ -260,40 +265,9 @@ public class CompilerRaw {
 		
 		for(Field field: type.fields) {
 			String fieldName    = field.name;
-			Type   fieldType    = field.type;
-			Type   concreteType = fieldType.getConcreteType();
+			Type   concreteType = field.type.getConcreteType();
 
-			outc.format("// %s", fieldName);
-			outc.format("//   %s", fieldType);
-			if (fieldType.isReference()) {
-				outc.format("//   %s", concreteType);
-			}
-							
-			switch(concreteType.kind) {
-			case ARRAY:
-			{
-				TypeArray typeArray = (TypeArray)concreteType;
-				outc.format("//     %s", typeArray.type);
-				if (typeArray.type.isReference()) {
-					Type elementType = typeArray.type.getConcreteType();
-					outc.format("//       %s", elementType);
-				}
-			}
-				break;
-			case SEQUENCE:
-			{
-				TypeSequence typeSequence = (TypeSequence)concreteType;
-				outc.format("//     %s", typeSequence.type);
-				if (typeSequence.type.isReference()) {
-					Type elementType = typeSequence.type.getConcreteType();
-					outc.format("//       %s", elementType);
-				}
-			}
-				break;
-			default:
-				break;
-			}
-			
+			logField(outc, field);
 			outc.line(TypeUtil.genDeserialize(concreteType, fieldName));
 		}
 		outc.line("}");
