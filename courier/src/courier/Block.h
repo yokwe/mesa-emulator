@@ -73,7 +73,7 @@ public:
 	void serialize(const Block&   value);
 
 	// deserialize - read from Block and write to value
-	void deserialize8(quint8&   value);
+	void deserialize8 (quint8&  value);
 	void deserialize16(quint16& value);
 	void deserialize32(quint32& value);
 	void deserialize48(quint64& value);
