@@ -151,7 +151,6 @@ public class CompilerRaw {
 		genRecordDecl(outh, outc, type, name, namePrefix);
 		genRecordSerialize(outh, outc, type, name, namePrefix);
 		genRecordDeserialize(outh, outc, type, name, namePrefix);
-		genRecordToString(outh, outc, type, name, namePrefix);
 	}
 	private void genRecordDecl(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
 		// Output declaration of class
@@ -205,8 +204,7 @@ public class CompilerRaw {
 			"",
 			"// Standard methods",
 			"void serialize  (BLOCK& block) const;",
-			"void deserialize(BLOCK& block);",
-			"QString toString();"
+			"void deserialize(BLOCK& block);"
 			);
 
 		outh.line("};");
@@ -488,8 +486,7 @@ public class CompilerRaw {
 			outh.line(
 					"",
 					"void serialize  (BLOCK& block) const;",
-					"void deserialize(BLOCK& block);",
-					"QString toString();"
+					"void deserialize(BLOCK& block);"
 					);
 
 			outh.line("private:");
@@ -549,8 +546,7 @@ public class CompilerRaw {
 			outh.line();
 			outh.line(
 					"void serialize  (BLOCK& block) const;",
-					"void deserialize(BLOCK& block);",
-					"QString toString();"
+					"void deserialize(BLOCK& block);"
 					);
 
 			outh.line("private:");
@@ -565,23 +561,35 @@ public class CompilerRaw {
 		outh.line("};");
 	}
 	
+	
+	class EnumInfo {
+		final TypeEnum typeEnum;
+		final String   name;
+		final String   namePrefix;
+		
+		EnumInfo(TypeEnum typeEnum, String name, String namePrefix) {
+			this.typeEnum   = typeEnum;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
+	
 	private void genEnumToString(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		List<Program.DeclType> declTypeList = new ArrayList<>();
+		List<EnumInfo> enumInfoList = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			if (declType.type.kind == Type.Kind.ENUM) {
-				declTypeList.add(declType);
+				TypeEnum typeEnum = (TypeEnum)declType.type;
+				enumInfoList.add(new EnumInfo(typeEnum, declType.name, namePrefix));
 			};
 		}
-		if (declTypeList.isEmpty()) return;
+		if (enumInfoList.isEmpty()) return;
 		
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(Program.DeclType declType: declTypeList) {				
-				String name        = declType.name;
-				
-				c1.add(String.format("QString toString(const %s::%s", namePrefix, name));
+			for(EnumInfo enumInfo: enumInfoList) {				
+				c1.add(String.format("QString toString(const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
 			
@@ -603,23 +611,19 @@ public class CompilerRaw {
 				"//"
 				);
 
-		for(Program.DeclType declType: declTypeList) {			
-			TypeEnum type = (TypeEnum)declType.type;
-			String   name        = declType.name;
-			
+		for(EnumInfo enumInfo: enumInfoList) {							
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 
-			for(Correspondence correspondence: type.elements) {
-				String enumName   = correspondence.id;
-				c1.add(String.format("{%s::%s::%s,", namePrefix, name, Util.sanitizeSymbol(enumName)));
+			for(Correspondence correspondence: enumInfo.typeEnum.elements) {
+				String enumName = correspondence.id;
+				c1.add(String.format("{%s::%s::%s,", enumInfo.namePrefix, enumInfo.name, Util.sanitizeSymbol(enumName)));
 				c2.add(String.format("\"%s\"},", enumName));
-//				outc.println("{Courier::%s::%s::%s,  \"%s\"},", programName, name, Util.sanitizeSymbol(enumName), enumName);
 			}
 
 			outc.line();
-			outc.format("QString Courier::toString(const %s::%s value) {", namePrefix, name);
-			outc.format("static QMap<%s::%s, QString> map = {", namePrefix, name);
+			outc.format("QString Courier::toString(const %s::%s value) {", enumInfo.namePrefix, enumInfo.name);
+			outc.format("static QMap<%s::%s, QString> map = {", enumInfo.namePrefix, enumInfo.name);
 			
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outc.line(line);
@@ -638,7 +642,92 @@ public class CompilerRaw {
 
 		}
 	}
+	
+	class RecordInfo {
+		final TypeRecord typeRecord;
+		final String     name;
+		final String     namePrefix;
+		
+		RecordInfo(TypeRecord typeRecord, String name, String namePrefix) {
+			this.typeRecord = typeRecord;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
+	
+	private void genRecordToString(LinePrinter outh, LinePrinter outc, String namePrefix) {
+		List<RecordInfo> recordInfoList = new ArrayList<>();
+		for(Program.DeclType declType: program.typeList) {
+			String name = declType.name;
+			if (declType.type.kind == Type.Kind.RECORD) {
+				TypeRecord typeRecord = (TypeRecord)declType.type;
+				recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+			} else if (declType.type.kind == Type.Kind.CHOICE) {
+				TypeChoice typeChoice = (TypeChoice)declType.type;
+				if (typeChoice instanceof TypeChoice.Typed) {
+					TypeChoice.Typed typed = (TypeChoice.Typed)typeChoice;
+					int              maxStructNumber = 0;
+					for(Candidate<String> candidate: typed.candidates) {
+						maxStructNumber++;
+						Type candidateType = candidate.type;
+						if (candidateType.kind == Type.Kind.RECORD) {
+							TypeRecord typeRecord = (TypeRecord)candidateType;
+							String structName = String.format("CHOICE_%02d", maxStructNumber);
+							recordInfoList.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
+						} else {
+							throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
+						}
+					}
+				} else if (typeChoice instanceof TypeChoice.Anon) {
+					TypeChoice.Anon anon = (TypeChoice.Anon)typeChoice;
+					int             maxStructNumber = 0;
+					for(Candidate<Correspondence> candidate: anon.candidates) {
+						maxStructNumber++;
+						Type candidateType = candidate.type;
+						if (candidateType.kind == Type.Kind.RECORD) {
+							TypeRecord typeRecord = (TypeRecord)candidateType;
+							String structName = String.format("CHOICE_%02d", maxStructNumber);
+							recordInfoList.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
+						} else {
+							throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
+						}
+					}
+				} else {
+					throw new CompilerException(String.format("Unexpected type %s", typeChoice.getClass().getName()));
+				}
+			}
+		}
+		if (recordInfoList.isEmpty()) return;
+		
+		// Record toSring declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(RecordInfo recordInfo: recordInfoList) {				
+				c1.add(String.format("QString toString(const %s::%s", recordInfo.namePrefix, recordInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Record toString Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+			
+			// Record toString defintion
+			// TODO
+		}
+		
+		
 
+		
+	}
+	
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, programName);
@@ -695,6 +784,8 @@ public class CompilerRaw {
 			
 			// generate toString for enum
 			genEnumToString(outh, outc, namePrefix);
+			
+			genRecordToString(outh, outc, namePrefix);
 			
 			// Close courier namespace
 			outh.line("}");
