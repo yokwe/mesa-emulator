@@ -76,26 +76,20 @@ public:
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
 			COURIER_ERROR();
 		}
-		clear();
+		size = 0;
 	}
 	~SEQUENCE() {
 		delete[] data;
 	}
 
-	int getSize() {
-		return size32;
+	quint16 getSize() {
+		return size;
 	}
-	void clear() {
-		size32 = 0;
-		size   = 0;
-	}
-
-	void append(const T& newValue) {
-		if (size32 < maxSize) {
-			data[size32++] = newValue;
-			size++;
+	void setSize(int newValue) {
+		if (0 <= newValue && newValue < maxSize) {
+			size = (quint16)newValue;
 		} else {
-			logger.error("Unexpected overflow  size32 = %d  maxSize = %d", size32, maxSize);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
 			COURIER_ERROR();
 		}
 	}
@@ -119,7 +113,6 @@ public:
 	}
 
 private:
-	int     size32; // To detect overflow of size
 	quint16 size;   // for serialize/desrialize
 	T*      data;
 };
@@ -146,23 +139,6 @@ struct ARRAY {
 		delete[] data;
 	}
 
-	int getSize() {
-		return size32;
-	}
-	void clear() {
-		size32 = 0;
-		size   = 0;
-	}
-
-	void append(const T& newValue) {
-		if (size32 < maxSize) {
-			data[size32++] = newValue;
-			size++;
-		} else {
-			logger.error("Unexpected overflow  size32 = %d  maxSize = %d", size32, maxSize);
-			COURIER_ERROR();
-		}
-	}
 	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
 			// OK
@@ -183,8 +159,6 @@ struct ARRAY {
 	}
 
 private:
-	quint16 size;   // for serialize/desrialize
-	int     size32; // To detect overflow of size
 	T*      data;
 };
 
