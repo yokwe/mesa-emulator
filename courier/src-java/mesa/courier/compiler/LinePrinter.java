@@ -37,8 +37,7 @@ public class LinePrinter implements AutoCloseable {
 		}
 		return this;
 	}
-	public LinePrinter line(String arg0, String... args) {
-		line(arg0);
+	public LinePrinter line(String... args) {
 		for(String message: args) {
 			line(message);
 		}
