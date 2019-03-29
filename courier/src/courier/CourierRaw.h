@@ -89,7 +89,7 @@ public:
 		if (0 <= newValue && newValue < maxSize) {
 			size = (quint16)newValue;
 		} else {
-			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
+			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, maxSize);
 			COURIER_ERROR();
 		}
 	}
@@ -133,7 +133,6 @@ struct ARRAY {
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
 			COURIER_ERROR();
 		}
-		clear();
 	}
 	~ARRAY() {
 		delete[] data;
