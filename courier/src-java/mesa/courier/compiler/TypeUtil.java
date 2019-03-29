@@ -85,133 +85,111 @@ public class TypeUtil {
 	static class ToStringBOOLEAN extends ToString {
 		ToStringBOOLEAN() {
 			super(Type.Kind.BOOLEAN);
-			genSerialize   = (type, name) -> {
-				return toArray(
-						"{",
-						String.format("quint16 t = (%s ? 1 : 0);", name),
-						String.format("block.serialize16(t);"),
-						"}"
-					);
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(
-						"{",
-						"quint16 t;",
-						"block.deserialize16(t);",
-						String.format("%s = (t != 0);", name),
-						"}"
-						);
-			};
+			genSerialize   = (type, name) -> toArray(
+				"{",
+				String.format("quint16 t = (%s ? 1 : 0);", name),
+				String.format("block.serialize16(t);"),
+				"}");
+			genDeserialize = (type, name) -> toArray(
+				"{",
+				"quint16 t;",
+				"block.deserialize16(t);",
+				String.format("%s = (t != 0);", name),
+				"}");
+			genToString   = (type, name) ->
+				toArray(String.format("QString value = (%s ? \"T\" : \"F\");", name));
 		}
 	}
 	static class ToStringBYTE extends ToString {
 		ToStringBYTE() {
 			super(Type.Kind.BYTE);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize8(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize8(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize8(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize8(%s);", name));
+			genToString    = (type, name) -> 
+				toArray(String.format("QString value = QString(\"%%\").arg(%s);", name));
 		}
 	}
 	static class ToStringCARDINAL extends ToString {
 		ToStringCARDINAL() {
 			super(Type.Kind.CARDINAL);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize16(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize16(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize16(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize16(%s);", name));
 		}
 	}
 	static class ToStringLONG_CARDINAL extends ToString {
 		ToStringLONG_CARDINAL() {
 			super(Type.Kind.LONG_CARDINAL);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize32(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize32(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize32(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize32(%s);", name));
 		}
 	}
 	static class ToStringUNSPECIFIED extends ToString {
 		ToStringUNSPECIFIED() {
 			super(Type.Kind.UNSPECIFIED);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize16(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize16(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize16(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize16(%s);", name));
 		}
 	}
 	static class ToStringUNSPECIFIED2 extends ToString {
 		ToStringUNSPECIFIED2() {
 			super(Type.Kind.UNSPECIFIED2);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize32(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize32(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize32(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize32(%s);", name));
 		}
 	}
 	static class ToStringUNSPECIFIED3 extends ToString {
 		ToStringUNSPECIFIED3() {
 			super(Type.Kind.UNSPECIFIED3);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize48(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize48(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize48(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize48(%s);", name));
 		}
 	}
 	static class ToStringENUM extends ToString {
 		ToStringENUM() {
 			super(Type.Kind.ENUM);
-			genSerialize   = (type, name) -> {
-				return toArray(
-						"{",
-						String.format("quint16 t = %s;", name),
-						String.format("block.serialize16(t);"),
-						"}"
-					);
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(
-						"{",
-						"quint16 t;",
-						"block.deserialize16(t);",
-						String.format("%s = t;", name),
-						"}"
-						);
-			};
+			genSerialize   = (type, name) ->
+				toArray(
+					"{",
+					String.format("quint16 t = %s;", name),
+					String.format("block.serialize16(t);"),
+					"}");
+			genDeserialize = (type, name) ->
+				toArray(
+					"{",
+					"quint16 t;",
+					"block.deserialize16(t);",
+					String.format("%s = t;", name),
+					"}");
 		}
 	}
 	static class ToStringSTRING extends ToString {
 		ToStringSTRING() {
 			super(Type.Kind.STRING);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize(%s);", name));
 		}
 	}
 	static class ToStringBLOCK extends ToString {
 		ToStringBLOCK() {
 			super(Type.Kind.BLOCK);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize(%s);", name));
 		}
 	}
 	static class ToStringARRAY extends ToString {
@@ -280,23 +258,19 @@ public class TypeUtil {
 	static class ToStringRECORD extends ToString {
 		ToStringRECORD() {
 			super(Type.Kind.RECORD);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize(%s);", name));
 		}
 	}
 	static class ToStringCHOICE extends ToString {
 		ToStringCHOICE() {
 			super(Type.Kind.CHOICE);
-			genSerialize   = (type, name) -> {
-				return toArray(String.format("block.serialize(%s);", name));
-			};
-			genDeserialize = (type, name) -> {
-				return toArray(String.format("block.deserialize(%s);", name));
-			};
+			genSerialize   = (type, name) ->
+				toArray(String.format("block.serialize(%s);", name));
+			genDeserialize = (type, name) ->
+				toArray(String.format("block.deserialize(%s);", name));
 		}
 	}
 	static class ToStringPROCEDURE extends ToString {
