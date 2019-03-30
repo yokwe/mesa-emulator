@@ -690,28 +690,27 @@ public class CompilerRaw {
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
-			
-			// Record toString defintion
-			// TODO
 		}
 		
-		// Record toString definiion
-		for(RecordInfo recordInfo: recordInfoList) {
-			outc.format("QString %s::toString(const %s::%s value) {", recordInfo.namePrefix, recordInfo.namePrefix, recordInfo.name);
-			outc.line("QStringList list;");
-			
-			for(Field field: recordInfo.typeRecord.fields) {
-				Type concreteType = field.type.getConcreteType();
-				logField(outc, field.type, field.name);
+		// Record toString definition
+		{
+			for(RecordInfo recordInfo: recordInfoList) {
+				outc.format("QString %s::toString(const %s::%s value) {", recordInfo.namePrefix, recordInfo.namePrefix, recordInfo.name);
+				outc.line("QStringList list;");
+				
+				for(Field field: recordInfo.typeRecord.fields) {
+					Type concreteType = field.type.getConcreteType();
+					logField(outc, field.type, field.name);
 
-				outc.line("{");
-				outc.line(TypeUtil.genToString("fieldValue", concreteType, field.name));
-				outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(fieldValue);", field.name);
+					outc.line("{");
+					outc.line(TypeUtil.genToString("fieldValue", concreteType, field.name));
+					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(fieldValue);", field.name);
+					outc.line("}");
+				}
+				
+				outc.line("return list.join(\" \");");
 				outc.line("}");
 			}
-			
-			outc.line("return list.join(\" \");");
-			outc.line("}");
 		}
 	}
 	

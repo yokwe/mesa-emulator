@@ -240,17 +240,26 @@ public class TypeUtil {
 				lines.add("}");
 				return lines.toArray(new String[0]);
 			};
+			// 				toArray(String.format("QString %s = toString(value.%s);", varName, name));
+
 			genToString   = (varName, type, name) -> {
-				List<String> lines = new ArrayList<String>();
 				TypeArray typeArray = (TypeArray)type;
 				Type elementType = typeArray.type.getConcreteType();
 				String elementName = String.format("value.%s[i]", name);
-				lines.add("QStringList arrayList;");
-				lines.add(String.format("for(quint16 i = 0; i < value.%s.maxSize; i++) {", name));
-				lines.addAll(Arrays.asList(TypeUtil.genToString("elementValue", elementType, elementName)));
-				lines.add("arrayList << elementValue;");
+
+				List<String> lines = new ArrayList<String>();
+				lines.add(String.format("QString %s = [] (auto& v) -> QString {", varName));
+				//
+				lines.add(String.format("quint16 size = value.%s.maxSize;", name));
+				lines.add("QStringList dataList;");
+				lines.add(String.format("for(quint16 i = 0; i < size; i++) {", name));
+				lines.addAll(Arrays.asList(genToString("dataElement", elementType, elementName)));
+				lines.add("dataList << dataElement;");
 				lines.add("}");
-				lines.add(String.format("QString %s = QString(\"(%%1)%%2\").arg(arrayList.size()).arg(arrayList.join(\" \"));", varName));
+				//
+				lines.add(String.format("return String(\"(%%1)[%%2]\").arg(size).arg(dataList.join(\" \"));"));
+				//
+				lines.add(String.format("} (value.%s);", name));
 				return lines.toArray(new String[0]);
 			};
 		}
@@ -288,17 +297,23 @@ public class TypeUtil {
 				return lines.toArray(new String[0]);
 			};
 			genToString   = (varName, type, name) -> {
-				List<String> lines = new ArrayList<String>();
 				TypeSequence typeSequence = (TypeSequence)type;
 				Type elementType = typeSequence.type.getConcreteType();
-				String elementName = String.format("%s[i]", name);
-				lines.add("QStringList sequenceList;");
+				String elementName = String.format("value.%s[i]", name);
+
+				List<String> lines = new ArrayList<String>();
+				lines.add(String.format("QString %s = [] (auto& v) -> QString {", varName));
+				//
 				lines.add(String.format("quint16 size = value.%s.getSize();", name));
+				lines.add("QStringList dataList;");
 				lines.add("for(quint16 i = 0; i < size; i++) {");
-				lines.addAll(Arrays.asList(TypeUtil.genToString("elementValue", elementType, elementName)));
-				lines.add("sequenceList << elementValue;");
+				lines.addAll(Arrays.asList(genToString("dataElement", elementType, elementName)));
+				lines.add("dataList << dataElement;");
 				lines.add("}");
-				lines.add(String.format("QString %s = QString(\"(%%1)%%2\").arg(sequenceList.size()).arg(sequenceList.join(\" \"));", varName));
+				//
+				lines.add(String.format("return String(\"(%%1)[%%2]\").arg(size).arg(dataList.join(\" \"));"));
+				//
+				lines.add(String.format("} (value.%s);", name));
 				return lines.toArray(new String[0]);
 			};
 		}
