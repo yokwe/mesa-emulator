@@ -14,20 +14,23 @@ public class TypeUtil {
 	interface TypeNameToString {
 		String[] process(Type type, String name);
 	}
+	interface VarNameTypeNameToString {
+		String[] process(String varName, Type type, String name);
+	}
 	
 	static class ToString {
 		ToString(Type.Kind kind) {
 			this.kind = kind;
-			genSerialize   = (t, n) -> {throw new CompilerException(String.format("Unexpeced %s", kind));};
-			genDeserialize = (t, n) -> {throw new CompilerException(String.format("Unexpeced %s", kind));};
-			genToString    = (t, n) -> {throw new CompilerException(String.format("Unexpeced %s", kind));};
+			genSerialize   = (t, n)    -> {throw new CompilerException(String.format("Unexpeced %s", kind));};
+			genDeserialize = (t, n)    -> {throw new CompilerException(String.format("Unexpeced %s", kind));};
+			genToString    = (v, t, n) -> {throw new CompilerException(String.format("Unexpeced %s", kind));};
 		}
 		
 		final Type.Kind        kind;
 		
-		TypeNameToString genSerialize;
-		TypeNameToString genDeserialize;
-		TypeNameToString genToString;
+		TypeNameToString        genSerialize;
+		TypeNameToString        genDeserialize;
+		VarNameTypeNameToString genToString;
 	}
 
 	static Map<Type.Kind, ToString> toStringMap = new TreeMap<>();
@@ -72,9 +75,9 @@ public class TypeUtil {
 		if (type.isReference()) type = type.getConcreteType();
 		return getToString(type).genDeserialize.process(type, name);
 	}
-	public static String[] genToString(Type type, String name) {
+	public static String[] genToString(String varName, Type type, String name) {
 		if (type.isReference()) type = type.getConcreteType();
-		return getToString(type).genToString.process(type, name);
+		return getToString(type).genToString.process(varName, type, name);
 	}
 	
 	static String[] toArray(String...args) {
@@ -85,19 +88,21 @@ public class TypeUtil {
 	static class ToStringBOOLEAN extends ToString {
 		ToStringBOOLEAN() {
 			super(Type.Kind.BOOLEAN);
-			genSerialize   = (type, name) -> toArray(
-				"{",
-				String.format("quint16 t = (%s ? 1 : 0);", name),
-				String.format("block.serialize16(t);"),
-				"}");
-			genDeserialize = (type, name) -> toArray(
-				"{",
-				"quint16 t;",
-				"block.deserialize16(t);",
-				String.format("%s = (t != 0);", name),
-				"}");
-			genToString   = (type, name) ->
-				toArray(String.format("QString value = (%s ? \"T\" : \"F\");", name));
+			genSerialize   = (type, name) ->
+				toArray(
+					"{",
+					String.format("quint16 t = (%s ? 1 : 0);", name),
+					String.format("block.serialize16(t);"),
+					"}");
+			genDeserialize = (type, name) ->
+				toArray(
+					"{",
+					"quint16 t;",
+					"block.deserialize16(t);",
+					String.format("%s = (t != 0);", name),
+					"}");
+			genToString   = (varName, type, name) ->
+				toArray(String.format("QString %s = (value.%s ? \"T\" : \"F\");", varName, name));
 		}
 	}
 	static class ToStringBYTE extends ToString {
@@ -107,8 +112,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize8(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize8(%s);", name));
-			genToString    = (type, name) -> 
-				toArray(String.format("QString value = QString(\"%%\").arg(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = QString(\"%%1\").arg(value.%s);", varName, name));
 		}
 	}
 	static class ToStringCARDINAL extends ToString {
@@ -118,6 +123,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize16(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize16(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = QString(\"%%1\").arg(value.%s);", varName, name));
 		}
 	}
 	static class ToStringLONG_CARDINAL extends ToString {
@@ -127,6 +134,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize32(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize32(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = QString(\"%%1\").arg(value.%s);", varName, name));
 		}
 	}
 	static class ToStringUNSPECIFIED extends ToString {
@@ -136,6 +145,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize16(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize16(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = QString(\"%%1\").arg(value.%s);", varName, name));
 		}
 	}
 	static class ToStringUNSPECIFIED2 extends ToString {
@@ -145,6 +156,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize32(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize32(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = QString(\"%%1\").arg(value.%s);", varName, name));
 		}
 	}
 	static class ToStringUNSPECIFIED3 extends ToString {
@@ -154,6 +167,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize48(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize48(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = QString(\"%%1\").arg(value.%s);", varName, name));
 		}
 	}
 	static class ToStringENUM extends ToString {
@@ -172,6 +187,8 @@ public class TypeUtil {
 					"block.deserialize16(t);",
 					String.format("%s = t;", name),
 					"}");
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = toString(value.%s);", varName, name));
 		}
 	}
 	static class ToStringSTRING extends ToString {
@@ -181,6 +198,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = value.%s;", varName, name));
 		}
 	}
 	static class ToStringBLOCK extends ToString {
@@ -190,6 +209,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = value.%s.toString();", varName, name));
 		}
 	}
 	static class ToStringARRAY extends ToString {
@@ -217,6 +238,19 @@ public class TypeUtil {
 				lines.addAll(Arrays.asList(TypeUtil.genDeserialize(elementType, elementName)));
 				lines.add("}");
 				lines.add("}");
+				return lines.toArray(new String[0]);
+			};
+			genToString   = (varName, type, name) -> {
+				List<String> lines = new ArrayList<String>();
+				TypeArray typeArray = (TypeArray)type;
+				Type elementType = typeArray.type.getConcreteType();
+				String elementName = String.format("value.%s[i]", name);
+				lines.add("QStringList arrayList;");
+				lines.add(String.format("for(quint16 i = 0; i < value.%s.maxSize; i++) {", name));
+				lines.addAll(Arrays.asList(TypeUtil.genToString("elementValue", elementType, elementName)));
+				lines.add("arrayList << elementValue;");
+				lines.add("}");
+				lines.add(String.format("QString %s = QString(\"(%%1)%%2\").arg(arrayList.size()).arg(arrayList.join(\" \"));", varName));
 				return lines.toArray(new String[0]);
 			};
 		}
@@ -253,6 +287,20 @@ public class TypeUtil {
 				lines.add("}");
 				return lines.toArray(new String[0]);
 			};
+			genToString   = (varName, type, name) -> {
+				List<String> lines = new ArrayList<String>();
+				TypeSequence typeSequence = (TypeSequence)type;
+				Type elementType = typeSequence.type.getConcreteType();
+				String elementName = String.format("%s[i]", name);
+				lines.add("QStringList sequenceList;");
+				lines.add(String.format("quint16 size = value.%s.getSize();", name));
+				lines.add("for(quint16 i = 0; i < size; i++) {");
+				lines.addAll(Arrays.asList(TypeUtil.genToString("elementValue", elementType, elementName)));
+				lines.add("sequenceList << elementValue;");
+				lines.add("}");
+				lines.add(String.format("QString %s = QString(\"(%%1)%%2\").arg(sequenceList.size()).arg(sequenceList.join(\" \"));", varName));
+				return lines.toArray(new String[0]);
+			};
 		}
 	}
 	static class ToStringRECORD extends ToString {
@@ -262,6 +310,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = toString(value.%s);", varName, name));
 		}
 	}
 	static class ToStringCHOICE extends ToString {
@@ -271,6 +321,8 @@ public class TypeUtil {
 				toArray(String.format("block.serialize(%s);", name));
 			genDeserialize = (type, name) ->
 				toArray(String.format("block.deserialize(%s);", name));
+			genToString    = (varName, type, name) ->
+				toArray(String.format("QString %s = toString(value.%s);", varName, name));
 		}
 	}
 	static class ToStringPROCEDURE extends ToString {
