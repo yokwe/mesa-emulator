@@ -8,11 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Courier.h
-SOURCES += Courier.cpp
-
-HEADERS += CourierRaw.h Block.h
-SOURCES +=              Block.cpp
+HEADERS += Courier.h   Block.h
+SOURCES += Courier.cpp Block.cpp
 
 ###############################################
 

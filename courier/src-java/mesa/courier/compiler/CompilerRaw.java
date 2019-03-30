@@ -699,12 +699,10 @@ public class CompilerRaw {
 				outc.line("QStringList list;");
 				
 				for(Field field: recordInfo.typeRecord.fields) {
-					Type concreteType = field.type.getConcreteType();
 					logField(outc, field.type, field.name);
 
 					outc.line("{");
-					outc.line(TypeUtil.genToString("fieldValue", concreteType, field.name));
-					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(fieldValue);", field.name);
+					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(toString(value.%s));", field.name, field.name);
 					outc.line("}");
 				}
 				
