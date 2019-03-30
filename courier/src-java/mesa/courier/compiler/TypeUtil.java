@@ -248,18 +248,18 @@ public class TypeUtil {
 		ToStringRECORD() {
 			super(Type.Kind.RECORD);
 			genSerialize   = (type, name) ->
-				toArray(String.format("block.serialize(%s);", name));
+				toArray(String.format("%s.serialize(block);", name));
 			genDeserialize = (type, name) ->
-				toArray(String.format("block.deserialize(%s);", name));
+				toArray(String.format("%s.deserialize(block);", name));
 		}
 	}
 	static class ToStringCHOICE extends ToString {
 		ToStringCHOICE() {
 			super(Type.Kind.CHOICE);
 			genSerialize   = (type, name) ->
-				toArray(String.format("block.serialize(%s);", name));
+				toArray(String.format("%s.serialize(block);", name));
 			genDeserialize = (type, name) ->
-				toArray(String.format("block.deserialize(%s);", name));
+				toArray(String.format("%s.deserialize(block);", name));
 		}
 	}
 	static class ToStringPROCEDURE extends ToString {

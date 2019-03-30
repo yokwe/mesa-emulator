@@ -92,7 +92,7 @@ public:
 	QString toString() {
 		QStringList list;
 		for(quint16 i = 0; i < size; i++) {
-			list << toString(data[i]);
+			list << Courier::toString(data[i]);
 		}
 		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 	}
@@ -132,6 +132,7 @@ private:
 	T*      data;
 };
 
+
 template <typename T>
 struct ARRAY {
 	static const int MAX_SIZE = 65535;
@@ -156,7 +157,7 @@ struct ARRAY {
 	QString toString() {
 		QStringList list;
 		for(int i = 0; i < maxSize; i++) {
-			list << toString(data[i]);
+			list << Courier::toString(data[i]);
 		}
 		return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
 	}
@@ -183,6 +184,15 @@ struct ARRAY {
 private:
 	T*      data;
 };
+
+template <typename T>
+QString Courier::toString(const SEQUENCE<T>& value) {
+	value.toString();
+}
+template <typename T>
+QString Courier::toString(const ARRAY<T>& value) {
+	value.toString();
+}
 
 
 }

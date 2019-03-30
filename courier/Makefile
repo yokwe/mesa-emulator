@@ -86,10 +86,6 @@ gen-stub:
 	rm   -rf src/stub/*
 	java -cp $(CLASSPATH) mesa.app.GenStub $(COURIER_TARGET)
 
-gen-stub-raw:
-	rm   -rf src/stub/*
-	java -cp $(CLASSPATH) mesa.app.GenStubRaw $(COURIER_TARGET)
-
 dump-courier:
 	java -cp $(CLASSPATH) mesa.app.DumpCourier Clearinghouse2
 
