@@ -249,11 +249,9 @@ public class CompilerRaw {
 		outc.format("void %s::%s::serialize(BLOCK& block) const {", namePrefix, name);
 		
 		for(Field field: type.fields) {
-			String fieldName    = field.name;
-			Type   concreteType = field.type.getConcreteType();
-
+			Type concreteType = field.type.getConcreteType();
 			logField(outc, field.type, field.name);
-			outc.line(TypeUtil.genSerialize(concreteType, fieldName));
+			outc.line(TypeUtil.genSerialize(concreteType, field.name));
 		}
 		outc.line("}");
 	}
@@ -262,11 +260,9 @@ public class CompilerRaw {
 		outc.format("void %s::%s::deserialize(BLOCK& block) {", namePrefix, name);
 		
 		for(Field field: type.fields) {
-			String fieldName    = field.name;
-			Type   concreteType = field.type.getConcreteType();
-
+			Type concreteType = field.type.getConcreteType();
 			logField(outc, field.type, field.name);
-			outc.line(TypeUtil.genDeserialize(concreteType, fieldName));
+			outc.line(TypeUtil.genDeserialize(concreteType, field.name));
 		}
 		outc.line("}");
 	}
@@ -598,7 +594,7 @@ public class CompilerRaw {
 				}
 
 				outc.line();
-				outc.format("QString Courier::toString(const %s::%s value) {", enumInfo.namePrefix, enumInfo.name);
+				outc.format("QString %s::toString(const %s::%s value) {", enumInfo.namePrefix, enumInfo.namePrefix, enumInfo.name);
 				outc.format("static QMap<%s::%s, QString> map = {", enumInfo.namePrefix, enumInfo.name);
 				
 				for(String line: ColumnLayout.layoutStringString(c1, c2)) {
@@ -701,11 +697,17 @@ public class CompilerRaw {
 		
 		// Record toString definiion
 		for(RecordInfo recordInfo: recordInfoList) {
-			outc.format("QString toString(const %s::%s value) {", recordInfo.namePrefix, recordInfo.name);
+			outc.format("QString %s::toString(const %s::%s value) {", recordInfo.namePrefix, recordInfo.namePrefix, recordInfo.name);
 			outc.line("QStringList list;");
 			
 			for(Field field: recordInfo.typeRecord.fields) {
+				Type concreteType = field.type.getConcreteType();
 				logField(outc, field.type, field.name);
+
+				outc.line("{");
+				outc.line(TypeUtil.genToString("fieldValue", concreteType, field.name));
+				outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(fieldValue);", field.name);
+				outc.line("}");
 			}
 			
 			outc.line("return list.join(\" \");");
