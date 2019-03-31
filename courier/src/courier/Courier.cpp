@@ -39,7 +39,13 @@ QString Courier::toString(const BLOCK& value) {
 	return value.toString();
 }
 QString Courier::toString(const quint8 value) {
-	return QString("%1").arg(value);
+	switch (value) {
+	case (quint8)0xFEU:
+	case (quint8)0xFFU:
+		return QString("0x%1").arg(value, 0, 16);
+	default:
+		return QString("%1").arg(value);
+	}
 }
 QString Courier::toString(const bool    value) {
 	return QString("%1").arg(value ? "T" : "F");
@@ -48,11 +54,29 @@ QString Courier::toString(const STRING& value) {
 	return QString("%1").arg(value);
 }
 QString Courier::toString(const quint16 value) {
-	return QString("%1").arg(value);
+	switch (value) {
+	case (quint16)0xFFFEU:
+	case (quint16)0xFFFFU:
+		return QString("0x%1").arg(value, 0, 16);
+	default:
+		return QString("%1").arg(value);
+	}
 }
 QString Courier::toString(const quint32 value) {
-	return QString("%1").arg(value);
+	switch (value) {
+	case (quint32)0xFFFFFFFEU:
+	case (quint32)0xFFFFFFFFU:
+		return QString("0x%1").arg(value, 0, 16);
+	default:
+		return QString("%1").arg(value);
+	}
 }
 QString Courier::toString(const quint64 value) {
-	return QString("%1").arg(value);
+	switch (value) {
+	case (quint64)0xFFFFFFFFFFFEU:
+	case (quint64)0xFFFFFFFFFFFFU:
+		return QString("0x%1").arg(value, 0, 16);
+	default:
+		return QString("%1").arg(value);
+	}
 }
