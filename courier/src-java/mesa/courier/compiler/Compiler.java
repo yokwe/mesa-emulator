@@ -182,16 +182,13 @@ public class Compiler {
 		}
 	}
 
-	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
-		genRecordDecl       (outh, outc, type, name, namePrefix);
-		genRecordSerialize  (outh, outc, type, name, namePrefix);
-		genRecordDeserialize(outh, outc, type, name, namePrefix);
-	}
-	private void genRecordDecl(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
+	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix) {
+		//
 		// Output declaration of class
+		//
 		List<String> c1 = new ArrayList<>();
 		List<String> c2 = new ArrayList<>();
-		for(Field field: type.fields) {
+		for(Field field: typeRecord.fields) {
 			String fieldType;
 			String fieldName;
 			switch(field.type.kind) {
@@ -243,23 +240,23 @@ public class Compiler {
 			);
 
 		outh.line("};");
-	}
-	private void genRecordSerialize(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
+
+		//
 		// Output definition of serialize()
+		//
 		outc.format("void %s::%s::serialize(BLOCK& block) const {", namePrefix, name);
-		
-		for(Field field: type.fields) {
+		for(Field field: typeRecord.fields) {
 			Type concreteType = field.type.getConcreteType();
 			logField(outc, field.type, field.name);
 			outc.line(TypeUtil.genSerialize(concreteType, field.name));
 		}
 		outc.line("}");
-	}
-	private void genRecordDeserialize(LinePrinter outh, LinePrinter outc, TypeRecord type, String name, String namePrefix) {
-		// Output definition of deserialize()
-		outc.format("void %s::%s::deserialize(BLOCK& block) {", namePrefix, name);
 		
-		for(Field field: type.fields) {
+		//
+		// Output definition of deserialize()
+		//
+		outc.format("void %s::%s::deserialize(BLOCK& block) {", namePrefix, name);
+		for(Field field: typeRecord.fields) {
 			Type concreteType = field.type.getConcreteType();
 			logField(outc, field.type, field.name);
 			outc.line(TypeUtil.genDeserialize(concreteType, field.name));
