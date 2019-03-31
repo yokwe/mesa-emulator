@@ -270,6 +270,8 @@ public class Compiler {
 		outh.format("// FIXME TypeDecl %s %s", name, typed.toString());
 		outh.format("struct %s {", name);
 		
+		String tagType = "CHOICE_TAG";
+		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 		int                  maxChoiceNumber = 0;
@@ -295,7 +297,7 @@ public class Compiler {
 		}
 		
 		outh.line();
-		String tagType = toTypeString(typed.type);
+		outh.format("using %s = %s;", tagType, toTypeString(typed.type));
 		outh.format("%s choiceTag;", tagType);
 		outh.line();
 		
@@ -694,7 +696,7 @@ public class Compiler {
 	private void genChoiceToString(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
 		if (choiceInfoList.isEmpty()) return;
 		
-		// Record toSring declaration
+		// Choice toSring declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
@@ -715,7 +717,7 @@ public class Compiler {
 			}
 		}
 		
-		// Record toString definition
+		// Choice toString definition
 		{
 			outc.line(
 					"",
@@ -733,7 +735,7 @@ public class Compiler {
 				outc.line("switch(value.choiceTag) {");
 				
 				for(String choiceName: choiceInfo.choiceNameList) {
-					outc.format("case %s::%s::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
+					outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
 					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s()));", choiceName, Util.sanitizeSymbol(choiceName));
 					outc.line("break;");
 				}
@@ -770,7 +772,7 @@ public class Compiler {
 			outc.format("switch(%s) {", tagName);
 			
 			for(String choiceName: choiceInfo.choiceNameList) {
-				outc.format("case %s::%s::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
+				outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
 				outc.format("%s().serialize(block);", Util.sanitizeSymbol(choiceName));
 				outc.line("break;");
 			}
@@ -801,14 +803,14 @@ public class Compiler {
 			outc.format("void %s::%s::deserialize(BLOCK& block) {", choiceInfo.namePrefix, choiceInfo.name);
 			
 			outc.line(
-				"quint16 t;",
-				String.format("block.deserialize16(t);", tagName),
-				String.format("%s = t;", tagName));
+				"quint16 choiceTag_;",
+				String.format("block.deserialize16(choiceTag_);", tagName),
+				String.format("%s = (CHOICE_TAG)choiceTag_;", tagName));
 			
 			outc.format("switch(%s) {", tagName);
 			
 			for(String choiceName: choiceInfo.choiceNameList) {
-				outc.format("case %s::%s::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
+				outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
 				outc.format("%s().deserialize(block);", Util.sanitizeSymbol(choiceName));
 				outc.line("break;");
 			}
