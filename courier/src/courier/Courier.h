@@ -89,7 +89,7 @@ public:
 		delete[] data;
 	}
 
-	QString toString() {
+	QString toString() const {
 		QStringList list;
 		for(quint16 i = 0; i < size; i++) {
 			list << Courier::toString(data[i]);
@@ -97,7 +97,7 @@ public:
 		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 	}
 
-	quint16 getSize() {
+	quint16 getSize() const {
 		return size;
 	}
 	void setSize(int newValue) {
@@ -154,7 +154,7 @@ struct ARRAY {
 		delete[] data;
 	}
 
-	QString toString() {
+	QString toString() const {
 		QStringList list;
 		for(int i = 0; i < maxSize; i++) {
 			list << Courier::toString(data[i]);
