@@ -21,7 +21,11 @@ public class LinePrinter implements AutoCloseable {
 	public LinePrinter line(String message) {
 		if (message.length() == 0) {
 			out.println();
-		} else if (message.equals("public:") || message.equals("private:")) {
+		} else if (
+				// for class or struct
+				message.equals("public:") || message.equals("private:") ||
+				// for switch
+				(message.startsWith("case ") && message.endsWith(":")) || message.equals("default:")) {
 			for(int i = 1; i < level; i++) out.print(INDENT);
 			out.println(message);
 		} else {
