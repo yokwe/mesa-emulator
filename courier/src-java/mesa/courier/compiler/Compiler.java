@@ -603,9 +603,14 @@ public class Compiler {
 	}
 	
 	void genRecordSerialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
-		//
-		// Output definition of serialize()
-		//
+		if (recordInfoList.size() == 0) return;
+		
+		outc.line(
+				"",
+				"//",
+				"// Record serialize Function Definition",
+				"//"
+				);
 		for(RecordInfo recordInfo: recordInfoList) {
 			outc.format("void %s::%s::serialize(BLOCK& block) const {", recordInfo.namePrefix, recordInfo.name);
 			for(Field field: recordInfo.typeRecord.fields) {
@@ -617,9 +622,14 @@ public class Compiler {
 		}
 	}
 	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
-		//
-		// Output definition of deserialize()
-		//
+		if (recordInfoList.size() == 0) return;
+		
+		outc.line(
+				"",
+				"//",
+				"// Record deserialize Function Definition",
+				"//"
+				);
 		for(RecordInfo recordInfo: recordInfoList) {
 			outc.format("void %s::%s::deserialize(BLOCK& block) {", recordInfo.namePrefix, recordInfo.name);
 			for(Field field: recordInfo.typeRecord.fields) {
@@ -740,6 +750,78 @@ public class Compiler {
 		}
 	}
 
+	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
+		if (choiceInfoList.isEmpty()) return;
+		
+		outc.line(
+				"",
+				"//",
+				"// Choice serialize Function Definition",
+				"//"
+				);
+
+		String tagName = "choiceTag";
+
+		for(ChoiceInfo choiceInfo: choiceInfoList) {
+			outc.format("void %s::%s::serialize(BLOCK& block) const {", choiceInfo.namePrefix, choiceInfo.name);
+			
+	        outc.format("block.serialize16((quint16)%s);", tagName);
+			
+			outc.format("switch(%s) {", tagName);
+			
+			for(String choiceName: choiceInfo.choiceNameList) {
+				outc.format("case %s::%s::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
+				outc.format("%s().serialize(block);", Util.sanitizeSymbol(choiceName));
+				outc.line("break;");
+			}
+
+			outc.line("default:");
+			outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)choiceTag);");
+	        outc.line("COURIER_ERROR();");
+	        outc.line("break;");
+			outc.line("}");
+
+			outc.line("}");
+		}
+	}
+
+	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
+		if (choiceInfoList.isEmpty()) return;
+		
+		outc.line(
+				"",
+				"//",
+				"// Choice deserialize Function Definition",
+				"//"
+				);
+
+		String tagName = "choiceTag";
+
+		for(ChoiceInfo choiceInfo: choiceInfoList) {
+			outc.format("void %s::%s::deserialize(BLOCK& block) {", choiceInfo.namePrefix, choiceInfo.name);
+			
+			outc.line(
+				"quint16 t;",
+				String.format("block.deserialize16(t);", tagName),
+				String.format("%s = t;", tagName));
+			
+			outc.format("switch(%s) {", tagName);
+			
+			for(String choiceName: choiceInfo.choiceNameList) {
+				outc.format("case %s::%s::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
+				outc.format("%s().deserialize(block);", Util.sanitizeSymbol(choiceName));
+				outc.line("break;");
+			}
+
+			outc.line("default:");
+			outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)choiceTag);");
+	        outc.line("COURIER_ERROR();");
+	        outc.line("break;");
+			outc.line("}");
+
+			outc.line("}");
+		}
+	}
 
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
@@ -812,9 +894,9 @@ public class Compiler {
 			// generate toString for Choice
 			genChoiceToString(outh, outc, choiceInfoList);
 			// generate serialize for Choice
-// TODO		genChoiceSerialize(outh, outc, choiceInfoList);
+			genChoiceSerialize(outh, outc, choiceInfoList);
 			// generate deserialize for Choice
-// TODO		genChoiceDeserialize(outh, outc, choiceInfoList);
+			genChoiceDeserialize(outh, outc, choiceInfoList);
 			
 			// Close courier namespace
 			outh.line("}");
