@@ -579,10 +579,7 @@ public class Compiler {
 				
 				for(Field field: recordInfo.typeRecord.fields) {
 					logField(outc, field.type, field.name);
-
-					outc.line("{");
 					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", field.name, field.name);
-					outc.line("}");
 				}
 				
 				outc.line("return list.join(\" \");");
