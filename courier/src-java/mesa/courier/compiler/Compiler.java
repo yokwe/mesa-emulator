@@ -240,28 +240,6 @@ public class Compiler {
 			);
 
 		outh.line("};");
-
-		//
-		// Output definition of serialize()
-		//
-		outc.format("void %s::%s::serialize(BLOCK& block) const {", namePrefix, name);
-		for(Field field: typeRecord.fields) {
-			Type concreteType = field.type.getConcreteType();
-			logField(outc, field.type, field.name);
-			outc.line(TypeUtil.genSerialize(concreteType, field.name));
-		}
-		outc.line("}");
-		
-		//
-		// Output definition of deserialize()
-		//
-		outc.format("void %s::%s::deserialize(BLOCK& block) {", namePrefix, name);
-		for(Field field: typeRecord.fields) {
-			Type concreteType = field.type.getConcreteType();
-			logField(outc, field.type, field.name);
-			outc.line(TypeUtil.genDeserialize(concreteType, field.name));
-		}
-		outc.line("}");
 	}
 	
 	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
@@ -279,87 +257,32 @@ public class Compiler {
 		outh.line("};");
 	}
 	
-	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice type, String name, String namePrefix) {
-		outh.format("// FIXME TypeDecl %s %s", name, type.toString());
+	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix) {
+		if (typeChoice instanceof TypeChoice.Typed) {
+			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix);
+		} else if (typeChoice instanceof TypeChoice.Anon) {
+			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix);
+		} else {
+			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
+		}
+	}
+	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
+		outh.format("// FIXME TypeDecl %s %s", name, typed.toString());
 		outh.format("struct %s {", name);
 		
-		if (type instanceof TypeChoice.Typed) {
-			TypeChoice.Typed typed = (TypeChoice.Typed)type;
-			
-			outh.format("using CHOICE_TAG = %s;", toTypeString(typed.type));
-			
-			List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
-			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
-			int                  maxStructNumber = 0;
-			{
-				for(Candidate<String> candidate: typed.candidates) {
-					maxStructNumber++;
-					Type candidateType = candidate.type;
-					
-					// build choiceMap
-					for(String id: candidate.designators) {
-						String choiceName = id;
-						choiceNameList.add(choiceName);
-						choiceMap.put(choiceName, maxStructNumber);
-					}
-					
-					// generate choice struct
-					if (candidateType.kind == Type.Kind.RECORD) {
-						TypeRecord typeRecord = (TypeRecord)candidateType;
-						String structName = String.format("CHOICE_%02d", maxStructNumber);
-						if (typeRecord.fields.size() == 0) {
-							outh.format("struct %s {};", structName);
-						} else {
-							genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
-						}
-					} else {
-						throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-					}
-				}
-			}
-			
-			outh.line();
-			outh.line("CHOICE_TAG choiceTag;");
-			
-			for(String choiceName: choiceNameList) {
-				int structNumber = choiceMap.get(choiceName);
-				outh.format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
-				outh.format("return choice_%02d;", structNumber);
-				outh.line("}");
-			}
-			
-			outh.line(
-					"",
-					"void serialize  (BLOCK& block) const;",
-					"void deserialize(BLOCK& block);"
-					);
-
-			outh.line("private:");
-			for(int i = 1; i <= maxStructNumber; i++) {
-				outh.format("CHOICE_%02d  choice_%02d;", i, i);
-			}
-		} else if (type instanceof TypeChoice.Anon) {
-			TypeChoice.Anon anon = (TypeChoice.Anon)type;
-
-			List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
-			Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
-			int                  maxStructNumber = 0;
-
-			outh.line("enum class CHOICE_TAG : quint16 {");
-			for(Candidate<Correspondence> candidate: anon.candidates) {
-				for(Correspondence correspondence: candidate.designators) {
-					outh.format("%s = %s,", correspondence.id, correspondence.numericValue);
-				}
-			}
-			outh.line("};");
-			
-			for(Candidate<Correspondence> candidate: anon.candidates) {
+		outh.format("using CHOICE_TAG = %s;", toTypeString(typed.type));
+		
+		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
+		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
+		int                  maxStructNumber = 0;
+		{
+			for(Candidate<String> candidate: typed.candidates) {
 				maxStructNumber++;
 				Type candidateType = candidate.type;
 				
 				// build choiceMap
-				for(Correspondence correspondence: candidate.designators) {
-					String choiceName = correspondence.id;
+				for(String id: candidate.designators) {
+					String choiceName = id;
 					choiceNameList.add(choiceName);
 					choiceMap.put(choiceName, maxStructNumber);
 				}
@@ -368,44 +291,100 @@ public class Compiler {
 				if (candidateType.kind == Type.Kind.RECORD) {
 					TypeRecord typeRecord = (TypeRecord)candidateType;
 					String structName = String.format("CHOICE_%02d", maxStructNumber);
-					if (typeRecord.fields.size() == 0) {
-						outh.format("struct %s {};", structName);
-					} else {
-						genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
-
-					}
+					genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
 				} else {
-					throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+					throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 				}
 			}
-			outh.line();
+		}
+		
+		outh.line();
+		outh.line("CHOICE_TAG choiceTag;");
+		
+		for(String choiceName: choiceNameList) {
+			int structNumber = choiceMap.get(choiceName);
+			outh.format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
+			outh.format("return choice_%02d;", structNumber);
+			outh.line("}");
+		}
+		
+		outh.line(
+				"",
+				"void serialize  (BLOCK& block) const;",
+				"void deserialize(BLOCK& block);"
+				);
 
-			for(String choiceName: choiceNameList) {
-				int structNumber = choiceMap.get(choiceName);
-				outh.format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
-				outh.format("return choice_%02d;", structNumber);
-				outh.line("}");
-			}
-			outh.line();
-
-			outh.line();
-			outh.line(
-					"void serialize  (BLOCK& block) const;",
-					"void deserialize(BLOCK& block);"
-					);
-
-			outh.line("private:");
-			for(int i = 1; i <= maxStructNumber; i++) {
-				outh.format("CHOICE_%02d  choice_%02d;", i, i);
-			}
-
-		} else {
-			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		outh.line("private:");
+		for(int i = 1; i <= maxStructNumber; i++) {
+			outh.format("CHOICE_%02d  choice_%02d;", i, i);
 		}
 		
 		outh.line("};");
 	}
-	
+	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
+		outh.format("// FIXME TypeDecl %s %s", name, anon.toString());
+		outh.format("struct %s {", name);
+
+		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
+		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
+		int                  maxStructNumber = 0;
+
+		outh.line("enum class CHOICE_TAG : quint16 {");
+		for(Candidate<Correspondence> candidate: anon.candidates) {
+			for(Correspondence correspondence: candidate.designators) {
+				outh.format("%s = %s,", correspondence.id, correspondence.numericValue);
+			}
+		}
+		outh.line("};");
+		
+		for(Candidate<Correspondence> candidate: anon.candidates) {
+			maxStructNumber++;
+			Type candidateType = candidate.type;
+			
+			// build choiceMap
+			for(Correspondence correspondence: candidate.designators) {
+				String choiceName = correspondence.id;
+				choiceNameList.add(choiceName);
+				choiceMap.put(choiceName, maxStructNumber);
+			}
+			
+			// generate choice struct
+			if (candidateType.kind == Type.Kind.RECORD) {
+				TypeRecord typeRecord = (TypeRecord)candidateType;
+				String structName = String.format("CHOICE_%02d", maxStructNumber);
+				if (typeRecord.fields.size() == 0) {
+					outh.format("struct %s {};", structName);
+				} else {
+					genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
+
+				}
+			} else {
+				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
+			}
+		}
+		outh.line();
+
+		for(String choiceName: choiceNameList) {
+			int structNumber = choiceMap.get(choiceName);
+			outh.format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
+			outh.format("return choice_%02d;", structNumber);
+			outh.line("}");
+		}
+		outh.line();
+
+		outh.line();
+		outh.line(
+				"void serialize  (BLOCK& block) const;",
+				"void deserialize(BLOCK& block);"
+				);
+
+		outh.line("private:");
+		for(int i = 1; i <= maxStructNumber; i++) {
+			outh.format("CHOICE_%02d  choice_%02d;", i, i);
+		}
+
+		outh.line("};");
+	}
 	
 	class EnumInfo {
 		final TypeEnum typeEnum;
@@ -418,15 +397,28 @@ public class Compiler {
 			this.namePrefix = namePrefix;
 		}
 	}
-	
-	private void genEnumToString(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		List<EnumInfo> enumInfoList = new ArrayList<>();
+	private List<EnumInfo> getEnumInfoList(String namePrefix) {
+		List<EnumInfo> ret = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
-			if (declType.type.kind == Type.Kind.ENUM) {
-				TypeEnum typeEnum = (TypeEnum)declType.type;
-				enumInfoList.add(new EnumInfo(typeEnum, declType.name, namePrefix));
-			};
+			switch (declType.type.kind) {
+			case ENUM:
+				ret.add(new EnumInfo((TypeEnum)declType.type, declType.name, namePrefix));
+				break;
+			case CHOICE:
+			{
+				TypeChoice typeChoice = (TypeChoice)declType.type;
+				if (typeChoice instanceof TypeChoice.Anon) {
+					// TODO handle Candidate of Anon
+				}
+			}
+			default:
+				break;
+			}
 		}
+		return ret;
+	}
+	
+	private void genEnumToString(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
 		if (enumInfoList.isEmpty()) return;
 		
 		// Declaration
@@ -502,14 +494,13 @@ public class Compiler {
 			this.namePrefix = namePrefix;
 		}
 	}
-	
-	private void genRecordToString(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		List<RecordInfo> recordInfoList = new ArrayList<>();
+	private List<RecordInfo> getRecordInfo(String namePrefix) {
+		List<RecordInfo> ret = new ArrayList<>();
 		for(Program.DeclType declType: program.typeList) {
 			String name = declType.name;
 			if (declType.type.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)declType.type;
-				recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+				ret.add(new RecordInfo(typeRecord, name, namePrefix));
 			} else if (declType.type.kind == Type.Kind.CHOICE) {
 				TypeChoice typeChoice = (TypeChoice)declType.type;
 				if (typeChoice instanceof TypeChoice.Typed) {
@@ -521,7 +512,7 @@ public class Compiler {
 						if (candidateType.kind == Type.Kind.RECORD) {
 							TypeRecord typeRecord = (TypeRecord)candidateType;
 							String structName = String.format("CHOICE_%02d", maxStructNumber);
-							recordInfoList.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
+							ret.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
 						} else {
 							throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 						}
@@ -535,7 +526,7 @@ public class Compiler {
 						if (candidateType.kind == Type.Kind.RECORD) {
 							TypeRecord typeRecord = (TypeRecord)candidateType;
 							String structName = String.format("CHOICE_%02d", maxStructNumber);
-							recordInfoList.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
+							ret.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
 						} else {
 							throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 						}
@@ -545,6 +536,9 @@ public class Compiler {
 				}
 			}
 		}
+		return ret;
+	}
+	private void genRecordToString(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
 		if (recordInfoList.isEmpty()) return;
 		
 		// Record toSring declaration
@@ -582,6 +576,35 @@ public class Compiler {
 				outc.line("return list.join(\" \");");
 				outc.line("}");
 			}
+		}
+	}
+	
+	void genRecordSerialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
+		//
+		// Output definition of serialize()
+		//
+		for(RecordInfo recordInfo: recordInfoList) {
+			outc.format("void %s::%s::serialize(BLOCK& block) const {", recordInfo.namePrefix, recordInfo.name);
+			for(Field field: recordInfo.typeRecord.fields) {
+				Type concreteType = field.type.getConcreteType();
+				logField(outc, field.type, field.name);
+				outc.line(TypeUtil.genSerialize(concreteType, field.name));
+			}
+			outc.line("}");
+		}
+	}
+	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
+		//
+		// Output definition of deserialize()
+		//
+		for(RecordInfo recordInfo: recordInfoList) {
+			outc.format("void %s::%s::deserialize(BLOCK& block) {", recordInfo.namePrefix, recordInfo.name);
+			for(Field field: recordInfo.typeRecord.fields) {
+				Type concreteType = field.type.getConcreteType();
+				logField(outc, field.type, field.name);
+				outc.line(TypeUtil.genDeserialize(concreteType, field.name));
+			}
+			outc.line("}");
 		}
 	}
 	
@@ -638,11 +661,18 @@ public class Compiler {
 			
 			// Close program namespace
 			outh.line("}");
-			
+
+			List<EnumInfo>   enumInfoList   = getEnumInfoList(namePrefix);
+			List<RecordInfo> recordInfoList = getRecordInfo(namePrefix);
+
 			// generate toString for enum
-			genEnumToString(outh, outc, namePrefix);
-			
-			genRecordToString(outh, outc, namePrefix);
+			genEnumToString(outh, outc, enumInfoList);
+			// generate toString for enum
+			genRecordToString(outh, outc, recordInfoList);
+			// generate serialize for Record
+			genRecordSerialize(outh, outc, recordInfoList);
+			// generate deserialize for Record
+			genRecordDeserialize(outh, outc, recordInfoList);
 			
 			// Close courier namespace
 			outh.line("}");
