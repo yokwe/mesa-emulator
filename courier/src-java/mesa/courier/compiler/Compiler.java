@@ -812,9 +812,9 @@ public class Compiler {
 			// generate toString for Choice
 			genChoiceToString(outh, outc, choiceInfoList);
 			// generate serialize for Choice
-//			genChoiceSerialize(outh, outc, choiceInfoList);
+// TODO		genChoiceSerialize(outh, outc, choiceInfoList);
 			// generate deserialize for Choice
-//			genChoiceDeserialize(outh, outc, choiceInfoList);
+// TODO		genChoiceDeserialize(outh, outc, choiceInfoList);
 			
 			// Close courier namespace
 			outh.line("}");
