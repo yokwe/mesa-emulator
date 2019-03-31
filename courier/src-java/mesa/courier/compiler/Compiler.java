@@ -270,8 +270,6 @@ public class Compiler {
 		outh.format("// FIXME TypeDecl %s %s", name, typed.toString());
 		outh.format("struct %s {", name);
 		
-		outh.format("using CHOICE_TAG = %s;", toTypeString(typed.type));
-		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 		int                  maxStructNumber = 0;
@@ -299,12 +297,19 @@ public class Compiler {
 		}
 		
 		outh.line();
-		outh.line("CHOICE_TAG choiceTag;");
+		String tagType = toTypeString(typed.type);
+		outh.format("%s choiceTag;", tagType);
+		outh.line();
 		
 		for(String choiceName: choiceNameList) {
 			int structNumber = choiceMap.get(choiceName);
 			outh.format("CHOICE_%02d& %s() {", structNumber, Util.sanitizeSymbol(choiceName));
+			outh.format("if (choiceTag == %s::%s) {", tagType, choiceName);
 			outh.format("return choice_%02d;", structNumber);
+			outh.line("} else {");
+			outh.format("logger.error(\"choiceTag  expect %s  actual %%s\", toString(choiceTag));", choiceName);
+			outh.line("COURIER_ERROR();");
+			outh.line("}");
 			outh.line("}");
 		}
 		
