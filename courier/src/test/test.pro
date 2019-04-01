@@ -9,7 +9,7 @@ TEMPLATE = app
 HEADERS += testBase.h
 SOURCES += testBase.cpp
 
-SOURCES += testMain.cpp testCourier.cpp
+SOURCES += testMain.cpp testBlock.cpp testCourier.cpp
 
 LIBS += ../../tmp/build/courier/libcourier.a
 LIBS += ../../tmp/build/util/libutil.a
