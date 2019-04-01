@@ -267,7 +267,6 @@ public class Compiler {
 		}
 	}
 	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
-		outh.format("// FIXME TypeDecl %s %s", name, typed.toString());
 		outh.format("struct %s {", name);
 		
 		String tagType = "CHOICE_TAG";
@@ -347,7 +346,6 @@ public class Compiler {
 		}
 	}
 	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
-		outh.format("// FIXME TypeDecl %s %s", name, anon.toString());
 		outh.format("struct %s {", name);
 		
 		String tagType = "CHOICE_TAG";
