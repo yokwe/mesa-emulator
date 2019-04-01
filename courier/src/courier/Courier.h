@@ -115,6 +115,21 @@ public:
 		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 	}
 
+//	void serialize(BLOCK& block) {
+//		Courier::serialize(block, size);
+//		for(int i = 0; i < size; i++) {
+//			Courier::serialize(block, data[i]);
+//		}
+//	}
+//	void deserialize(BLOCK& block) {
+//		Courier::deserialize(block, size);
+//		for(int i = 0; i < size; i++) {
+//			T t;
+//			Courier:deserialize(block, t);
+//			data[i] = t;
+//		}
+//	}
+
 	quint16 getSize() const {
 		return size;
 	}
@@ -155,11 +170,20 @@ QString toString(const SEQUENCE<T>& value) {
 }
 template <typename T>
 void serialize(BLOCK& block, const SEQUENCE<T>& value) {
-	return value.serialize(block);
+	quint16 size = value.getSize();
+	Courier::serialize(block, size);
+	for(int i = 0; i < size; i++) {
+		Courier::serialize(block, value[i]);
+	}
 }
 template <typename T>
 void deserialize(BLOCK& block, SEQUENCE<T>& value) {
-	return value.deserialize(block);
+	quint16 size;
+	Courier::deserialize(block, size);
+	value.setSize(size);
+	for(int i = 0; i < size; i++) {
+		Courier::deserialize(block, value[i]);
+	}
 }
 
 
@@ -193,16 +217,16 @@ struct ARRAY {
 		return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
 	}
 
-	void serialize(BLOCK& block) {
-		for(int i = 0; i < maxSize; i++) {
-			Courier::serialize(block, data[i]);
-		}
-	}
-	void deserialize(BLOCK& block) {
-		for(int i = 0; i < maxSize; i++) {
-			Courier:deserialize(block, data[i]);
-		}
-	}
+//	void serialize(BLOCK& block) {
+//		for(int i = 0; i < maxSize; i++) {
+//			Courier::serialize(block, data[i]);
+//		}
+//	}
+//	void deserialize(BLOCK& block) {
+//		for(int i = 0; i < maxSize; i++) {
+//			Courier:deserialize(block, data[i]);
+//		}
+//	}
 
 	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
@@ -232,11 +256,15 @@ QString toString(const ARRAY<T>& value) {
 }
 template <typename T>
 void serialize(BLOCK& block, const ARRAY<T>& value) {
-	return value.serialize(block);
+	for(int i = 0; i < value.maxSize; i++) {
+		Courier::serialize(block, value[i]);
+	}
 }
 template <typename T>
 void deserialize(BLOCK& block, ARRAY<T>& value) {
-	return value.deserialize(block);
+	for(int i = 0; i < value.maxSize; i++) {
+		Courier::deserialize(block, value[i]);
+	}
 }
 
 
