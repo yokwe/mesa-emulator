@@ -301,10 +301,24 @@ public class Compiler {
 		outh.format("%s choiceTag;", tagType);
 		outh.line();
 		
-		for(String choiceName: choiceNameList) {
-			int structNumber = choiceMap.get(choiceName);
-			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(String choiceName: choiceNameList) {
+				int structNumber = choiceMap.get(choiceName);
+				c1.add(String.format("CHOICE_%02d& %s()", structNumber, Util.sanitizeSymbol(choiceName)));
+				c2.add("const;");
+			}
+
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
 		}
+//		for(String choiceName: choiceNameList) {
+//			int structNumber = choiceMap.get(choiceName);
+//			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
+//		}
 		
 //		outh.line(
 //				"",
@@ -375,10 +389,24 @@ public class Compiler {
 		outh.format("%s choiceTag;", tagType);
 		outh.line();
 		
-		for(String choiceName: choiceNameList) {
-			int structNumber = choiceMap.get(choiceName);
-			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(String choiceName: choiceNameList) {
+				int structNumber = choiceMap.get(choiceName);
+				c1.add(String.format("CHOICE_%02d& %s()", structNumber, Util.sanitizeSymbol(choiceName)));
+				c2.add("const;");
+			}
+
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
 		}
+//		for(String choiceName: choiceNameList) {
+//			int structNumber = choiceMap.get(choiceName);
+//			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
+//		}
 		
 //		outh.line(
 //				"",
