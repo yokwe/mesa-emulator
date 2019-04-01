@@ -113,16 +113,21 @@ bool Courier::Block::equals(const Block& that) const {
 
 // serialize - write value to Block
 void Courier::Block::serialize8(const quint8  value) {
-	const quint16 size = 1;
-	if (capacity < (pos + size)) {
-		logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
-		COURIER_ERROR();
-	}
+	if (state == State::write) {
+		const quint16 size = 1;
+		if (capacity < (pos + size)) {
+			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
+			COURIER_ERROR();
+		}
 
-	data[pos++] = value;
-	// Update limit
-	if (limit < pos) {
-		limit = pos;
+		data[pos++] = value;
+		// Update limit
+		if (limit < pos) {
+			limit = pos;
+		}
+	} else {
+		logger.error("Unexpected state");
+		COURIER_ERROR();
 	}
 }
 void Courier::Block::serialize16(const quint16 value) {
