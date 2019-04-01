@@ -83,6 +83,9 @@ public:
 	void deserialize(Block&   value);
 
 private:
+	// Make private to detect unintentional invocation of default constructor
+	Block() : capacity(0), state(State::write), pos(0), limit(0), freeData(false), data(nullptr) {
+	}
 	enum class State {read, write} state;
 
 	quint16 pos;
