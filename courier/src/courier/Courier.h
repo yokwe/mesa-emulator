@@ -101,7 +101,7 @@ public:
 		return size;
 	}
 	void setSize(int newValue) {
-		if (0 <= newValue && newValue < maxSize) {
+		if (0 <= newValue && newValue <= maxSize) {
 			size = (quint16)newValue;
 		} else {
 			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, maxSize);
@@ -186,12 +186,12 @@ private:
 };
 
 template <typename T>
-QString Courier::toString(const SEQUENCE<T>& value) {
-	value.toString();
+QString toString(const SEQUENCE<T>& value) {
+	return value.toString();
 }
 template <typename T>
-QString Courier::toString(const ARRAY<T>& value) {
-	value.toString();
+QString toString(const ARRAY<T>& value) {
+	return value.toString();
 }
 
 
