@@ -22,7 +22,9 @@ hostAll:        Host    = 0ffffffffffffX;
 Header: TYPE = RECORD [
     checksum:    CARDINAL,
     length:      CARDINAL,
-    flags:       CARDINAL, -- HopCount(0:4..7) and PacketType(0:8..15)
+--  flags:       CARDINAL, HopCount(0:4..7) and PacketType(0:8..15)
+    hopCount:    BYTE,
+    packetType:  BYTE,
     destination: NetworkAddress,
     source:      NetworkAddress
 ];
