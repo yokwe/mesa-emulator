@@ -27,6 +27,7 @@ qmake:
 	(cd src/pex;     qmake)
 	(cd src/app;     qmake)
 	(cd src/test;    qmake)
+	(cd src/stub;    qmake)
 	qmake --version
 
 qt5-default:
@@ -43,6 +44,7 @@ clean:
 	mkdir  tmp/build/pex
 	mkdir  tmp/build/app
 	mkdir  tmp/build/test
+	mkdir  tmp/build/stub
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -62,7 +64,12 @@ run-test:
 	(cd src/test;    make all)
 	echo -n >tmp/debug.log
 	tmp/build/test/test
-	
+
+stub:
+	(cd src/util;    make all)
+	(cd src/courier; make all)
+	(cd src/stub; make all)
+
 ##
 ## courier related targets
 ##
@@ -83,7 +90,7 @@ gen-antlr:
 	cp   -p  tmp/antlr/src-java/mesa/courier/antlr/*.java src-java/mesa/courier/antlr
 
 gen-stub:
-	rm   -rf src/stub/*
+	rm   -rf src/stub/*.cpp src/stub/*.h
 	java -cp $(CLASSPATH) mesa.app.GenStub $(COURIER_TARGET)
 
 dump-courier:
