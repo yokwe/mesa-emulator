@@ -341,3 +341,48 @@ void Courier::Block::deserialize(QString& value) {
 		COURIER_ERROR();
 	}
 }
+
+// write whole value
+void Courier::Block::serialize(const Block&  value) {
+	if (state == State::write && value.state == State::read) {
+		quint16 size = value.limit;
+		if (capacity < (pos + size)) {
+			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
+			COURIER_ERROR();
+		}
+
+		for(quint16 i = 0; i < size; i++) {
+			data[pos++] = value.data[i];
+		}
+		// Update limit
+		if (limit < pos) {
+			limit = pos;
+		}
+	} else {
+		logger.error("Unexpected state");
+		COURIER_ERROR();
+	}
+}
+
+// read rest of block
+void Courier::Block::deserialize(Block&  value) {
+	if (state == State::read && value.state == State::write) {
+		quint16 size = remaining();
+		if (value.capacity < (value.pos + size)) {
+			logger.error("Unexpected overflow  value.capacity = %d  value.limit = %d  value.pos = %d", value.capacity, value.limit, value.pos);
+			logger.error("                           capacity = %d  limit = %d  pos = %d", capacity, limit, pos);
+			COURIER_ERROR();
+		}
+
+		for(quint16 i = 0; i < size; i++) {
+			value.data[value.pos++] = data[pos++];
+		}
+		// Update limit
+		if (value.limit < value.pos) {
+			value.limit = value.pos;
+		}
+	} else {
+		logger.error("Unexpected state");
+		COURIER_ERROR();
+	}
+}
