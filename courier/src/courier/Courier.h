@@ -84,7 +84,6 @@ void deserialize(Block& block, quint32& value);
 void deserialize(Block& block, quint64& value);
 
 
-
 template <typename T>
 struct SEQUENCE {
 public:
@@ -107,14 +106,13 @@ public:
 		delete[] data;
 	}
 
-	QString toString() const {
-		QStringList list;
-		for(quint16 i = 0; i < size; i++) {
-			list << Courier::toString(data[i]);
-		}
-		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
-	}
-
+//	QString toString() const {
+//		QStringList list;
+//		for(quint16 i = 0; i < size; i++) {
+//			list << Courier::toString(data[i]);
+//		}
+//		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
+//	}
 //	void serialize(BLOCK& block) {
 //		Courier::serialize(block, size);
 //		for(int i = 0; i < size; i++) {
@@ -166,7 +164,12 @@ private:
 };
 template <typename T>
 QString toString(const SEQUENCE<T>& value) {
-	return value.toString();
+	QStringList list;
+	quint16 size = value.getSize();
+	for(quint16 i = 0; i < size; i++) {
+		list << Courier::toString(value[i]);
+	}
+	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 }
 template <typename T>
 void serialize(BLOCK& block, const SEQUENCE<T>& value) {
@@ -185,7 +188,6 @@ void deserialize(BLOCK& block, SEQUENCE<T>& value) {
 		Courier::deserialize(block, value[i]);
 	}
 }
-
 
 
 template <typename T>
@@ -209,14 +211,13 @@ struct ARRAY {
 		delete[] data;
 	}
 
-	QString toString() const {
-		QStringList list;
-		for(int i = 0; i < maxSize; i++) {
-			list << Courier::toString(data[i]);
-		}
-		return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
-	}
-
+//	QString toString() const {
+//		QStringList list;
+//		for(int i = 0; i < maxSize; i++) {
+//			list << Courier::toString(data[i]);
+//		}
+//		return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
+//	}
 //	void serialize(BLOCK& block) {
 //		for(int i = 0; i < maxSize; i++) {
 //			Courier::serialize(block, data[i]);
@@ -252,7 +253,12 @@ private:
 };
 template <typename T>
 QString toString(const ARRAY<T>& value) {
-	return value.toString();
+	quint16 maxSize = value.maxSize;
+	QStringList list;
+	for(int i = 0; i < maxSize; i++) {
+		list << Courier::toString(value[i]);
+	}
+	return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
 }
 template <typename T>
 void serialize(BLOCK& block, const ARRAY<T>& value) {
@@ -266,10 +272,6 @@ void deserialize(BLOCK& block, ARRAY<T>& value) {
 		Courier::deserialize(block, value[i]);
 	}
 }
-
-
-
-
 
 }
 
