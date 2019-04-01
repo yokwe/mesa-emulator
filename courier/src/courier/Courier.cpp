@@ -35,7 +35,11 @@ static log4cpp::Category& logger = Logger::getLogger("cr/courier");
 
 #include "../courier/Courier.h"
 
-QString Courier::toString(const BLOCK& value) {
+
+//
+// Courier::toString
+//
+QString Courier::toString(const Block& value) {
 	return value.toString();
 }
 QString Courier::toString(const quint8 value) {
@@ -80,3 +84,59 @@ QString Courier::toString(const quint64 value) {
 		return QString("%1").arg(value);
 	}
 }
+
+
+//
+// Courier::serialize
+//
+void Courier::serialize(Block& block, const Block&  value) {
+	block.serialize(value);
+}
+void Courier::serialize(Block& block, const quint8  value) {
+	block.serialize8(value);
+}
+void Courier::serialize(Block& block, const bool    value) {
+	quint16 t = value ? 1 : 0;
+	block.serialize16(t);
+}
+void Courier::serialize(Block& block, const STRING& value) {
+	block.serialize(value);
+}
+void Courier::serialize(Block& block, const quint16 value) {
+	block.serialize16(value);
+}
+void Courier::serialize(Block& block, const quint32 value) {
+	block.serialize32(value);
+}
+void Courier::serialize(Block& block, const quint64 value) {
+	block.serialize48(value);
+}
+
+
+//
+// Courier::deserialize
+//
+void Courier::deserialize(Block& block, Block&   value) {
+	block.deserialize(value);
+}
+void Courier::deserialize(Block& block, quint8&  value) {
+	block.deserialize8(value);
+}
+void Courier::deserialize(Block& block, bool&    value) {
+	quint16 t;
+	block.deserialize16(t);
+	value = (t != 0);
+}
+void Courier::deserialize(Block& block, STRING&  value) {
+	block.deserialize(value);
+}
+void Courier::deserialize(Block& block, quint16& value) {
+	block.deserialize16(value);
+}
+void Courier::deserialize(Block& block, quint32& value) {
+	block.deserialize32(value);
+}
+void Courier::deserialize(Block& block, quint64& value) {
+	block.deserialize48(value);
+}
+

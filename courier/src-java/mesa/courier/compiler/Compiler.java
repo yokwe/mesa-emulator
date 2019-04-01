@@ -303,14 +303,7 @@ public class Compiler {
 		
 		for(String choiceName: choiceNameList) {
 			int structNumber = choiceMap.get(choiceName);
-			outh.format("CHOICE_%02d& %s() const {", structNumber, Util.sanitizeSymbol(choiceName));
-			outh.format("if (choiceTag == %s::%s) {", tagType, Util.sanitizeSymbol(choiceName));
-			outh.format("return choice_%02d;", structNumber);
-			outh.line("} else {");
-			outh.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
-			outh.line("COURIER_ERROR();");
-			outh.line("}");
-			outh.line("}");
+			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
 		}
 		
 		outh.line(
@@ -321,10 +314,23 @@ public class Compiler {
 
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
-			outh.format("CHOICE_%02d  choice_%02d;", i, i);
+			outh.format("mutable CHOICE_%02d  choice_%02d;", i, i);
 		}
 		
 		outh.line("};");
+		
+		for(String choiceName: choiceNameList) {
+			int structNumber = choiceMap.get(choiceName);
+			outc.line();
+			outc.format("%s::%s::CHOICE_%02d& %s::%s::%s() const {", namePrefix, name, structNumber, namePrefix, name, Util.sanitizeSymbol(choiceName));
+			outc.format("if (choiceTag == %s::%s) {", tagType, Util.sanitizeSymbol(choiceName));
+			outc.format("return choice_%02d;", structNumber);
+			outc.line("} else {");
+			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
+			outc.line("COURIER_ERROR();");
+			outc.line("}");
+			outc.line("}");
+		}
 	}
 	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
 		outh.format("// FIXME TypeDecl %s %s", name, anon.toString());
@@ -371,14 +377,7 @@ public class Compiler {
 		
 		for(String choiceName: choiceNameList) {
 			int structNumber = choiceMap.get(choiceName);
-			outh.format("CHOICE_%02d& %s() const {", structNumber, Util.sanitizeSymbol(choiceName));
-			outh.format("if (choiceTag == %s::%s) {", tagType, Util.sanitizeSymbol(choiceName));
-			outh.format("return choice_%02d;", structNumber);
-			outh.line("} else {");
-			outh.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
-			outh.line("COURIER_ERROR();");
-			outh.line("}");
-			outh.line("}");
+			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
 		}
 		
 		outh.line(
@@ -389,10 +388,23 @@ public class Compiler {
 
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
-			outh.format("CHOICE_%02d  choice_%02d;", i, i);
+			outh.format("mutable CHOICE_%02d  choice_%02d;", i, i);
 		}
 		
 		outh.line("};");
+		
+		for(String choiceName: choiceNameList) {
+			int structNumber = choiceMap.get(choiceName);
+			outc.line();
+			outc.format("%s::%s::CHOICE_%02d& %s::%s::%s() const {", namePrefix, name, structNumber, namePrefix, name, Util.sanitizeSymbol(choiceName));
+			outc.format("if (choiceTag == %s::%s) {", tagType, Util.sanitizeSymbol(choiceName));
+			outc.format("return choice_%02d;", structNumber);
+			outc.line("} else {");
+			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
+			outc.line("COURIER_ERROR();");
+			outc.line("}");
+			outc.line("}");
+		}
 	}
 	
 	class EnumInfo {
@@ -501,7 +513,89 @@ public class Compiler {
 			}
 		}
 	}
-	
+	private void genEnumSerialize(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
+		if (enumInfoList.isEmpty()) return;
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(EnumInfo enumInfo: enumInfoList) {				
+				c1.add(String.format("void serialize(BLOCK& block, const %s::%s", enumInfo.namePrefix, enumInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Enum serialize Function Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		
+		// Definition
+		{
+			outc.line(
+					"",
+					"//",
+					"// Enum serialize Function Definition",
+					"//"
+					);
+
+			for(EnumInfo enumInfo: enumInfoList) {							
+				outc.line();
+				outc.format("void %s::serialize(BLOCK& block, const %s::%s value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
+				outc.line("Courier::serialize(block, value);");
+				outc.line("}");
+			}
+		}
+	}
+	private void genEnumDeserialize(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
+		if (enumInfoList.isEmpty()) return;
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(EnumInfo enumInfo: enumInfoList) {				
+				c1.add(String.format("void deserialize(BLOCK& block, %s::%s", enumInfo.namePrefix, enumInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Enum deserialize Function Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		
+		// Definition
+		{
+			outc.line(
+					"",
+					"//",
+					"// Enum deserialize Function Definition",
+					"//"
+					);
+
+			for(EnumInfo enumInfo: enumInfoList) {							
+				outc.line();
+				outc.format("void %s::deserialize(BLOCK& block, %s::%s value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
+				outc.line("Courier::deserialize(block, value);");
+				outc.line("}");
+			}
+		}
+	}
+
 	class RecordInfo {
 		final TypeRecord typeRecord;
 		final String     name;
@@ -566,7 +660,7 @@ public class Compiler {
 			List<String> c2 = new ArrayList<>();
 			
 			for(RecordInfo recordInfo: recordInfoList) {				
-				c1.add(String.format("QString toString(const %s::%s", recordInfo.namePrefix, recordInfo.name));
+				c1.add(String.format("QString toString(const %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
 			
@@ -590,16 +684,22 @@ public class Compiler {
 					"//"
 					);
 			for(RecordInfo recordInfo: recordInfoList) {
-				outc.format("QString %s::toString(const %s::%s value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
-				outc.line("QStringList list;");
-				
-				for(Field field: recordInfo.typeRecord.fields) {
-					logField(outc, field.type, field.name);
-					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", field.name, field.name);
+				if (recordInfo.typeRecord.fields.isEmpty()) {
+					outc.format("QString %s::toString(const %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
+					outc.line("return \"\";");
+					outc.line("}");
+				} else {
+					outc.format("QString %s::toString(const %s::%s& value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
+					outc.line("QStringList list;");
+					
+					for(Field field: recordInfo.typeRecord.fields) {
+						logField(outc, field.type, field.name);
+						outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", field.name, field.name);
+					}
+					
+					outc.line("return list.join(\" \");");
+					outc.line("}");
 				}
-				
-				outc.line("return list.join(\" \");");
-				outc.line("}");
 			}
 		}
 	}
@@ -610,17 +710,59 @@ public class Compiler {
 		outc.line(
 				"",
 				"//",
-				"// Record serialize Function Definition",
+				"// Record serialize method Definition",
 				"//"
 				);
 		for(RecordInfo recordInfo: recordInfoList) {
-			outc.format("void %s::%s::serialize(BLOCK& block) const {", recordInfo.namePrefix, recordInfo.name);
-			for(Field field: recordInfo.typeRecord.fields) {
-				Type concreteType = field.type.getConcreteType();
-				logField(outc, field.type, field.name);
-				outc.line(TypeUtil.genSerialize(concreteType, field.name));
+			if (recordInfo.typeRecord.fields.isEmpty()) {
+				outc.format("void %s::%s::serialize(BLOCK&) const {", recordInfo.namePrefix, recordInfo.name);
+				outc.line("}");
+			} else {
+				outc.format("void %s::%s::serialize(BLOCK& block) const {", recordInfo.namePrefix, recordInfo.name);
+				for(Field field: recordInfo.typeRecord.fields) {
+					logField(outc, field.type, field.name);
+					outc.format("Courier::serialize(block, %s);", field.name);
+				}
+				outc.line("}");
 			}
-			outc.line("}");
+		}
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(RecordInfo recordInfo: recordInfoList) {
+				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", recordInfo.namePrefix, recordInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Record serialize method Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		
+		// Definition
+		{
+			outc.line(
+					"",
+					"//",
+					"// Record serialize Function Definition",
+					"//"
+					);
+
+			for(RecordInfo recordInfo: recordInfoList) {
+				outc.line();
+				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
+				outc.line("Courier::serialize(block, value);");
+				outc.line("}");
+			}
 		}
 	}
 	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
@@ -629,17 +771,59 @@ public class Compiler {
 		outc.line(
 				"",
 				"//",
-				"// Record deserialize Function Definition",
+				"// Record deserialize method Definition",
 				"//"
 				);
 		for(RecordInfo recordInfo: recordInfoList) {
-			outc.format("void %s::%s::deserialize(BLOCK& block) {", recordInfo.namePrefix, recordInfo.name);
-			for(Field field: recordInfo.typeRecord.fields) {
-				Type concreteType = field.type.getConcreteType();
-				logField(outc, field.type, field.name);
-				outc.line(TypeUtil.genDeserialize(concreteType, field.name));
+			if (recordInfo.typeRecord.fields.isEmpty()) {
+				outc.format("void %s::%s::deserialize(BLOCK&) {", recordInfo.namePrefix, recordInfo.name);				
+				outc.line("}");
+			} else {
+				outc.format("void %s::%s::deserialize(BLOCK& block) {", recordInfo.namePrefix, recordInfo.name);
+				for(Field field: recordInfo.typeRecord.fields) {
+					logField(outc, field.type, field.name);
+					outc.format("Courier::deserialize(block, %s);", field.name);
+				}
+				outc.line("}");
 			}
-			outc.line("}");
+		}
+
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(RecordInfo recordInfo: recordInfoList) {
+				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", recordInfo.namePrefix, recordInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Record deserialize method Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		
+		// Definition
+		{
+			outc.line(
+					"",
+					"//",
+					"// Record deserialize Function Definition",
+					"//"
+					);
+
+			for(RecordInfo recordInfo: recordInfoList) {
+				outc.line();
+				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
+				outc.line("Courier::deserialize(block, value);");
+				outc.line("}");
+			}
 		}
 	}
 	
@@ -702,7 +886,7 @@ public class Compiler {
 			List<String> c2 = new ArrayList<>();
 			
 			for(ChoiceInfo choiceInfo: choiceInfoList) {				
-				c1.add(String.format("QString toString(const %s::%s", choiceInfo.namePrefix, choiceInfo.name));
+				c1.add(String.format("QString toString(const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
 			
@@ -729,7 +913,7 @@ public class Compiler {
 			String tagName = "choiceTag";
 
 			for(ChoiceInfo choiceInfo: choiceInfoList) {
-				outc.format("QString %s::toString(const %s::%s value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
+				outc.format("QString %s::toString(const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
 				outc.line("QStringList list;");
 				outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", tagName, tagName);
 				outc.line("switch(value.choiceTag) {");
@@ -758,7 +942,7 @@ public class Compiler {
 		outc.line(
 				"",
 				"//",
-				"// Choice serialize Function Definition",
+				"// Choice serialize method Definition",
 				"//"
 				);
 
@@ -785,6 +969,45 @@ public class Compiler {
 
 			outc.line("}");
 		}
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(ChoiceInfo choiceInfo: choiceInfoList) {
+				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Choice serialize Function Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		
+		// Definition
+		{
+			outc.line(
+					"",
+					"//",
+					"// Choice serialize Function Definition",
+					"//"
+					);
+
+			for(ChoiceInfo choiceInfo: choiceInfoList) {
+				outc.line();
+				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
+				outc.line("Courier::serialize(block, value);");
+				outc.line("}");
+			}
+		}
+
 	}
 
 	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
@@ -793,7 +1016,7 @@ public class Compiler {
 		outc.line(
 				"",
 				"//",
-				"// Choice deserialize Function Definition",
+				"// Choice deserialize method Definition",
 				"//"
 				);
 
@@ -822,6 +1045,44 @@ public class Compiler {
 			outc.line("}");
 
 			outc.line("}");
+		}
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(ChoiceInfo choiceInfo: choiceInfoList) {
+				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
+				c2.add("value);");
+			}
+			
+			outh.line(
+					"",
+					"//",
+					"// Choice deserialize Function Declaration",
+					"//"
+					);
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		
+		// Definition
+		{
+			outc.line(
+					"",
+					"//",
+					"// Choice deserialize Function Definition",
+					"//"
+					);
+
+			for(ChoiceInfo choiceInfo: choiceInfoList) {
+				outc.line();
+				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
+				outc.line("Courier::deserialize(block, value);");
+				outc.line("}");
+			}
 		}
 	}
 
@@ -864,7 +1125,7 @@ public class Compiler {
 			}
 
 			// for outc
-			outc.line("#include \"../../util/Util.h\"");
+			outc.line("#include \"../util/Util.h\"");
 			outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion());
 			outc.line();
 			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
@@ -885,6 +1146,8 @@ public class Compiler {
 
 			// generate toString for enum
 			genEnumToString(outh, outc, enumInfoList);
+			genEnumSerialize(outh, outc, enumInfoList);
+			genEnumDeserialize(outh, outc, enumInfoList);
 			
 			// generate toString for Record
 			genRecordToString(outh, outc, recordInfoList);
@@ -902,6 +1165,10 @@ public class Compiler {
 			
 			// Close courier namespace
 			outh.line("}");
+			
+			// #endif
+			outh.line("#endif");
+			
 		} catch (FileNotFoundException e) {
 			throw new CompilerException("FileNotFoundException", e);
 		}

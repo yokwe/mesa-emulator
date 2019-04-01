@@ -67,6 +67,24 @@ QString toString(const quint16 value);
 QString toString(const quint32 value);
 QString toString(const quint64 value);
 
+void serialize(Block& block, const Block&  value);
+void serialize(Block& block, const quint8  value);
+void serialize(Block& block, const bool    value);
+void serialize(Block& block, const STRING& value);
+void serialize(Block& block, const quint16 value);
+void serialize(Block& block, const quint32 value);
+void serialize(Block& block, const quint64 value);
+
+void deserialize(Block& block, Block&   value);
+void deserialize(Block& block, quint8&  value);
+void deserialize(Block& block, bool&    value);
+void deserialize(Block& block, STRING&  value);
+void deserialize(Block& block, quint16& value);
+void deserialize(Block& block, quint32& value);
+void deserialize(Block& block, quint64& value);
+
+
+
 template <typename T>
 struct SEQUENCE {
 public:
@@ -131,6 +149,19 @@ private:
 	quint16 size;
 	T*      data;
 };
+template <typename T>
+QString toString(const SEQUENCE<T>& value) {
+	return value.toString();
+}
+template <typename T>
+void serialize(BLOCK& block, const SEQUENCE<T>& value) {
+	return value.serialize(block);
+}
+template <typename T>
+void deserialize(BLOCK& block, SEQUENCE<T>& value) {
+	return value.deserialize(block);
+}
+
 
 
 template <typename T>
@@ -162,6 +193,17 @@ struct ARRAY {
 		return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
 	}
 
+	void serialize(BLOCK& block) {
+		for(int i = 0; i < maxSize; i++) {
+			Courier::serialize(block, data[i]);
+		}
+	}
+	void deserialize(BLOCK& block) {
+		for(int i = 0; i < maxSize; i++) {
+			Courier:deserialize(block, data[i]);
+		}
+	}
+
 	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
 			// OK
@@ -184,15 +226,21 @@ struct ARRAY {
 private:
 	T*      data;
 };
-
-template <typename T>
-QString toString(const SEQUENCE<T>& value) {
-	return value.toString();
-}
 template <typename T>
 QString toString(const ARRAY<T>& value) {
 	return value.toString();
 }
+template <typename T>
+void serialize(BLOCK& block, const ARRAY<T>& value) {
+	return value.serialize(block);
+}
+template <typename T>
+void deserialize(BLOCK& block, ARRAY<T>& value) {
+	return value.deserialize(block);
+}
+
+
+
 
 
 }
