@@ -45,6 +45,8 @@ class testBlock : public testBase {
 	CPPUNIT_TEST(testBlockBlockSerialize);
 	CPPUNIT_TEST(testBlockBlockDeserialize);
 
+	CPPUNIT_TEST(testRemnant);
+
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -442,6 +444,72 @@ public:
 		}
 	}
 
+	void testRemnant() {
+		quint8 src_data[100];
+		Courier::BLOCK src(src_data, sizeof(src_data));
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)100, src.getCapacity());
+
+		src.serialize16((quint16)0x1111);
+		src.serialize16((quint16)0x2222);
+		src.serialize16((quint16)0x3333);
+		src.serialize16((quint16)0x4444);
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)8,   src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8,   src.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)100, src.getCapacity());
+
+		src.rewind();
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8,   src.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)100, src.getCapacity());
+
+		quint16 t;
+		src.deserialize16(t);
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)2,   src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8,   src.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)100, src.getCapacity());
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0x1111, t);
+
+		src.deserialize16(t);
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8,   src.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)100, src.getCapacity());
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0x2222, t);
+
+		Courier::Block rem = src.remnant();
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   src.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)8,   src.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)100, src.getCapacity());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)0,   rem.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)96,  rem.getCapacity());
+
+		rem.deserialize16(t);
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)2,   rem.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)96,  rem.getCapacity());
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0x3333, t);
+
+		rem.deserialize16(t);
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getOffset());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getPos());
+		CPPUNIT_ASSERT_EQUAL((quint16)4,   rem.getLimit());
+		CPPUNIT_ASSERT_EQUAL((quint16)96,  rem.getCapacity());
+
+		CPPUNIT_ASSERT_EQUAL((quint16)0x4444, t);
+	}
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(testBlock);
