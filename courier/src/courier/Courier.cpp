@@ -39,10 +39,10 @@ static log4cpp::Category& logger = Logger::getLogger("cr/courier");
 //
 // Courier::toString
 //
-QString Courier::toString(const Block& value) {
+QString Courier::toString(const Block&  value) {
 	return value.toString();
 }
-QString Courier::toString(const quint8 value) {
+QString Courier::toString(const quint8  value) {
 	switch (value) {
 	case (quint8)0xFEU:
 	case (quint8)0xFFU:
@@ -51,13 +51,13 @@ QString Courier::toString(const quint8 value) {
 		return QString("%1").arg(value);
 	}
 }
-QString Courier::toString(const bool    value) {
+QString Courier::toString(const bool     value) {
 	return QString("%1").arg(value ? "T" : "F");
 }
-QString Courier::toString(const STRING& value) {
+QString Courier::toString(const QString& value) {
 	return QString("%1").arg(value);
 }
-QString Courier::toString(const quint16 value) {
+QString Courier::toString(const quint16  value) {
 	switch (value) {
 	case (quint16)0xFFFEU:
 	case (quint16)0xFFFFU:
@@ -66,7 +66,7 @@ QString Courier::toString(const quint16 value) {
 		return QString("%1").arg(value);
 	}
 }
-QString Courier::toString(const quint32 value) {
+QString Courier::toString(const quint32  value) {
 	switch (value) {
 	case (quint32)0xFFFFFFFEU:
 	case (quint32)0xFFFFFFFFU:
@@ -75,7 +75,7 @@ QString Courier::toString(const quint32 value) {
 		return QString("%1").arg(value);
 	}
 }
-QString Courier::toString(const quint64 value) {
+QString Courier::toString(const quint64  value) {
 	switch (value) {
 	case (quint64)0xFFFFFFFFFFFEU:
 	case (quint64)0xFFFFFFFFFFFFU:
@@ -91,26 +91,26 @@ QString Courier::toString(const quint64 value) {
 //
 
 // Write whole value
-void Courier::serialize(Block& block, const Block&  value) {
+void Courier::serialize(Block& block, const Block&   value) {
 	block.serialize(value);
 }
-void Courier::serialize(Block& block, const quint8  value) {
+void Courier::serialize(Block& block, const quint8   value) {
 	block.serialize8(value);
 }
-void Courier::serialize(Block& block, const bool    value) {
+void Courier::serialize(Block& block, const bool     value) {
 	quint16 t = value ? 1 : 0;
 	block.serialize16(t);
 }
-void Courier::serialize(Block& block, const STRING& value) {
+void Courier::serialize(Block& block, const QString& value) {
 	block.serialize(value);
 }
-void Courier::serialize(Block& block, const quint16 value) {
+void Courier::serialize(Block& block, const quint16  value) {
 	block.serialize16(value);
 }
-void Courier::serialize(Block& block, const quint32 value) {
+void Courier::serialize(Block& block, const quint32  value) {
 	block.serialize32(value);
 }
-void Courier::serialize(Block& block, const quint64 value) {
+void Courier::serialize(Block& block, const quint64  value) {
 	block.serialize48(value);
 }
 
@@ -120,27 +120,27 @@ void Courier::serialize(Block& block, const quint64 value) {
 //
 
 // Read rest of block
-void Courier::deserialize(Block& block, Block&   value) {
+void Courier::deserialize(Block& block, Block&    value) {
 	block.deserialize(value);
 }
-void Courier::deserialize(Block& block, quint8&  value) {
+void Courier::deserialize(Block& block, quint8&   value) {
 	block.deserialize8(value);
 }
-void Courier::deserialize(Block& block, bool&    value) {
+void Courier::deserialize(Block& block, bool&     value) {
 	quint16 t;
 	block.deserialize16(t);
 	value = (t != 0);
 }
-void Courier::deserialize(Block& block, STRING&  value) {
+void Courier::deserialize(Block& block, QString&  value) {
 	block.deserialize(value);
 }
-void Courier::deserialize(Block& block, quint16& value) {
+void Courier::deserialize(Block& block, quint16&  value) {
 	block.deserialize16(value);
 }
-void Courier::deserialize(Block& block, quint32& value) {
+void Courier::deserialize(Block& block, quint32&  value) {
 	block.deserialize32(value);
 }
-void Courier::deserialize(Block& block, quint64& value) {
+void Courier::deserialize(Block& block, quint64&  value) {
 	block.deserialize48(value);
 }
 

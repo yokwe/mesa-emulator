@@ -59,31 +59,31 @@ using UNSPECIFIED   = quint16;
 using UNSPECIFIED2  = quint32;
 using UNSPECIFIED3  = quint64;
 
-QString toString(const Block&  value);
-QString toString(const quint8  value);
-QString toString(const bool    value);
-QString toString(const STRING& value);
-QString toString(const quint16 value);
-QString toString(const quint32 value);
-QString toString(const quint64 value);
+QString toString(const Block&   value);
+QString toString(const quint8   value);
+QString toString(const bool     value);
+QString toString(const QString& value);
+QString toString(const quint16  value);
+QString toString(const quint32  value);
+QString toString(const quint64  value);
 
 // Write whole value to block
-void serialize(Block& block, const Block&  value);
-void serialize(Block& block, const quint8  value);
-void serialize(Block& block, const bool    value);
-void serialize(Block& block, const STRING& value);
-void serialize(Block& block, const quint16 value);
-void serialize(Block& block, const quint32 value);
-void serialize(Block& block, const quint64 value);
+void serialize(Block& block, const Block&   value);
+void serialize(Block& block, const quint8   value);
+void serialize(Block& block, const bool     value);
+void serialize(Block& block, const QString& value);
+void serialize(Block& block, const quint16  value);
+void serialize(Block& block, const quint32  value);
+void serialize(Block& block, const quint64  value);
 
 // Read rest of block
-void deserialize(Block& block, Block&   value);
-void deserialize(Block& block, quint8&  value);
-void deserialize(Block& block, bool&    value);
-void deserialize(Block& block, STRING&  value);
-void deserialize(Block& block, quint16& value);
-void deserialize(Block& block, quint32& value);
-void deserialize(Block& block, quint64& value);
+void deserialize(Block& block, Block&    value);
+void deserialize(Block& block, quint8&   value);
+void deserialize(Block& block, bool&     value);
+void deserialize(Block& block, QString&  value);
+void deserialize(Block& block, quint16&  value);
+void deserialize(Block& block, quint32&  value);
+void deserialize(Block& block, quint64&  value);
 
 
 template <typename T>
