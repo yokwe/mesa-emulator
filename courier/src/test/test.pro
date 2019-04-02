@@ -11,11 +11,13 @@ SOURCES += testBase.cpp
 
 SOURCES += testMain.cpp testBlock.cpp testCourier.cpp
 
+LIBS += ../../tmp/build/stub/libstub.a
 LIBS += ../../tmp/build/courier/libcourier.a
 LIBS += ../../tmp/build/util/libutil.a
 
 LIBS += -lcppunit -llog4cpp
 
+POST_TARGETDEPS += ../../tmp/build/stub/libstub.a
 POST_TARGETDEPS += ../../tmp/build/courier/libcourier.a
 POST_TARGETDEPS += ../../tmp/build/util/libutil.a
 
