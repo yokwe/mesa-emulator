@@ -331,13 +331,22 @@ public class Compiler {
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 		int                  maxChoiceNumber = 0;
 
-		outh.line("enum class CHOICE_TAG : quint16 {");
-		for(Candidate<Correspondence> candidate: anon.candidates) {
-			for(Correspondence correspondence: candidate.designators) {
-				outh.format("%s = %s,", correspondence.id, correspondence.numericValue);
+		{
+			List<String>  c1 = new ArrayList<>();
+			List<Integer> c2 = new ArrayList<>();
+			for(Candidate<Correspondence> candidate: anon.candidates) {
+				for(Correspondence correspondence: candidate.designators) {
+					c1.add(Util.sanitizeSymbol(correspondence.id));
+					c2.add((int)correspondence.numericValue);
+				}
 			}
+			
+			outh.format("enum class %s : quint16 {", name);
+			for(String line: ColumnLayout.layoutEnumElement(c1, c2)) {
+				outh.line(line);
+			}
+			outh.line("};");
 		}
-		outh.line("};");
 		
 		for(Candidate<Correspondence> candidate: anon.candidates) {
 			maxChoiceNumber++;
