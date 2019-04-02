@@ -108,28 +108,6 @@ public:
 		delete[] data;
 	}
 
-//	QString toString() const {
-//		QStringList list;
-//		for(quint16 i = 0; i < size; i++) {
-//			list << Courier::toString(data[i]);
-//		}
-//		return QString("(%1)[%2]").arg(size).arg(list.join(" "));
-//	}
-//	void serialize(BLOCK& block) {
-//		Courier::serialize(block, size);
-//		for(int i = 0; i < size; i++) {
-//			Courier::serialize(block, data[i]);
-//		}
-//	}
-//	void deserialize(BLOCK& block) {
-//		Courier::deserialize(block, size);
-//		for(int i = 0; i < size; i++) {
-//			T t;
-//			Courier:deserialize(block, t);
-//			data[i] = t;
-//		}
-//	}
-
 	quint16 getSize() const {
 		return size;
 	}
@@ -141,6 +119,7 @@ public:
 			COURIER_ERROR();
 		}
 	}
+
 	T& operator[](int i) {
 		if (0 <= i && i < size) {
 			// OK
@@ -212,24 +191,6 @@ struct ARRAY {
 	~ARRAY() {
 		delete[] data;
 	}
-
-//	QString toString() const {
-//		QStringList list;
-//		for(int i = 0; i < maxSize; i++) {
-//			list << Courier::toString(data[i]);
-//		}
-//		return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
-//	}
-//	void serialize(BLOCK& block) {
-//		for(int i = 0; i < maxSize; i++) {
-//			Courier::serialize(block, data[i]);
-//		}
-//	}
-//	void deserialize(BLOCK& block) {
-//		for(int i = 0; i < maxSize; i++) {
-//			Courier:deserialize(block, data[i]);
-//		}
-//	}
 
 	T& operator[](int i) {
 		if (0 <= i && i < maxSize) {
