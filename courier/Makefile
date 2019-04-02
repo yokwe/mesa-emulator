@@ -52,7 +52,7 @@ distclean: clean
 	rm -f  src/*/Makefile.Release
 	rm -f  src/*/object_script.*.Debug
 	rm -f  src/*/object_script.*.Release
-
+	rm -f  src/*/.qmake.stash
 
 run-app: all
 	echo -n >tmp/debug.log
@@ -61,6 +61,7 @@ run-app: all
 run-test:
 	(cd src/util;    make all)
 	(cd src/courier; make all)
+	(cd src/stub;    make all)
 	(cd src/test;    make all)
 	echo -n >tmp/debug.log
 	tmp/build/test/test
