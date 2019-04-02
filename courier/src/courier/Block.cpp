@@ -36,44 +36,36 @@ static log4cpp::Category& logger = Logger::getLogger("cr/Block");
 #include "../courier/Courier.h"
 #include "../courier/Block.h"
 
-Courier::Block::Block(quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(true), data(new (std::nothrow) quint8[capacity]) {
-	if (data == nullptr) {
-		logger.error("Failed to allocate memory.  capacity = %d", capacity);
-		COURIER_ERROR();
-	}
-	zero();
-}
-Courier::Block::Block(quint8* data_, quint16 capacity_) : capacity(capacity_), state(State::write), pos(0), limit(0), freeData(false), data(data_) {
-	zero();
-}
-Courier::Block::~Block() {
-	if (freeData) delete[] data;
-}
-
 QString Courier::Block::toString() const {
 	QString hexString;
-	for(quint16 i = 0; i < limit; i++) {
+	for(quint16 i = offset; i < limit; i++) {
 		quint8 c = data[i];
 		hexString.append(QString("%1").arg((quint16)c, 2, 16, QChar('0')).toUpper());
 	}
-//	return QString("(%1 %2 %3)%4").arg(pos).arg(limit).arg(capacity).arg(hexString);
 	return QString("(%1)%2").arg(limit).arg(hexString);
+}
+
+Courier::Block Courier::Block::remnant() {
+	Block ret(data, capacity, pos);
+	return ret;
 }
 
 void Courier::Block::clear() {
 	state = State::write;
-	limit = 0;
-	pos   = 0;
+	limit = offset;
+	pos   = offset;
 }
 
 void Courier::Block::zero() {
-	bzero(data, capacity);
+	for(quint16 i = offset; i < capacity; i++) {
+		data[i] = 0;
+	}
 }
 
 void Courier::Block::rewind() {
 	if (state == State::write) {
 		state = State::read;
-		pos   = 0;
+		pos   = offset;
 	} else {
 		logger.error("Unexpected state");
 		COURIER_ERROR();
@@ -81,7 +73,7 @@ void Courier::Block::rewind() {
 }
 void Courier::Block::reset() {
 	if (state == State::read) {
-		pos = 0;
+		pos = offset;
 	} else {
 		logger.error("Unexpected state");
 		COURIER_ERROR();
@@ -96,14 +88,17 @@ quint16 Courier::Block::remaining() const {
 	}
 }
 quint16 Courier::Block::getPos() const {
-	return pos;
+	return (quint16)(pos - offset);
 }
 quint16 Courier::Block::getLimit() const {
-	return limit;
+	return (quint16)(limit - offset);
+}
+quint16 Courier::Block::getCapacity() const {
+	return (quint16)(capacity - offset);
 }
 bool Courier::Block::equals(const Block& that) const {
-	if (this->limit == that.limit) {
-		for(quint16 i = 0; i < limit; i++) {
+	if (this->offset == that.offset && this->limit == that.limit) {
+		for(quint16 i = offset; i < limit; i++) {
 			if (this->data[i] != that.data[i]) return false;
 		}
 		return true;

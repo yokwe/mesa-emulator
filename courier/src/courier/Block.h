@@ -38,13 +38,31 @@ namespace Courier {
 
 class Block {
 public:
-	const quint16 capacity;
+	Block(quint8* data_, quint16 capacity_) : state(State::write), capacity(capacity_), offset(0), pos(0), limit(0), data(data_) {}
 
-	Block(quint16 capacity_);
-	Block(quint8* data_, quint16 capacity_);
-	~Block();
+	// Destructor
+	~Block() {}
+
+	// Copy Constructor
+	Block(const Block& that) : state(that.state), capacity(that.capacity), offset(that.offset), pos(that.pos), limit(that.limit), data(that.data) {}
+
+	// Copy Assignment
+	Block& operator= (const Block& that) {
+		if (this != &that) {
+			this->state    = that.state;
+			this->capacity = that.capacity;
+			this->offset   = that.offset;
+			this->pos      = that.pos;
+			this->limit    = that.limit;
+			this->data     = that.data;
+		}
+
+		return *this;
+	}
 
 	QString toString() const;
+
+	Block remnant();
 
 	// Set pos with 0 for fresh write
 	void clear();
@@ -55,9 +73,11 @@ public:
 	// Set pos with 0 for read after deserialization
 	void reset();
 	// Return remaining byte for read
-	quint16 remaining() const;
-	quint16 getPos() const;
-	quint16 getLimit() const;
+	quint16 remaining()   const;
+	quint16 getPos()      const;
+	quint16 getLimit()    const;
+	quint16 getCapacity() const;
+
 	bool equals(const Block& that) const;
 
 	// serialize - write value to Block
@@ -84,15 +104,18 @@ public:
 
 private:
 	// Make private to detect unintentional invocation of default constructor
-	Block() : capacity(0), state(State::write), pos(0), limit(0), freeData(false), data(nullptr) {
-	}
+	Block() : state(State::write), capacity(0), offset(0), pos(0), limit(0), data(nullptr) {}
+
+	Block(quint8* data_, quint16 capacity_, quint16 offset_) : state(State::write), capacity(capacity_), offset(offset_), pos(offset_), limit(offset_), data(data_) {}
+
 	enum class State {read, write} state;
 
+	quint16 capacity;
+	quint16 offset;
 	quint16 pos;
 	quint16 limit;
 
-	const bool    freeData;
-	quint8* const data;
+	quint8* data;
 };
 
 }
