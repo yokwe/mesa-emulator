@@ -62,9 +62,9 @@ public:
 			Courier::Block b(100);
 			b.serialize8(0x11);
 			b.serialize8(0x22);
+			
 			QString a = b.toString();
-
-			QString e("(2)1122");
+			QString e = "(2)1122";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -82,9 +82,9 @@ public:
 			Courier::Block t(100);
 			Courier::serialize(t, (quint8)0x99);
 			Courier::serialize(t, v);
+			
 			QString a = t.toString();
-
-			QString e("(3)991122");
+			QString e = "(3)991122";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -103,9 +103,9 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint8)0x11, c);
 			Courier::Block t(100);
 			Courier::deserialize(v, t);
+			
 			QString a = t.toString();
-
-			QString e("(2)2233");
+			QString e = "(2)2233";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -118,9 +118,9 @@ public:
 		{
 			{
 				quint8 t = 123;
+				
 				QString a = Courier::toString(t);
-
-				QString e("123");
+				QString e = "123";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -128,9 +128,9 @@ public:
 			}
 			{
 				quint8 t = 255;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFF");
+				QString e = "0xFF";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -138,9 +138,9 @@ public:
 			}
 			{
 				quint8 t = 254;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFE");
+				QString e = "0xFE";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -152,9 +152,9 @@ public:
 			Courier::Block t(100);
 			Courier::serialize(t, (quint8)0x12);
 			Courier::serialize(t, (quint8)0x34);
+			
 			QString a = t.toString();
-
-			QString e("(2)1234");
+			QString e = "(2)1234";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -181,9 +181,9 @@ public:
 		{
 			{
 				bool t = true;
+				
 				QString a = Courier::toString(t);
-
-				QString e("T");
+				QString e = "T";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -191,9 +191,9 @@ public:
 			}
 			{
 				bool t = false;
+				
 				QString a = Courier::toString(t);
-
-				QString e("F");
+				QString e = "F";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -207,9 +207,9 @@ public:
 			Courier::Block t(100);
 			Courier::serialize(t, v1);
 			Courier::serialize(t, v2);
+			
 			QString a = t.toString();
-
-			QString e("(4)00000001");
+			QString e = "(4)00000001";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -236,16 +236,14 @@ public:
 	void testQString() {
 		// toString
 		{
-			{
-				QString t = "abc";
-				QString a = Courier::toString(t);
+			QString t = "abc";
+			
+			QString a = Courier::toString(t);
+			QString e("abc");
 
-				QString e("abc");
-
-				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-			}
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 		}
 		// serialize
 		{
@@ -264,8 +262,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getLimit());
 
 			QString a = t.toString();
-
-			QString e("(10)00026162000363646500");
+			QString e = "(10)00026162000363646500";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -309,9 +306,9 @@ public:
 		{
 			{
 				quint16 t = 12345;
+				
 				QString a = Courier::toString(t);
-
-				QString e("12345");
+				QString e = "12345";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -319,9 +316,9 @@ public:
 			}
 			{
 				quint16 t = 0xFFFFU;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFFFF");
+				QString e = "0xFFFF";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -329,9 +326,9 @@ public:
 			}
 			{
 				quint16 t = 0xFFFEU;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFFFE");
+				QString e = "0xFFFE";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -343,8 +340,8 @@ public:
 			Courier::Block t(100);
 			Courier::serialize(t, (quint16)0x1234);
 			Courier::serialize(t, (quint16)0x5678);
+			
 			QString a = t.toString();
-
 			QString e("(4)12345678");
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
@@ -372,9 +369,9 @@ public:
 		{
 			{
 				quint32 t = 12345678;
+				
 				QString a = Courier::toString(t);
-
-				QString e("12345678");
+				QString e = "12345678";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -382,9 +379,9 @@ public:
 			}
 			{
 				quint32 t = 0xFFFFFFFFU;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFFFFFFFF");
+				QString e = "0xFFFFFFFF";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -392,9 +389,9 @@ public:
 			}
 			{
 				quint32 t = 0xFFFFFFFEU;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFFFFFFFE");
+				QString e = "0xFFFFFFFE";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -406,9 +403,9 @@ public:
 			Courier::Block t(100);
 			Courier::serialize(t, (quint32)0x12345678);
 			Courier::serialize(t, (quint32)0x9ABCDEF0);
+			
 			QString a = t.toString();
-
-			QString e("(8)123456789ABCDEF0");
+			QString e = "(8)123456789ABCDEF0";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -435,9 +432,9 @@ public:
 		{
 			{
 				quint64 t = 1234567890123;
+				
 				QString a = Courier::toString(t);
-
-				QString e("1234567890123");
+				QString e = "1234567890123";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -445,9 +442,9 @@ public:
 			}
 			{
 				quint64 t = 0xFFFFFFFFFFFFU;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFFFFFFFFFFFF");
+				QString e = "0xFFFFFFFFFFFF";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -455,9 +452,9 @@ public:
 			}
 			{
 				quint64 t = 0xFFFFFFFFFFFEU;
+				
 				QString a = Courier::toString(t);
-
-				QString e("0xFFFFFFFFFFFE");
+				QString e = "0xFFFFFFFFFFFE";
 
 				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -472,9 +469,9 @@ public:
 			Courier::Block t(100);
 			Courier::serialize(t, v1);
 			Courier::serialize(t, v2);
+			
 			QString a = t.toString();
-
-			QString e("(12)123456789ABCDEF012345678");
+			QString e = "(12)123456789ABCDEF012345678";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -532,7 +529,6 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint16)4, b.getLimit());
 
 			QString a = b.toString();
-
 			QString e("(4)12345678");
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
@@ -556,7 +552,6 @@ public:
 			Courier::deserialize(b, u);
 
 			QString a = Courier::toString(u);
-
 			QString e = Courier::toString(t);
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
@@ -603,8 +598,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint16)6, b.getLimit());
 
 			QString a = b.toString();
-
-			QString e("(6)000212345678");
+			QString e = "(6)000212345678";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -616,6 +610,7 @@ public:
 			quint16 v1 = 1234;
 			quint16 v2 = 5678;
 			Courier::SEQUENCE<quint16> t{10};
+			t.setSize(2);
 			t[0] = v1;
 			t[1] = v2;
 
@@ -627,7 +622,6 @@ public:
 			Courier::deserialize(b, u);
 
 			QString a = Courier::toString(u);
-
 			QString e = Courier::toString(t);
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
@@ -649,8 +643,7 @@ public:
 			t.type        = 34567;
 
 			QString a = Courier::toString(t);
-
-			QString e("[[destination 123456789012] [source 210987654321] [type 34567]]");
+			QString e = "[[destination 123456789012] [source 210987654321] [type 34567]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -672,8 +665,7 @@ public:
 			CPPUNIT_ASSERT_EQUAL((quint16)14, t.getLimit());
 
 			QString a = t.toString();
-
-			QString e("(14)123456789012210987654321ABCD");
+			QString e = "(14)123456789012210987654321ABCD";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -694,7 +686,6 @@ public:
 			Courier::deserialize(t, u);
 
 			QString a = Courier::toString(u);
-
 			QString e = Courier::toString(v);
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
