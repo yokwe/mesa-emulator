@@ -54,7 +54,7 @@ QString Courier::Block::toString() const {
 	QString hexString;
 	for(quint16 i = 0; i < limit; i++) {
 		quint8 c = data[i];
-		hexString.append(QString("%1").arg((quint16)c, 2, 16, QChar('0')));
+		hexString.append(QString("%1").arg((quint16)c, 2, 16, QChar('0')).toUpper());
 	}
 //	return QString("(%1 %2 %3)%4").arg(pos).arg(limit).arg(capacity).arg(hexString);
 	return QString("(%1)%2").arg(limit).arg(hexString);
