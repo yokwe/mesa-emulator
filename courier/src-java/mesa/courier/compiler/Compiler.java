@@ -725,7 +725,7 @@ public class Compiler {
 						outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", field.name, field.name);
 					}
 					
-					outc.line("return list.join(\" \");");
+					outc.line("return QString(\"[%1]\").arg(list.join(\" \"));");
 					outc.line("}");
 				}
 			}
