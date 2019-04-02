@@ -142,19 +142,19 @@ public:
 		}
 	}
 	T& operator[](int i) {
-		if (0 <= i && i < maxSize) {
+		if (0 <= i && i < size) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
+			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
 			COURIER_ERROR();
 		}
 		return data[i];
 	}
 	const T& operator[](int i) const {
-		if (0 <= i && i < maxSize) {
+		if (0 <= i && i < size) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
+			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
 			COURIER_ERROR();
 		}
 		return data[i];
