@@ -67,6 +67,7 @@ QString toString(const quint16 value);
 QString toString(const quint32 value);
 QString toString(const quint64 value);
 
+// Write whole value to block
 void serialize(Block& block, const Block&  value);
 void serialize(Block& block, const quint8  value);
 void serialize(Block& block, const bool    value);
@@ -75,6 +76,7 @@ void serialize(Block& block, const quint16 value);
 void serialize(Block& block, const quint32 value);
 void serialize(Block& block, const quint64 value);
 
+// Read rest of block
 void deserialize(Block& block, Block&   value);
 void deserialize(Block& block, quint8&  value);
 void deserialize(Block& block, bool&    value);
