@@ -714,7 +714,7 @@ public class Compiler {
 			for(RecordInfo recordInfo: recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("QString %s::toString(const %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
-					outc.line("return \"\";");
+					outc.line("return \"[]\";");
 					outc.line("}");
 				} else {
 					outc.format("QString %s::toString(const %s::%s& value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
@@ -956,14 +956,15 @@ public class Compiler {
 
 			for(ChoiceInfo choiceInfo: choiceInfoList) {
 				outc.format("QString %s::toString(const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
-				outc.line("QStringList list;");
-				outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", tagName, tagName);
+//				outc.line("QStringList list;");
+//				outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", tagName, tagName);
 				outc.line("switch(value.choiceTag) {");
 				
 				for(String choiceName: choiceInfo.choiceNameList) {
 					outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
-					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s()));", choiceName, Util.sanitizeSymbol(choiceName));
-					outc.line("break;");
+//					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s()));", choiceName, Util.sanitizeSymbol(choiceName));
+					outc.format("return QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s()));", choiceName, Util.sanitizeSymbol(choiceName));
+//					outc.line("break;");
 				}
 
 				outc.line("default:");
@@ -972,7 +973,7 @@ public class Compiler {
 		        outc.line("break;");
 				outc.line("}");
 
-				outc.line("return list.join(\" \");");
+//				outc.line("return QString(\"[%1]\").arg(list.join(\" \"));");
 				outc.line("}");
 			}
 		}
