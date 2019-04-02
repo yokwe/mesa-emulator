@@ -35,6 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("testCourier");
 #include "testBase.h"
 
 #include "../stub/Ethernet.h"
+#include "../stub/Time2.h"
 
 class testCourier : public testBase {
 	CPPUNIT_TEST_SUITE(testCourier);
@@ -49,7 +50,9 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testSEQUENCE);
 	CPPUNIT_TEST(testARRAY);
 
-	CPPUNIT_TEST(testEthernet);
+	CPPUNIT_TEST(testENUM);
+	CPPUNIT_TEST(testSTRUCT);
+	CPPUNIT_TEST(testCHOICE);
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -633,7 +636,66 @@ public:
 		// each method of ARRAY
 	}
 
-	void testEthernet() {
+	void testENUM() {
+		// toString
+		{
+			{
+				Courier::Time2::PacketType t = Courier::Time2::PacketType::request;
+
+				QString a = Courier::toString(t);
+				QString e = "request";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+			{
+				Courier::Time2::PacketType t = Courier::Time2::PacketType::response;
+
+				QString a = Courier::toString(t);
+				QString e = "response";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+			{
+				Courier::Time2::PacketType t = (Courier::Time2::PacketType)100;
+
+				QString a = Courier::toString(t);
+				QString e = "100";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+		}
+		// serialize
+		{
+			Courier::Block t(100);
+			Courier::Time2::PacketType v = Courier::Time2::PacketType::response;
+			Courier::serialize(t, v);
+
+			QString a = t.toString();
+			QString e("(2)0002");
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		// deserialize
+		{
+			Courier::Block t(100);
+			Courier::serialize(t, (quint16)2);
+			t.rewind();
+
+			Courier::Time2::PacketType v = Courier::Time2::PacketType::response;
+			Courier::deserialize(t, v);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, (quint16)v);
+		}
+	}
+
+	void testSTRUCT() {
 
 		// toString
 		{
@@ -693,6 +755,134 @@ public:
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 		}
 
+	}
+
+	void testCHOICE() {
+		// toString
+		{
+			{
+				Courier::Time2::PacketData t;
+				t.choiceTag = Courier::Time2::PacketType::request;
+
+				QString a = Courier::toString(t);
+				QString e = "[request []]";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+			{
+				Courier::Time2::PacketData t;
+				t.choiceTag = Courier::Time2::PacketType::response;
+				Courier::Time2::PacketData::CHOICE_02& c = t.response();
+
+                c.currentTime     = 1;
+                c.offsetDirection = Courier::Time2::OffsetDirection::east;
+                c.offsetHours     = 3;
+                c.offsetMinutes   = 4;
+                c.startOfDST      = 5;
+                c.endOfDST        = 6;
+                c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
+                c.tolerance       = 8;
+
+				QString a = Courier::toString(t);
+				QString e = "[response [[currentTime 1] [offsetDirection east] [offsetHours 3] [offsetMinutes 4] [startOfDST 5] [endOfDST 6] [toleranceType inMilliSeconds] [tolerance 8]]]";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+		}
+		// serialize
+		{
+			{
+				Courier::Time2::PacketData t;
+				t.choiceTag = Courier::Time2::PacketType::request;
+
+				Courier::Block b(100);
+				Courier::serialize(b, t);
+
+				QString a = b.toString();
+				QString e = "(2)0001";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+			{
+				Courier::Time2::PacketData t;
+				t.choiceTag = Courier::Time2::PacketType::response;
+				Courier::Time2::PacketData::CHOICE_02& c = t.response();
+
+                c.currentTime     = 1;
+                c.offsetDirection = Courier::Time2::OffsetDirection::east;
+                c.offsetHours     = 3;
+                c.offsetMinutes   = 4;
+                c.startOfDST      = 5;
+                c.endOfDST        = 6;
+                c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
+                c.tolerance       = 8;
+
+				Courier::Block b(100);
+				Courier::serialize(b, t);
+
+				QString a = b.toString();
+				QString e = "(22)00020000000100010003000400050006000100000008";
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+		}
+		// deserialize
+		{
+			{
+				Courier::Time2::PacketData t;
+				t.choiceTag = Courier::Time2::PacketType::request;
+
+				Courier::Block b(100);
+				Courier::serialize(b, t);
+				b.rewind();
+
+				Courier::Time2::PacketData u;
+				Courier::deserialize(b, u);
+
+				QString a = Courier::toString(u);
+				QString e = Courier::toString(t);
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+			{
+				Courier::Time2::PacketData t;
+				t.choiceTag = Courier::Time2::PacketType::response;
+				Courier::Time2::PacketData::CHOICE_02& c = t.response();
+
+                c.currentTime     = 1;
+                c.offsetDirection = Courier::Time2::OffsetDirection::east;
+                c.offsetHours     = 3;
+                c.offsetMinutes   = 4;
+                c.startOfDST      = 5;
+                c.endOfDST        = 6;
+                c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
+                c.tolerance       = 8;
+
+				Courier::Block b(100);
+				Courier::serialize(b, t);
+				b.rewind();
+
+				Courier::Time2::PacketData u;
+				Courier::deserialize(b, u);
+
+				QString a = Courier::toString(u);
+				QString e = Courier::toString(t);
+
+				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+			}
+		}
 	}
 };
 
