@@ -34,6 +34,8 @@ static log4cpp::Category& logger = Logger::getLogger("testCourier");
 
 #include "testBase.h"
 
+#include "../stub/Ethernet.h"
+
 class testCourier : public testBase {
 	CPPUNIT_TEST_SUITE(testCourier);
 
@@ -46,6 +48,8 @@ class testCourier : public testBase {
 	CPPUNIT_TEST(testQuint64);
 	CPPUNIT_TEST(testSEQUENCE);
 	CPPUNIT_TEST(testARRAY);
+
+	CPPUNIT_TEST(testEthernet);
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -635,6 +639,70 @@ public:
 		// each method of ARRAY
 	}
 
+	void testEthernet() {
+
+		// toString
+		{
+			Courier::Ethernet::Header t;
+			t.destination = 123456789012;
+			t.source      = 210987654321;
+			t.type        = 34567;
+
+			QString a = Courier::toString(t);
+
+			QString e("[[destination 123456789012] [source 210987654321] [type 34567]]");
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		// serialize
+		{
+			Courier::Ethernet::Header v;
+			v.destination = 0x123456789012;
+			v.source      = 0x210987654321;
+			v.type        = 0xABCD;
+
+			Courier::Block t(100);
+			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getLimit());
+
+			Courier::serialize(t, v);
+			CPPUNIT_ASSERT_EQUAL((quint16)14, t.getPos());
+			CPPUNIT_ASSERT_EQUAL((quint16)14, t.getLimit());
+
+			QString a = t.toString();
+
+			QString e("(14)123456789012210987654321ABCD");
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		// deserialize
+		{
+			Courier::Ethernet::Header v;
+			v.destination = 0x123456789012;
+			v.source      = 0x210987654321;
+			v.type        = 0xABCD;
+
+			Courier::Block t(100);
+			Courier::serialize(t, v);
+			t.rewind();
+
+			Courier::Ethernet::Header u;
+			Courier::deserialize(t, u);
+
+			QString a = Courier::toString(u);
+
+			QString e = Courier::toString(v);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+
+	}
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(testCourier);
