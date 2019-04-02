@@ -46,7 +46,7 @@ QString Courier::Block::toString() const {
 }
 
 Courier::Block Courier::Block::remnant() {
-	Block ret(data, capacity, pos);
+	Block ret(data, capacity, pos, limit);
 	return ret;
 }
 
@@ -95,6 +95,9 @@ quint16 Courier::Block::getLimit() const {
 }
 quint16 Courier::Block::getCapacity() const {
 	return (quint16)(capacity - offset);
+}
+quint16 Courier::Block::getOffset() const {
+	return offset;
 }
 bool Courier::Block::equals(const Block& that) const {
 	if (this->offset == that.offset && this->limit == that.limit) {

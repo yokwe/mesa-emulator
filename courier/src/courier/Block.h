@@ -77,6 +77,7 @@ public:
 	quint16 getPos()      const;
 	quint16 getLimit()    const;
 	quint16 getCapacity() const;
+	quint16 getOffset()   const;
 
 	bool equals(const Block& that) const;
 
@@ -106,7 +107,7 @@ private:
 	// Make private to detect unintentional invocation of default constructor
 	Block() : state(State::write), capacity(0), offset(0), pos(0), limit(0), data(nullptr) {}
 
-	Block(quint8* data_, quint16 capacity_, quint16 offset_) : state(State::write), capacity(capacity_), offset(offset_), pos(offset_), limit(offset_), data(data_) {}
+	Block(quint8* data_, quint16 capacity_, quint16 offset_, quint16 limit_) : state(State::read), capacity(capacity_), offset(offset_), pos(offset_), limit(limit_), data(data_) {}
 
 	enum class State {read, write} state;
 
