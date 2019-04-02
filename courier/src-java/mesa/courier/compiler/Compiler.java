@@ -86,12 +86,10 @@ public class Compiler {
 	}
 	
 	private void genTypeDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		outh.line(
-				"",
-				"//",
-				"// Type Declaration",
-				"//"
-				);
+		outh.line("",
+				  "//",
+				  "// Type Declaration",
+				  "//");
 
 		for(Program.DeclType declType: program.typeList) {
 			outh.line();
@@ -232,13 +230,6 @@ public class Compiler {
 			outh.line(line);
 		}
 		
-//		outh.line(
-//			"",
-//			"// Standard methods",
-//			"void serialize  (BLOCK& block) const;",
-//			"void deserialize(BLOCK& block);"
-//			);
-
 		outh.line("};");
 	}
 	
@@ -269,8 +260,6 @@ public class Compiler {
 	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
-		String tagType = "CHOICE_TAG";
-		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 		int                  maxChoiceNumber = 0;
@@ -296,8 +285,8 @@ public class Compiler {
 		}
 		
 		outh.line();
-		outh.format("using %s = %s;", tagType, toTypeString(typed.type));
-		outh.format("%s choiceTag;", tagType);
+		outh.format("using CHOICE_TAG = %s;", toTypeString(typed.type));
+		outh.line("CHOICE_TAG choiceTag;");
 		outh.line();
 		
 		{
@@ -314,16 +303,6 @@ public class Compiler {
 				outh.line(line);
 			}
 		}
-//		for(String choiceName: choiceNameList) {
-//			int structNumber = choiceMap.get(choiceName);
-//			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
-//		}
-		
-//		outh.line(
-//				"",
-//				"void serialize  (BLOCK& block) const;",
-//				"void deserialize(BLOCK& block);"
-//				);
 
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
@@ -336,7 +315,7 @@ public class Compiler {
 			int structNumber = choiceMap.get(choiceName);
 			outc.line();
 			outc.format("%s::%s::CHOICE_%02d& %s::%s::%s() const {", namePrefix, name, structNumber, namePrefix, name, Util.sanitizeSymbol(choiceName));
-			outc.format("if (choiceTag == %s::%s) {", tagType, Util.sanitizeSymbol(choiceName));
+			outc.format("if (choiceTag == CHOICE_TAG::%s) {", Util.sanitizeSymbol(choiceName));
 			outc.format("return choice_%02d;", structNumber);
 			outc.line("} else {");
 			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
@@ -348,13 +327,11 @@ public class Compiler {
 	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
-		String tagType = "CHOICE_TAG";
-
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
 		int                  maxChoiceNumber = 0;
 
-		outh.format("enum class %s : quint16 {", tagType);
+		outh.line("enum class CHOICE_TAG : quint16 {");
 		for(Candidate<Correspondence> candidate: anon.candidates) {
 			for(Correspondence correspondence: candidate.designators) {
 				outh.format("%s = %s,", correspondence.id, correspondence.numericValue);
@@ -384,7 +361,7 @@ public class Compiler {
 		}
 		
 		outh.line();
-		outh.format("%s choiceTag;", tagType);
+		outh.line("CHOICE_TAG choiceTag;");
 		outh.line();
 		
 		{
@@ -401,16 +378,6 @@ public class Compiler {
 				outh.line(line);
 			}
 		}
-//		for(String choiceName: choiceNameList) {
-//			int structNumber = choiceMap.get(choiceName);
-//			outh.format("CHOICE_%02d& %s() const;", structNumber, Util.sanitizeSymbol(choiceName));
-//		}
-		
-//		outh.line(
-//				"",
-//				"void serialize  (BLOCK& block) const;",
-//				"void deserialize(BLOCK& block);"
-//				);
 
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
@@ -423,7 +390,7 @@ public class Compiler {
 			int structNumber = choiceMap.get(choiceName);
 			outc.line();
 			outc.format("%s::%s::CHOICE_%02d& %s::%s::%s() const {", namePrefix, name, structNumber, namePrefix, name, Util.sanitizeSymbol(choiceName));
-			outc.format("if (choiceTag == %s::%s) {", tagType, Util.sanitizeSymbol(choiceName));
+			outc.format("if (choiceTag == CHOICE_TAG::%s) {", Util.sanitizeSymbol(choiceName));
 			outc.format("return choice_%02d;", structNumber);
 			outc.line("} else {");
 			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
@@ -468,6 +435,7 @@ public class Compiler {
 					ret.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, declType.name)));
 				}
 			}
+				break;
 			default:
 				break;
 			}
@@ -488,12 +456,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Enum toString Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Enum toString Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -501,12 +467,10 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Enum toString Function Definition",
-					"//"
-					);
+			outc.line("",
+					  "//",
+					  "// Enum toString Function Definition",
+					  "//");
 
 			for(EnumInfo enumInfo: enumInfoList) {							
 				List<String> c1 = new ArrayList<>();
@@ -526,16 +490,16 @@ public class Compiler {
 					outc.line(line);
 				}
 				
-				outc.line(
-						"};",
-						"",
-						"if (map.contains(value)) {",
-							"return map[value];",
-						"} else {",
-							"return QString(\"%1\").arg((quint16)value);",
-						"}",
-					"}"
-				);
+				outc.line("};"); // end of static QMap
+				
+				outc.line("",
+						  "if (map.contains(value)) {",
+						      "return map[value];",
+						  "} else {",
+						      "return QString(\"%1\").arg((quint16)value);",
+						  "}");
+				
+				outc.line("}"); // end of toString
 			}
 		}
 	}
@@ -552,12 +516,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Enum serialize Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Enum serialize Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -565,13 +527,10 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Enum serialize Function Definition",
-					"//"
-					);
-
+			outc.line("",
+					  "//",
+					  "// Enum serialize Function Definition",
+					  "//");
 			for(EnumInfo enumInfo: enumInfoList) {							
 				outc.line();
 				outc.format("void %s::serialize(BLOCK& block, const %s::%s value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
@@ -593,12 +552,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Enum deserialize Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Enum deserialize Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -606,13 +563,10 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Enum deserialize Function Definition",
-					"//"
-					);
-
+			outc.line("",
+					  "//",
+					  "// Enum deserialize Function Definition",
+					  "//");
 			for(EnumInfo enumInfo: enumInfoList) {							
 				outc.line();
 				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
@@ -692,12 +646,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Record toString Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Record toString Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -705,12 +657,10 @@ public class Compiler {
 		
 		// Record toString definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Record toSring Function Definition",
-					"//"
-					);
+			outc.line("",
+					  "//",
+					  "// Record toSring Function Definition",
+					  "//");
 			for(RecordInfo recordInfo: recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("QString %s::toString(const %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
@@ -735,26 +685,6 @@ public class Compiler {
 	void genRecordSerialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
 		if (recordInfoList.size() == 0) return;
 		
-//		outc.line(
-//				"",
-//				"//",
-//				"// Record serialize method Definition",
-//				"//"
-//				);
-//		for(RecordInfo recordInfo: recordInfoList) {
-//			if (recordInfo.typeRecord.fields.isEmpty()) {
-//				outc.format("void %s::%s::serialize(BLOCK&) const {", recordInfo.namePrefix, recordInfo.name);
-//				outc.line("}");
-//			} else {
-//				outc.format("void %s::%s::serialize(BLOCK& block) const {", recordInfo.namePrefix, recordInfo.name);
-//				for(Field field: recordInfo.typeRecord.fields) {
-//					logField(outc, field.type, field.name);
-//					outc.format("Courier::serialize(block, %s);", field.name);
-//				}
-//				outc.line("}");
-//			}
-//		}
-		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
@@ -765,12 +695,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Record serialize method Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Record serialize method Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -778,13 +706,10 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Record serialize Function Definition",
-					"//"
-					);
-
+			outc.line("",
+					  "//",
+					  "// Record serialize Function Definition",
+					  "//");
 			for(RecordInfo recordInfo: recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("void %s::serialize(BLOCK&, const %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
@@ -803,26 +728,6 @@ public class Compiler {
 	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
 		if (recordInfoList.size() == 0) return;
 		
-//		outc.line(
-//				"",
-//				"//",
-//				"// Record deserialize method Definition",
-//				"//"
-//				);
-//		for(RecordInfo recordInfo: recordInfoList) {
-//			if (recordInfo.typeRecord.fields.isEmpty()) {
-//				outc.format("void %s::%s::deserialize(BLOCK&) {", recordInfo.namePrefix, recordInfo.name);				
-//				outc.line("}");
-//			} else {
-//				outc.format("void %s::%s::deserialize(BLOCK& block) {", recordInfo.namePrefix, recordInfo.name);
-//				for(Field field: recordInfo.typeRecord.fields) {
-//					logField(outc, field.type, field.name);
-//					outc.format("Courier::deserialize(block, %s);", field.name);
-//				}
-//				outc.line("}");
-//			}
-//		}
-
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
@@ -833,12 +738,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Record deserialize method Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Record deserialize method Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -846,13 +749,10 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Record deserialize Function Definition",
-					"//"
-					);
-
+			outc.line("",
+					  "//",
+					  "// Record deserialize Function Definition",
+					  "//");
 			for(RecordInfo recordInfo: recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("void %s::deserialize(BLOCK&, %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
@@ -932,12 +832,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Choice toString Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Choice toString Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -945,73 +843,33 @@ public class Compiler {
 		
 		// Choice toString definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Choice toSring Function Definition",
-					"//"
-					);
-
-			String tagName = "choiceTag";
+			outc.line("",
+					  "//",
+					  "// Choice toSring Function Definition",
+					  "//");
 
 			for(ChoiceInfo choiceInfo: choiceInfoList) {
 				outc.format("QString %s::toString(const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
-//				outc.line("QStringList list;");
-//				outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", tagName, tagName);
 				outc.line("switch(value.choiceTag) {");
 				
 				for(String choiceName: choiceInfo.choiceNameList) {
 					outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
-//					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s()));", choiceName, Util.sanitizeSymbol(choiceName));
 					outc.format("return QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s()));", choiceName, Util.sanitizeSymbol(choiceName));
-//					outc.line("break;");
 				}
 
 				outc.line("default:");
 				outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)value.choiceTag);");
 		        outc.line("COURIER_ERROR();");
 		        outc.line("break;");
-				outc.line("}");
+				outc.line("}"); // end of switch
 
-//				outc.line("return QString(\"[%1]\").arg(list.join(\" \"));");
-				outc.line("}");
+				outc.line("}"); // end of method
 			}
 		}
 	}
 
 	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
 		if (choiceInfoList.isEmpty()) return;
-		
-//		outc.line(
-//				"",
-//				"//",
-//				"// Choice serialize method Definition",
-//				"//"
-//				);
-//
-//		String tagName = "choiceTag";
-//
-//		for(ChoiceInfo choiceInfo: choiceInfoList) {
-//			outc.format("void %s::%s::serialize(BLOCK& block) const {", choiceInfo.namePrefix, choiceInfo.name);
-//			
-//	        outc.format("block.serialize16((quint16)%s);", tagName);
-//			
-//			outc.format("switch(%s) {", tagName);
-//			
-//			for(String choiceName: choiceInfo.choiceNameList) {
-//				outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
-//				outc.format("%s().serialize(block);", Util.sanitizeSymbol(choiceName));
-//				outc.line("break;");
-//			}
-//
-//			outc.line("default:");
-//			outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)choiceTag);");
-//	        outc.line("COURIER_ERROR();");
-//	        outc.line("break;");
-//			outc.line("}");
-//
-//			outc.line("}");
-//		}
 		
 		// Declaration
 		{
@@ -1023,12 +881,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Choice serialize Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Choice serialize Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -1036,20 +892,14 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Choice serialize Function Definition",
-					"//"
-					);
-			String tagName = "choiceTag";
-			
+			outc.line("",
+					  "//",
+					  "// Choice serialize Function Definition",
+					  "//");
 			for(ChoiceInfo choiceInfo: choiceInfoList) {
 				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
-				
-		        outc.format("block.serialize16((quint16)value.%s);", tagName);
-				
-				outc.format("switch(value.%s) {", tagName);
+		        outc.line("block.serialize16((quint16)value.choiceTag);");
+				outc.line("switch(value.choiceTag) {");
 				
 				for(String choiceName: choiceInfo.choiceNameList) {
 					outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
@@ -1061,49 +911,15 @@ public class Compiler {
 				outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)value.choiceTag);");
 		        outc.line("COURIER_ERROR();");
 		        outc.line("break;");
-				outc.line("}");
+				outc.line("}"); // end of switch
 	
-				outc.line("}");
+				outc.line("}"); // end of method
 			}
 		}
 	}
 
 	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
 		if (choiceInfoList.isEmpty()) return;
-		
-//		outc.line(
-//				"",
-//				"//",
-//				"// Choice deserialize method Definition",
-//				"//"
-//				);
-//
-//		String tagName = "choiceTag";
-//
-//		for(ChoiceInfo choiceInfo: choiceInfoList) {
-//			outc.format("void %s::%s::deserialize(BLOCK& block) {", choiceInfo.namePrefix, choiceInfo.name);
-//			
-//			outc.line(
-//				"quint16 choiceTag_;",
-//				String.format("block.deserialize16(choiceTag_);", tagName),
-//				String.format("%s = (CHOICE_TAG)choiceTag_;", tagName));
-//			
-//			outc.format("switch(%s) {", tagName);
-//			
-//			for(String choiceName: choiceInfo.choiceNameList) {
-//				outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
-//				outc.format("%s().deserialize(block);", Util.sanitizeSymbol(choiceName));
-//				outc.line("break;");
-//			}
-//
-//			outc.line("default:");
-//			outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)choiceTag);");
-//	        outc.line("COURIER_ERROR();");
-//	        outc.line("break;");
-//			outc.line("}");
-//
-//			outc.line("}");
-//		}
 		
 		// Declaration
 		{
@@ -1115,12 +931,10 @@ public class Compiler {
 				c2.add("value);");
 			}
 			
-			outh.line(
-					"",
-					"//",
-					"// Choice deserialize Function Declaration",
-					"//"
-					);
+			outh.line("",
+					  "//",
+					  "// Choice deserialize Function Declaration",
+					  "//");
 			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 				outh.line(line);
 			}
@@ -1128,22 +942,18 @@ public class Compiler {
 		
 		// Definition
 		{
-			outc.line(
-					"",
-					"//",
-					"// Choice deserialize Function Definition",
-					"//"
-					);
-			String tagName = "choiceTag";
+			outc.line("",
+					  "//",
+					  "// Choice deserialize Function Definition",
+					  "//");
 			for(ChoiceInfo choiceInfo: choiceInfoList) {
 				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
 				
-				outc.line(
-					"quint16 choiceTag_;",
-					String.format("block.deserialize16(choiceTag_);", tagName),
-					String.format("value.%s = (%s::%s::CHOICE_TAG)choiceTag_;", tagName, choiceInfo.namePrefix, choiceInfo.name));
+				outc.line("quint16 choiceTag_;",
+					      "block.deserialize16(choiceTag_);");
+				outc.format("value.choiceTag = (%s::%s::CHOICE_TAG)choiceTag_;", choiceInfo.namePrefix, choiceInfo.name);
 				
-				outc.format("switch(value.%s) {", tagName);
+				outc.line("switch(value.choiceTag) {");
 				
 				for(String choiceName: choiceInfo.choiceNameList) {
 					outc.format("case %s::%s::CHOICE_TAG::%s:", choiceInfo.namePrefix, choiceInfo.name, Util.sanitizeSymbol(choiceName));
@@ -1155,9 +965,9 @@ public class Compiler {
 				outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)value.choiceTag);");
 		        outc.line("COURIER_ERROR();");
 		        outc.line("break;");
-				outc.line("}");
+				outc.line("}"); // end of switch
 	
-				outc.line("}");
+				outc.line("}"); // end of method
 			}
 		}
 	}
