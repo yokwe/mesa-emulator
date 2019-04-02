@@ -110,8 +110,11 @@ public final class Program {
 		}
 		throw new ProgramException(String.format("Unknown program = %s", program));
 	}
+	public boolean isLocalReference(TypeReference typeRef) {
+		return  typeRef.value.program.equals(info.getProgramVersion());
+	}
 	public String getLocalRefName(TypeReference typeRef) {
-		if (typeRef.value.program.equals(info.getProgramVersion())) {
+		if (isLocalReference(typeRef)) {
 			return typeRef.value.name;
 		} else {
 			return typeRef.value.toString();
