@@ -56,7 +56,7 @@ public:
 		}
 		Courier::BLOCK block(data, sizeof(data));
 
-		CPPUNIT_ASSERT_EQUAL(capacity, block.capacity);
+		CPPUNIT_ASSERT_EQUAL(capacity, block.getCapacity());
 		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getPos());
 		CPPUNIT_ASSERT_EQUAL((quint16)0, block.getLimit());
 	}

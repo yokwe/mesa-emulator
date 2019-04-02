@@ -59,10 +59,11 @@ class testCourier : public testBase {
 public:
 #define CPPUNIT_ASSERT_EQUAL_QSTRING(a,b) CPPUNIT_ASSERT_EQUAL((a).toStdString(), ((QString)b).toStdString())
 
+#define BLOCK_DATA(n,s) quint8 data_##n[s]; Courier::Block n(&data_##n[0], (quint16)(sizeof(data_##n)));
 	void testBlock() {
 		// toString
 		{
-			Courier::Block b(100);
+			BLOCK_DATA(b,100)
 			b.serialize8(0x11);
 			b.serialize8(0x22);
 			
@@ -75,14 +76,14 @@ public:
 		}
 		// serialize
 		{
-			Courier::Block v(100);
+			BLOCK_DATA(v,100)
 			v.serialize8(0x11);
 			v.serialize8(0x22);
 			v.rewind();
 			quint8 c;
 			v.deserialize8(c);
 
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint8)0x99);
 			Courier::serialize(t, v);
 			
@@ -95,7 +96,7 @@ public:
 		}
 		// deserialize
 		{
-			Courier::Block v(100);
+			BLOCK_DATA(v,100)
 			v.serialize8(0x11);
 			v.serialize8(0x22);
 			v.serialize8(0x33);
@@ -104,7 +105,7 @@ public:
 			quint8 c;
 			Courier::deserialize(v, c);
 			CPPUNIT_ASSERT_EQUAL((quint8)0x11, c);
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::deserialize(v, t);
 			
 			QString a = t.toString();
@@ -152,7 +153,7 @@ public:
 		}
 		// serialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint8)0x12);
 			Courier::serialize(t, (quint8)0x34);
 			
@@ -165,7 +166,7 @@ public:
 		}
 		// deserialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint8)0x12);
 			Courier::serialize(t, (quint8)0x34);
 			t.rewind();
@@ -207,7 +208,7 @@ public:
 		{
 			bool v1 = false;
 			bool v2 = true;
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, v1);
 			Courier::serialize(t, v2);
 			
@@ -222,7 +223,7 @@ public:
 		{
 			bool v1 = false;
 			bool v2 = true;
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, v1);
 			Courier::serialize(t, v2);
 			t.rewind();
@@ -252,7 +253,7 @@ public:
 		{
 			QString v1 = "ab";
 			QString v2 = "cde";
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getLimit());
 
@@ -275,7 +276,7 @@ public:
 		{
 			QString v1 = "ab";
 			QString v2 = "def";
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getLimit());
 
@@ -340,7 +341,7 @@ public:
 		}
 		// serialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint16)0x1234);
 			Courier::serialize(t, (quint16)0x5678);
 			
@@ -353,7 +354,7 @@ public:
 		}
 		// deserialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint16)0x1234);
 			Courier::serialize(t, (quint16)0x5678);
 			t.rewind();
@@ -403,7 +404,7 @@ public:
 		}
 		// serialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint32)0x12345678);
 			Courier::serialize(t, (quint32)0x9ABCDEF0);
 			
@@ -416,7 +417,7 @@ public:
 		}
 		// deserialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint32)0x12345678);
 			Courier::serialize(t, (quint32)0x9ABCDEF0);
 			t.rewind();
@@ -469,7 +470,7 @@ public:
 			quint64 v1 = 0x123456789ABC;
 			quint64 v2 = 0xDEF012345678;
 
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, v1);
 			Courier::serialize(t, v2);
 			
@@ -485,7 +486,7 @@ public:
 			quint64 v1 = 0x123456789ABC;
 			quint64 v2 = 0xDEF012345678;
 
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, v1);
 			Courier::serialize(t, v2);
 			t.rewind();
@@ -523,7 +524,7 @@ public:
 			t[0] = v1;
 			t[1] = v2;
 
-			Courier::Block b(100);
+			BLOCK_DATA(b,100)
 			CPPUNIT_ASSERT_EQUAL((quint16)0, b.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, b.getLimit());
 
@@ -547,7 +548,7 @@ public:
 			t[0] = v1;
 			t[1] = v2;
 
-			Courier::Block b(100);
+			BLOCK_DATA(b,100)
 			Courier::serialize(b, t);
 			b.rewind();
 
@@ -592,7 +593,7 @@ public:
 			t[0] = v1;
 			t[1] = v2;
 
-			Courier::Block b(100);
+			BLOCK_DATA(b,100)
 			CPPUNIT_ASSERT_EQUAL((quint16)0, b.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, b.getLimit());
 
@@ -617,7 +618,7 @@ public:
 			t[0] = v1;
 			t[1] = v2;
 
-			Courier::Block b(100);
+			BLOCK_DATA(b,100)
 			Courier::serialize(b, t);
 			b.rewind();
 
@@ -672,7 +673,7 @@ public:
 		}
 		// serialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::Time2::PacketType v = Courier::Time2::PacketType::response;
 			Courier::serialize(t, v);
 
@@ -685,7 +686,7 @@ public:
 		}
 		// deserialize
 		{
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, (quint16)2);
 			t.rewind();
 
@@ -718,7 +719,7 @@ public:
 			v.source      = 0x210987654321;
 			v.type        = 0xABCD;
 
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getPos());
 			CPPUNIT_ASSERT_EQUAL((quint16)0, t.getLimit());
 
@@ -740,7 +741,7 @@ public:
 			v.source      = 0x210987654321;
 			v.type        = 0xABCD;
 
-			Courier::Block t(100);
+			BLOCK_DATA(t,100)
 			Courier::serialize(t, v);
 			t.rewind();
 
@@ -799,7 +800,7 @@ public:
 				Courier::Time2::PacketData t;
 				t.choiceTag = Courier::Time2::PacketType::request;
 
-				Courier::Block b(100);
+				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
 
 				QString a = b.toString();
@@ -823,7 +824,7 @@ public:
                 c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
                 c.tolerance       = 8;
 
-				Courier::Block b(100);
+				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
 
 				QString a = b.toString();
@@ -840,7 +841,7 @@ public:
 				Courier::Time2::PacketData t;
 				t.choiceTag = Courier::Time2::PacketType::request;
 
-				Courier::Block b(100);
+				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
 				b.rewind();
 
@@ -868,7 +869,7 @@ public:
                 c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
                 c.tolerance       = 8;
 
-				Courier::Block b(100);
+				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
 				b.rewind();
 
