@@ -107,8 +107,6 @@ private:
 	// Make private to detect unintentional invocation of default constructor
 	Block() : state(State::write), capacity(0), offset(0), pos(0), limit(0), data(nullptr) {}
 
-	Block(quint8* data_, quint16 capacity_, quint16 offset_, quint16 limit_) : state(State::read), capacity(capacity_), offset(offset_), pos(offset_), limit(limit_), data(data_) {}
-
 	enum class State {read, write} state;
 
 	quint16 capacity;

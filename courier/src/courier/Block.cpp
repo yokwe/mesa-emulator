@@ -46,7 +46,8 @@ QString Courier::Block::toString() const {
 }
 
 Courier::Block Courier::Block::remnant() {
-	Block ret(data, capacity, pos, limit);
+	Block ret(*this);
+	ret.offset = pos;
 	return ret;
 }
 
