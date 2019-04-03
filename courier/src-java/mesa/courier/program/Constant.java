@@ -35,7 +35,7 @@ public abstract class Constant {
 		}
 		public String toString() {
 			if (program == null) return name;
-			else return String.format("%s.%s", program, name);
+			else return String.format("%s::%s", program, name);
 		}
 	}
 	
