@@ -10,7 +10,13 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mesa.courier.program.Constant;
+import mesa.courier.program.ConstantBoolean;
+import mesa.courier.program.ConstantNumber;
+import mesa.courier.program.ConstantReference;
+import mesa.courier.program.ConstantString;
 import mesa.courier.program.Program;
+import mesa.courier.program.Program.DeclConst;
 import mesa.courier.program.Type;
 import mesa.courier.program.Type.Correspondence;
 import mesa.courier.program.Type.Field;
@@ -980,7 +986,114 @@ public class Compiler {
 			}
 		}
 	}
+	
+	private String toConstantString(Constant constant) {
+		switch(constant.kind) {
+		case BOOLEAN:
+		{
+			ConstantBoolean constantBoolean = (ConstantBoolean)constant;
+			return constantBoolean.value ? "true" : "false";
+		}
+		case NUMBER:
+		{
+			ConstantNumber constantNumber = (ConstantNumber)constant;
+			long value = constantNumber.value;
+			
+			if (0xF0 <= value && value <= 0xFF) {
+				return String.format("0x%X", value);
+			} else if (0xFFF0 <= value && value <= 0xFFFF) {
+				return String.format("0x%X", value);
+			} else if (0xFFFF_FFF0L <= value && value <= 0xFFFF_FFFFL) {
+				return String.format("0x%X", value);
+			} else if (0xFFFF_FFFF_FFF0L <= value && value <= 0xFFFF_FFFF_FFFFL) {
+				return String.format("0x%X", value);
+			} else {
+				return String.format("%d", value);
+			}
+		}
+		case STRING:
+		{
+			ConstantString constantString = (ConstantString)constant;
+			return constantString.value;
+		}
+		case ARRAY:
+		case RECORD:
+		case EMPTY:
+		case CHOICE:
+			throw new CompilerException(String.format("Unexpected type %s", constant));
+		case REFERENCE:
+		{
+			ConstantReference constantReference = (ConstantReference)constant;
+			return program.getLocalRefName(constantReference);
+		}
 
+		default:
+				return constant.toString();
+		}
+	}
+
+	private void genConstDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
+		outh.line("",
+				  "//",
+				  "// Type Declaration",
+				  "//");
+
+		for(DeclConst declConst: program.constList) {
+			outh.line();
+
+			Type     type     = declConst.type;
+			String   name     = Util.sanitizeSymbol(declConst.name);
+			Constant constant = declConst.constant;
+			
+			Type concreteType = type.getConcreteType();
+			
+			outh.format("// CONST %s  %s  %s",  name, type, constant);
+			if (type.isReference()) {
+				outh.format("//   %s",  concreteType);
+			}
+			
+			switch(concreteType.kind) {
+			// predefined
+			case BOOLEAN:
+			case BYTE:
+			case CARDINAL:
+			case LONG_CARDINAL:
+			case STRING:
+			case UNSPECIFIED:
+			case UNSPECIFIED2:
+			case UNSPECIFIED3:
+				outh.format("%s %s = %s; // CONST SIMPLE", toTypeString(type), name, toConstantString(constant));
+				break;
+			// constructed
+			case ENUM:
+			{
+				if (type.kind == Type.Kind.REFERENCE && constant.kind == Constant.Kind.REFERENCE) {
+					String typeString = program.getLocalRefName((TypeReference)type);
+					String constString = program.getLocalRefName((ConstantReference)constant);
+					outh.format("%s %s = %s::%s; // CONST ENUM", typeString, name, typeString, constString);
+				} else {
+					throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+				}
+			}
+				break;
+			case ARRAY:
+			case BLOCK:
+			case SEQUENCE:
+			case RECORD:
+			case CHOICE:
+			case PROCEDURE:
+			case ERROR:
+			// reference
+			case REFERENCE:
+				outh.format("// CONST COMPLEX  %s  %s", name, type);
+				break;
+			default:
+				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+			}
+
+		}
+	}
+	
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, programName);
@@ -1031,6 +1144,7 @@ public class Compiler {
 			genTypeDecl(outh, outc, namePrefix);
 			
 			// TODO generate constant declaration
+			genConstDecl(outh,outc, namePrefix);
 			
 			// Close program namespace
 			outh.line("}");
