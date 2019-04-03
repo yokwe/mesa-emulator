@@ -117,6 +117,22 @@ private:
 	quint8* data;
 };
 
+template <int SIZE>
+class BlockData {
+public:
+	Block  block;
+	quint8 data[SIZE];
+
+	BlockData() : block(&data[0], (quint16)sizeof(data)) {
+		::bzero(data, sizeof(data));
+	}
+
+	operator Block() {
+		return block;
+	}
+};
+
+
 }
 
 #endif
