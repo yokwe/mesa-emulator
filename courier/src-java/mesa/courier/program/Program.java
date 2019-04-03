@@ -120,14 +120,17 @@ public final class Program {
 			return typeRef.value.toString();
 		}
 	}
+	public boolean isLocalReference(ConstantReference constRef) {
+		return  constRef.value.program.equals(info.getProgramVersion());
+	}
 	public String getLocalRefName(ConstantReference constRef) {
 		if (constRef.value.program == null) {
-			return Util.toJavaConstName(constRef.value.name);
+			return constRef.value.name;
 		} else {
-			if (constRef.value.program.equals(info.getProgramVersion())) {
-				return Util.toJavaConstName(constRef.value.name);
+			if (isLocalReference(constRef)) {
+				return constRef.value.name;
 			} else {
-				return String.format("%s.%s", constRef.value.program, Util.toJavaConstName(constRef.value.name));
+				return constRef.value.toString();
 			}
 		}
 	}
