@@ -445,8 +445,9 @@ public:
 	}
 
 	void testRemnant() {
-		quint8 src_data[100];
-		Courier::BLOCK src(src_data, sizeof(src_data));
+		Courier::BlockData<100> blockData;
+		Courier::Block src = blockData;
+
 		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getOffset());
 		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getPos());
 		CPPUNIT_ASSERT_EQUAL((quint16)0,   src.getLimit());
