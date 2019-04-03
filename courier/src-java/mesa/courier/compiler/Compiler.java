@@ -341,7 +341,7 @@ public class Compiler {
 				}
 			}
 			
-			outh.format("enum class %s : quint16 {", name);
+			outh.format("enum class %s : quint16 {", "CHOICE_TAG");
 			for(String line: ColumnLayout.layoutEnumElement(c1, c2)) {
 				outh.line(line);
 			}
