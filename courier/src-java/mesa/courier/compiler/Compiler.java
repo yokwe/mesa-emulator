@@ -201,7 +201,7 @@ public class Compiler {
 			case TYPE:
 				genDeclType(outh, outc, namePrefix, (DeclType)decl);
 				break;
-			case CONSTANT:
+			case CONST:
 				genDeclConst(outh, outc, namePrefix, (DeclConst)decl);
 				break;
 			default:

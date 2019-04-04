@@ -52,7 +52,7 @@ public final class Program {
 	}
 	
 	public static class Decl {
-		public enum Kind {TYPE, CONSTANT};
+		public enum Kind {TYPE, CONST};
 		
 		public final Kind   kind;
 		public final int    seq;
@@ -69,12 +69,12 @@ public final class Program {
 			return kind == Kind.TYPE;
 		}
 		public boolean isConstant() {
-			return kind == Kind.CONSTANT;
+			return kind == Kind.CONST;
 		}
 
 		public Constant getConstant() {
 			switch(kind) {
-			case CONSTANT:
+			case CONST:
 				return ((Program.DeclConst)this).constant;
 			case TYPE:
 			default:
@@ -90,7 +90,7 @@ public final class Program {
 	public static class DeclConst extends Decl {
 		public final Constant constant;
 		public DeclConst(int seq, String name, Type type, Constant constant) {
-			super(Kind.CONSTANT, seq, name, type);
+			super(Kind.CONST, seq, name, type);
 			this.constant = constant;
 		}
 	}
@@ -195,7 +195,7 @@ public final class Program {
 						Type     type     = declType.type;
 						t.append(String.format("  [%s %s]", name, (type == null) ? "null" : type.toString()));
 					}
-					case CONSTANT:
+					case CONST:
 					{
 						DeclConst declConst = (DeclConst)e;
 						String    name      = declConst.name;
@@ -233,7 +233,7 @@ public final class Program {
 		switch (decl.kind) {
 		case TYPE:
 			return ((DeclType)decl).type;
-		case CONSTANT:
+		case CONST:
 		default:
 			throw new ProgramException(String.format("Unexpected kind.  kind = %s", decl.kind));
 		}
