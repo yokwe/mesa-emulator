@@ -66,8 +66,6 @@ public class Compiler {
 			TypeArray typeArray = (TypeArray)type;
 			return String.format("ARRAY<%s>", toTypeString(typeArray.type));
 		}
-		case BLOCK:
-			return String.format("%s", type.kind.toString());
 		case SEQUENCE:
 		{
 			TypeSequence typeSequence = (TypeSequence)type;
@@ -119,10 +117,6 @@ public class Compiler {
 			break;
 		case ARRAY:
 			logger.error("Rewrite \"ARRAY N OF T\" to \"RECORD [value: ARRAY N OF T]\"");
-			logger.error("  {}  {}", name, type.toString());
-			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-		case BLOCK:
-			logger.error("Rewrite \"RECORD N OF BYTE\" to \"RECORD [value: RECORD N OF BYTE]\"");
 			logger.error("  {}  {}", name, type.toString());
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		case SEQUENCE:
@@ -398,7 +392,6 @@ public class Compiler {
 			genDeclConstRecord(outh, outc, namePrefix, type, name, constant);
 			break;
 		case ARRAY:
-		case BLOCK:
 		case SEQUENCE:
 		case CHOICE:
 		// reference
