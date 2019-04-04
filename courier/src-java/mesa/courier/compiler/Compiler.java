@@ -11,8 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mesa.courier.program.Constant;
+import mesa.courier.program.Constant.Component;
+import mesa.courier.program.ConstantArray;
 import mesa.courier.program.ConstantBoolean;
 import mesa.courier.program.ConstantNumber;
+import mesa.courier.program.ConstantRecord;
 import mesa.courier.program.ConstantReference;
 import mesa.courier.program.ConstantString;
 import mesa.courier.program.Program;
@@ -26,6 +29,8 @@ import mesa.courier.program.TypeArray;
 import mesa.courier.program.TypeChoice;
 import mesa.courier.program.TypeChoice.Candidate;
 import mesa.courier.program.TypeEnum;
+import mesa.courier.program.TypeError;
+import mesa.courier.program.TypeProcedure;
 import mesa.courier.program.TypeRecord;
 import mesa.courier.program.TypeReference;
 import mesa.courier.program.TypeSequence;
@@ -142,6 +147,217 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
+	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant) {
+		//
+		// Output declaration of class
+		//
+		List<String> c1 = new ArrayList<>();
+		List<String> c2 = new ArrayList<>();
+		for(Field field: typeError.paramList) {
+			String fieldType;
+			String fieldName;
+			switch(field.type.kind) {
+			case ARRAY:
+			{
+				TypeArray typeArray = (TypeArray)field.type;
+				fieldType = toTypeString(field.type);
+				fieldName = String.format("%s{%d}", field.name, typeArray.size);	
+			}
+				break;
+			case SEQUENCE:
+			{
+				TypeSequence typeSequence = (TypeSequence)field.type;
+				fieldType = toTypeString(field.type);
+				if (typeSequence.size == TypeSequence.MAX_SIZE) {
+					fieldName = field.name;
+				} else {
+					fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
+				}
+			}
+				break;
+			default:
+				fieldType = toTypeString(field.type);
+				fieldName = field.name;
+				break;
+			}
+			
+			c1.add(fieldType);
+			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+		}
+		
+		long code;
+		{
+			if (constant.kind == Constant.Kind.NUMBER) {
+				ConstantNumber constantNumber = (ConstantNumber)constant;
+				code = constantNumber.value;
+			} else {
+				throw new CompilerException(String.format("Unexpected constant.kind %s", constant.toString()));
+			}
+		}
+
+		outh.format("struct %s {", name);
+		outh.format("static const quint16 CODE = %d;", code);
+		outh.line();
+		for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+			outh.line(line);
+		}
+		
+		outh.line("};");
+	}
+	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant) {
+		//
+		// Output declaration of class
+		//		
+		long code;
+		{
+			if (constant.kind == Constant.Kind.NUMBER) {
+				ConstantNumber constantNumber = (ConstantNumber)constant;
+				code = constantNumber.value;
+			} else {
+				throw new CompilerException(String.format("Unexpected constant.kind %s", constant.toString()));
+			}
+		}
+
+		outh.format("struct %s {", name);		
+		outh.line("struct Param {");
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			for(Field field: typeProcedure.paramList) {
+				String fieldType;
+				String fieldName;
+				switch(field.type.kind) {
+				case ARRAY:
+				{
+					TypeArray typeArray = (TypeArray)field.type;
+					fieldType = toTypeString(field.type);
+					fieldName = String.format("%s{%d}", field.name, typeArray.size);	
+				}
+					break;
+				case SEQUENCE:
+				{
+					TypeSequence typeSequence = (TypeSequence)field.type;
+					fieldType = toTypeString(field.type);
+					if (typeSequence.size == TypeSequence.MAX_SIZE) {
+						fieldName = field.name;
+					} else {
+						fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
+					}
+				}
+					break;
+				default:
+					fieldType = toTypeString(field.type);
+					fieldName = field.name;
+					break;
+				}
+				
+				c1.add(fieldType);
+				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			}
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		outh.line("};");
+		
+		outh.line("struct Result {");
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			for(Field field: typeProcedure.resultList) {
+				String fieldType;
+				String fieldName;
+				switch(field.type.kind) {
+				case ARRAY:
+				{
+					TypeArray typeArray = (TypeArray)field.type;
+					fieldType = toTypeString(field.type);
+					fieldName = String.format("%s{%d}", field.name, typeArray.size);	
+				}
+					break;
+				case SEQUENCE:
+				{
+					TypeSequence typeSequence = (TypeSequence)field.type;
+					fieldType = toTypeString(field.type);
+					if (typeSequence.size == TypeSequence.MAX_SIZE) {
+						fieldName = field.name;
+					} else {
+						fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
+					}
+				}
+					break;
+				default:
+					fieldType = toTypeString(field.type);
+					fieldName = field.name;
+					break;
+				}
+				
+				c1.add(fieldType);
+				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			}
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
+		}
+		outh.line("};");
+		
+		outh.line();
+		outh.format("static const quint16 CODE = %d;", code);
+		outh.line();
+		outh.format("void (*call)(Param& param, Result& result) throw (%s);", String.join(", ", typeProcedure.errroList));
+		outh.line("};");
+	}
+	private void genDeclConstRecord(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name, Constant constant) {
+        //const Ordering defaultOrdering = {AttributeType::name, true, Interpretation::string};
+
+		if (type.kind == Type.Kind.REFERENCE) {
+			TypeReference typeReference = (TypeReference)type;
+			String typeName = program.getLocalRefName(typeReference);
+			List<String> values = new ArrayList<>();
+			//   [RECORD (3)[key: [Const REF name]  ascending: true  interpretation: [Const REF string]]
+			if (constant.kind == Constant.Kind.RECORD) {
+				Type concreteType = type.getConcreteType();
+				if (concreteType.kind == Type.Kind.RECORD) {
+					TypeRecord typeRecord = (TypeRecord)concreteType;
+					Map<String, Type> fieldMap = new TreeMap<>();
+					for(Field field: typeRecord.fields) {
+						fieldMap.put(field.name, field.type);
+					}
+					
+					ConstantRecord constantRecord = (ConstantRecord)constant;
+					for(Component component: constantRecord.values) {
+						String componentName = component.name;
+						if (fieldMap.containsKey(componentName)) {
+							Type componentType = fieldMap.get(componentName);
+							switch(componentType.kind) {
+							case REFERENCE:
+								values.add(String.format("%s::%s", program.getLocalRefName((TypeReference)componentType), toConstantString(component.constant)));
+								break;
+							default:
+								values.add(toConstantString(component.constant));
+								break;
+							}
+						} else {
+							throw new CompilerException(String.format("Unexpected componentName %s", componentName.toString()));
+						}
+					}					
+				} else {
+					throw new CompilerException(String.format("Unexpected concreteType %s", concreteType.toString()));
+				}
+			} else if (constant.kind == Constant.Kind.ARRAY) {
+				ConstantArray constantArray = (ConstantArray)constant;
+				for(Constant constantArrayElement: constantArray.values) {
+					values.add(toConstantString(constantArrayElement));
+				}
+			} else {
+				throw new CompilerException(String.format("Unexpected constant %s", constant.toString()));
+			}
+
+			outh.format("const %s %s = {%s};", typeName, name, String.join(", ", values));
+		} else {
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+	}
 	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst) {
 		Type     type         = declConst.type;
 		String   name         = Util.sanitizeSymbol(declConst.name);
@@ -158,7 +374,7 @@ public class Compiler {
 		case UNSPECIFIED:
 		case UNSPECIFIED2:
 		case UNSPECIFIED3:
-			outh.format("const %s %s = %s; // CONST SIMPLE", toTypeString(type), name, toConstantString(constant));
+			outh.format("const %s %s = %s;", toTypeString(type), name, toConstantString(constant));
 			break;
 		// constructed
 		case ENUM:
@@ -166,19 +382,25 @@ public class Compiler {
 			if (type.kind == Type.Kind.REFERENCE && constant.kind == Constant.Kind.REFERENCE) {
 				String typeString = program.getLocalRefName((TypeReference)type);
 				String constString = program.getLocalRefName((ConstantReference)constant);
-				outh.format("%s %s = %s::%s; // CONST ENUM", typeString, name, typeString, constString);
+				outh.format("%s %s = %s::%s;", typeString, name, typeString, constString);
 			} else {
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			}
 		}
 			break;
+		case ERROR:
+			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant);
+			break;
+		case PROCEDURE:
+			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant);
+			break;
+		case RECORD:
+			genDeclConstRecord(outh, outc, namePrefix, type, name, constant);
+			break;
 		case ARRAY:
 		case BLOCK:
 		case SEQUENCE:
-		case RECORD:
 		case CHOICE:
-		case PROCEDURE:
-		case ERROR:
 		// reference
 		case REFERENCE:
 			outh.format("// FIXME CONST %s", concreteType.kind);
@@ -219,6 +441,10 @@ public class Compiler {
 		out.format("//   %s", type);
 		if (type.isReference()) {
 			out.format("//   %s", concreteType);
+		}
+		if (decl.isConstant()) {
+			Constant constant = decl.getConstant();
+			out.format("//   %s", constant);
 		}
 						
 		switch(concreteType.kind) {
