@@ -285,10 +285,6 @@ public class ProgramBuilder {
 			Type  type         = typeVisitor.visit(context.type());
 			return new TypeSequence(numericValue, type);
 		}
-		@Override public Type visitTypeBlock(@NotNull TypeBlockContext context) {
-			long  numericValue = Util.parseLong(context.numericValue().getText());			
-			return new TypeBlock(numericValue);
-		}
 
 		@Override
 		public Type visitTypeRecord(@NotNull TypeRecordContext context) {
@@ -474,20 +470,6 @@ public class ProgramBuilder {
 			// Use program name with version number
 			Info info = program.getDepend(context.program.getText());
 			return new ConstantReference(info.getProgramVersion(), context.name.getText());
-		}
-		public Constant visitConstSizeOf(@NotNull CourierParser.ConstSizeOfContext context) {
-			ReferencedConstantContext referencedContext = context.referencedConstant();
-			if (referencedContext instanceof ConstRefQContext) {
-				ConstRefQContext constRefQContext = (ConstRefQContext)referencedContext;
-				return new ConstantSizeOf(constRefQContext.program.getText(), constRefQContext.name.getText());
-			} else if (referencedContext instanceof ConstRefContext) {
-				ConstRefContext constRefContext = (ConstRefContext)referencedContext;
-				return new ConstantSizeOf(constRefContext.name.getText());
-			} else {
-				String msg = String.format("Unknonw referencedContext = %s", referencedContext.getText());
-				logger.error(msg);
-				throw new ProgramException(msg);
-			}
 		}
 	}
 }

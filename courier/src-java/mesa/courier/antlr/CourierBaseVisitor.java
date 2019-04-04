@@ -154,14 +154,6 @@ public class CourierBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
-	@Override public T visitTypeBlock(@NotNull CourierParser.TypeBlockContext ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
 	@Override public T visitDependencyList(@NotNull CourierParser.DependencyListContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -403,14 +395,6 @@ public class CourierBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitErrorList(@NotNull CourierParser.ErrorListContext ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
-	@Override public T visitConstSizeOf(@NotNull CourierParser.ConstSizeOfContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

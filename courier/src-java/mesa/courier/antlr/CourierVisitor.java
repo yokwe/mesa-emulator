@@ -131,13 +131,6 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	T visitTypeLongCardinal(@NotNull CourierParser.TypeLongCardinalContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link CourierParser#TypeBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTypeBlock(@NotNull CourierParser.TypeBlockContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link CourierParser#dependencyList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -353,13 +346,6 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitErrorList(@NotNull CourierParser.ErrorListContext ctx);
-
-	/**
-	 * Visit a parse tree produced by {@link CourierParser#ConstSizeOf}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitConstSizeOf(@NotNull CourierParser.ConstSizeOfContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link CourierParser#typedCandidate}.

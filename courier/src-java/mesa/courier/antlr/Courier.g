@@ -2,7 +2,6 @@ grammar Courier;
 
 ARRAY        : 'ARRAY';
 BEGIN        : 'BEGIN';
-BLOCK        : 'BLOCK';
 BOOLEAN      : 'BOOLEAN';
 BYTE         : 'BYTE';
 CARDINAL     : 'CARDINAL';
@@ -19,7 +18,6 @@ RECORD       : 'RECORD';
 REPORTS      : 'REPORTS';
 RETURNS      : 'RETURNS';
 SEQUENCE     : 'SEQUENCE';
-SIZEOF       : 'SIZEOF';
 STRING       : 'STRING';
 TYPE         : 'TYPE';
 UNSPECIFIED  : 'UNSPECIFIED';
@@ -114,7 +112,6 @@ predefinedType
 constructedType
     :    '{' correspondenceList '}'                          # TypeEnum
     |    ARRAY numericValue OF type                          # TypeArray
-    |    BLOCK numericValue OF BYTE                          # TypeBlock
     |    SEQUENCE maximumNumber OF type                      # TypeSequence
     |    RECORD '[' fieldList ']'                            # TypeRecord
     |    RECORD '[' ']'                                      # TypeEmptyRecord
@@ -198,7 +195,6 @@ predefinedConstant
     |    NUMBER                    # ConstNumber
     |    '-' NUMBER                # ConstNumberNegative
     |    STR                       # ConstString
-    |    SIZEOF referencedConstant # ConstSizeOf
     ;
 
 constructedConstant

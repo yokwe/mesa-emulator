@@ -21,7 +21,6 @@ import mesa.courier.program.Type;
 import mesa.courier.program.Type.Correspondence;
 import mesa.courier.program.Type.Field;
 import mesa.courier.program.TypeArray;
-import mesa.courier.program.TypeBlock;
 import mesa.courier.program.TypeChoice;
 import mesa.courier.program.TypeChoice.Candidate;
 import mesa.courier.program.TypeEnum;
@@ -212,13 +211,6 @@ public class Compiler {
 				} else {
 					fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
 				}
-			}
-				break;
-			case BLOCK:
-			{
-				TypeBlock typeBlock = (TypeBlock)field.type;
-				fieldType = toTypeString(field.type);
-				fieldName = String.format("%s{%d}", field.name, typeBlock.size);	
 			}
 				break;
 			default:
