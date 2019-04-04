@@ -8,8 +8,6 @@ public abstract class Constant {
 		ARRAY, RECORD, EMPTY, CHOICE,
 		// reference
 		REFERENCE,
-		// sizeof
-		SIZEOF
 	};
 
 	public final Kind kind;
