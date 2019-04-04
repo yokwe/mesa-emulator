@@ -8,6 +8,8 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mesa.courier.compiler.CompilerException;
+
 public final class Program {
 	protected static final Logger logger = LoggerFactory.getLogger(Program.class);
 	
@@ -49,42 +51,63 @@ public final class Program {
 		}
 	}
 	
-	public static class DeclType {
+	public static class Decl {
+		public enum Kind {TYPE, CONSTANT};
+		
+		public final Kind   kind;
+		public final int    seq;
 		public final String name;
 		public final Type   type;
-		public DeclType(String name, Type type) {
+		public Decl(Kind kind, int seq, String name, Type type) {
+			this.kind = kind;
+			this.seq  = seq;
 			this.name = name;
 			this.type = type;
 		}
+		
+		public boolean isType() {
+			return kind == Kind.TYPE;
+		}
+		public boolean isConstant() {
+			return kind == Kind.CONSTANT;
+		}
+
+		public Constant getConstant() {
+			switch(kind) {
+			case CONSTANT:
+				return ((Program.DeclConst)this).constant;
+			case TYPE:
+			default:
+				throw new CompilerException(String.format("Unexpected kind %s", kind.toString()));
+			}
+		}
 	}
-	public static class DeclConst {
-		public final String   name;
-		public final Type     type;
+	public static class DeclType extends Decl {
+		public DeclType(int seq, String name, Type type) {
+			super(Kind.TYPE, seq, name, type);
+		}
+	}
+	public static class DeclConst extends Decl {
 		public final Constant constant;
-		public DeclConst(String name, Type type, Constant constant) {
-			this.name     = name;
-			this.type     = type;
+		public DeclConst(int seq, String name, Type type, Constant constant) {
+			super(Kind.CONSTANT, seq, name, type);
 			this.constant = constant;
 		}
 	}
+
 	// self
-	public final Info                   info;
+	public final Info              info;
 	// depends
-	public final List<Info>             depends;
+	public final List<Info>        depends;
 	// declared types
-	public final List<DeclType>         typeList;
-	public final Map<String, DeclType>  typeMap;
-	// declared constants
-	public final List<DeclConst>        constList;
-	public final Map<String, DeclConst> constMap;
+	public final List<Decl>        declList;
+	public final Map<String, Decl> declMap;
 	
 	public Program(Info info) {
 		this.info      = info;
 		this.depends   = new ArrayList<>();
-		this.typeList  = new ArrayList<>();
-		this.typeMap   = new TreeMap<>();
-		this.constList = new ArrayList<>();
-		this.constMap  = new TreeMap<>();
+		this.declList  = new ArrayList<>();
+		this.declMap   = new TreeMap<>();
 		
 		all.put(this.info.getProgramVersion(), this);
 	}
@@ -92,15 +115,25 @@ public final class Program {
 	public void addDepend(Info info) {
 		depends.add(info);
 	}
-	public void addType(String name, Type type) {
-		DeclType declType = new DeclType(name, type);
-		typeList.add(declType);
-		typeMap.put(name, declType);
+	public void addType(int seq, String name, Type type) {
+		DeclType declType = new DeclType(seq, name, type);
+		declList.add(declType);
+		
+		if (declMap.containsKey(name)) {
+			throw new ProgramException(String.format("Duplicate name.  name = %s", name));
+		} else {
+			declMap.put(name, declType);
+		}
 	}
-	public void addConstant(String name, Type type, Constant constant) {
-		DeclConst declConst = new DeclConst(name, type, constant);
-		constList.add(declConst);
-		constMap.put(name, declConst);
+	public void addConstant(int seq, String name, Type type, Constant constant) {
+		DeclConst declConst = new DeclConst(seq, name, type, constant);
+		declList.add(declConst);
+
+		if (declMap.containsKey(name)) {
+			throw new ProgramException(String.format("Duplicate name.  name = %s", name));
+		} else {
+			declMap.put(name, declConst);
+		}
 	}
 	public Info getDepend(String program) {
 		for(Info e: depends) {
@@ -150,27 +183,29 @@ public final class Program {
 			ret.append("]");
 		}
 		{
-			ret.append(String.format("  types: (%d)[", typeList.size()));
-			if (!typeList.isEmpty()) {
+			ret.append(String.format("  decl: (%d)[", declList.size()));
+			if (!declList.isEmpty()) {
 				StringBuilder t = new StringBuilder();
-				for(DeclType e: typeList) {
-					String name = e.name;
-					Type type   = e.type;
-					t.append(String.format("  [%s %s]", name, (type == null) ? "null" : type.toString()));
-				}
-				ret.append(t.substring(2));
-			}
-			ret.append("]");
-		}
-		{
-			ret.append(String.format("  constants: (%d)[", constList.size()));
-			if (!constList.isEmpty()) {
-				StringBuilder t = new StringBuilder();
-				for(DeclConst e: constList) {
-					String   name     = e.name;
-					Type     type     = e.type;
-					Constant constant = e.constant;
-					t.append(String.format("  [%s %s %s]", name, type.toString(), (constant == null) ? "null" : constant.toString()));
+				for(Decl e: declList) {
+					switch(e.kind) {
+					case TYPE:
+					{
+						DeclType declType = (DeclType)e;
+						String   name     = declType.name;
+						Type     type     = declType.type;
+						t.append(String.format("  [%s %s]", name, (type == null) ? "null" : type.toString()));
+					}
+					case CONSTANT:
+					{
+						DeclConst declConst = (DeclConst)e;
+						String    name      = declConst.name;
+						Type      type      = declConst.type;
+						Constant  constant  = declConst.constant;
+						t.append(String.format("  [%s %s %s]", name, type.toString(), (constant == null) ? "null" : constant.toString()));
+					}
+					default:
+						throw new ProgramException(String.format("Unknown kind.  kind = %s", e.kind));
+					}
 				}
 				ret.append(t.substring(2));
 			}
@@ -186,11 +221,21 @@ public final class Program {
 			throw new ProgramException(String.format("Unknown program.  programName = %s", programName));
 		}
 	}
-	public Type getType(String typeName) {
-		if (typeMap.containsKey(typeName)) {
-			return typeMap.get(typeName).type;
+	public Decl getDecl(String name) {
+		if (declMap.containsKey(name)) {
+			return declMap.get(name);
 		} else {
-			throw new ProgramException(String.format("Unknown type.  typeName = %s", typeName));
+			throw new ProgramException(String.format("Unknown decl.  ame = %s", name));
+		}
+	}
+	public Type getType(String name) {
+		Decl decl = getDecl(name);
+		switch (decl.kind) {
+		case TYPE:
+			return ((DeclType)decl).type;
+		case CONSTANT:
+		default:
+			throw new ProgramException(String.format("Unexpected kind.  kind = %s", decl.kind));
 		}
 	}
 	public static Type dereference(TypeReference typeRef) {

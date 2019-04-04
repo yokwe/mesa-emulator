@@ -35,17 +35,10 @@ public class ProgramBuilder {
 	};
 	
 	private static class Cache {
-		public final ProgramBuilder        builder;
-		public final CourierProgramContext tree;
 		public final Program               program;
-		//
-		public boolean hasConst;
 		
-		public Cache(ProgramBuilder builder, CourierProgramContext tree, Program program) {
-			this.builder  = builder;
-			this.tree     = tree;
+		public Cache(Program program) {
 			this.program  = program;
-			this.hasConst = false;
 		}
 	}
 
@@ -71,15 +64,15 @@ public class ProgramBuilder {
 			Program               program  = ProgramVisitor.getProgram(tree);
 			ProgramBuilder        builder = new ProgramBuilder(program);
 			
-			// build fields of program
-			builder.buildTypes(tree);
+			// build declaration of program
+			builder.buildDecl(tree);
 			
 			if (!key.equals(program.info.getProgramVersion())) {
 				hasError = true;
 				logger.error(String.format("Filename and program name and version is inconsistent.  key = %s  info = %s", key, program.info.toString()));
 			}
 
-			programCache.put(key, new Cache(builder, tree, program));
+			programCache.put(key, new Cache(program));
 		}
 		if (hasError) throw new ProgramException("hasError");
 	}
@@ -89,21 +82,6 @@ public class ProgramBuilder {
 		Cache cache = programCache.get(name);
 		return cache.program;
 	}
-	public static void buildConst(Program program) {
-		for(Cache cache: programCache.values()) {
-			if (cache.program.equals(program)) {
-				if (cache.hasConst) {
-					logger.warn(String.format("Already buildConst is processed. program = %s", program.info.toString()));
-				} else {
-					cache.builder.buildConst(cache.tree);
-					cache.hasConst = true;
-				}
-				return;
-			}
-		}
-		throw new ProgramException(String.format("Unknown program = %s", program.info.toString()));
-	}
-
 
 	private static CourierProgramContext getTree(String path) {
 		ANTLRInputStream input;
@@ -134,38 +112,23 @@ public class ProgramBuilder {
 	}
 	
 	// need to be instance method to access instance variable
-	private void buildTypes(CourierProgramContext tree) {
+	private void buildDecl(CourierProgramContext tree) {
 		if (tree.programBody().declarationList() != null) {
+			int seq = 0;
 			// First process type
 			for(DeclarationContext declarationContext: tree.programBody().declarationList().elements) {
+				seq++;
 				if (declarationContext instanceof DeclTypeContext) {
 					DeclTypeContext context = (DeclTypeContext)declarationContext;
 					String name = context.name.getText();
 					Type   type = typeVisitor.visit(context.type());
-					program.addType(name, type);
-				} else if (declarationContext instanceof DeclConstContext) {
-					//
-				} else {
-					String msg = String.format("Unknonw declarationContext = %s", declarationContext.getText());
-					logger.error(msg);
-					throw new ProgramException(msg);
-				}
-			}
-		}
-	}
-	
-	private void buildConst(CourierProgramContext tree) {
-		if (tree.programBody().declarationList() != null) {
-			// Process constant
-			for(DeclarationContext declarationContext: tree.programBody().declarationList().elements) {
-				if (declarationContext instanceof DeclTypeContext) {
-					// Not now
+					program.addType(seq, name, type);
 				} else if (declarationContext instanceof DeclConstContext) {
 					DeclConstContext context = (DeclConstContext)declarationContext;
 					String name = context.name.getText();
 					Type   type = typeVisitor.visit(context.type());
 					Constant constant = constVisitor.visit(context.constant());
-					program.addConstant(name, type, constant);
+					program.addConstant(seq, name, type, constant);
 				} else {
 					String msg = String.format("Unknonw declarationContext = %s", declarationContext.getText());
 					logger.error(msg);
@@ -173,8 +136,7 @@ public class ProgramBuilder {
 				}
 			}
 		}
-	}
-	
+	}	
 
 	private static class ProgramVisitor extends CourierBaseVisitor<Void> {
 		private Program program = null;

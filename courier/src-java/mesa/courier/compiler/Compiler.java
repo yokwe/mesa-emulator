@@ -16,7 +16,9 @@ import mesa.courier.program.ConstantNumber;
 import mesa.courier.program.ConstantReference;
 import mesa.courier.program.ConstantString;
 import mesa.courier.program.Program;
+import mesa.courier.program.Program.Decl;
 import mesa.courier.program.Program.DeclConst;
+import mesa.courier.program.Program.DeclType;
 import mesa.courier.program.Type;
 import mesa.courier.program.Type.Correspondence;
 import mesa.courier.program.Type.Field;
@@ -90,63 +92,158 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genTypeDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		outh.line("",
-				  "//",
-				  "// Type Declaration",
-				  "//");
-
-		for(Program.DeclType declType: program.typeList) {
-			outh.line();
-
-			Type   type = declType.type;
-			String name = Util.sanitizeSymbol(declType.name);
-			
-			switch(type.kind) {
-			// predefined
-			case BOOLEAN:
-			case BYTE:
-			case CARDINAL:
-			case LONG_CARDINAL:
-			case STRING:
-			case UNSPECIFIED:
-			case UNSPECIFIED2:
-			case UNSPECIFIED3:
-				outh.format("using %s = %s;", name, type);
-				break;
-			// constructed
-			case ENUM:
-				genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
-				break;
-			case ARRAY:
-				logger.error("Rewrite \"ARRAY N OF T\" to \"RECORD [value: ARRAY N OF T]\"");
-				logger.error("  {}  {}", name, type.toString());
-				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-			case BLOCK:
-				logger.error("Rewrite \"RECORD N OF BYTE\" to \"RECORD [value: RECORD N OF BYTE]\"");
-				logger.error("  {}  {}", name, type.toString());
-				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-			case SEQUENCE:
-				logger.error("Rewrite \"SEQUENCE N OF T\" to \"RECORD [value: SEQUENCE N OF T]\"");
-				logger.error("  {}  {}", name, type.toString());
-				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-			case RECORD:
-				genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
-				break;
-			case CHOICE:
-				genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix);
-				break;
-			case PROCEDURE:
-			case ERROR:
-				outh.format("// FIXME TypeDecl %s %s", name, type.toString());
-				break;
-			// reference
-			case REFERENCE:
-				outh.format("using %s = %s;", name, toTypeString(type));
-				break;
-			default:
+	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType) {
+		Type   type = declType.type;
+		String name = declType.name;
+		
+		switch(type.kind) {
+		// predefined
+		case BOOLEAN:
+		case BYTE:
+		case CARDINAL:
+		case LONG_CARDINAL:
+		case STRING:
+		case UNSPECIFIED:
+		case UNSPECIFIED2:
+		case UNSPECIFIED3:
+			outh.format("using %s = %s;", name, type);
+			break;
+		// constructed
+		case ENUM:
+			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
+			break;
+		case ARRAY:
+			logger.error("Rewrite \"ARRAY N OF T\" to \"RECORD [value: ARRAY N OF T]\"");
+			logger.error("  {}  {}", name, type.toString());
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		case BLOCK:
+			logger.error("Rewrite \"RECORD N OF BYTE\" to \"RECORD [value: RECORD N OF BYTE]\"");
+			logger.error("  {}  {}", name, type.toString());
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		case SEQUENCE:
+			logger.error("Rewrite \"SEQUENCE N OF T\" to \"RECORD [value: SEQUENCE N OF T]\"");
+			logger.error("  {}  {}", name, type.toString());
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		case RECORD:
+			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
+			break;
+		case CHOICE:
+			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix);
+			break;
+		case PROCEDURE:
+		case ERROR:
+			outh.format("// FIXME TypeDecl %s %s", name, type.toString());
+			break;
+		// reference
+		case REFERENCE:
+			outh.format("using %s = %s;", name, toTypeString(type));
+			break;
+		default:
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+	}
+	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst) {
+		Type     type         = declConst.type;
+		String   name         = Util.sanitizeSymbol(declConst.name);
+		Constant constant     = declConst.constant;
+		Type     concreteType = type.getConcreteType();
+		
+		switch(concreteType.kind) {
+		// predefined
+		case BOOLEAN:
+		case BYTE:
+		case CARDINAL:
+		case LONG_CARDINAL:
+		case STRING:
+		case UNSPECIFIED:
+		case UNSPECIFIED2:
+		case UNSPECIFIED3:
+			outh.format("const %s %s = %s; // CONST SIMPLE", toTypeString(type), name, toConstantString(constant));
+			break;
+		// constructed
+		case ENUM:
+		{
+			if (type.kind == Type.Kind.REFERENCE && constant.kind == Constant.Kind.REFERENCE) {
+				String typeString = program.getLocalRefName((TypeReference)type);
+				String constString = program.getLocalRefName((ConstantReference)constant);
+				outh.format("%s %s = %s::%s; // CONST ENUM", typeString, name, typeString, constString);
+			} else {
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			}
+		}
+			break;
+		case ARRAY:
+		case BLOCK:
+		case SEQUENCE:
+		case RECORD:
+		case CHOICE:
+		case PROCEDURE:
+		case ERROR:
+		// reference
+		case REFERENCE:
+			outh.format("// FIXME CONST %s", concreteType.kind);
+			break;
+		default:
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+	}
+	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
+		outh.line("",
+				  "//",
+				  "// Declaration",
+				  "//");
+
+		for(Decl decl: program.declList) {
+			outh.line();
+			logDecl(outh, decl);
+			
+			switch(decl.kind) {
+			case TYPE:
+				genDeclType(outh, outc, namePrefix, (DeclType)decl);
+				break;
+			case CONSTANT:
+				genDeclConst(outh, outc, namePrefix, (DeclConst)decl);
+				break;
+			default:
+				throw new CompilerException(String.format("Unexpected decl.kind %s", decl.kind));
+			}
+		}
+	}
+
+	private void logDecl(LinePrinter out, Decl decl) {
+		Type   type         = decl.type;
+		String name         = decl.name;
+		Type   concreteType = type.getConcreteType();
+
+		out.format("// %s  %s", decl.kind, name);
+		out.format("//   %s", type);
+		if (type.isReference()) {
+			out.format("//   %s", concreteType);
+		}
+						
+		switch(concreteType.kind) {
+		case ARRAY:
+		{
+			TypeArray typeArray = (TypeArray)concreteType;
+			out.format("//     %s", typeArray.type);
+			if (typeArray.type.isReference()) {
+				Type elementType = typeArray.type.getConcreteType();
+				out.format("//       %s", elementType);
+			}
+		}
+			break;
+		case SEQUENCE:
+		{
+			TypeSequence typeSequence = (TypeSequence)concreteType;
+			out.format("//     %s", typeSequence.type);
+			if (typeSequence.type.isReference()) {
+				Type elementType = typeSequence.type.getConcreteType();
+				out.format("//       %s", elementType);
+			}
+		}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -420,14 +517,17 @@ public class Compiler {
 	}
 	private List<EnumInfo> getEnumInfoList(String namePrefix) {
 		List<EnumInfo> ret = new ArrayList<>();
-		for(Program.DeclType declType: program.typeList) {
-			switch (declType.type.kind) {
+		for(Decl decl: program.declList) {
+			if (!decl.isType()) continue;
+			Type   type = decl.type;
+			String name = decl.name;
+			switch (type.kind) {
 			case ENUM:
-				ret.add(new EnumInfo((TypeEnum)declType.type, declType.name, namePrefix));
+				ret.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 				break;
 			case CHOICE:
 			{
-				TypeChoice typeChoice = (TypeChoice)declType.type;
+				TypeChoice typeChoice = (TypeChoice)type;
 				if (typeChoice instanceof TypeChoice.Anon) {
 					TypeChoice.Anon anon = (TypeChoice.Anon)typeChoice;
 					
@@ -439,7 +539,7 @@ public class Compiler {
 						}
 					}
 					
-					ret.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, declType.name)));
+					ret.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, name)));
 				}
 			}
 				break;
@@ -598,13 +698,14 @@ public class Compiler {
 	}
 	private List<RecordInfo> getRecordInfo(String namePrefix) {
 		List<RecordInfo> ret = new ArrayList<>();
-		for(Program.DeclType declType: program.typeList) {
-			String name = declType.name;
-			if (declType.type.kind == Type.Kind.RECORD) {
-				TypeRecord typeRecord = (TypeRecord)declType.type;
+		for(Decl decl: program.declList) {
+			Type   type = decl.type;
+			String name = decl.name;
+			if (type.kind == Type.Kind.RECORD) {
+				TypeRecord typeRecord = (TypeRecord)type;
 				ret.add(new RecordInfo(typeRecord, name, namePrefix));
-			} else if (declType.type.kind == Type.Kind.CHOICE) {
-				TypeChoice typeChoice = (TypeChoice)declType.type;
+			} else if (type.kind == Type.Kind.CHOICE) {
+				TypeChoice typeChoice = (TypeChoice)type;
 				if (typeChoice instanceof TypeChoice.Typed) {
 					TypeChoice.Typed typed = (TypeChoice.Typed)typeChoice;
 					int              maxStructNumber = 0;
@@ -792,10 +893,11 @@ public class Compiler {
 	
 	private List<ChoiceInfo> getChoiceInfo(String namePrefix) {
 		List<ChoiceInfo> ret = new ArrayList<>();
-		for(Program.DeclType declType: program.typeList) {
-			String name = declType.name;
-			if (declType.type.kind == Type.Kind.CHOICE) {
-				TypeChoice typeChoice = (TypeChoice)declType.type;
+		for(Decl decl: program.declList) {
+			Type   type = decl.type;
+			String name = decl.name;
+			if (type.kind == Type.Kind.CHOICE) {
+				TypeChoice typeChoice = (TypeChoice)type;
 				if (typeChoice instanceof TypeChoice.Typed) {
 					TypeChoice.Typed     typed = (TypeChoice.Typed)typeChoice;
 					List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -991,13 +1093,17 @@ public class Compiler {
 			ConstantNumber constantNumber = (ConstantNumber)constant;
 			long value = constantNumber.value;
 			
-			if (0xF0 <= value && value <= 0xFF) {
+			if (value == 0) {
+				return String.format("%d", value);
+			} else if (0xF0 <= value && value <= 0xFF) {
 				return String.format("0x%X", value);
 			} else if (0xFFF0 <= value && value <= 0xFFFF) {
 				return String.format("0x%X", value);
 			} else if (0xFFFF_FFF0L <= value && value <= 0xFFFF_FFFFL) {
 				return String.format("0x%X", value);
 			} else if (0xFFFF_FFFF_FFF0L <= value && value <= 0xFFFF_FFFF_FFFFL) {
+				return String.format("0x%X", value);
+			} else if ((value & 0xFF) == 0) {
 				return String.format("0x%X", value);
 			} else {
 				return String.format("%d", value);
@@ -1024,68 +1130,6 @@ public class Compiler {
 		}
 	}
 
-	private void genConstDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		outh.line("",
-				  "//",
-				  "// Type Declaration",
-				  "//");
-
-		for(DeclConst declConst: program.constList) {
-			outh.line();
-
-			Type     type     = declConst.type;
-			String   name     = Util.sanitizeSymbol(declConst.name);
-			Constant constant = declConst.constant;
-			
-			Type concreteType = type.getConcreteType();
-			
-			outh.format("// CONST %s  %s  %s",  name, type, constant);
-			if (type.isReference()) {
-				outh.format("//   %s",  concreteType);
-			}
-			
-			switch(concreteType.kind) {
-			// predefined
-			case BOOLEAN:
-			case BYTE:
-			case CARDINAL:
-			case LONG_CARDINAL:
-			case STRING:
-			case UNSPECIFIED:
-			case UNSPECIFIED2:
-			case UNSPECIFIED3:
-				outh.format("%s %s = %s; // CONST SIMPLE", toTypeString(type), name, toConstantString(constant));
-				break;
-			// constructed
-			case ENUM:
-			{
-				if (type.kind == Type.Kind.REFERENCE && constant.kind == Constant.Kind.REFERENCE) {
-					String typeString = program.getLocalRefName((TypeReference)type);
-					String constString = program.getLocalRefName((ConstantReference)constant);
-					outh.format("%s %s = %s::%s; // CONST ENUM", typeString, name, typeString, constString);
-				} else {
-					throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-				}
-			}
-				break;
-			case ARRAY:
-			case BLOCK:
-			case SEQUENCE:
-			case RECORD:
-			case CHOICE:
-			case PROCEDURE:
-			case ERROR:
-			// reference
-			case REFERENCE:
-				outh.format("// CONST COMPLEX  %s  %s", name, type);
-				break;
-			default:
-				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
-			}
-
-		}
-	}
-	
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, programName);
@@ -1133,10 +1177,7 @@ public class Compiler {
 			
 			// generate type declaration (exclude error and procedure)
 			// and generate serialize/deserialize/toString() for record and choice
-			genTypeDecl(outh, outc, namePrefix);
-			
-			// TODO generate constant declaration
-			genConstDecl(outh,outc, namePrefix);
+			genDecl(outh, outc, namePrefix);
 			
 			// Close program namespace
 			outh.line("}");

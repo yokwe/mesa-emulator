@@ -20,7 +20,6 @@ public class GenStub {
 				String name = args[i];
 				logger.debug(String.format("name = %s", name));
 				program = ProgramBuilder.getProgram(name);
-				ProgramBuilder.buildConst(program);
 			}
 			
 			Compiler compiler = new Compiler(program);

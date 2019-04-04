@@ -17,7 +17,6 @@ public class DumpCourier {
 			String name = args[i];
 			logger.debug(String.format("name = %s", name));
 			Program program = ProgramBuilder.getProgram(name);
-			ProgramBuilder.buildConst(program);
 			logger.debug("program = {}", program.toString());
 		}
 		logger.debug("STOP");
