@@ -96,8 +96,7 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType, Context context) {
 		Type   type = declType.type;
 		String name = declType.name;
 		
@@ -115,7 +114,7 @@ public class Compiler {
 			break;
 		// constructed
 		case ENUM:
-			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
+			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix, context);
 			break;
 		case ARRAY:
 			outh.format("using %s = %s;", name, toTypeString(type));
@@ -124,10 +123,10 @@ public class Compiler {
 			outh.format("using %s = %s;", name, toTypeString(type));
 			break;
 		case RECORD:
-			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
+			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix, context);
 			break;
 		case CHOICE:
-			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
+			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix, context);
 			break;
 		// reference
 		case REFERENCE:
@@ -140,7 +139,7 @@ public class Compiler {
 		}
 	}
 	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		//
 		// Output declaration of class
 		//
@@ -176,11 +175,16 @@ public class Compiler {
 			for(Field field: typeError.paramList) {
 				typeRecord.addField(field);
 			}
-			recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+			context.recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+		}
+		
+		// Build errorInfo
+		{
+			context.errorInfoList.add(new ErrorInfo(typeError, name, namePrefix, code));
 		}
 	}
 	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		//
 		// Output declaration of class
 		//		
@@ -289,14 +293,18 @@ public class Compiler {
 			for(Field field: typeProcedure.paramList) {
 				typeRecord.addField(field);
 			}
-			recordInfoList.add(new RecordInfo(typeRecord, "Param", String.format("%s::%s", namePrefix, name)));
+			context.recordInfoList.add(new RecordInfo(typeRecord, "Param", String.format("%s::%s", namePrefix, name)));
 		}
 		{
 			TypeRecord typeRecord = new TypeRecord();
 			for(Field field: typeProcedure.resultList) {
 				typeRecord.addField(field);
 			}
-			recordInfoList.add(new RecordInfo(typeRecord, "Result", String.format("%s::%s", namePrefix, name)));
+			context.recordInfoList.add(new RecordInfo(typeRecord, "Result", String.format("%s::%s", namePrefix, name)));
+		}
+		// Build procedureInfo
+		{
+			context.procedureInfoList.add(new ProcedureInfo(typeProcedure, name, namePrefix, code));
 		}
 	}
 	private void genDeclConstRecord(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name, Constant constant) {
@@ -397,7 +405,7 @@ public class Compiler {
 		}
 	}
 	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		Type     type         = declConst.type;
 		String   name         = Util.sanitizeSymbol(declConst.name);
 		Constant constant     = declConst.constant;
@@ -428,10 +436,10 @@ public class Compiler {
 		}
 			break;
 		case ERROR:
-			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant, enumInfoList, recordInfoList, choiceInfoList);
+			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant, context);
 			break;
 		case PROCEDURE:
-			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant, enumInfoList, recordInfoList, choiceInfoList);
+			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant, context);
 			break;
 		case RECORD:
 			genDeclConstRecord(outh, outc, namePrefix, type, name, constant);
@@ -452,7 +460,7 @@ public class Compiler {
 		}
 	}
 	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		outh.line("",
 				  "//",
 				  "// Declaration",
@@ -464,10 +472,10 @@ public class Compiler {
 			
 			switch(decl.kind) {
 			case TYPE:
-				genDeclType(outh, outc, namePrefix, (DeclType)decl, enumInfoList, recordInfoList, choiceInfoList);
+				genDeclType(outh, outc, namePrefix, (DeclType)decl, context);
 				break;
 			case CONST:
-				genDeclConst(outh, outc, namePrefix, (DeclConst)decl, enumInfoList, recordInfoList, choiceInfoList);
+				genDeclConst(outh, outc, namePrefix, (DeclConst)decl, context);
 				break;
 			default:
 				throw new CompilerException(String.format("Unexpected decl.kind %s", decl.kind));
@@ -552,7 +560,7 @@ public class Compiler {
 	}
 
 	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		//
 		// Output declaration of class
 		//
@@ -596,14 +604,14 @@ public class Compiler {
 		}
 		outh.line("};");
 		
-		// build recordInfoList
+		// build context.recordInfoList
 		{
-			recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+			context.recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
 		}
 	}
 	
 	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		List<String>  c1 = new ArrayList<>();
 		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -617,22 +625,22 @@ public class Compiler {
 		}
 		outh.line("};");
 		
-		// build enumInfoList
-		enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
+		// build context.enumInfoList
+		context.enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 	}
 	
 	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		if (typeChoice instanceof TypeChoice.Typed) {
-			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
+			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix, context);
 		} else if (typeChoice instanceof TypeChoice.Anon) {
-			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
+			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix, context);
 		} else {
 			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
 		}
 	}
 	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -653,7 +661,7 @@ public class Compiler {
 			if (candidateType.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), enumInfoList, recordInfoList, choiceInfoList);
+				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), context);
 			} else {
 				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 			}
@@ -701,11 +709,11 @@ public class Compiler {
 		
 		// Build choideInfoList
 		{
-			choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
+			context.choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
 		}
 	}
 	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix,
-			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
+			Context context) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -744,7 +752,7 @@ public class Compiler {
 			if (candidateType.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), enumInfoList, recordInfoList, choiceInfoList);
+				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), context);
 			} else {
 				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 			}
@@ -789,7 +797,7 @@ public class Compiler {
 			outc.line("}");
 		}
 		
-		// Build enumInfoList
+		// Build context.enumInfoList
 		{
 			// Build typeEnum from anon
 			TypeEnum typeEnum = new TypeEnum();
@@ -799,36 +807,24 @@ public class Compiler {
 				}
 			}
 			
-			enumInfoList.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, name)));
+			context.enumInfoList.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, name)));
 		}
 		
 		// Build choideInfoList
 		{
-			choiceInfoList.add(new ChoiceInfo(anon, name, namePrefix, choiceNameList));
+			context.choiceInfoList.add(new ChoiceInfo(anon, name, namePrefix, choiceNameList));
 		}
 	}
 	
-	class EnumInfo {
-		final TypeEnum typeEnum;
-		final String   name;
-		final String   namePrefix;
-		
-		EnumInfo(TypeEnum typeEnum, String name, String namePrefix) {
-			this.typeEnum   = typeEnum;
-			this.name       = name;
-			this.namePrefix = namePrefix;
-		}
-	}
-	
-	private void genEnumToString(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
-		if (enumInfoList.isEmpty()) return;
+	private void genEnumToString(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.enumInfoList.isEmpty()) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(EnumInfo enumInfo: enumInfoList) {				
+			for(EnumInfo enumInfo: context.enumInfoList) {				
 				c1.add(String.format("QString toString(const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
@@ -849,7 +845,7 @@ public class Compiler {
 					  "// Enum toString Function Definition",
 					  "//");
 
-			for(EnumInfo enumInfo: enumInfoList) {							
+			for(EnumInfo enumInfo: context.enumInfoList) {							
 				List<String> c1 = new ArrayList<>();
 				List<String> c2 = new ArrayList<>();
 
@@ -880,15 +876,15 @@ public class Compiler {
 			}
 		}
 	}
-	private void genEnumSerialize(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
-		if (enumInfoList.isEmpty()) return;
+	private void genEnumSerialize(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.enumInfoList.isEmpty()) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(EnumInfo enumInfo: enumInfoList) {				
+			for(EnumInfo enumInfo: context.enumInfoList) {				
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
@@ -908,7 +904,7 @@ public class Compiler {
 					  "//",
 					  "// Enum serialize Function Definition",
 					  "//");
-			for(EnumInfo enumInfo: enumInfoList) {							
+			for(EnumInfo enumInfo: context.enumInfoList) {							
 				outc.line();
 				outc.format("void %s::serialize(BLOCK& block, const %s::%s value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
 				outc.line("Courier::serialize(block, (quint16)value);");
@@ -916,15 +912,15 @@ public class Compiler {
 			}
 		}
 	}
-	private void genEnumDeserialize(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
-		if (enumInfoList.isEmpty()) return;
+	private void genEnumDeserialize(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.enumInfoList.isEmpty()) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(EnumInfo enumInfo: enumInfoList) {				
+			for(EnumInfo enumInfo: context.enumInfoList) {				
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
@@ -944,7 +940,7 @@ public class Compiler {
 					  "//",
 					  "// Enum deserialize Function Definition",
 					  "//");
-			for(EnumInfo enumInfo: enumInfoList) {							
+			for(EnumInfo enumInfo: context.enumInfoList) {							
 				outc.line();
 				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
 				outc.line("quint16 t;");
@@ -955,26 +951,15 @@ public class Compiler {
 		}
 	}
 
-	class RecordInfo {
-		final TypeRecord typeRecord;
-		final String     name;
-		final String     namePrefix;
-		
-		RecordInfo(TypeRecord typeRecord, String name, String namePrefix) {
-			this.typeRecord = typeRecord;
-			this.name       = name;
-			this.namePrefix = namePrefix;
-		}
-	}
-	private void genRecordToString(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
-		if (recordInfoList.isEmpty()) return;
+	private void genRecordToString(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.recordInfoList.isEmpty()) return;
 		
 		// Record toSring declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(RecordInfo recordInfo: recordInfoList) {				
+			for(RecordInfo recordInfo: context.recordInfoList) {				
 				c1.add(String.format("QString toString(const %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
@@ -994,7 +979,7 @@ public class Compiler {
 					  "//",
 					  "// Record toSring Function Definition",
 					  "//");
-			for(RecordInfo recordInfo: recordInfoList) {
+			for(RecordInfo recordInfo: context.recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("QString %s::toString(const %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
 					outc.line("return \"[]\";");
@@ -1015,15 +1000,15 @@ public class Compiler {
 		}
 	}
 	
-	void genRecordSerialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
-		if (recordInfoList.size() == 0) return;
+	void genRecordSerialize(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.recordInfoList.size() == 0) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(RecordInfo recordInfo: recordInfoList) {
+			for(RecordInfo recordInfo: context.recordInfoList) {
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
@@ -1043,7 +1028,7 @@ public class Compiler {
 					  "//",
 					  "// Record serialize Function Definition",
 					  "//");
-			for(RecordInfo recordInfo: recordInfoList) {
+			for(RecordInfo recordInfo: context.recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("void %s::serialize(BLOCK&, const %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
 					outc.line("}");
@@ -1058,15 +1043,15 @@ public class Compiler {
 			}
 		}
 	}
-	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
-		if (recordInfoList.size() == 0) return;
+	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.recordInfoList.size() == 0) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(RecordInfo recordInfo: recordInfoList) {
+			for(RecordInfo recordInfo: context.recordInfoList) {
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
@@ -1086,7 +1071,7 @@ public class Compiler {
 					  "//",
 					  "// Record deserialize Function Definition",
 					  "//");
-			for(RecordInfo recordInfo: recordInfoList) {
+			for(RecordInfo recordInfo: context.recordInfoList) {
 				if (recordInfo.typeRecord.fields.isEmpty()) {
 					outc.format("void %s::deserialize(BLOCK&, %s::%s&) {", "Courier", recordInfo.namePrefix, recordInfo.name);
 					outc.line("}");
@@ -1102,29 +1087,15 @@ public class Compiler {
 		}
 	}
 	
-	class ChoiceInfo {
-		final TypeChoice           typeChoice;
-		final String               name;
-		final String               namePrefix;
-		final List<String>         choiceNameList; // choice name list in appearance order
-
-		ChoiceInfo(TypeChoice typeChoice, String name, String namePrefix, List<String> choiceNameList) {
-			this.typeChoice     = typeChoice;
-			this.name           = name;
-			this.namePrefix     = namePrefix;
-			this.choiceNameList = choiceNameList;
-		}
-	}
-	
-	private void genChoiceToString(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
-		if (choiceInfoList.isEmpty()) return;
+	private void genChoiceToString(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.choiceInfoList.isEmpty()) return;
 		
 		// Choice toSring declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(ChoiceInfo choiceInfo: choiceInfoList) {				
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {				
 				c1.add(String.format("QString toString(const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
@@ -1145,7 +1116,7 @@ public class Compiler {
 					  "// Choice toSring Function Definition",
 					  "//");
 
-			for(ChoiceInfo choiceInfo: choiceInfoList) {
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
 				outc.format("QString %s::toString(const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
 				outc.line("switch(value.choiceTag) {");
 				
@@ -1165,15 +1136,15 @@ public class Compiler {
 		}
 	}
 
-	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
-		if (choiceInfoList.isEmpty()) return;
+	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.choiceInfoList.isEmpty()) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(ChoiceInfo choiceInfo: choiceInfoList) {
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
@@ -1193,7 +1164,7 @@ public class Compiler {
 					  "//",
 					  "// Choice serialize Function Definition",
 					  "//");
-			for(ChoiceInfo choiceInfo: choiceInfoList) {
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
 				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
 		        outc.line("block.serialize16((quint16)value.choiceTag);");
 				outc.line("switch(value.choiceTag) {");
@@ -1215,15 +1186,15 @@ public class Compiler {
 		}
 	}
 
-	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
-		if (choiceInfoList.isEmpty()) return;
+	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc, Context context) {
+		if (context.choiceInfoList.isEmpty()) return;
 		
 		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(ChoiceInfo choiceInfo: choiceInfoList) {
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
@@ -1243,7 +1214,7 @@ public class Compiler {
 					  "//",
 					  "// Choice deserialize Function Definition",
 					  "//");
-			for(ChoiceInfo choiceInfo: choiceInfoList) {
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
 				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", choiceInfo.namePrefix, choiceInfo.name);
 				
 				outc.line("quint16 choiceTag_;",
@@ -1318,15 +1289,91 @@ public class Compiler {
 		}
 	}
 	
+	private static final boolean SHOW_BUILD_TIME;
 	private static final String BUILD_TIME;
 	static {
+		SHOW_BUILD_TIME = false;
 		LocalDateTime now = LocalDateTime.now();
 		BUILD_TIME = String.format("%04d-%02d-%02d %02d:%02d:%02d %s",
 				now.getYear(), now.getMonth().getValue(), now.getDayOfMonth(),
 				now.getHour(), now.getMinute(), now.getSecond(),
 				ZoneId.systemDefault().getId());
-		
 	}
+	
+	private static class EnumInfo {
+		final TypeEnum typeEnum;
+		final String   name;
+		final String   namePrefix;
+		
+		EnumInfo(TypeEnum typeEnum, String name, String namePrefix) {
+			this.typeEnum   = typeEnum;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
+	
+	private static class ChoiceInfo {
+		final TypeChoice   typeChoice;
+		final String       name;
+		final String       namePrefix;
+		final List<String> choiceNameList; // choice name list in appearance order
+
+		ChoiceInfo(TypeChoice typeChoice, String name, String namePrefix, List<String> choiceNameList) {
+			this.typeChoice     = typeChoice;
+			this.name           = name;
+			this.namePrefix     = namePrefix;
+			this.choiceNameList = choiceNameList;
+		}
+	}
+	
+	private static class RecordInfo {
+		final TypeRecord typeRecord;
+		final String     name;
+		final String     namePrefix;
+		
+		RecordInfo(TypeRecord typeRecord, String name, String namePrefix) {
+			this.typeRecord = typeRecord;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
+	
+	private static class ErrorInfo {
+		final TypeError typeError;
+		final String    name;
+		final String    namePrefix;
+		final long      code;
+		
+		ErrorInfo(TypeError typeError, String name, String namePrefix, long code) {
+			this.typeError  = typeError;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+			this.code       = code;
+		}
+	}
+	
+	private static class ProcedureInfo {
+		final TypeProcedure typeProcedure;
+		final String        name;
+		final String        namePrefix;
+		final long          code;
+
+		ProcedureInfo(TypeProcedure typeProcedure, String name, String namePrefix, long code) {
+			this.typeProcedure = typeProcedure;
+			this.name          = name;
+			this.namePrefix    = namePrefix;
+			this.code          = code;
+		}
+	}
+
+	private static class Context {
+		List<EnumInfo>       enumInfoList       = new ArrayList<>();
+		List<RecordInfo>     recordInfoList     = new ArrayList<>();
+		List<ChoiceInfo>     choiceInfoList     = new ArrayList<>();
+		List<ErrorInfo>      errorInfoList      = new ArrayList<>();
+		List<ProcedureInfo>  procedureInfoList  = new ArrayList<>();
+	}
+	
 
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
@@ -1343,11 +1390,13 @@ public class Compiler {
 				LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
 			// for outh
 			// write opening lines
-			outh.line("//",
-					String.format("// File  %s.h", programName),
-					String.format("// Build %s",   BUILD_TIME),
-					"//",
-					"");
+			if (SHOW_BUILD_TIME) {
+				outh.line("//",
+						String.format("// File  %s.h", programName),
+						String.format("// Build %s",   BUILD_TIME),
+						"//",
+						"");
+			}
 			
 			outh.format("#ifndef STUB_%s_H__", program.info.getProgramVersion());
 			outh.format("#define STUB_%s_H__", program.info.getProgramVersion());
@@ -1373,46 +1422,46 @@ public class Compiler {
 			}
 
 			// for outc
-			outc.line("//",
-					String.format("// File  %s.cpp", programName),
-					String.format("// Build %s",     BUILD_TIME),
-					"//",
-					"");
+			if (SHOW_BUILD_TIME) {
+				outc.line("//",
+						String.format("// File  %s.cpp", programName),
+						String.format("// Build %s",     BUILD_TIME),
+						"//",
+						"");
+			}
 			outc.line("#include \"../util/Util.h\"");
 			outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion());
 			outc.line();
 			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 			outc.line();
 			
-			List<EnumInfo>   enumInfoList   = new ArrayList<>();
-			List<RecordInfo> recordInfoList = new ArrayList<>();
-			List<ChoiceInfo> choiceInfoList = new ArrayList<>();
+			Context context = new Context();
 
 			// generate type and constant declaration
-			// and build enmInfoList, recordInfoList and choiceInfoList
-			genDecl(outh, outc, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
+			// and build enmInfoList, context.recordInfoList and context.choiceInfoList
+			genDecl(outh, outc, namePrefix, context);
 			
 			// Close program namespace
 			outh.line("}");
 
-			// generate toString for enum using enumInfoList
-			genEnumToString   (outh, outc, enumInfoList);
-			genEnumSerialize  (outh, outc, enumInfoList);
-			genEnumDeserialize(outh, outc, enumInfoList);
+			// generate toString for enum using context.enumInfoList
+			genEnumToString   (outh, outc, context);
+			genEnumSerialize  (outh, outc, context);
+			genEnumDeserialize(outh, outc, context);
 			
-			// generate toString for Record using recordInfoList
-			genRecordToString   (outh, outc, recordInfoList);
+			// generate toString for Record using context.recordInfoList
+			genRecordToString   (outh, outc, context);
 			// generate serialize for Record
-			genRecordSerialize  (outh, outc, recordInfoList);
+			genRecordSerialize  (outh, outc, context);
 			// generate deserialize for Record
-			genRecordDeserialize(outh, outc, recordInfoList);
+			genRecordDeserialize(outh, outc, context);
 			
-			// generate toString for Choice using choiceInfoList
-			genChoiceToString   (outh, outc, choiceInfoList);
+			// generate toString for Choice using context.choiceInfoList
+			genChoiceToString   (outh, outc, context);
 			// generate serialize for Choice
-			genChoiceSerialize  (outh, outc, choiceInfoList);
+			genChoiceSerialize  (outh, outc, context);
 			// generate deserialize for Choice
-			genChoiceDeserialize(outh, outc, choiceInfoList);
+			genChoiceDeserialize(outh, outc, context);
 			
 			// Close courier namespace
 			outh.line("}");
