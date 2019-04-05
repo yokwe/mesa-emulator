@@ -1294,9 +1294,9 @@ public class Compiler {
 			} else if (0xFFFF_FFFF_FFF0L <= value && value <= 0xFFFF_FFFF_FFFFL) {
 				return String.format("0x%XU", value);
 			} else if ((value & 0xFFFF) == 0) {
-				return String.format((value < 0x8000_0000) ? "0x%X" : "0x%XU", value);
+				return String.format((value <= 0x7FFF_FFF) ? "0x%X" : "0x%XU", value);
 			} else {
-				return String.format((value < 0x8000_0000) ? "%d" : "%dU", value);
+				return String.format((value <= 0x7FFF_FFF) ? "%d" : "%dU", value);
 			}
 		}
 		case STRING:
