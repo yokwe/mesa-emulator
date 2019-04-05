@@ -505,7 +505,7 @@ public:
 		{
 			quint16 v1 = 1234;
 			quint16 v2 = 5678;
-			Courier::ARRAY<quint16> t{2};
+			Courier::ARRAY<quint16, 2> t;
 			t[0] = v1;
 			t[1] = v2;
 
@@ -520,7 +520,7 @@ public:
 		{
 			quint16 v1 = 0x1234;
 			quint16 v2 = 0x5678;
-			Courier::ARRAY<quint16> t{2};
+			Courier::ARRAY<quint16, 2> t;
 			t[0] = v1;
 			t[1] = v2;
 
@@ -544,7 +544,7 @@ public:
 		{
 			quint16 v1 = 1234;
 			quint16 v2 = 5678;
-			Courier::ARRAY<quint16> t{2};
+			Courier::ARRAY<quint16, 2> t;
 			t[0] = v1;
 			t[1] = v2;
 
@@ -552,11 +552,25 @@ public:
 			Courier::serialize(b, t);
 			b.rewind();
 
-			Courier::ARRAY<quint16> u{2};
+			Courier::ARRAY<quint16, 2> u;
 			Courier::deserialize(b, u);
 
 			QString a = Courier::toString(u);
 			QString e = Courier::toString(t);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+
+		// initializer list
+		{
+			using A = Courier::ARRAY<quint16, 10>;
+			A t = {1, 2, 3};
+			CPPUNIT_ASSERT_EQUAL(10, t.maxSize);
+
+			QString a = Courier::toString(t);
+			QString e = "(10)[1 2 3 0 0 0 0 0 0 0]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -572,7 +586,23 @@ public:
 		{
 			quint16 v1 = 1234;
 			quint16 v2 = 5678;
-			Courier::SEQUENCE<quint16> t{10};
+			Courier::SEQUENCE<quint16, 10> t;
+			t.setSize(2);
+			t[0] = v1;
+			t[1] = v2;
+
+			QString a = Courier::toString(t);
+			QString e = "(2)[1234 5678]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		// toString
+		{
+			quint16 v1 = 1234;
+			quint16 v2 = 5678;
+			Courier::SEQUENCE<quint16> t;
 			t.setSize(2);
 			t[0] = v1;
 			t[1] = v2;
@@ -588,7 +618,7 @@ public:
 		{
 			quint16 v1 = 0x1234;
 			quint16 v2 = 0x5678;
-			Courier::SEQUENCE<quint16> t{10};
+			Courier::SEQUENCE<quint16, 10> t;
 			t.setSize(2);
 			t[0] = v1;
 			t[1] = v2;
@@ -613,7 +643,7 @@ public:
 		{
 			quint16 v1 = 1234;
 			quint16 v2 = 5678;
-			Courier::SEQUENCE<quint16> t{10};
+			Courier::SEQUENCE<quint16, 10> t;
 			t.setSize(2);
 			t[0] = v1;
 			t[1] = v2;
@@ -622,11 +652,41 @@ public:
 			Courier::serialize(b, t);
 			b.rewind();
 
-			Courier::SEQUENCE<quint16> u{10};
+			Courier::SEQUENCE<quint16, 10> u;
 			Courier::deserialize(b, u);
 
 			QString a = Courier::toString(u);
 			QString e = Courier::toString(t);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+
+		// initializer list
+		{
+			using A = Courier::SEQUENCE<quint16>;
+			A t = {1, 2, 3};
+			CPPUNIT_ASSERT_EQUAL(65535, t.maxSize);
+			CPPUNIT_ASSERT_EQUAL((quint16)3, t.getSize());
+
+			QString a = Courier::toString(t);
+			QString e = "(3)[1 2 3]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+
+		// initializer list
+		{
+			using A = Courier::SEQUENCE<quint16, 10>;
+			A t = {1, 2, 3};
+			CPPUNIT_ASSERT_EQUAL(10, t.maxSize);
+			CPPUNIT_ASSERT_EQUAL((quint16)3, t.getSize());
+
+			QString a = Courier::toString(t);
+			QString e = "(3)[1 2 3]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
