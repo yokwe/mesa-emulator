@@ -2,6 +2,8 @@ package mesa.courier.compiler;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1315,6 +1317,16 @@ public class Compiler {
 				return constant.toString();
 		}
 	}
+	
+	private static final String BUILD_TIME;
+	static {
+		LocalDateTime now = LocalDateTime.now();
+		BUILD_TIME = String.format("%04d-%02d-%02d %02d:%02d:%02d %s",
+				now.getYear(), now.getMonth().getValue(), now.getDayOfMonth(),
+				now.getHour(), now.getMinute(), now.getSecond(),
+				ZoneId.systemDefault().getId());
+		
+	}
 
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
@@ -1331,6 +1343,12 @@ public class Compiler {
 				LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
 			// for outh
 			// write opening lines
+			outh.line("//",
+					String.format("// File  %s.h", programName),
+					String.format("// Build %s",   BUILD_TIME),
+					"//",
+					"");
+			
 			outh.format("#ifndef STUB_%s_H__", program.info.getProgramVersion());
 			outh.format("#define STUB_%s_H__", program.info.getProgramVersion());
 			outh.line();
@@ -1355,15 +1373,17 @@ public class Compiler {
 			}
 
 			// for outc
+			outc.line("//",
+					String.format("// File  %s.cpp", programName),
+					String.format("// Build %s",     BUILD_TIME),
+					"//",
+					"");
 			outc.line("#include \"../util/Util.h\"");
 			outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub/%s\");", program.info.getProgramVersion());
 			outc.line();
 			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 			outc.line();
 			
-//			List<EnumInfo>   enumInfoList   = getEnumInfoList(namePrefix);
-//			List<RecordInfo> recordInfoList = getRecordInfo(namePrefix);
-//			List<ChoiceInfo> choiceInfoList = getChoiceInfo(namePrefix);
 			List<EnumInfo>   enumInfoList   = new ArrayList<>();
 			List<RecordInfo> recordInfoList = new ArrayList<>();
 			List<ChoiceInfo> choiceInfoList = new ArrayList<>();
