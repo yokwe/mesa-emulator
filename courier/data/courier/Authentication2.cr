@@ -22,9 +22,9 @@ BEGIN
 
 -- Types supporting encoding --
 
-Key: TYPE = RECORD [value: ARRAY 4 OF UNSPECIFIED];  -- lsb of each octet is odd parity bit --
+Key: TYPE = ARRAY 4 OF UNSPECIFIED;  -- lsb of each octet is odd parity bit --
 
-Block: TYPE = RECORD [value: ARRAY 4 OF UNSPECIFIED];  -- cipher text or plain text block --
+Block: TYPE = ARRAY 4 OF UNSPECIFIED;  -- cipher text or plain text block --
 
 HashedPassword: TYPE = CARDINAL;
 
@@ -53,7 +53,7 @@ StrongCredentials: TYPE = RECORD [
 
 SimpleCredentials: TYPE = Clearinghouse.Name;
 
-Verifier: TYPE = RECORD [value: SEQUENCE 12 OF UNSPECIFIED];
+Verifier: TYPE = SEQUENCE 12 OF UNSPECIFIED;
 
 StrongVerifier: TYPE = RECORD [
 	timeStamp: Time.Time,

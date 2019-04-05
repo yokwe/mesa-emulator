@@ -50,7 +50,7 @@ StrongCredentials: TYPE = RECORD [
 
 SimpleCredentials: TYPE = Clearinghouse.Name;
 
-Verifier: TYPE = RECORD [value: SEQUENCE 12 OF UNSPECIFIED];
+Verifier: TYPE = SEQUENCE 12 OF UNSPECIFIED;
 
 StrongVerifier: TYPE = RECORD [
 	timeStamp: Time.Time,
@@ -58,7 +58,7 @@ StrongVerifier: TYPE = RECORD [
 
 SimpleVerifier: TYPE = HashedPassword;
 
-Proxy: TYPE = RECORD [value: SEQUENCE OF UNSPECIFIED];
+Proxy: TYPE = SEQUENCE OF UNSPECIFIED;
 
 -- instances of the following type must be a multiple of 64 bits, padded --
 -- with zeros, before encryption --

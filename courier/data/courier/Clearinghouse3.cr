@@ -102,13 +102,13 @@ StreamOfThreePartName: TYPE = CHOICE OF {
 Property: TYPE = LONG CARDINAL;
 
 -- A Name can have up to 250 Properties associated with it. --
-Properties: TYPE = RECORD [value: SEQUENCE 250 OF Property];
+Properties: TYPE = SEQUENCE 250 OF Property;
 
 all: Property = 0;
 nullProperty: Property = 37777777777B;
 
 -- The value associated with an item property. --
-Item: TYPE = RECORD [value: SEQUENCE 500 OF UNSPECIFIED];
+Item: TYPE = SEQUENCE 500 OF UNSPECIFIED;
 
 -- TYPES AND CONSTANTS DESCRIBING NETWORK ADDRESSES --
 
@@ -119,7 +119,7 @@ NetworkAddress: TYPE = RECORD [
 	host: UNSPECIFIED3,
 	socket: UNSPECIFIED ];
 
-NetworkAddressList: TYPE = RECORD [value: SEQUENCE 40 OF NetworkAddress];
+NetworkAddressList: TYPE = SEQUENCE 40 OF NetworkAddress;
 
 -- OTHER TYPES AND CONSTANTS --
 
