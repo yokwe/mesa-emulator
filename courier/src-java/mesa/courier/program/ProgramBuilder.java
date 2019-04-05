@@ -114,21 +114,19 @@ public class ProgramBuilder {
 	// need to be instance method to access instance variable
 	private void buildDecl(CourierProgramContext tree) {
 		if (tree.programBody().declarationList() != null) {
-			int seq = 0;
 			// First process type
 			for(DeclarationContext declarationContext: tree.programBody().declarationList().elements) {
-				seq++;
 				if (declarationContext instanceof DeclTypeContext) {
 					DeclTypeContext context = (DeclTypeContext)declarationContext;
 					String name = context.name.getText();
 					Type   type = typeVisitor.visit(context.type());
-					program.addType(seq, name, type);
+					program.addType(name, type);
 				} else if (declarationContext instanceof DeclConstContext) {
 					DeclConstContext context = (DeclConstContext)declarationContext;
 					String name = context.name.getText();
 					Type   type = typeVisitor.visit(context.type());
 					Constant constant = constVisitor.visit(context.constant());
-					program.addConstant(seq, name, type, constant);
+					program.addConstant(name, type, constant);
 				} else {
 					String msg = String.format("Unknonw declarationContext = %s", declarationContext.getText());
 					logger.error(msg);

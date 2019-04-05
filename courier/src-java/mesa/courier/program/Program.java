@@ -55,12 +55,10 @@ public final class Program {
 		public enum Kind {TYPE, CONST};
 		
 		public final Kind   kind;
-		public final int    seq;
 		public final String name;
 		public final Type   type;
-		public Decl(Kind kind, int seq, String name, Type type) {
+		public Decl(Kind kind, String name, Type type) {
 			this.kind = kind;
-			this.seq  = seq;
 			this.name = name;
 			this.type = type;
 		}
@@ -83,14 +81,14 @@ public final class Program {
 		}
 	}
 	public static class DeclType extends Decl {
-		public DeclType(int seq, String name, Type type) {
-			super(Kind.TYPE, seq, name, type);
+		public DeclType(String name, Type type) {
+			super(Kind.TYPE, name, type);
 		}
 	}
 	public static class DeclConst extends Decl {
 		public final Constant constant;
-		public DeclConst(int seq, String name, Type type, Constant constant) {
-			super(Kind.CONST, seq, name, type);
+		public DeclConst(String name, Type type, Constant constant) {
+			super(Kind.CONST, name, type);
 			this.constant = constant;
 		}
 	}
@@ -115,8 +113,8 @@ public final class Program {
 	public void addDepend(Info info) {
 		depends.add(info);
 	}
-	public void addType(int seq, String name, Type type) {
-		DeclType declType = new DeclType(seq, name, type);
+	public void addType(String name, Type type) {
+		DeclType declType = new DeclType(name, type);
 		declList.add(declType);
 		
 		if (declMap.containsKey(name)) {
@@ -125,8 +123,8 @@ public final class Program {
 			declMap.put(name, declType);
 		}
 	}
-	public void addConstant(int seq, String name, Type type, Constant constant) {
-		DeclConst declConst = new DeclConst(seq, name, type, constant);
+	public void addConstant(String name, Type type, Constant constant) {
+		DeclConst declConst = new DeclConst(name, type, constant);
 		declList.add(declConst);
 
 		if (declMap.containsKey(name)) {
