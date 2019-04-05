@@ -43,13 +43,11 @@ QString Courier::toString(const Block&  value) {
 	return value.toString();
 }
 QString Courier::toString(const quint8  value) {
-	switch (value) {
-	case (quint8)0xFEU:
-	case (quint8)0xFFU:
-		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
-	default:
-		return QString("%1").arg(value);
+	if (value == 0) return "0";
+	if (0xF0 <= value) {
+		return QString("0x%1").arg(QString("%1").arg((quint32)value, 0, 16).toUpper());
 	}
+	return QString("%1").arg((quint32)value);
 }
 QString Courier::toString(const bool     value) {
 	return QString("%1").arg(value ? "T" : "F");
@@ -58,31 +56,35 @@ QString Courier::toString(const QString& value) {
 	return QString("%1").arg(value);
 }
 QString Courier::toString(const quint16  value) {
-	switch (value) {
-	case (quint16)0xFFFEU:
-	case (quint16)0xFFFFU:
+	if (value == 0) return "0";
+	if ((value & 0x00FF) == 0) {
 		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
-	default:
-		return QString("%1").arg(value);
 	}
+	if (0xFFF0 <= value) {
+		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
+	}
+	return QString("%1").arg(value);
 }
 QString Courier::toString(const quint32  value) {
-	switch (value) {
-	case (quint32)0xFFFFFFFEU:
-	case (quint32)0xFFFFFFFFU:
+	if (value == 0) return "0";
+	if ((value & 0x0000FFFF) == 0) {
 		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
-	default:
-		return QString("%1").arg(value);
 	}
+	if (0xFFFFFFF0U <= value) {
+		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
+	}
+
+	return QString("%1").arg(value);
 }
 QString Courier::toString(const quint64  value) {
-	switch (value) {
-	case (quint64)0xFFFFFFFFFFFEU:
-	case (quint64)0xFFFFFFFFFFFFU:
+	if (value == 0) return "0";
+	if ((value & 0x0000FFFF) == 0) {
 		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
-	default:
-		return QString("%1").arg(value);
 	}
+	if (0xFFFFFFFFFFF0U <= value && value <= 0xFFFFFFFFFFFFU) {
+		return QString("0x%1").arg(QString("%1").arg(value, 0, 16).toUpper());
+	}
+	return QString("%1").arg(value);
 }
 
 
