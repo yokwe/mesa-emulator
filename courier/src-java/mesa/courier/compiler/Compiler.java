@@ -322,11 +322,59 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
+	private void genDeclConstSequence(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name, Constant constant) {
+        // CONST  firstPosition
+        //   [REF Filing4::Position]
+        //   [SEQUENCE (100)UNSPECIFIED]]
+        //   [ARRAY (1)[0]
+        //     UNSPECIFIED
+
+		if (type.kind == Type.Kind.REFERENCE) {
+			String typeName = program.getLocalRefName((TypeReference)type);
+			List<String> values = new ArrayList<>();
+			if (constant.kind == Constant.Kind.ARRAY) {
+				ConstantArray constantArray = (ConstantArray)constant;
+				for(Constant constantArrayElement: constantArray.values) {
+					values.add(toConstantString(constantArrayElement));
+				}
+			} else {
+				throw new CompilerException(String.format("Unexpected constant %s", constant.toString()));
+			}
+			outh.format("const %s %s = {%s};", typeName, name, String.join(", ", values));
+		} else {
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+	}
+	private void genDeclConstArray(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name, Constant constant) {
+        // CONST  nullFileID
+        //   [REF Filing4::FileID]
+        //   [ARRAY (5)UNSPECIFIED]]
+        //   [ARRAY (5)[0  0  0  0  0]
+        //     UNSPECIFIED
+
+		if (type.kind == Type.Kind.REFERENCE) {
+			String typeName = program.getLocalRefName((TypeReference)type);
+			List<String> values = new ArrayList<>();
+			if (constant.kind == Constant.Kind.ARRAY) {
+				ConstantArray constantArray = (ConstantArray)constant;
+				for(Constant constantArrayElement: constantArray.values) {
+					values.add(toConstantString(constantArrayElement));
+				}
+			} else {
+				throw new CompilerException(String.format("Unexpected constant %s", constant.toString()));
+			}
+			outh.format("const %s %s = {%s};", typeName, name, String.join(", ", values));
+		} else {
+			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+		}
+	}
 	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst) {
 		Type     type         = declConst.type;
 		String   name         = Util.sanitizeSymbol(declConst.name);
 		Constant constant     = declConst.constant;
 		Type     concreteType = type.getConcreteType();
+		
+		// FIXME generate toString/serialize/deserialize function for ERROR and PROCEDURE
 		
 		switch(concreteType.kind) {
 		// predefined
@@ -362,7 +410,11 @@ public class Compiler {
 			genDeclConstRecord(outh, outc, namePrefix, type, name, constant);
 			break;
 		case ARRAY:
+			genDeclConstArray(outh, outc, namePrefix, type, name, constant);
+			break;
 		case SEQUENCE:
+			genDeclConstSequence(outh, outc, namePrefix, type, name, constant);
+			break;
 		case CHOICE:
 		// reference
 		case REFERENCE:
@@ -513,8 +565,6 @@ public class Compiler {
 		for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 			outh.line(line);
 		}
-		
-		// TODO To enable initialize like = {1, 2, 3}, add constructor(std::initializer_list<T> init) to struct that has just one SEQUENCE or ARRAY
 		outh.line("};");
 	}
 	
