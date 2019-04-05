@@ -64,16 +64,15 @@ public class Compiler {
 		case ARRAY:
 		{
 			TypeArray typeArray = (TypeArray)type;
-			return String.format("ARRAY<%s>", toTypeString(typeArray.type));
+			return String.format("ARRAY<%s,%d>", toTypeString(typeArray.type), typeArray.size);
 		}
 		case SEQUENCE:
 		{
 			TypeSequence typeSequence = (TypeSequence)type;
-			
 			if (typeSequence.size == TypeSequence.MAX_SIZE) {
 				return String.format("SEQUENCE<%s>", toTypeString(typeSequence.type));
 			} else {
-				return String.format("SEQUENCE<%s>", toTypeString(typeSequence.type));
+				return String.format("SEQUENCE<%s,%d>", toTypeString(typeSequence.type), typeSequence.size);
 			}
 		}
 		case RECORD:
@@ -116,13 +115,11 @@ public class Compiler {
 			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
 			break;
 		case ARRAY:
-			logger.error("Rewrite \"ARRAY N OF T\" to \"RECORD [value: ARRAY N OF T]\"");
-			logger.error("  {}  {}", name, type.toString());
-			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+			outh.format("using %s = %s;", name, toTypeString(type));
+			break;
 		case SEQUENCE:
-			logger.error("Rewrite \"SEQUENCE N OF T\" to \"RECORD [value: SEQUENCE N OF T]\"");
-			logger.error("  {}  {}", name, type.toString());
-			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
+			outh.format("using %s = %s;", name, toTypeString(type));
+			break;
 		case RECORD:
 			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
 			break;
@@ -148,35 +145,8 @@ public class Compiler {
 		List<String> c1 = new ArrayList<>();
 		List<String> c2 = new ArrayList<>();
 		for(Field field: typeError.paramList) {
-			String fieldType;
-			String fieldName;
-			switch(field.type.kind) {
-			case ARRAY:
-			{
-				TypeArray typeArray = (TypeArray)field.type;
-				fieldType = toTypeString(field.type);
-				fieldName = String.format("%s{%d}", field.name, typeArray.size);	
-			}
-				break;
-			case SEQUENCE:
-			{
-				TypeSequence typeSequence = (TypeSequence)field.type;
-				fieldType = toTypeString(field.type);
-				if (typeSequence.size == TypeSequence.MAX_SIZE) {
-					fieldName = field.name;
-				} else {
-					fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
-				}
-			}
-				break;
-			default:
-				fieldType = toTypeString(field.type);
-				fieldName = field.name;
-				break;
-			}
-			
-			c1.add(fieldType);
-			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			c1.add(toTypeString(field.type));
+			c2.add(String.format("%s;", Util.sanitizeSymbol(field.name)));
 		}
 		
 		long code;
@@ -544,6 +514,7 @@ public class Compiler {
 			outh.line(line);
 		}
 		
+		// TODO To enable initialize like = {1, 2, 3}, add constructor(std::initializer_list<T> init) to struct that has just one SEQUENCE or ARRAY
 		outh.line("};");
 	}
 	
@@ -1313,19 +1284,19 @@ public class Compiler {
 			long value = constantNumber.value;
 			
 			if (value == 0) {
-				return String.format("%d", value);
+				return "0";
 			} else if (0xF0 <= value && value <= 0xFF) {
 				return String.format("0x%X", value);
 			} else if (0xFFF0 <= value && value <= 0xFFFF) {
 				return String.format("0x%X", value);
 			} else if (0xFFFF_FFF0L <= value && value <= 0xFFFF_FFFFL) {
-				return String.format("0x%X", value);
+				return String.format("0x%XU", value);
 			} else if (0xFFFF_FFFF_FFF0L <= value && value <= 0xFFFF_FFFF_FFFFL) {
-				return String.format("0x%X", value);
-			} else if ((value & 0xFF) == 0) {
-				return String.format("0x%X", value);
+				return String.format("0x%XU", value);
+			} else if ((value & 0xFFFF) == 0) {
+				return String.format((value < 0x8000_0000) ? "0x%X" : "0x%XU", value);
 			} else {
-				return String.format("%d", value);
+				return String.format((value < 0x8000_0000) ? "%d" : "%dU", value);
 			}
 		}
 		case STRING:
