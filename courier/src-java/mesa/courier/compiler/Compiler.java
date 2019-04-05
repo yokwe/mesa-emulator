@@ -94,7 +94,8 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType) {
+	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		Type   type = declType.type;
 		String name = declType.name;
 		
@@ -112,7 +113,7 @@ public class Compiler {
 			break;
 		// constructed
 		case ENUM:
-			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
+			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
 			break;
 		case ARRAY:
 			outh.format("using %s = %s;", name, toTypeString(type));
@@ -121,24 +122,23 @@ public class Compiler {
 			outh.format("using %s = %s;", name, toTypeString(type));
 			break;
 		case RECORD:
-			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
+			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
 			break;
 		case CHOICE:
-			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix);
-			break;
-		case PROCEDURE:
-		case ERROR:
-			outh.format("// FIXME TypeDecl %s %s", name, type.toString());
+			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
 			break;
 		// reference
 		case REFERENCE:
 			outh.format("using %s = %s;", name, toTypeString(type));
 			break;
+		case PROCEDURE:
+		case ERROR:
 		default:
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant) {
+	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		//
 		// Output declaration of class
 		//
@@ -167,8 +167,18 @@ public class Compiler {
 		}
 		
 		outh.line("};");
+		
+		// Build recordInfo
+		{
+			TypeRecord typeRecord = new TypeRecord();
+			for(Field field: typeError.paramList) {
+				typeRecord.addField(field);
+			}
+			recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+		}
 	}
-	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant) {
+	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		//
 		// Output declaration of class
 		//		
@@ -270,6 +280,22 @@ public class Compiler {
 		outh.line();
 		outh.format("void (*call)(Param& param, Result& result) throw (%s);", String.join(", ", typeProcedure.errroList));
 		outh.line("};");
+		
+		// Build recordInfo
+		{
+			TypeRecord typeRecord = new TypeRecord();
+			for(Field field: typeProcedure.paramList) {
+				typeRecord.addField(field);
+			}
+			recordInfoList.add(new RecordInfo(typeRecord, "Param", String.format("%s::%s", namePrefix, name)));
+		}
+		{
+			TypeRecord typeRecord = new TypeRecord();
+			for(Field field: typeProcedure.resultList) {
+				typeRecord.addField(field);
+			}
+			recordInfoList.add(new RecordInfo(typeRecord, "Result", String.format("%s::%s", namePrefix, name)));
+		}
 	}
 	private void genDeclConstRecord(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name, Constant constant) {
         //const Ordering defaultOrdering = {AttributeType::name, true, Interpretation::string};
@@ -368,13 +394,12 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst) {
+	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		Type     type         = declConst.type;
 		String   name         = Util.sanitizeSymbol(declConst.name);
 		Constant constant     = declConst.constant;
 		Type     concreteType = type.getConcreteType();
-		
-		// FIXME generate toString/serialize/deserialize function for ERROR and PROCEDURE
 		
 		switch(concreteType.kind) {
 		// predefined
@@ -401,10 +426,10 @@ public class Compiler {
 		}
 			break;
 		case ERROR:
-			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant);
+			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant, enumInfoList, recordInfoList, choiceInfoList);
 			break;
 		case PROCEDURE:
-			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant);
+			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant, enumInfoList, recordInfoList, choiceInfoList);
 			break;
 		case RECORD:
 			genDeclConstRecord(outh, outc, namePrefix, type, name, constant);
@@ -424,7 +449,8 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
+	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		outh.line("",
 				  "//",
 				  "// Declaration",
@@ -436,10 +462,10 @@ public class Compiler {
 			
 			switch(decl.kind) {
 			case TYPE:
-				genDeclType(outh, outc, namePrefix, (DeclType)decl);
+				genDeclType(outh, outc, namePrefix, (DeclType)decl, enumInfoList, recordInfoList, choiceInfoList);
 				break;
 			case CONST:
-				genDeclConst(outh, outc, namePrefix, (DeclConst)decl);
+				genDeclConst(outh, outc, namePrefix, (DeclConst)decl, enumInfoList, recordInfoList, choiceInfoList);
 				break;
 			default:
 				throw new CompilerException(String.format("Unexpected decl.kind %s", decl.kind));
@@ -523,7 +549,8 @@ public class Compiler {
 		}
 	}
 
-	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix) {
+	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		//
 		// Output declaration of class
 		//
@@ -566,9 +593,15 @@ public class Compiler {
 			outh.line(line);
 		}
 		outh.line("};");
+		
+		// build recordInfoList
+		{
+			recordInfoList.add(new RecordInfo(typeRecord, name, namePrefix));
+		}
 	}
 	
-	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
+	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		List<String>  c1 = new ArrayList<>();
 		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -581,18 +614,23 @@ public class Compiler {
 			outh.line(line);
 		}
 		outh.line("};");
+		
+		// build enumInfoList
+		enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 	}
 	
-	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix) {
+	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		if (typeChoice instanceof TypeChoice.Typed) {
-			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix);
+			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
 		} else if (typeChoice instanceof TypeChoice.Anon) {
-			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix);
+			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
 		} else {
 			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
 		}
 	}
-	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
+	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -613,7 +651,7 @@ public class Compiler {
 			if (candidateType.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
+				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), enumInfoList, recordInfoList, choiceInfoList);
 			} else {
 				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 			}
@@ -658,8 +696,14 @@ public class Compiler {
 			outc.line("}");
 			outc.line("}");
 		}
+		
+		// Build choideInfoList
+		{
+			choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
+		}
 	}
-	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
+	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix,
+			List<EnumInfo> enumInfoList, List<RecordInfo> recordInfoList, List<ChoiceInfo> choiceInfoList) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -698,7 +742,7 @@ public class Compiler {
 			if (candidateType.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
+				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), enumInfoList, recordInfoList, choiceInfoList);
 			} else {
 				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 			}
@@ -742,6 +786,24 @@ public class Compiler {
 			outc.line("}");
 			outc.line("}");
 		}
+		
+		// Build enumInfoList
+		{
+			// Build typeEnum from anon
+			TypeEnum typeEnum = new TypeEnum();
+			for(Candidate<Correspondence> candidate: anon.candidates) {
+				for(Correspondence correspondence: candidate.designators) {
+					typeEnum.addCorrespondence(correspondence);
+				}
+			}
+			
+			enumInfoList.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, name)));
+		}
+		
+		// Build choideInfoList
+		{
+			choiceInfoList.add(new ChoiceInfo(anon, name, namePrefix, choiceNameList));
+		}
 	}
 	
 	class EnumInfo {
@@ -754,40 +816,6 @@ public class Compiler {
 			this.name       = name;
 			this.namePrefix = namePrefix;
 		}
-	}
-	private List<EnumInfo> getEnumInfoList(String namePrefix) {
-		List<EnumInfo> ret = new ArrayList<>();
-		for(Decl decl: program.declList) {
-			if (!decl.isType()) continue;
-			Type   type = decl.type;
-			String name = decl.name;
-			switch (type.kind) {
-			case ENUM:
-				ret.add(new EnumInfo((TypeEnum)type, name, namePrefix));
-				break;
-			case CHOICE:
-			{
-				TypeChoice typeChoice = (TypeChoice)type;
-				if (typeChoice instanceof TypeChoice.Anon) {
-					TypeChoice.Anon anon = (TypeChoice.Anon)typeChoice;
-					
-					// Build typeEnum from anon
-					TypeEnum typeEnum = new TypeEnum();
-					for(Candidate<Correspondence> candidate: anon.candidates) {
-						for(Correspondence correspondence: candidate.designators) {
-							typeEnum.addCorrespondence(correspondence);
-						}
-					}
-					
-					ret.add(new EnumInfo(typeEnum, "CHOICE_TAG", String.format("%s::%s", namePrefix, name)));
-				}
-			}
-				break;
-			default:
-				break;
-			}
-		}
-		return ret;
 	}
 	
 	private void genEnumToString(LinePrinter outh, LinePrinter outc, List<EnumInfo> enumInfoList) {
@@ -935,51 +963,6 @@ public class Compiler {
 			this.name       = name;
 			this.namePrefix = namePrefix;
 		}
-	}
-	private List<RecordInfo> getRecordInfo(String namePrefix) {
-		List<RecordInfo> ret = new ArrayList<>();
-		for(Decl decl: program.declList) {
-			Type   type = decl.type;
-			String name = decl.name;
-			if (type.kind == Type.Kind.RECORD) {
-				TypeRecord typeRecord = (TypeRecord)type;
-				ret.add(new RecordInfo(typeRecord, name, namePrefix));
-			} else if (type.kind == Type.Kind.CHOICE) {
-				TypeChoice typeChoice = (TypeChoice)type;
-				if (typeChoice instanceof TypeChoice.Typed) {
-					TypeChoice.Typed typed = (TypeChoice.Typed)typeChoice;
-					int              maxStructNumber = 0;
-					for(Candidate<String> candidate: typed.candidates) {
-						maxStructNumber++;
-						Type candidateType = candidate.type;
-						if (candidateType.kind == Type.Kind.RECORD) {
-							TypeRecord typeRecord = (TypeRecord)candidateType;
-							String structName = String.format("CHOICE_%02d", maxStructNumber);
-							ret.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
-						} else {
-							throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
-						}
-					}
-				} else if (typeChoice instanceof TypeChoice.Anon) {
-					TypeChoice.Anon anon = (TypeChoice.Anon)typeChoice;
-					int             maxStructNumber = 0;
-					for(Candidate<Correspondence> candidate: anon.candidates) {
-						maxStructNumber++;
-						Type candidateType = candidate.type;
-						if (candidateType.kind == Type.Kind.RECORD) {
-							TypeRecord typeRecord = (TypeRecord)candidateType;
-							String structName = String.format("CHOICE_%02d", maxStructNumber);
-							ret.add(new RecordInfo(typeRecord, structName, String.format("%s::%s", namePrefix, name)));
-						} else {
-							throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
-						}
-					}
-				} else {
-					throw new CompilerException(String.format("Unexpected type %s", typeChoice.getClass().getName()));
-				}
-			}
-		}
-		return ret;
 	}
 	private void genRecordToString(LinePrinter outh, LinePrinter outc, List<RecordInfo> recordInfoList) {
 		if (recordInfoList.isEmpty()) return;
@@ -1129,43 +1112,6 @@ public class Compiler {
 			this.namePrefix     = namePrefix;
 			this.choiceNameList = choiceNameList;
 		}
-	}
-	
-	private List<ChoiceInfo> getChoiceInfo(String namePrefix) {
-		List<ChoiceInfo> ret = new ArrayList<>();
-		for(Decl decl: program.declList) {
-			Type   type = decl.type;
-			String name = decl.name;
-			if (type.kind == Type.Kind.CHOICE) {
-				TypeChoice typeChoice = (TypeChoice)type;
-				if (typeChoice instanceof TypeChoice.Typed) {
-					TypeChoice.Typed     typed = (TypeChoice.Typed)typeChoice;
-					List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
-					for(Candidate<String> candidate: typed.candidates) {
-						// build choiceMap
-						for(String id: candidate.designators) {
-							String choiceName = id;
-							choiceNameList.add(choiceName);
-						}
-					}
-					
-					ret.add(new ChoiceInfo(typeChoice, name, namePrefix, choiceNameList));
-				} else if (typeChoice instanceof TypeChoice.Anon) {
-					TypeChoice.Anon      typed = (TypeChoice.Anon)typeChoice;
-					List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
-					for(Candidate<Correspondence> candidate: typed.candidates) {						
-						// build choiceMap
-						for(Correspondence correspondence: candidate.designators) {
-							String choiceName   = correspondence.id;
-							choiceNameList.add(choiceName);
-						}
-					}
-
-					ret.add(new ChoiceInfo(typeChoice, name, namePrefix, choiceNameList));
-				}
-			}
-		}
-		return ret;
 	}
 	
 	private void genChoiceToString(LinePrinter outh, LinePrinter outc, List<ChoiceInfo> choiceInfoList) {
@@ -1415,33 +1361,36 @@ public class Compiler {
 			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 			outc.line();
 			
-			// generate type declaration (exclude error and procedure)
-			// and generate serialize/deserialize/toString() for record and choice
-			genDecl(outh, outc, namePrefix);
+//			List<EnumInfo>   enumInfoList   = getEnumInfoList(namePrefix);
+//			List<RecordInfo> recordInfoList = getRecordInfo(namePrefix);
+//			List<ChoiceInfo> choiceInfoList = getChoiceInfo(namePrefix);
+			List<EnumInfo>   enumInfoList   = new ArrayList<>();
+			List<RecordInfo> recordInfoList = new ArrayList<>();
+			List<ChoiceInfo> choiceInfoList = new ArrayList<>();
+
+			// generate type and constant declaration
+			// and build enmInfoList, recordInfoList and choiceInfoList
+			genDecl(outh, outc, namePrefix, enumInfoList, recordInfoList, choiceInfoList);
 			
 			// Close program namespace
 			outh.line("}");
 
-			List<EnumInfo>   enumInfoList   = getEnumInfoList(namePrefix);
-			List<RecordInfo> recordInfoList = getRecordInfo(namePrefix);
-			List<ChoiceInfo> choiceInfoList = getChoiceInfo(namePrefix);
-
-			// generate toString for enum
-			genEnumToString(outh, outc, enumInfoList);
-			genEnumSerialize(outh, outc, enumInfoList);
+			// generate toString for enum using enumInfoList
+			genEnumToString   (outh, outc, enumInfoList);
+			genEnumSerialize  (outh, outc, enumInfoList);
 			genEnumDeserialize(outh, outc, enumInfoList);
 			
-			// generate toString for Record
-			genRecordToString(outh, outc, recordInfoList);
+			// generate toString for Record using recordInfoList
+			genRecordToString   (outh, outc, recordInfoList);
 			// generate serialize for Record
-			genRecordSerialize(outh, outc, recordInfoList);
+			genRecordSerialize  (outh, outc, recordInfoList);
 			// generate deserialize for Record
 			genRecordDeserialize(outh, outc, recordInfoList);
 			
-			// generate toString for Choice
-			genChoiceToString(outh, outc, choiceInfoList);
+			// generate toString for Choice using choiceInfoList
+			genChoiceToString   (outh, outc, choiceInfoList);
 			// generate serialize for Choice
-			genChoiceSerialize(outh, outc, choiceInfoList);
+			genChoiceSerialize  (outh, outc, choiceInfoList);
 			// generate deserialize for Choice
 			genChoiceDeserialize(outh, outc, choiceInfoList);
 			
