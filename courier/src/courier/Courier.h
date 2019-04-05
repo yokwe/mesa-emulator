@@ -86,23 +86,21 @@ void deserialize(Block& block, quint32&  value);
 void deserialize(Block& block, quint64&  value);
 
 
-template <typename T>
+template <typename T, int N = 65535>
 struct SEQUENCE {
 public:
 	static const int MAX_SIZE = 65535;
 	const int maxSize;
-	SEQUENCE(int maxSize_ = MAX_SIZE) : maxSize(maxSize_) {
-		if (0 <= maxSize && maxSize <= MAX_SIZE) {
-			data = new (std::nothrow) T [maxSize];
-			if (data == nullptr) {
-				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
-				COURIER_ERROR();
-			}
-		} else {
-			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
-			COURIER_ERROR();
+	SEQUENCE() : maxSize(N) {
+		initialize();
+	}
+	SEQUENCE(std::initializer_list<T> initList) : maxSize(N) {
+		initialize();
+		setSize(initList.size());
+		int j = 0;
+		for(auto i = initList.begin(); i != initList.end(); i++) {
+			data[j++] = *i;
 		}
-		size = 0;
 	}
 	~SEQUENCE() {
 		delete[] data;
@@ -142,41 +140,8 @@ public:
 private:
 	quint16 size;
 	T*      data;
-};
-template <typename T>
-QString toString(const SEQUENCE<T>& value) {
-	QStringList list;
-	quint16 size = value.getSize();
-	for(quint16 i = 0; i < size; i++) {
-		list << Courier::toString(value[i]);
-	}
-	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
-}
-template <typename T>
-void serialize(BLOCK& block, const SEQUENCE<T>& value) {
-	quint16 size = value.getSize();
-	Courier::serialize(block, size);
-	for(int i = 0; i < size; i++) {
-		Courier::serialize(block, value[i]);
-	}
-}
-template <typename T>
-void deserialize(BLOCK& block, SEQUENCE<T>& value) {
-	quint16 size;
-	Courier::deserialize(block, size);
-	value.setSize(size);
-	for(int i = 0; i < size; i++) {
-		Courier::deserialize(block, value[i]);
-	}
-}
 
-
-template <typename T>
-struct ARRAY {
-	static const int MAX_SIZE = 65535;
-	const int maxSize;
-
-	ARRAY(int maxSize_) : maxSize(maxSize_) {
+	void initialize() {
 		if (0 <= maxSize && maxSize <= MAX_SIZE) {
 			data = new (std::nothrow) T [maxSize];
 			if (data == nullptr) {
@@ -186,6 +151,53 @@ struct ARRAY {
 		} else {
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
 			COURIER_ERROR();
+		}
+		size = 0;
+		bzero(data, maxSize * sizeof(T));
+	}
+};
+template <typename T, int N>
+QString toString(const SEQUENCE<T, N>& value) {
+	QStringList list;
+	quint16 size = value.getSize();
+	for(quint16 i = 0; i < size; i++) {
+		list << Courier::toString(value[i]);
+	}
+	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
+}
+template <typename T, int N>
+void serialize(BLOCK& block, const SEQUENCE<T, N>& value) {
+	quint16 size = value.getSize();
+	Courier::serialize(block, size);
+	for(int i = 0; i < size; i++) {
+		Courier::serialize(block, value[i]);
+	}
+}
+template <typename T, int N>
+void deserialize(BLOCK& block, SEQUENCE<T, N>& value) {
+	quint16 size;
+	Courier::deserialize(block, size);
+	value.setSize(size);
+	for(int i = 0; i < size; i++) {
+		Courier::deserialize(block, value[i]);
+	}
+}
+
+
+
+template <typename T, int N>
+struct ARRAY {
+	static const int MAX_SIZE = 65535;
+	const int maxSize;
+
+	ARRAY() : maxSize(N) {
+		initialize();
+	}
+	ARRAY(std::initializer_list<T> initList) : maxSize(N) {
+		initialize();
+		int j = 0;
+		for(auto i = initList.begin(); i != initList.end(); i++) {
+			data[j++] = *i;
 		}
 	}
 	~ARRAY() {
@@ -213,9 +225,23 @@ struct ARRAY {
 
 private:
 	T*      data;
+
+	void initialize() {
+		if (0 <= maxSize && maxSize <= MAX_SIZE) {
+			data = new (std::nothrow) T [maxSize];
+			if (data == nullptr) {
+				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+				COURIER_ERROR();
+			}
+		} else {
+			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+			COURIER_ERROR();
+		}
+		bzero(data, maxSize * sizeof(T));
+	}
 };
-template <typename T>
-QString toString(const ARRAY<T>& value) {
+template <typename T, int N>
+QString toString(const ARRAY<T, N>& value) {
 	quint16 maxSize = value.maxSize;
 	QStringList list;
 	for(int i = 0; i < maxSize; i++) {
@@ -223,14 +249,14 @@ QString toString(const ARRAY<T>& value) {
 	}
 	return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
 }
-template <typename T>
-void serialize(BLOCK& block, const ARRAY<T>& value) {
+template <typename T, int N>
+void serialize(BLOCK& block, const ARRAY<T, N>& value) {
 	for(int i = 0; i < value.maxSize; i++) {
 		Courier::serialize(block, value[i]);
 	}
 }
-template <typename T>
-void deserialize(BLOCK& block, ARRAY<T>& value) {
+template <typename T, int N>
+void deserialize(BLOCK& block, ARRAY<T, N>& value) {
 	for(int i = 0; i < value.maxSize; i++) {
 		Courier::deserialize(block, value[i]);
 	}
