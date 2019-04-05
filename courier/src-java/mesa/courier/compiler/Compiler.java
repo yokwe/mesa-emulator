@@ -138,8 +138,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant,
-			Context context) {
+	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant, Context context) {
 		//
 		// Output declaration of class
 		//
@@ -183,8 +182,7 @@ public class Compiler {
 			context.errorInfoList.add(new ErrorInfo(typeError, name, namePrefix, code));
 		}
 	}
-	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant,
-			Context context) {
+	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant, Context context) {
 		//
 		// Output declaration of class
 		//		
@@ -404,8 +402,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst,
-			Context context) {
+	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst, Context context) {
 		Type     type         = declConst.type;
 		String   name         = Util.sanitizeSymbol(declConst.name);
 		Constant constant     = declConst.constant;
@@ -459,8 +456,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix,
-			Context context) {
+	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix, Context context) {
 		outh.line("",
 				  "//",
 				  "// Declaration",
@@ -559,8 +555,7 @@ public class Compiler {
 		}
 	}
 
-	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix,
-			Context context) {
+	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix, Context context) {
 		//
 		// Output declaration of class
 		//
@@ -610,8 +605,7 @@ public class Compiler {
 		}
 	}
 	
-	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix,
-			Context context) {
+	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix, Context context) {
 		List<String>  c1 = new ArrayList<>();
 		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -629,8 +623,7 @@ public class Compiler {
 		context.enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 	}
 	
-	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix,
-			Context context) {
+	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix, Context context) {
 		if (typeChoice instanceof TypeChoice.Typed) {
 			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix, context);
 		} else if (typeChoice instanceof TypeChoice.Anon) {
@@ -639,8 +632,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
 		}
 	}
-	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix,
-			Context context) {
+	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix, Context context) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -712,8 +704,7 @@ public class Compiler {
 			context.choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
 		}
 	}
-	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix,
-			Context context) {
+	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix, Context context) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
