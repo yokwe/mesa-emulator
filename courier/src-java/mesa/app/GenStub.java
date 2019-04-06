@@ -33,8 +33,6 @@ public class GenStub {
 			String           programVersion = entry.getKey();
 			Compiler.Context context        = entry.getValue();
 			
-			if (context.procedureInfoList.isEmpty()) continue;
-						
 			for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
 				logger.info("{}  PROC  {}  {}", programVersion, procedureInfo.code, procedureInfo.name);
 			}
