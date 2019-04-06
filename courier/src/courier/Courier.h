@@ -36,22 +36,20 @@ OF SUCH DAMAGE.
 
 #include "../courier/Block.h"
 
-#define COURIER_FATAL_ERROR() { logger.fatal("FATAL ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); throw Courier::CourierError(__FILE__, __LINE__, __FUNCTION__); }
+#define COURIER_FATAL_ERROR() { logger.fatal("FATAL ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); throw Courier::CourierFatalError(__FILE__, __LINE__, __FUNCTION__); }
 
 namespace Courier {
 
 class CourierError {
+};
+
+class CourierFatalError : public CourierError {
 public:
 	const char *file;
 	const int   line;
 	const char *func;
 
-	CourierError(const char *file_, const int line_, const char *func_) : file(file_), line(line_), func(func_) {}
-};
-
-class CourierFatalError : public CourierError {
-public:
-	CourierFatalError(const char *file_, const int line_, const char *func_) : CourierError(file_, line_, func_) {}
+	CourierFatalError(const char *file_, const int line_, const char *func_) : file(file_), line(line_), func(func_) {}
 };
 
 using BLOCK         = Block;
