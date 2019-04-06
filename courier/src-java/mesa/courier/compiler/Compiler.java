@@ -378,7 +378,12 @@ public class Compiler {
 		outh.line();
 		outh.format("static const quint16 CODE = %d;", code);
 		outh.line();
-		outh.format("using call = void (*)(Param& param, Result& result) throw (%s);", String.join(", ", typeProcedure.errroList));
+		outh.line("using call = void (*)(Param& param, Result& result);");
+		if (typeProcedure.errroList.isEmpty()) {
+			outh.line("// nothrow");
+		} else {
+			outh.format("// throw %s", String.join(", ", typeProcedure.errroList));
+		}
 		outh.line("};");
 		
 		// Build recordInfo
