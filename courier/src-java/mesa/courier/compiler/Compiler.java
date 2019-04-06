@@ -252,9 +252,14 @@ public class Compiler {
 
 		outh.format("struct %s {", name);
 		outh.format("static const quint16 CODE = %d;", code);
-		outh.line();
-		for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-			outh.line(line);
+		
+		if (typeError.paramList.isEmpty()) {
+			//
+		} else {
+			outh.line();
+			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
+				outh.line(line);
+			}
 		}
 		
 		outh.line("};");
