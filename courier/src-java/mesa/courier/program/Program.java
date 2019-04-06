@@ -223,7 +223,7 @@ public final class Program {
 		if (declMap.containsKey(name)) {
 			return declMap.get(name);
 		} else {
-			throw new ProgramException(String.format("Unknown decl.  ame = %s", name));
+			throw new ProgramException(String.format("Unknown decl.  name = %s", name));
 		}
 	}
 	public Type getType(String name) {
