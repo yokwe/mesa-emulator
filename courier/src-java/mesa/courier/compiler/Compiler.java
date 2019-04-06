@@ -553,11 +553,6 @@ public class Compiler {
 		}
 	}
 	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
-		outh.line("",
-				  "//",
-				  "// Declaration",
-				  "//");
-
 		for(Decl decl: program.declList) {
 			outh.line();
 			logDecl(outh, decl);
