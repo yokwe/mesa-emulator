@@ -42,7 +42,7 @@ public class GenStub {
 			for(Compiler.ErrorInfo errorInfo: context.errorInfoList) {
 				logger.info("{}  ERROR {}  {}", programVersion, errorInfo.code, errorInfo.name);
 			}
-}
+		}
 		
 		logger.debug("STOP");
 	}
