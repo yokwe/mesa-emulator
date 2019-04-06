@@ -22,10 +22,12 @@ BEGIN
 
 StreamOfUnspecified: TYPE = CHOICE OF {
 	nextSegment(0) => RECORD [
-		segment: SEQUENCE OF UNSPECIFIED,
-		restOfStream: StreamOfUnspecified],
+        segment: SEQUENCE OF UNSPECIFIED],
+--      segment: SEQUENCE OF UNSPECIFIED,
+--      restOfStream: StreamOfUnspecified],
 	lastSegment(1) => RECORD [
 		segment: SEQUENCE OF UNSPECIFIED]};
+-- NOTE: After read StreamOfUnspecified, if choice is nextSetment, need to read StreamOfUnspecified again to read rest of data.
 
 -- types --
 
