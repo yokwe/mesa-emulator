@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -43,8 +44,98 @@ public class Compiler {
 
 	public static String STUB_DIR_PATH = "src/stub/";
 	
+	public static class EnumInfo {
+		public final TypeEnum typeEnum;
+		public final String   name;
+		public final String   namePrefix;
+		
+		EnumInfo(TypeEnum typeEnum, String name, String namePrefix) {
+			this.typeEnum   = typeEnum;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
+	
+	public static class ChoiceInfo {
+		public final TypeChoice   typeChoice;
+		public final String       name;
+		public final String       namePrefix;
+		public final List<String> choiceNameList; // choice name list in appearance order
+
+		ChoiceInfo(TypeChoice typeChoice, String name, String namePrefix, List<String> choiceNameList) {
+			this.typeChoice     = typeChoice;
+			this.name           = name;
+			this.namePrefix     = namePrefix;
+			this.choiceNameList = choiceNameList;
+		}
+	}
+	
+	public static class RecordInfo {
+		public final TypeRecord typeRecord;
+		public final String     name;
+		public final String     namePrefix;
+		
+		RecordInfo(TypeRecord typeRecord, String name, String namePrefix) {
+			this.typeRecord = typeRecord;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
+	
+	public static class ErrorInfo {
+		public final TypeError typeError;
+		public final String    name;
+		public final String    namePrefix;
+		public final long      code;
+		
+		ErrorInfo(TypeError typeError, String name, String namePrefix, long code) {
+			this.typeError  = typeError;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+			this.code       = code;
+		}
+	}
+	
+	public static class ProcedureInfo {
+		public final TypeProcedure typeProcedure;
+		public final String        name;
+		public final String        namePrefix;
+		public final long          code;
+
+		ProcedureInfo(TypeProcedure typeProcedure, String name, String namePrefix, long code) {
+			this.typeProcedure = typeProcedure;
+			this.name          = name;
+			this.namePrefix    = namePrefix;
+			this.code          = code;
+		}
+	}
+
+	public static class Context {
+		public final Program              program;
+		public final List<EnumInfo>       enumInfoList;
+		public final List<RecordInfo>     recordInfoList;
+		public final List<ChoiceInfo>     choiceInfoList;
+		public final List<ErrorInfo>      errorInfoList;
+		public final List<ProcedureInfo>  procedureInfoList;
+		
+		Context(Program program) {
+			this.program           = program;
+			this.enumInfoList      = new ArrayList<>();
+			this.recordInfoList    = new ArrayList<>();
+			this.choiceInfoList    = new ArrayList<>();
+			this.errorInfoList     = new ArrayList<>();
+			this.procedureInfoList = new ArrayList<>();
+			
+			contextMap.put(program.info.getProgramVersion(), this);
+		}
+	}
+
+	public static Map<String, Context> contextMap = new TreeMap<>();
+	
+	public  final Context context;
 	private final Program program;
 	public Compiler(Program program) {
+		this.context = new Context(program);
 		this.program = program;
 	}
 
@@ -96,7 +187,7 @@ public class Compiler {
 		throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 	}
 	
-	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType, Context context) {
+	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType) {
 		Type   type = declType.type;
 		String name = declType.name;
 		
@@ -114,7 +205,7 @@ public class Compiler {
 			break;
 		// constructed
 		case ENUM:
-			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix, context);
+			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
 			break;
 		case ARRAY:
 			outh.format("using %s = %s;", name, toTypeString(type));
@@ -123,10 +214,10 @@ public class Compiler {
 			outh.format("using %s = %s;", name, toTypeString(type));
 			break;
 		case RECORD:
-			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix, context);
+			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
 			break;
 		case CHOICE:
-			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix, context);
+			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix);
 			break;
 		// reference
 		case REFERENCE:
@@ -138,7 +229,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant, Context context) {
+	private void genDeclConstError(LinePrinter outh, LinePrinter outc, String namePrefix, TypeError typeError, String name, Constant constant) {
 		//
 		// Output declaration of class
 		//
@@ -182,7 +273,7 @@ public class Compiler {
 			context.errorInfoList.add(new ErrorInfo(typeError, name, namePrefix, code));
 		}
 	}
-	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant, Context context) {
+	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant) {
 		//
 		// Output declaration of class
 		//		
@@ -402,7 +493,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst, Context context) {
+	private void genDeclConst(LinePrinter outh, LinePrinter outc, String namePrefix, DeclConst declConst) {
 		Type     type         = declConst.type;
 		String   name         = Util.sanitizeSymbol(declConst.name);
 		Constant constant     = declConst.constant;
@@ -433,10 +524,10 @@ public class Compiler {
 		}
 			break;
 		case ERROR:
-			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant, context);
+			genDeclConstError(outh, outc, namePrefix, (TypeError)type, name, constant);
 			break;
 		case PROCEDURE:
-			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant, context);
+			genDeclConstProcedure(outh, outc, namePrefix, (TypeProcedure)type, name, constant);
 			break;
 		case RECORD:
 			genDeclConstRecord(outh, outc, namePrefix, type, name, constant);
@@ -456,7 +547,7 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 		}
 	}
-	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix, Context context) {
+	private void genDecl(LinePrinter outh, LinePrinter outc, String namePrefix) {
 		outh.line("",
 				  "//",
 				  "// Declaration",
@@ -468,10 +559,10 @@ public class Compiler {
 			
 			switch(decl.kind) {
 			case TYPE:
-				genDeclType(outh, outc, namePrefix, (DeclType)decl, context);
+				genDeclType(outh, outc, namePrefix, (DeclType)decl);
 				break;
 			case CONST:
-				genDeclConst(outh, outc, namePrefix, (DeclConst)decl, context);
+				genDeclConst(outh, outc, namePrefix, (DeclConst)decl);
 				break;
 			default:
 				throw new CompilerException(String.format("Unexpected decl.kind %s", decl.kind));
@@ -555,7 +646,7 @@ public class Compiler {
 		}
 	}
 
-	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix, Context context) {
+	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix) {
 		//
 		// Output declaration of class
 		//
@@ -605,7 +696,7 @@ public class Compiler {
 		}
 	}
 	
-	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix, Context context) {
+	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
 		List<String>  c1 = new ArrayList<>();
 		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -623,16 +714,16 @@ public class Compiler {
 		context.enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 	}
 	
-	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix, Context context) {
+	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix) {
 		if (typeChoice instanceof TypeChoice.Typed) {
-			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix, context);
+			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix);
 		} else if (typeChoice instanceof TypeChoice.Anon) {
-			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix, context);
+			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix);
 		} else {
 			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
 		}
 	}
-	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix, Context context) {
+	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -653,7 +744,7 @@ public class Compiler {
 			if (candidateType.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), context);
+				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
 			} else {
 				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 			}
@@ -704,7 +795,7 @@ public class Compiler {
 			context.choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
 		}
 	}
-	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix, Context context) {
+	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -743,7 +834,7 @@ public class Compiler {
 			if (candidateType.kind == Type.Kind.RECORD) {
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name), context);
+				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
 			} else {
 				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
 			}
@@ -807,7 +898,7 @@ public class Compiler {
 		}
 	}
 	
-	private void genEnumToString(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genEnumToString(LinePrinter outh, LinePrinter outc) {
 		if (context.enumInfoList.isEmpty()) return;
 		
 		// Declaration
@@ -867,7 +958,7 @@ public class Compiler {
 			}
 		}
 	}
-	private void genEnumSerialize(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genEnumSerialize(LinePrinter outh, LinePrinter outc) {
 		if (context.enumInfoList.isEmpty()) return;
 		
 		// Declaration
@@ -903,7 +994,7 @@ public class Compiler {
 			}
 		}
 	}
-	private void genEnumDeserialize(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genEnumDeserialize(LinePrinter outh, LinePrinter outc) {
 		if (context.enumInfoList.isEmpty()) return;
 		
 		// Declaration
@@ -942,7 +1033,7 @@ public class Compiler {
 		}
 	}
 
-	private void genRecordToString(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genRecordToString(LinePrinter outh, LinePrinter outc) {
 		if (context.recordInfoList.isEmpty()) return;
 		
 		// Record toSring declaration
@@ -991,7 +1082,7 @@ public class Compiler {
 		}
 	}
 	
-	void genRecordSerialize(LinePrinter outh, LinePrinter outc, Context context) {
+	void genRecordSerialize(LinePrinter outh, LinePrinter outc) {
 		if (context.recordInfoList.size() == 0) return;
 		
 		// Declaration
@@ -1034,7 +1125,7 @@ public class Compiler {
 			}
 		}
 	}
-	void genRecordDeserialize(LinePrinter outh, LinePrinter outc, Context context) {
+	void genRecordDeserialize(LinePrinter outh, LinePrinter outc) {
 		if (context.recordInfoList.size() == 0) return;
 		
 		// Declaration
@@ -1078,7 +1169,7 @@ public class Compiler {
 		}
 	}
 	
-	private void genChoiceToString(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genChoiceToString(LinePrinter outh, LinePrinter outc) {
 		if (context.choiceInfoList.isEmpty()) return;
 		
 		// Choice toSring declaration
@@ -1127,7 +1218,7 @@ public class Compiler {
 		}
 	}
 
-	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc) {
 		if (context.choiceInfoList.isEmpty()) return;
 		
 		// Declaration
@@ -1177,7 +1268,7 @@ public class Compiler {
 		}
 	}
 
-	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc, Context context) {
+	private void genChoiceDeserialize(LinePrinter outh, LinePrinter outc) {
 		if (context.choiceInfoList.isEmpty()) return;
 		
 		// Declaration
@@ -1291,81 +1382,6 @@ public class Compiler {
 				ZoneId.systemDefault().getId());
 	}
 	
-	private static class EnumInfo {
-		final TypeEnum typeEnum;
-		final String   name;
-		final String   namePrefix;
-		
-		EnumInfo(TypeEnum typeEnum, String name, String namePrefix) {
-			this.typeEnum   = typeEnum;
-			this.name       = name;
-			this.namePrefix = namePrefix;
-		}
-	}
-	
-	private static class ChoiceInfo {
-		final TypeChoice   typeChoice;
-		final String       name;
-		final String       namePrefix;
-		final List<String> choiceNameList; // choice name list in appearance order
-
-		ChoiceInfo(TypeChoice typeChoice, String name, String namePrefix, List<String> choiceNameList) {
-			this.typeChoice     = typeChoice;
-			this.name           = name;
-			this.namePrefix     = namePrefix;
-			this.choiceNameList = choiceNameList;
-		}
-	}
-	
-	private static class RecordInfo {
-		final TypeRecord typeRecord;
-		final String     name;
-		final String     namePrefix;
-		
-		RecordInfo(TypeRecord typeRecord, String name, String namePrefix) {
-			this.typeRecord = typeRecord;
-			this.name       = name;
-			this.namePrefix = namePrefix;
-		}
-	}
-	
-	private static class ErrorInfo {
-		final TypeError typeError;
-		final String    name;
-		final String    namePrefix;
-		final long      code;
-		
-		ErrorInfo(TypeError typeError, String name, String namePrefix, long code) {
-			this.typeError  = typeError;
-			this.name       = name;
-			this.namePrefix = namePrefix;
-			this.code       = code;
-		}
-	}
-	
-	private static class ProcedureInfo {
-		final TypeProcedure typeProcedure;
-		final String        name;
-		final String        namePrefix;
-		final long          code;
-
-		ProcedureInfo(TypeProcedure typeProcedure, String name, String namePrefix, long code) {
-			this.typeProcedure = typeProcedure;
-			this.name          = name;
-			this.namePrefix    = namePrefix;
-			this.code          = code;
-		}
-	}
-
-	private static class Context {
-		List<EnumInfo>       enumInfoList       = new ArrayList<>();
-		List<RecordInfo>     recordInfoList     = new ArrayList<>();
-		List<ChoiceInfo>     choiceInfoList     = new ArrayList<>();
-		List<ErrorInfo>      errorInfoList      = new ArrayList<>();
-		List<ProcedureInfo>  procedureInfoList  = new ArrayList<>();
-	}
-	
-
 	public void genStub() {
 		String programName = program.info.getProgramVersion();
 		String pathc = String.format("%s%s.cpp", STUB_DIR_PATH, programName);
@@ -1426,33 +1442,31 @@ public class Compiler {
 			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 			outc.line();
 			
-			Context context = new Context();
-
 			// generate type and constant declaration
 			// and build enmInfoList, context.recordInfoList and context.choiceInfoList
-			genDecl(outh, outc, namePrefix, context);
+			genDecl(outh, outc, namePrefix);
 			
 			// Close program namespace
 			outh.line("}");
 
 			// generate toString for enum using context.enumInfoList
-			genEnumToString   (outh, outc, context);
-			genEnumSerialize  (outh, outc, context);
-			genEnumDeserialize(outh, outc, context);
+			genEnumToString   (outh, outc);
+			genEnumSerialize  (outh, outc);
+			genEnumDeserialize(outh, outc);
 			
 			// generate toString for Record using context.recordInfoList
-			genRecordToString   (outh, outc, context);
+			genRecordToString   (outh, outc);
 			// generate serialize for Record
-			genRecordSerialize  (outh, outc, context);
+			genRecordSerialize  (outh, outc);
 			// generate deserialize for Record
-			genRecordDeserialize(outh, outc, context);
+			genRecordDeserialize(outh, outc);
 			
 			// generate toString for Choice using context.choiceInfoList
-			genChoiceToString   (outh, outc, context);
+			genChoiceToString   (outh, outc);
 			// generate serialize for Choice
-			genChoiceSerialize  (outh, outc, context);
+			genChoiceSerialize  (outh, outc);
 			// generate deserialize for Choice
-			genChoiceDeserialize(outh, outc, context);
+			genChoiceDeserialize(outh, outc);
 			
 			// Close courier namespace
 			outh.line("}");
@@ -1460,6 +1474,9 @@ public class Compiler {
 			// #endif
 			outh.line("#endif");
 			
+			// Sort procedureInfoList and errorInfoList by code
+			Collections.sort(context.procedureInfoList, (a, b) -> (int)(a.code - b.code));
+			Collections.sort(context.errorInfoList, (a, b) -> (int)(a.code - b.code));
 		} catch (FileNotFoundException e) {
 			throw new CompilerException("FileNotFoundException", e);
 		}
