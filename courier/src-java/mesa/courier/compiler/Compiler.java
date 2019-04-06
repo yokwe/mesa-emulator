@@ -785,7 +785,7 @@ public class Compiler {
 			outc.format("return choice_%02d;", structNumber);
 			outc.line("} else {");
 			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
-			outc.line("COURIER_ERROR();");
+			outc.line("COURIER_FATAL_ERROR();");
 			outc.line("}");
 			outc.line("}");
 		}
@@ -874,7 +874,7 @@ public class Compiler {
 			outc.format("return choice_%02d;", structNumber);
 			outc.line("} else {");
 			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
-			outc.line("COURIER_ERROR();");
+			outc.line("COURIER_FATAL_ERROR();");
 			outc.line("}");
 			outc.line("}");
 		}
@@ -1208,8 +1208,8 @@ public class Compiler {
 				}
 
 				outc.line("default:");
-				outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)value.choiceTag);");
-		        outc.line("COURIER_ERROR();");
+				outc.line("logger.error(\"Unexpected choiceTag = %d\", (quint16)value.choiceTag);");
+		        outc.line("COURIER_FATAL_ERROR();");
 		        outc.line("break;");
 				outc.line("}"); // end of switch
 
@@ -1258,8 +1258,8 @@ public class Compiler {
 				}
 	
 				outc.line("default:");
-				outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)value.choiceTag);");
-		        outc.line("COURIER_ERROR();");
+				outc.line("logger.error(\"Unexpected choiceTag = %d\", (quint16)value.choiceTag);");
+		        outc.line("COURIER_FATAL_ERROR();");
 		        outc.line("break;");
 				outc.line("}"); // end of switch
 	
@@ -1312,8 +1312,8 @@ public class Compiler {
 				}
 	
 				outc.line("default:");
-				outc.line("logger.error(\"Unexpected choiceTag = %%d\", (quint16)value.choiceTag);");
-		        outc.line("COURIER_ERROR();");
+				outc.line("logger.error(\"Unexpected choiceTag = %d\", (quint16)value.choiceTag);");
+		        outc.line("COURIER_FATAL_ERROR();");
 		        outc.line("break;");
 				outc.line("}"); // end of switch
 	

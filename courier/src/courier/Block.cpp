@@ -69,7 +69,7 @@ void Courier::Block::rewind() {
 		pos   = offset;
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 void Courier::Block::reset() {
@@ -77,7 +77,7 @@ void Courier::Block::reset() {
 		pos = offset;
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 quint16 Courier::Block::remaining() const {
@@ -85,7 +85,7 @@ quint16 Courier::Block::remaining() const {
 		return limit - pos;
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 quint16 Courier::Block::getPos() const {
@@ -117,7 +117,7 @@ void Courier::Block::serialize8(const quint8  value) {
 		const quint16 size = 1;
 		if (capacity < (pos + size)) {
 			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		data[pos++] = value;
@@ -127,7 +127,7 @@ void Courier::Block::serialize8(const quint8  value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 void Courier::Block::serialize16(const quint16 value) {
@@ -135,7 +135,7 @@ void Courier::Block::serialize16(const quint16 value) {
 		const quint16 size = 2;
 		if (capacity < (pos + size)) {
 			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		quint8 p1 = (quint8)(value >> 0);
@@ -149,14 +149,14 @@ void Courier::Block::serialize16(const quint16 value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 void Courier::Block::serialize16(const quint16 offset, const quint16 value) {
 	const quint16 size = 2;
 	if (limit < (offset + size)) {
 		logger.error("Unexpected overflow  limit = %d  offset = %d  size = %d", limit, offset, size);
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 	quint16 savePos = pos;
 	pos = offset;
@@ -168,7 +168,7 @@ void Courier::Block::serialize32(const quint32 value) {
 		const quint16 size = 4;
 		if (capacity < (pos + size)) {
 			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		quint8 p3 = (quint8)(value >> 0);
@@ -186,7 +186,7 @@ void Courier::Block::serialize32(const quint32 value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 void Courier::Block::serialize48(const quint64 value) {
@@ -194,7 +194,7 @@ void Courier::Block::serialize48(const quint64 value) {
 		const quint16 size = 6;
 		if (capacity < (pos + size)) {
 			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		quint8 p5 = (quint8)(value >> 0);
@@ -216,7 +216,7 @@ void Courier::Block::serialize48(const quint64 value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 
@@ -227,12 +227,12 @@ void Courier::Block::deserialize8(quint8&  value) {
 		quint16 size = 1;
 		if (limit < (pos + size)) {
 			logger.error("Unexpected overflow  limit = %d  pos = %d  size = %d", limit, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		value = data[pos++];
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 void Courier::Block::deserialize16(quint16& value) {
@@ -240,7 +240,7 @@ void Courier::Block::deserialize16(quint16& value) {
 		quint16 size = 2;
 		if (limit < (pos + size)) {
 			logger.error("Unexpected overflow  limit = %d  pos = %d  size = %d", limit, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		quint16 p0 = data[pos++];
@@ -249,7 +249,7 @@ void Courier::Block::deserialize16(quint16& value) {
 		value = (p0 << 8) | (p1 << 0);
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 void Courier::Block::deserialize32(quint32& value) {
@@ -257,7 +257,7 @@ void Courier::Block::deserialize32(quint32& value) {
 		quint16 size = 4;
 		if (limit < (pos + size)) {
 			logger.error("Unexpected overflow  limit = %d  pos = %d  size = %d", limit, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		quint32 p0 = data[pos++];
@@ -268,7 +268,7 @@ void Courier::Block::deserialize32(quint32& value) {
 		value = (p0 << 24) | (p1 << 16) | (p2 << 8) | (p3 << 0);
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 // read 48 bit
@@ -277,7 +277,7 @@ void Courier::Block::deserialize48(quint64& value) {
 		quint16 size = 6;
 		if (limit < (pos + size)) {
 			logger.error("Unexpected overflow  pos = %d  limit = %d  size = %d", pos, limit, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		quint64 p0 = data[pos++];
@@ -290,7 +290,7 @@ void Courier::Block::deserialize48(quint64& value) {
 		value = (p0 << 40) | (p1 << 32) | (p2 << 24) | (p3 << 16) | (p4 << 8) | (p5 << 0);
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 
@@ -299,7 +299,7 @@ void Courier::Block::serialize(const QString& value) {
 		int size = value.size();
 		if (65535 <= size) {
 			logger.error("Unexpected overflow  size = %ds", size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		// size of string
@@ -321,7 +321,7 @@ void Courier::Block::serialize(const QString& value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 
@@ -343,7 +343,7 @@ void Courier::Block::deserialize(QString& value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 
@@ -353,7 +353,7 @@ void Courier::Block::serialize(const Block&  value) {
 		quint16 size = value.limit;
 		if (capacity < (pos + size)) {
 			logger.error("Unexpected overflow  capacity = %d  pos = %d  size = %d", capacity, pos, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		for(quint16 i = 0; i < size; i++) {
@@ -365,7 +365,7 @@ void Courier::Block::serialize(const Block&  value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }
 
@@ -376,7 +376,7 @@ void Courier::Block::deserialize(Block&  value) {
 		if (value.capacity < (value.pos + size)) {
 			logger.error("Unexpected overflow  value.capacity = %d  value.limit = %d  value.pos = %d", value.capacity, value.limit, value.pos);
 			logger.error("                           capacity = %d  limit = %d  pos = %d", capacity, limit, pos);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 
 		for(quint16 i = 0; i < size; i++) {
@@ -388,6 +388,6 @@ void Courier::Block::deserialize(Block&  value) {
 		}
 	} else {
 		logger.error("Unexpected state");
-		COURIER_ERROR();
+		COURIER_FATAL_ERROR();
 	}
 }

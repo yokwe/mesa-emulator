@@ -36,7 +36,7 @@ OF SUCH DAMAGE.
 
 #include "../courier/Block.h"
 
-#define COURIER_ERROR() { logger.fatal("ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); throw Courier::CourierError(__FILE__, __LINE__, __FUNCTION__); }
+#define COURIER_FATAL_ERROR() { logger.fatal("FATAL ERROR %s %d %s", __FILE__, __LINE__, __FUNCTION__); throw Courier::CourierError(__FILE__, __LINE__, __FUNCTION__); }
 
 namespace Courier {
 
@@ -47,6 +47,11 @@ public:
 	const char *func;
 
 	CourierError(const char *file_, const int line_, const char *func_) : file(file_), line(line_), func(func_) {}
+};
+
+class CourierFatalError : public CourierError {
+public:
+	CourierFatalError(const char *file_, const int line_, const char *func_) : CourierError(file_, line_, func_) {}
 };
 
 using BLOCK         = Block;
@@ -114,7 +119,7 @@ public:
 			size = (quint16)newValue;
 		} else {
 			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, maxSize);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 	}
 
@@ -123,7 +128,7 @@ public:
 			// OK
 		} else {
 			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		return data[i];
 	}
@@ -132,7 +137,7 @@ public:
 			// OK
 		} else {
 			logger.error("Unexpected overflow  i = %d  size = %d", i, size);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		return data[i];
 	}
@@ -146,11 +151,11 @@ private:
 			data = new (std::nothrow) T [maxSize];
 			if (data == nullptr) {
 				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
-				COURIER_ERROR();
+				COURIER_FATAL_ERROR();
 			}
 		} else {
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		size = 0;
 		bzero(data, maxSize * sizeof(T));
@@ -209,7 +214,7 @@ struct ARRAY {
 			// OK
 		} else {
 			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		return data[i];
 	}
@@ -218,7 +223,7 @@ struct ARRAY {
 			// OK
 		} else {
 			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		return data[i];
 	}
@@ -231,11 +236,11 @@ private:
 			data = new (std::nothrow) T [maxSize];
 			if (data == nullptr) {
 				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
-				COURIER_ERROR();
+				COURIER_FATAL_ERROR();
 			}
 		} else {
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
-			COURIER_ERROR();
+			COURIER_FATAL_ERROR();
 		}
 		bzero(data, maxSize * sizeof(T));
 	}
