@@ -282,7 +282,7 @@ public class Compiler {
 		outh.line();
 		outh.format("static const quint16 CODE = %d;", code);
 		outh.line();
-		outh.format("void (*call)(Param& param, Result& result) throw (%s);", String.join(", ", typeProcedure.errroList));
+		outh.format("using call = void (*)(Param& param, Result& result) throw (%s);", String.join(", ", typeProcedure.errroList));
 		outh.line("};");
 		
 		// Build recordInfo
