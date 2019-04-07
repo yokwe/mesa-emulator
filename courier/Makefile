@@ -77,8 +77,11 @@ stub:
 
 JARDIR		:= ../Externals/jar
 CLASSPATH	:= bin:$(JARDIR)/antlr-4.1-complete.jar:$(JARDIR)/hamcrest-core-1.3.jar:$(JARDIR)/junit-4.11.jar:$(JARDIR)/logback-classic-1.0.13.jar:$(JARDIR)/logback-core-1.0.13.jar:$(JARDIR)/slf4j-api-1.7.5.jar
-#COURIER_TARGET	:= Time2 Ethernet Datagram Echo Error ExpeditedCourier PacketExchange Routing Protocol Boot SequencedPacket
-COURIER_TARGET	:= Authentication1 Authentication2 Authentication3 Boot BulkData1 CHEntries CHProperty Clearinghouse2 Clearinghouse3 Datagram Echo Error Ethernet ExpeditedCourier Filing4 Filing5 Filing6 FilingSubset1 PacketExchange Printing3 Protocol Routing SequencedPacket Time2
+COURIER_TARGET	:= Ethernet Datagram Echo Error PacketExchange Routing Boot SequencedPacket Time
+COURIER_TARGET	+= Protocol ExpeditedCourier
+#COURIER_TARGET	+= Time2 Authentication1 Authentication2 Authentication3 BulkData1 CHEntries0 Clearinghouse2 Clearinghouse3 Filing4 Filing5 Filing6 FilingSubset1
+
+
 
 clean-antlr:
 	rm -rf src-java/mesa/courier/antlr/*.java
