@@ -11,8 +11,8 @@ CONFIG  += staticlib
 HEADERS += Ethernet.h   Datagram.h
 SOURCES += Ethernet.cpp Datagram.cpp
 
-HEADERS += Echo.h   Error.h   PacketExchange.h   Routing.h   SequencedPacket.h   Time2.h
-SOURCES += Echo.cpp Error.cpp PacketExchange.cpp Routing.cpp SequencedPacket.cpp Time2.cpp
+HEADERS += Echo.h   Error.h   PacketExchange.h   Routing.h   SequencedPacket.h   Time.h
+SOURCES += Echo.cpp Error.cpp PacketExchange.cpp Routing.cpp SequencedPacket.cpp Time.cpp
 
 #HEADERS += BulkData1.h   Authentication1.h   Authentication2.h   Authentication3.h   Clearinghouse2.h   Clearinghouse3.h
 #SOURCES += BulkData1.cpp Authentication1.cpp Authentication2.cpp Authentication3.cpp Clearinghouse2.cpp Clearinghouse3.cpp

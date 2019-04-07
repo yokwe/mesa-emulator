@@ -35,7 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("testCourier");
 #include "testBase.h"
 
 #include "../stub/Ethernet.h"
-#include "../stub/Time2.h"
+#include "../stub/Time.h"
 
 class testCourier : public testBase {
 	CPPUNIT_TEST_SUITE(testCourier);
@@ -701,7 +701,7 @@ public:
 		// toString
 		{
 			{
-				Courier::Time2::PacketType t = Courier::Time2::PacketType::request;
+				Courier::Time::PacketType t = Courier::Time::PacketType::request;
 
 				QString a = Courier::toString(t);
 				QString e = "request";
@@ -711,7 +711,7 @@ public:
 				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 			}
 			{
-				Courier::Time2::PacketType t = Courier::Time2::PacketType::response;
+				Courier::Time::PacketType t = Courier::Time::PacketType::response;
 
 				QString a = Courier::toString(t);
 				QString e = "response";
@@ -721,7 +721,7 @@ public:
 				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 			}
 			{
-				Courier::Time2::PacketType t = (Courier::Time2::PacketType)100;
+				Courier::Time::PacketType t = (Courier::Time::PacketType)100;
 
 				QString a = Courier::toString(t);
 				QString e = "100";
@@ -734,7 +734,7 @@ public:
 		// serialize
 		{
 			BLOCK_DATA(t,100)
-			Courier::Time2::PacketType v = Courier::Time2::PacketType::response;
+			Courier::Time::PacketType v = Courier::Time::PacketType::response;
 			Courier::serialize(t, v);
 
 			QString a = t.toString();
@@ -750,7 +750,7 @@ public:
 			Courier::serialize(t, (quint16)2);
 			t.rewind();
 
-			Courier::Time2::PacketType v = Courier::Time2::PacketType::response;
+			Courier::Time::PacketType v = Courier::Time::PacketType::response;
 			Courier::deserialize(t, v);
 			CPPUNIT_ASSERT_EQUAL((quint16)2, (quint16)v);
 		}
@@ -822,8 +822,8 @@ public:
 		// toString
 		{
 			{
-				Courier::Time2::PacketData t;
-				t.choiceTag = Courier::Time2::PacketType::request;
+				Courier::Time::PacketData t;
+				t.choiceTag = Courier::Time::PacketType::request;
 
 				QString a = Courier::toString(t);
 				QString e = "[request []]";
@@ -833,17 +833,17 @@ public:
 				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 			}
 			{
-				Courier::Time2::PacketData t;
-				t.choiceTag = Courier::Time2::PacketType::response;
-				Courier::Time2::PacketData::CHOICE_02& c = t.response();
+				Courier::Time::PacketData t;
+				t.choiceTag = Courier::Time::PacketType::response;
+				Courier::Time::PacketData::CHOICE_02& c = t.response();
 
                 c.currentTime     = 1;
-                c.offsetDirection = Courier::Time2::OffsetDirection::east;
+                c.offsetDirection = Courier::Time::OffsetDirection::east;
                 c.offsetHours     = 3;
                 c.offsetMinutes   = 4;
                 c.startOfDST      = 5;
                 c.endOfDST        = 6;
-                c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
+                c.toleranceType   = Courier::Time::ToleranceType::inMilliSeconds;
                 c.tolerance       = 8;
 
 				QString a = Courier::toString(t);
@@ -857,8 +857,8 @@ public:
 		// serialize
 		{
 			{
-				Courier::Time2::PacketData t;
-				t.choiceTag = Courier::Time2::PacketType::request;
+				Courier::Time::PacketData t;
+				t.choiceTag = Courier::Time::PacketType::request;
 
 				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
@@ -871,17 +871,17 @@ public:
 				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 			}
 			{
-				Courier::Time2::PacketData t;
-				t.choiceTag = Courier::Time2::PacketType::response;
-				Courier::Time2::PacketData::CHOICE_02& c = t.response();
+				Courier::Time::PacketData t;
+				t.choiceTag = Courier::Time::PacketType::response;
+				Courier::Time::PacketData::CHOICE_02& c = t.response();
 
                 c.currentTime     = 1;
-                c.offsetDirection = Courier::Time2::OffsetDirection::east;
+                c.offsetDirection = Courier::Time::OffsetDirection::east;
                 c.offsetHours     = 3;
                 c.offsetMinutes   = 4;
                 c.startOfDST      = 5;
                 c.endOfDST        = 6;
-                c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
+                c.toleranceType   = Courier::Time::ToleranceType::inMilliSeconds;
                 c.tolerance       = 8;
 
 				BLOCK_DATA(b,100)
@@ -898,14 +898,14 @@ public:
 		// deserialize
 		{
 			{
-				Courier::Time2::PacketData t;
-				t.choiceTag = Courier::Time2::PacketType::request;
+				Courier::Time::PacketData t;
+				t.choiceTag = Courier::Time::PacketType::request;
 
 				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
 				b.rewind();
 
-				Courier::Time2::PacketData u;
+				Courier::Time::PacketData u;
 				Courier::deserialize(b, u);
 
 				QString a = Courier::toString(u);
@@ -916,24 +916,24 @@ public:
 				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 			}
 			{
-				Courier::Time2::PacketData t;
-				t.choiceTag = Courier::Time2::PacketType::response;
-				Courier::Time2::PacketData::CHOICE_02& c = t.response();
+				Courier::Time::PacketData t;
+				t.choiceTag = Courier::Time::PacketType::response;
+				Courier::Time::PacketData::CHOICE_02& c = t.response();
 
                 c.currentTime     = 1;
-                c.offsetDirection = Courier::Time2::OffsetDirection::east;
+                c.offsetDirection = Courier::Time::OffsetDirection::east;
                 c.offsetHours     = 3;
                 c.offsetMinutes   = 4;
                 c.startOfDST      = 5;
                 c.endOfDST        = 6;
-                c.toleranceType   = Courier::Time2::ToleranceType::inMilliSeconds;
+                c.toleranceType   = Courier::Time::ToleranceType::inMilliSeconds;
                 c.tolerance       = 8;
 
 				BLOCK_DATA(b,100)
 				Courier::serialize(b, t);
 				b.rewind();
 
-				Courier::Time2::PacketData u;
+				Courier::Time::PacketData u;
 				Courier::deserialize(b, u);
 
 				QString a = Courier::toString(u);
