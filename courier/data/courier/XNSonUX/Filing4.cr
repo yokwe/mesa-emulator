@@ -1,15 +1,16 @@
--- $Header: Filing5.cr,v 2.6 87/03/23 13:06:20 ed Exp $
+-- $Header: Filing4.cr,v 2.6 87/03/23 13:05:51 ed Exp $
 
 -- Note:  this is a TEST version of Filing, and is not guaranteed to
 -- match the official Xerox version at all.  It does seem to be adequate
 -- for FTP, however.
 
--- $Log:	Filing5.cr,v $
--- Revision 2.6  87/03/23  13:06:20  ed
--- Minor Type in SerializedTree.
+-- $Log:	Filing4.cr,v $
+-- Revision 2.6  87/03/23  13:05:51  ed
+-- Minor typo in SerializedTree.
 -- 
--- Revision 2.5  87/03/23  11:48:42  ed
+-- Revision 2.5  87/03/23  11:19:35  ed
 -- Slight mod to SerializedTree to allow current implementation.
+-- Depth is really ScopeType of 4 in Filing4 (reverts to 3 in Filing5).
 -- 
 -- Revision 2.4  87/01/14  13:02:00  ed
 -- Remove controls from Move
@@ -35,7 +36,7 @@
 -- Initial revision
 -- 
 
-Filing: PROGRAM 10 VERSION 5 =
+Filing: PROGRAM 10 VERSION 4 =
 BEGIN
 	DEPENDS UPON
 		BulkData(0) VERSION 1,
@@ -54,7 +55,7 @@ AttributeType: TYPE = LONG CARDINAL;
 AttributeTypeSequence: TYPE = SEQUENCE OF AttributeType;
 allAttributeTypes: AttributeTypeSequence = [37777777777B];
 Attribute: TYPE = RECORD [type: AttributeType, value: SEQUENCE OF UNSPECIFIED];
-AttributeSequence: TYPE = RECORD [value: SEQUENCE OF Attribute];
+AttributeSequence: TYPE = SEQUENCE OF Attribute;
 
 -- Controls --
 
@@ -73,20 +74,20 @@ AccessSequence: TYPE = SEQUENCE 5 OF AccessType;
 -- fullAccess: AccessSequence = [177777B]; --
 
 Control: TYPE = CHOICE ControlType OF {
-	lockControl => RECORD [value: Lock],
-	timeoutControl => RECORD [value: Timeout],
-	accessControl => RECORD [value: AccessSequence]};
+	lockControl => Lock,
+	timeoutControl => Timeout,
+	accessControl => AccessSequence};
 ControlSequence: TYPE = SEQUENCE 3 OF Control;
 
 -- Scopes --
 
-ScopeCount: TYPE = CARDINAL;
-unlimitedCount: ScopeCount = 177777B;
+Count: TYPE = CARDINAL;
+unlimitedCount: Count = 177777B;
 
-ScopeDepth: TYPE = CARDINAL;
-allDescendants: ScopeDepth = 177777B;
+Depth: TYPE = CARDINAL;
+allDescendants: Depth = 177777B;
 
-ScopeDirection: TYPE = {forward(0), backward(1)};
+Direction: TYPE = {forward(0), backward(1)};
 
 Interpretation: TYPE = { interpretationNone(0), boolean(1), cardinal(2),
 	longCardinal(3), time(4), integer(5), longInteger(6), string(7) };
@@ -108,24 +109,24 @@ RestrictedFilter: TYPE = CHOICE FilterType OF {
 	-- NOT IMPLEMENTED: and, or, not --
 	filterNone, all => RECORD [],
 	matches => RECORD [attribute: Attribute] };
-ScopeFilter: TYPE = CHOICE FilterType OF {
+Filter: TYPE = CHOICE FilterType OF {
 	less, lessOrEqual, equal, notEqual, greaterOrEqual, greater =>
 		RECORD [attribute: Attribute, interpretation: Interpretation],
 		-- interpretation ignored if attribute interpreted by
 		-- implementor
 	-- NOT YET IMPLEMENTED: (at least, not generally) and, or, not --
-	and, or => RECORD [value: SEQUENCE OF RestrictedFilter],
-	not => RECORD[value: RestrictedFilter],
+	and, or => SEQUENCE OF RestrictedFilter,
+	not => RestrictedFilter,
 	filterNone, all => RECORD [],
 	matches => RECORD [attribute: Attribute] };
-nullFilter: ScopeFilter = all[];
+nullFilter: Filter = all[];
 	
-ScopeType: TYPE = { count(0), direction(1), filter(2), depth(3) };
+ScopeType: TYPE = { count(0), direction(1), filter(2), depth(4) };
 Scope: TYPE = CHOICE ScopeType OF {
-	count => RECORD [value: ScopeCount],
-	depth => RECORD [value: ScopeDepth],
-	direction => RECORD [value: ScopeDirection],
-	filter => RECORD [value: ScopeFilter] };
+	count => Count,
+	depth => Depth,
+	direction => Direction,
+	filter => Filter };
 ScopeSequence: TYPE = SEQUENCE 4 OF Scope;
 
 -- Handles and Authentication --
@@ -134,10 +135,10 @@ Credentials: TYPE = Authentication.Credentials;
 Verifier: TYPE = Authentication.Verifier;
 SimpleVerifier: TYPE = Authentication.SimpleVerifier;
 
-Handle: TYPE = UNSPECIFIED2;
-nullHandle: Handle = 0;
+Handle: TYPE = ARRAY 2 OF UNSPECIFIED;
+nullHandle: Handle = [0,0];
 
-Session: TYPE = RECORD [token: UNSPECIFIED2, verifier: Verifier ];
+Session: TYPE = RECORD [token: ARRAY 2 OF UNSPECIFIED, verifier: Verifier ];
 
 
 -- Random Access --
@@ -490,6 +491,9 @@ CreatedOn: TYPE = Time;
 dataSize: AttributeType = 16;
 DataSize: TYPE = LONG CARDINAL;
 
+defaultAccessList: AttributeType = 20;
+DefaultAccessList: TYPE = AccessList;
+
 fileID: AttributeType = 4;
 FileID: TYPE = ARRAY 5 OF UNSPECIFIED;
 nullFileID: FileID = [0,0,0,0,0];
@@ -575,13 +579,11 @@ byDescendingPosition: Ordering = [key: position, ascending: FALSE,
 -- 			lastByteIsSignificant: BOOLEAN ],
 --	children: SEQUENCE OF SerializedTree ];
 
-Content: TYPE = RECORD [
-    data: BulkData.StreamOfUnspecified,
-    lastByteSignificant: BOOLEAN];
 SerializedTree: TYPE = RECORD [
-    attributes: AttributeSequence,
-    content: Content,
-    children: SEQUENCE OF SerializedTree ];
+	attributes: AttributeSequence,
+	content: RECORD [ data: BulkData.StreamOfUnspecified ,
+			lastByteIsSignificant: BOOLEAN ],
+	children: SEQUENCE OF UNSPECIFIED ];
 
 SerializedFile: TYPE = RECORD [ version: LONG CARDINAL, file: SerializedTree ];
 currentVersion: LONG CARDINAL = 3;
@@ -594,8 +596,7 @@ StreamOfAttributeSequence: TYPE = CHOICE OF {
 	nextSegment(0) => RECORD [
 		segment: SEQUENCE OF AttributeSequence,
 		restOfStream: StreamOfAttributeSequence],
-	lastSegment(1) => RECORD [
-		segment: SEQUENCE OF AttributeSequence]};
+	lastSegment(1) => SEQUENCE OF AttributeSequence};
 
 
 

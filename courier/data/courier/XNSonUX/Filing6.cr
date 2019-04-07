@@ -50,7 +50,7 @@ AttributeType: TYPE = LONG CARDINAL;
 AttributeTypeSequence: TYPE = SEQUENCE OF AttributeType;
 allAttributeTypes: AttributeTypeSequence = [37777777777B];
 Attribute: TYPE = RECORD [type: AttributeType, value: SEQUENCE OF UNSPECIFIED];
-AttributeSequence: TYPE = RECORD [value: SEQUENCE OF Attribute];
+AttributeSequence: TYPE = SEQUENCE OF Attribute;
 
 -- Controls --
 
@@ -69,20 +69,20 @@ AccessSequence: TYPE = SEQUENCE 5 OF AccessType;
 -- fullAccess: AccessSequence = [177777B]; --
 
 Control: TYPE = CHOICE ControlType OF {
-	lockControl => RECORD [value: Lock],
-	timeoutControl => RECORD [value: Timeout],
-	accessControl => RECORD [value: AccessSequence]};
+	lockControl => Lock,
+	timeoutControl => Timeout,
+	accessControl => AccessSequence};
 ControlSequence: TYPE = SEQUENCE 3 OF Control;
 
 -- Scopes --
 
-ScopeCount: TYPE = CARDINAL;
-unlimitedCount: ScopeCount = 177777B;
+Count: TYPE = CARDINAL;
+unlimitedCount: Count = 177777B;
 
-ScopeDepth: TYPE = CARDINAL;
-allDescendants: ScopeDepth = 177777B;
+Depth: TYPE = CARDINAL;
+allDescendants: Depth = 177777B;
 
-ScopeDirection: TYPE = {forward(0), backward(1)};
+Direction: TYPE = {forward(0), backward(1)};
 
 Interpretation: TYPE = { interpretationNone(0), boolean(1), cardinal(2),
 	longCardinal(3), time(4), integer(5), longInteger(6), string(7) };
@@ -104,24 +104,24 @@ RestrictedFilter: TYPE = CHOICE FilterType OF {
 	-- NOT IMPLEMENTED: and, or, not --
 	filterNone, all => RECORD [],
 	matches => RECORD [attribute: Attribute] };
-ScopeFilter: TYPE = CHOICE FilterType OF {
+Filter: TYPE = CHOICE FilterType OF {
 	less, lessOrEqual, equal, notEqual, greaterOrEqual, greater =>
 		RECORD [attribute: Attribute, interpretation: Interpretation],
 		-- interpretation ignored if attribute interpreted by
 		-- implementor
 	-- NOT YET IMPLEMENTED: (at least, not generally) and, or, not --
-	and, or => RECORD [value: SEQUENCE OF RestrictedFilter],
-	not => RECORD[value: RestrictedFilter],
+	and, or => SEQUENCE OF RestrictedFilter,
+	not => RestrictedFilter,
 	filterNone, all => RECORD [],
 	matches => RECORD [attribute: Attribute] };
-nullFilter: ScopeFilter = all[];
+nullFilter: Filter = all[];
 	
 ScopeType: TYPE = { count(0), direction(1), filter(2), depth(3) };
 Scope: TYPE = CHOICE ScopeType OF {
-	count => RECORD [value: ScopeCount],
-	depth => RECORD [value: ScopeDepth],
-	direction => RECORD [value: ScopeDirection],
-	filter => RECORD [value: ScopeFilter] };
+	count => Count,
+	depth => Depth,
+	direction => Direction,
+	filter => Filter };
 ScopeSequence: TYPE = SEQUENCE 4 OF Scope;
 
 -- Handles and Authentication --
@@ -181,8 +181,8 @@ EncryptedSecondary: TYPE = SEQUENCE OF Authentication.Block;
 Strength: TYPE = { strengthNone(0), simple(1), strong(2) };
 SecondaryCredentials: TYPE = CHOICE Strength OF {
 	strengthNone => RECORD [],
-	simple => RECORD [value: Secondary],
-	strong => RECORD [value: EncryptedSecondary] };
+	simple => Secondary,
+	strong => EncryptedSecondary };
 
 Credentials: TYPE = RECORD [
 	primary: PrimaryCredentials,
@@ -190,10 +190,10 @@ Credentials: TYPE = RECORD [
 
 Verifier: TYPE = Authentication.Verifier;
 
-Handle: TYPE = UNSPECIFIED2;
-nullHandle: Handle = 0;
+Handle: TYPE = ARRAY 2 OF UNSPECIFIED;
+nullHandle: Handle = [0,0];
 
-Session: TYPE = RECORD [token: UNSPECIFIED2, verifier: Verifier ];
+Session: TYPE = RECORD [token: ARRAY 2 OF UNSPECIFIED, verifier: Verifier ];
 
 -- Random Access --
 
@@ -647,15 +647,13 @@ byDescendingPosition: Ordering = [key: position, ascending: FALSE,
 --			lastByteSignificant: BOOLEAN ],
 --	children: SEQUENCE OF SerializedTree ];
 
-Content: TYPE = RECORD [
-    data: BulkData.StreamOfUnspecified,
-    lastByteSignificant: BOOLEAN];
 SerializedTree: TYPE = RECORD [
-    attributes: AttributeSequence,
-    content: Content,
-    children: SEQUENCE OF SerializedTree ];
+	attributes: AttributeSequence,
+	content: RECORD [ data: BulkData.StreamOfUnspecified ,
+			lastByteSignificant: BOOLEAN ],
+	children: SEQUENCE OF UNSPECIFIED ];
 
-SerializedFile: TYPE = RECORD [ version: LONG CARDINAL, file: SerializedTree ];
+Serializedfile: TYPE = RECORD [ version: LONG CARDINAL, file: SerializedTree ];
 currentVersion: LONG CARDINAL = 3;
 
 
@@ -665,8 +663,7 @@ StreamOfAttributeSequence: TYPE = CHOICE OF {
 	nextSegment(0) => RECORD [
 		segment: SEQUENCE OF AttributeSequence,
 		restOfStream: StreamOfAttributeSequence ],
-	lastSegment(1) => RECORD [
-		segment: SEQUENCE OF AttributeSequence ]};
+	lastSegment(1) => SEQUENCE OF AttributeSequence };
 
 -- Line-oriented ASCII text file format, used in file interchange --
 
@@ -683,7 +680,7 @@ StreamOfAsciiText: TYPE = CHOICE LineType OF {
 	nextLine => RECORD [
 			line: AsciiString,
 			restOfText: StreamOfAsciiText ],
-	lastLine => RECORD [ line: AsciiString] };
+	lastLine => AsciiString };
 
 
 

@@ -1,23 +1,22 @@
--- $Header: Filing4.cr,v 2.6 87/03/23 13:05:51 ed Exp $
+-- $Header: FilingSubset1.cr,v 2.7 87/03/23 13:07:15 ed Exp $
 
--- Note:  this is a TEST version of Filing, and is not guaranteed to
+-- Copyright (c) 1986, 1987 Xerox Corp.
+
+-- Note:  this is a TEST version of FilingSubset, and is not guaranteed to
 -- match the official Xerox version at all.  It does seem to be adequate
 -- for FTP, however.
 
--- $Log:	Filing4.cr,v $
--- Revision 2.6  87/03/23  13:05:51  ed
+-- $Log:	FilingSubset1.cr,v $
+-- Revision 2.7  87/03/23  13:07:15  ed
 -- Minor typo in SerializedTree.
 -- 
--- Revision 2.5  87/03/23  11:19:35  ed
+-- Revision 2.6  87/03/23  11:49:45  ed
 -- Slight mod to SerializedTree to allow current implementation.
--- Depth is really ScopeType of 4 in Filing4 (reverts to 3 in Filing5).
 -- 
--- Revision 2.4  87/01/14  13:02:00  ed
--- Remove controls from Move
---
--- Revision 2.3  86/12/31  11:45:30  ed
--- Added RandomAccess and Serialize/Deserialize for completeness
--- Some REPORTS error typos fixed
+-- Revision 2.5  87/01/12  16:48:15  ed
+-- Created FilingSubset version 1 from Filing version 4
+-- (Courier compiler doesn't allow the 'real' Courier definition so
+-- this is a copy of complete Filing version 6)
 --
 -- Revision 2.2  86/06/30  11:31:13  jqj
 -- convert to Authentication v 2 for compatibility with spec., now that
@@ -36,12 +35,12 @@
 -- Initial revision
 -- 
 
-Filing: PROGRAM 10 VERSION 4 =
+FilingSubset: PROGRAM 1500 VERSION 1 =
 BEGIN
 	DEPENDS UPON
 		BulkData(0) VERSION 1,
-		Clearinghouse(2) VERSION 2,
-		Authentication(14) VERSION 2,
+		Clearinghouse(2) VERSION 3,
+		Authentication(14) VERSION 3,
 		Time(15) VERSION 2;
 
 
@@ -55,7 +54,7 @@ AttributeType: TYPE = LONG CARDINAL;
 AttributeTypeSequence: TYPE = SEQUENCE OF AttributeType;
 allAttributeTypes: AttributeTypeSequence = [37777777777B];
 Attribute: TYPE = RECORD [type: AttributeType, value: SEQUENCE OF UNSPECIFIED];
-AttributeSequence: TYPE = RECORD [value: SEQUENCE OF Attribute];
+AttributeSequence: TYPE = SEQUENCE OF Attribute;
 
 -- Controls --
 
@@ -74,20 +73,20 @@ AccessSequence: TYPE = SEQUENCE 5 OF AccessType;
 -- fullAccess: AccessSequence = [177777B]; --
 
 Control: TYPE = CHOICE ControlType OF {
-	lockControl => RECORD [value: Lock],
-	timeoutControl => RECORD [value: Timeout],
-	accessControl => RECORD [value: AccessSequence]};
+	lockControl => Lock,
+	timeoutControl => Timeout,
+	accessControl => AccessSequence};
 ControlSequence: TYPE = SEQUENCE 3 OF Control;
 
 -- Scopes --
 
-ScopeCount: TYPE = CARDINAL;
-unlimitedCount: ScopeCount = 177777B;
+Count: TYPE = CARDINAL;
+unlimitedCount: Count = 177777B;
 
-ScopeDepth: TYPE = CARDINAL;
-allDescendants: ScopeDepth = 177777B;
+Depth: TYPE = CARDINAL;
+allDescendants: Depth = 177777B;
 
-ScopeDirection: TYPE = {forward(0), backward(1)};
+Direction: TYPE = {forward(0), backward(1)};
 
 Interpretation: TYPE = { interpretationNone(0), boolean(1), cardinal(2),
 	longCardinal(3), time(4), integer(5), longInteger(6), string(7) };
@@ -109,37 +108,96 @@ RestrictedFilter: TYPE = CHOICE FilterType OF {
 	-- NOT IMPLEMENTED: and, or, not --
 	filterNone, all => RECORD [],
 	matches => RECORD [attribute: Attribute] };
-ScopeFilter: TYPE = CHOICE FilterType OF {
+Filter: TYPE = CHOICE FilterType OF {
 	less, lessOrEqual, equal, notEqual, greaterOrEqual, greater =>
 		RECORD [attribute: Attribute, interpretation: Interpretation],
 		-- interpretation ignored if attribute interpreted by
 		-- implementor
 	-- NOT YET IMPLEMENTED: (at least, not generally) and, or, not --
-	and, or => RECORD [value: SEQUENCE OF RestrictedFilter],
-	not => RECORD[value: RestrictedFilter],
+	and, or => SEQUENCE OF RestrictedFilter,
+	not => RestrictedFilter,
 	filterNone, all => RECORD [],
 	matches => RECORD [attribute: Attribute] };
-nullFilter: ScopeFilter = all[];
+nullFilter: Filter = all[];
 	
-ScopeType: TYPE = { count(0), direction(1), filter(2), depth(4) };
+ScopeType: TYPE = { count(0), direction(1), filter(2), depth(3) };
 Scope: TYPE = CHOICE ScopeType OF {
-	count => RECORD [value: ScopeCount],
-	depth => RECORD [value: ScopeDepth],
-	direction => RECORD [value: ScopeDirection],
-	filter => RECORD [value: ScopeFilter] };
+	count => Count,
+	depth => Depth,
+	direction => Direction,
+	filter => Filter };
 ScopeSequence: TYPE = SEQUENCE 4 OF Scope;
 
 -- Handles and Authentication --
 
-Credentials: TYPE = Authentication.Credentials;
+PrimaryCredentials: TYPE = Authentication.Credentials;
+-- nullPrimaryCredentials: PrimaryCredentials = Authentication.nullCredentials;
+
+-- Secondary credentials --
+
+SecondaryItemType: TYPE = LONG CARDINAL;
+SecondaryType: TYPE = SEQUENCE 10 OF SecondaryItemType;
+
+SecondaryItem: TYPE = RECORD [
+	type: SecondaryItemType,
+	value: SEQUENCE OF UNSPECIFIED ];
+
+Secondary: TYPE = SEQUENCE 10 OF SecondaryItem;
+
+systemPassword: SecondaryItemType = 1;
+SystemPassword : TYPE = STRING;			-- value is private --
+
+userName: SecondaryItemType = 2;
+UserName: TYPE = STRING;			-- value is not private --
+
+userPassword: SecondaryItemType = 3;
+UserPassword: TYPE = STRING;			-- value is private --
+
+userPassword2: SecondaryItemType = 4;
+UserPassword2: TYPE = STRING;			-- value is private --
+
+userServiceName: SecondaryItemType = 5;
+UserServiceName: TYPE = STRING;			-- value is not private --
+
+userServicePassword: SecondaryItemType = 6;
+UserServicePassword: TYPE = STRING;		-- value is private --
+
+userServicePassword2: SecondaryItemType = 7;
+UserServicePassword2: TYPE = STRING;		-- value is private --
+
+accountName: SecondaryItemType = 8;
+AccountName: TYPE = STRING;			-- value is not private --
+
+accountPassword: SecondaryItemType = 9;
+AccountPassword: TYPE = STRING;			-- value is private --
+
+accountPassword2: SecondaryItemType = 10;
+AccountPassword2: TYPE = STRING;		-- value is private --
+
+secondaryString: SecondaryItemType = 1000;
+SecondaryString: TYPE = STRING;			-- value is not private --
+
+privateSecondaryString: SecondaryItemType = 1001;
+PrivateSecondaryString: TYPE = STRING;		-- value is not private --
+
+EncryptedSecondary: TYPE = SEQUENCE OF Authentication.Block;
+
+Strength: TYPE = { strengthNone(0), simple(1), strong(2) };
+SecondaryCredentials: TYPE = CHOICE Strength OF {
+	strengthNone => RECORD [],
+	simple => Secondary,
+	strong => EncryptedSecondary };
+
+Credentials: TYPE = RECORD [
+	primary: PrimaryCredentials,
+	secondary: SecondaryCredentials ];
+
 Verifier: TYPE = Authentication.Verifier;
-SimpleVerifier: TYPE = Authentication.SimpleVerifier;
 
-Handle: TYPE = UNSPECIFIED2;
-nullHandle: Handle = 0;
+Handle: TYPE = ARRAY 2 OF UNSPECIFIED;
+nullHandle: Handle = [0,0];
 
-Session: TYPE = RECORD [token: UNSPECIFIED2, verifier: Verifier ];
-
+Session: TYPE = RECORD [token: ARRAY 2 OF UNSPECIFIED, verifier: Verifier ];
 
 -- Random Access --
 
@@ -148,6 +206,9 @@ ByteCount: TYPE = LONG CARDINAL;
 endOfFile: LONG CARDINAL = 3777777777B; -- logical end of file --
 
 ByteRange: TYPE = RECORD [ firstByte: ByteAddress, count: ByteCount ];
+
+
+
 
 
 -- REMOTE ERRORS --
@@ -190,7 +251,18 @@ AccessProblem: TYPE = {
 AccessError: ERROR [problem: AccessProblem] = 6;
 
 -- problem with a credentials or verifier --
-AuthenticationError: ERROR [problem: Authentication.Problem] = 7;
+AuthenticationProblem: TYPE = {
+	primaryCredentialsInvalid(0),
+	verifierInvalid(1),
+	verifierExpired(2),
+	verifierReused(3),
+	primaryCredentialsExpired(4),
+	inappropriatePrimaryCredentials(5),
+	secondaryCredentialsRequired(6),
+	secondaryCredentialsTypeInvalid(7),
+	secondaryCredentialsValueInvalid(8) };
+AuthenticationError: ERROR [problem: AuthenticationProblem,
+			    type: SecondaryType] = 7;
 
 -- problem with a BDT --
 ConnectionProblem: TYPE = {
@@ -241,8 +313,7 @@ ServiceError: ERROR [problem: ServiceProblem] = 11;
 
 -- problem with a session --
 SessionProblem: TYPE = {
-	tokenInvalid(0),
-	serviceAlreadySet(1) };
+	tokenInvalid(0) };
 SessionError: ERROR [problem: SessionProblem ] = 12;
 
 -- problem obtaining space for file contents or attributes --
@@ -347,14 +418,14 @@ GetAttributes: PROCEDURE [ file: Handle, types: AttributeTypeSequence,
 		HandleError, SessionError, UndefinedError ]
 	= 8;
 
-ChangeAttributes: PROCEDURE [file: Handle, attributes: AttributeSequence,
+ChangeAttributes: PROCEDURE [ file: Handle, attributes: AttributeSequence,
 		session: Session ]
 	REPORTS [ AccessError, AttributeTypeError, AttributeValueError,
 		AuthenticationError, HandleError, InsertionError,
 		SessionError, SpaceError, UndefinedError ]
 	= 9;
 
-UnifyAccessLists: PROCEDURE [directory: Handle, session: Session ]
+UnifyAccessLists: PROCEDURE [ directory: Handle, session: Session ]
 	REPORTS [ AccessError, AuthenticationError, HandleError, SessionError,
 		UndefinedError ] 
 	= 20;
@@ -472,7 +543,7 @@ User: TYPE = Clearinghouse.Name;
 -- attributes --
 
 accessList: AttributeType = 19;
-AccessEntry: TYPE = RECORD [key: Clearinghouse.Name, access: AccessSequence ];
+AccessEntry: TYPE = RECORD [key: Clearinghouse.Name, access: AccessSequence];
 AccessList: TYPE = RECORD [entries: SEQUENCE OF AccessEntry, defaulted: BOOLEAN];
 
 checksum: AttributeType = 0;
@@ -566,30 +637,28 @@ byDescendingPosition: Ordering = [key: position, ascending: FALSE,
 
 
 
+
 -- BULK DATA FORMATS --
 
 -- Serialized File Format, used in Serialize and Deserialize --
 
--- SerializedTree should contain following but compiler won't allow it
+-- SerializedTree should contain the following but compiler won't allow it
 -- Use Sequence of Unspecified  to get around it for now.
--- 
+--
 -- SerializedTree: TYPE = RECORD [
--- 	attributes: AttributeSequence,
--- 	content: RECORD [ data: BulkData.StreamOfUnspecified ,
--- 			lastByteIsSignificant: BOOLEAN ],
+--	attributes: AttributeSequence,
+--	content: RECORD [ data: BulkData.StreamOfUnspecified ,
+--			lastByteSignificant: BOOLEAN ],
 --	children: SEQUENCE OF SerializedTree ];
 
-Content: TYPE = RECORD [
-    data: BulkData.StreamOfUnspecified,
-    lastByteSignificant: BOOLEAN];
 SerializedTree: TYPE = RECORD [
-    attributes: AttributeSequence,
-    content: Content,
-    children: SEQUENCE OF SerializedTree ];
+	attributes: AttributeSequence,
+	content: RECORD [ data: BulkData.StreamOfUnspecified ,
+			lastByteSignificant: BOOLEAN ],
+	children: SEQUENCE OF UNSPECIFIED ];
 
-SerializedFile: TYPE = RECORD [ version: LONG CARDINAL, file: SerializedTree ];
+Serializedfile: TYPE = RECORD [ version: LONG CARDINAL, file: SerializedTree ];
 currentVersion: LONG CARDINAL = 3;
-
 
 
 -- Attribute Series Format, used in List --
@@ -597,10 +666,25 @@ currentVersion: LONG CARDINAL = 3;
 StreamOfAttributeSequence: TYPE = CHOICE OF {
 	nextSegment(0) => RECORD [
 		segment: SEQUENCE OF AttributeSequence,
-		restOfStream: StreamOfAttributeSequence],
-	lastSegment(1) => RECORD [
-		segment: SEQUENCE OF AttributeSequence]};
+		restOfStream: StreamOfAttributeSequence ],
+	lastSegment(1) => SEQUENCE OF AttributeSequence };
 
+-- Line-oriented ASCII text file format, used in file interchange --
+
+AsciiString: TYPE = RECORD [
+		lastByteSignificant: BOOLEAN,
+		bytes: SEQUENCE OF UNSPECIFIED ];
+
+-- a liberty until the compiler can accept the alternate syntax --
+--	see StreamOfAttributeSequence --
+
+LineType: TYPE = { nextLine(0), lastLine(1) };
+
+StreamOfAsciiText: TYPE = CHOICE LineType OF {
+	nextLine => RECORD [
+			line: AsciiString,
+			restOfText: StreamOfAsciiText ],
+	lastLine => AsciiString };
 
 
 
@@ -612,6 +696,7 @@ tDirectory: Type = 1;
 tText: Type = 2;
 tSerialized: Type = 3;
 tEmpty: Type = 4;
+tAscii: Type = 6;
+tAsciiText: Type = 7;
 
 END. -- of Filing --
-

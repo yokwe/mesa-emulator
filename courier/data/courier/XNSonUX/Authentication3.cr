@@ -9,16 +9,30 @@
 Authentication: PROGRAM 14 VERSION 3 =
 
 BEGIN
-    DEPENDS UPON Time(15) VERSION 2,
-                 Clearinghouse(2) VERSION 3;
+    DEPENDS UPON Time(15) VERSION 2;
+
+-- faked dependency: should be DEPENDS UPON Clearinghouse(2) VERSION 3; --
+
+Organization: TYPE = STRING;
+Domain: TYPE = STRING;
+Object: TYPE = STRING;
+
+ThreePartName: TYPE = RECORD [
+    organization: Organization,
+    domain: Domain,
+    object: Object
+    ];
+
+Clearinghouse_Name:  TYPE = ThreePartName;
+
 
 -- TYPES --
 
 -- Types supporting encoding --
 
-Key: TYPE = RECORD [value: ARRAY 4 OF UNSPECIFIED];  -- lsb of each octet is odd parity bit --
+Key: TYPE = ARRAY 4 OF UNSPECIFIED;  -- lsb of each octet is odd parity bit --
 
-Block: TYPE = RECORD [value: ARRAY 4 OF UNSPECIFIED];  -- cipher text or plain text block --
+Block: TYPE = ARRAY 4 OF UNSPECIFIED;  -- cipher text or plain text block --
 
 HashedPassword: TYPE = CARDINAL;
 
@@ -37,7 +51,7 @@ Credentials: TYPE = RECORD [type: CredentialsType,
 CredentialsPackage: TYPE = RECORD [
 	credentials: Credentials,
 	nonce: LONG CARDINAL,
-	recipient: Clearinghouse.Name,
+	recipient: Clearinghouse_Name,
 	conversationKey: Key ];
 
 -- instances of the following type must be a multiple of 64 bits, padded --
@@ -46,9 +60,9 @@ CredentialsPackage: TYPE = RECORD [
 StrongCredentials: TYPE = RECORD [
 	conversationKey: Key,
 	expirationTime: Time.Time,
-	initiator: Clearinghouse.Name ];
+	initiator: Clearinghouse_Name ];
 
-SimpleCredentials: TYPE = Clearinghouse.Name;
+SimpleCredentials: TYPE = Clearinghouse_Name;
 
 Verifier: TYPE = SEQUENCE 12 OF UNSPECIFIED;
 
@@ -66,7 +80,7 @@ Proxy: TYPE = SEQUENCE OF UNSPECIFIED;
 StrongProxy: TYPE = RECORD [
 	randomBits: Block,
 	expirationTime: Time.Time,
-	agent: Clearinghouse.Name];
+	agent: Clearinghouse_Name];
 
 SimpleProxy: TYPE = BOOLEAN;
 
@@ -107,7 +121,7 @@ CallError: ERROR [problem: CallProblem, whichArg: Which] = 1;
 -- Strong Authentication --
 
 GetStrongCredentials: PROCEDURE [
-		initiator, recipient: Clearinghouse.Name,
+		initiator, recipient: Clearinghouse_Name,
 		nonce: LONG CARDINAL ]
 	RETURNS [ credentialsPackage: SEQUENCE OF UNSPECIFIED ]
 		-- encrypted with the initiator's strong key --
@@ -115,8 +129,8 @@ GetStrongCredentials: PROCEDURE [
 
 TradeProxyForCredentials: PROCEDURE [
 		credentials: Credentials, verifier: Verifier,
-		initiator: Clearinghouse.Name, proxy: Proxy,
-		recipient: Clearinghouse.Name, nonce: LONG CARDINAL ]
+		initiator: Clearinghouse_Name, proxy: Proxy,
+		recipient: Clearinghouse_Name, nonce: LONG CARDINAL ]
 	RETURNS [ credentialsPackage: SEQUENCE OF UNSPECIFIED,
 		-- enxrypted with the agent's strong key --
 		  proxyForRecipient: Proxy ]
@@ -124,7 +138,7 @@ TradeProxyForCredentials: PROCEDURE [
 
 CreateStrongKey: PROCEDURE [
 		credentials: Credentials, verifier: Verifier,
-		name: Clearinghouse.Name, encryptedKey: Block ]
+		name: Clearinghouse_Name, encryptedKey: Block ]
 	REPORTS [ AuthenticationError, CallError ] = 3;
 
 ChangeStrongKey: PROCEDURE [
@@ -134,7 +148,7 @@ ChangeStrongKey: PROCEDURE [
 
 DeleteStrongKey: PROCEDURE [
 		credentials: Credentials, verifier: Verifier,
-		name: Clearinghouse.Name ]
+		name: Clearinghouse_Name ]
 	REPORTS [ AuthenticationError, CallError ] = 5;
 
 
@@ -142,12 +156,12 @@ DeleteStrongKey: PROCEDURE [
 
 CheckSimpleCredentials: PROCEDURE [
 		credentials: Credentials, verifier: Verifier ]
-	RETURNS [ ok: BOOLEAN, initiator: Clearinghouse.Name ]
+	RETURNS [ ok: BOOLEAN, initiator: Clearinghouse_Name ]
 	REPORTS [ AuthenticationError, CallError ] = 2;
 
 CreateSimpleKey: PROCEDURE [
 		credentials: Credentials, verifier: Verifier,
-		name: Clearinghouse.Name, key: HashedPassword ]
+		name: Clearinghouse_Name, key: HashedPassword ]
 	REPORTS [ AuthenticationError, CallError ] = 6;
 
 ChangeSimpleKey: PROCEDURE [
@@ -157,12 +171,8 @@ ChangeSimpleKey: PROCEDURE [
 
 DeleteSimpleKey: PROCEDURE [
 		credentials: Credentials, verifier: Verifier,
-		name: Clearinghouse.Name ]
+		name: Clearinghouse_Name ]
 	REPORTS [ AuthenticationError, CallError ] = 8;
 
--- Undocumented  I assume this is same as proc0 in Clearinghouse2/3
-RetrieveAddresses: PROCEDURE
-	RETURNS [address: Clearinghouse.NetworkAddressList]
-	REPORTS [CallError] = 0;
 
 END.

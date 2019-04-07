@@ -29,7 +29,24 @@ Authentication: PROGRAM 14 VERSION 1 =
 -- 
 
 BEGIN
-    DEPENDS UPON Clearinghouse(2) VERSION 2;
+
+-- faked dependency for Clearinghouse (2) VERSION 2 --
+-- note that the dependency has been deleted to eliminate circularity --
+
+	-- DEPENDS UPON
+	-- 	Clearinghouse (2) VERSION 2;
+
+ClearinghouseOrganization: TYPE = STRING;
+ClearinghouseDomain: TYPE = STRING;
+ClearinghouseObject: TYPE = STRING;
+
+ClearinghouseThreePartName: TYPE = RECORD [
+    organization: ClearinghouseOrganization,
+    domain: ClearinghouseDomain,
+    object: ClearinghouseObject
+    ];
+
+ClearinghouseName:  TYPE = ClearinghouseThreePartName;
 
 -- Types --
 
@@ -41,7 +58,7 @@ Credentials: TYPE = RECORD[
 
 simpleCredentials: CredentialsType = 0;
 
-SimpleCredentials: TYPE = Clearinghouse.Name;
+SimpleCredentials: TYPE = ClearinghouseName;
 
 Verifier: TYPE = SEQUENCE 12 OF UNSPECIFIED;
 

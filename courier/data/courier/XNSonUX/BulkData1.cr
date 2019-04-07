@@ -22,24 +22,21 @@ BEGIN
 
 StreamOfUnspecified: TYPE = CHOICE OF {
 	nextSegment(0) => RECORD [
-        segment: SEQUENCE OF UNSPECIFIED],
---      segment: SEQUENCE OF UNSPECIFIED,
---      restOfStream: StreamOfUnspecified],
-	lastSegment(1) => RECORD [
-		segment: SEQUENCE OF UNSPECIFIED]};
--- NOTE: After read StreamOfUnspecified, if choice is nextSetment, need to read StreamOfUnspecified again to read rest of data.
+		segment: SEQUENCE OF UNSPECIFIED,
+		restOfStream: StreamOfUnspecified],
+	lastSegment(1) => SEQUENCE OF UNSPECIFIED};
 
 -- types --
 
 Identifier: TYPE = RECORD [
-	host: UNSPECIFIED3,  
-	hostRelativeIdentifier: UNSPECIFIED2 ];
+	host: ARRAY 3 OF UNSPECIFIED,  
+	hostRelativeIdentifier: ARRAY 2 OF UNSPECIFIED ];
 
 Descriptor: TYPE = CHOICE OF {
 	null(0), immediate(1) => RECORD [ ],
 	passive(2), active(3) => RECORD [ 
-		network: UNSPECIFIED2,
-		host: UNSPECIFIED3,
+		network: ARRAY 2 OF UNSPECIFIED,
+		host: ARRAY 3 OF UNSPECIFIED,
 		identifier: Identifier ]
 	};
 

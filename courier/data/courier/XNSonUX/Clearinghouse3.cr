@@ -1,33 +1,18 @@
--- $Header: Clearinghouse2.cr,v 2.0 85/11/21 07:24:31 jqj Exp $ --
+-- $Header: Clearinghouse3.cr,v 1.1 87/01/05 11:17:27 ed Exp $ --
 
--- $Log:	Clearinghouse2.cr,v $
--- Revision 2.0  85/11/21  07:24:31  jqj
--- 4.3BSD standard release
--- 
--- Revision 1.5  85/05/23  06:20:51  jqj
--- *** empty log message ***
--- 
--- Revision 1.5  85/05/23  06:20:51  jqj
--- Public Beta-test version, released 24 May 1985
--- 
--- Revision 1.4  85/03/26  06:11:17  jqj
--- Revised public alpha-test version, released 26 March 1985
--- 
--- Revision 1.3  85/03/11  16:43:58  jqj
--- Public alpha-test version, released 11 March 1985
--- 
--- Revision 1.2  85/03/10  05:22:58  jqj
--- Modified for UNIX:  reordered declaratons to eliminate forward
--- references, deleted recursive (StreamOf...) declarations, fixed
--- lots of typos.
+-- $Log:	Clearinghouse3.cr,v $
+-- Revision 1.1  87/01/05  11:17:27  ed
+-- Initial revision
 --
--- Revision 1.1 Initial revision - from Rochester
+--
 
-Clearinghouse: PROGRAM 2 VERSION 2 =
+-- Version 3 is identical to version 2
+
+Clearinghouse: PROGRAM 2 VERSION 3 =
 BEGIN
 	DEPENDS UPON
 		BulkData(0) VERSION 1,
-		Authentication (14) VERSION 1;
+		Authentication (14) VERSION 3;
 
 -- TYPES AND CONSTANTS DESCRIBING NAMES --
 
@@ -74,43 +59,37 @@ StreamOfDomain: TYPE = CHOICE OF {
 	nextSegment (0) => RECORD [
 		segment: SEQUENCE OF Domain,
 		restOfStream: StreamOfDomain],
-	lastSegment (1) => RECORD [
-		segment: SEQUENCE OF Domain]};
+	lastSegment (1) => SEQUENCE OF Domain};
 
 StreamOfDomainName: TYPE = CHOICE OF {
 	nextSegment (0) => RECORD [
 		segment: SEQUENCE OF DomainName,
 		restOfStream: StreamOfDomainName],
-	lastSegment (1) => RECORD [
-		segment: SEQUENCE OF DomainName]};
+	lastSegment (1) => SEQUENCE OF DomainName};
 
 StreamOfObject: TYPE = CHOICE OF {
 	nextSegment (0) => RECORD [
 		segment: SEQUENCE OF Object,
 		restOfStream: StreamOfObject],
-	lastSegment (1) => RECORD [
-		segment: SEQUENCE OF Object]};
+	lastSegment (1) => SEQUENCE OF Object};
 
 StreamOfObjectName: TYPE = CHOICE OF {
 	nextSegment (0) => RECORD [
 		segment: SEQUENCE OF ObjectName,
 		restOfStream: StreamOfObjectName],
-	lastSegment (1) => RECORD [
-		segment: SEQUENCE OF ObjectName]};
+	lastSegment (1) => SEQUENCE OF ObjectName};
 
 StreamOfOrganization: TYPE = CHOICE OF {
 	nextSegment (0) => RECORD [
 		segment: SEQUENCE OF Organization,
 		restOfStream: StreamOfOrganization],
-	lastSegment (1) => RECORD [
-		segment: SEQUENCE OF Organization]};
+	lastSegment (1) => SEQUENCE OF Organization};
 
 StreamOfThreePartName: TYPE = CHOICE OF {
 	nextSegment (0) => RECORD [
 		segment: SEQUENCE OF ThreePartName,
 		restOfStream: StreamOfThreePartName],
-	lastSegment (1) => RECORD [
-		segment: SEQUENCE OF ThreePartName]};
+	lastSegment (1) => SEQUENCE OF ThreePartName};
 
 -- TYPES AND CONSTANTS DESCRIBING PROPERTIES --
 
@@ -130,8 +109,8 @@ Item: TYPE = SEQUENCE 500 OF UNSPECIFIED;
 -- Clearinghouse addresses aer stored in this form. --
 
 NetworkAddress: TYPE = RECORD [
-	network: UNSPECIFIED2,
-	host: UNSPECIFIED3,
+	network: ARRAY 2 OF UNSPECIFIED,
+	host: ARRAY 3 OF UNSPECIFIED,
 	socket: UNSPECIFIED ];
 
 NetworkAddressList: TYPE = SEQUENCE 40 OF NetworkAddress;

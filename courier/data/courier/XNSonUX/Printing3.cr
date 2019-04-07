@@ -50,72 +50,62 @@ Time: TYPE = Time.Time; -- the standard time and date format --
 
 RequestID: TYPE = ARRAY 5 OF UNSPECIFIED; -- the standard time and date format --
 
-PrintAttributeChoice: TYPE = CHOICE OF {
-	printObjectName(0) => RECORD [value: STRING], -- default is implementation-dependent --
-	printObjectCreateDate(1) => RECORD [value: Time], -- default is implementation-dependent --
-	senderName(2) => RECORD [value: STRING] }; -- default is implementation-dependent --
-	
-PrintAttributes: TYPE = SEQUENCE 3 OF PrintAttributeChoice;
+PrintAttributes: TYPE = SEQUENCE 3 OF CHOICE OF {
+	printObjectName(0) => STRING, -- default is implementation-dependent --
+	printObjectCreateDate(1) => Time, -- default is implementation-dependent --
+	senderName(2) => STRING }; -- default is implementation-dependent --
 
-PaperSize: TYPE = {
-        usLetter(1),    -- defined as 8.5" x 11.0" or 216mm x 297mm --
-        usLegal(2),     -- defined as 8.5" x 14.0" or 216mm x 356mm --
-        a0(3), a1(4), a2(5), a3(6), a4(7), a5(8), a6(9), a7(10), 
-                a8(11), a9(12), a10(35),
-        isoB0(13), isoB1(14), isoB2(15), isoB3(16), isoB4(17),
-                isoB5(18), isoB6(19), isoB7(20), isoB8(21),
-                isoB9(22), isoB10(23),
-        jisB0(24), jisB1(25), jisB2(26), jisB3(27), jisB4(28),
-                jisB5(29), jisB6(30), jisB7(31), jisB8(32), jisB9(33),
-                jisB10(34)};
 Paper: TYPE = CHOICE OF {
 	unknown(0) => RECORD [],
-	knownSize(1) => RECORD [paperSize: PaperSize],
+    	knownSize(1) => {
+		usLetter(1),	-- defined as 8.5" x 11.0" or 216mm x 297mm --
+		usLegal(2),	-- defined as 8.5" x 14.0" or 216mm x 356mm --
+		a0(3), a1(4), a2(5), a3(6), a4(7), a5(8), a6(9), a7(10), 
+			a8(11), a9(12), a10(35),
+		isoB0(13), isoB1(14), isoB2(15), isoB3(16), isoB4(17),
+			isoB5(18), isoB6(19), isoB7(20), isoB8(21),
+			isoB9(22), isoB10(23),
+		jisB0(24), jisB1(25), jisB2(26), jisB3(27), jisB4(28),
+			jisB5(29), jisB6(30), jisB7(31), jisB8(32), jisB9(33),
+			jisB10(34)},
 	otherSize(2) => RECORD [width, length: CARDINAL]}; -- both in millimeters --
 
-Medium: TYPE = CHOICE OF {
-	paper(0) => RECORD[paper: Paper]};
+Medium: TYPE = CHOICE OF {paper(0) => Paper};
 
 Media: TYPE = SEQUENCE 100 OF Medium;
-Priority: TYPE = {low(0), normal(1), high(2)};
-PrintOptionChoice: TYPE = CHOICE OF {
-	printObjectSize(0) => RECORD [value: LONG CARDINAL], -- default is size of master --
-	recipientName(1) => RECORD [value: STRING], -- default is senderName --
-	message(2) => RECORD [value: STRING], -- default is "" --
-	copyCount(3) => RECORD [value: CARDINAL], -- default is 1 --
+
+PrintOptions: TYPE = SEQUENCE 10 OF CHOICE OF {
+	printObjectSize(0) => LONG CARDINAL, -- default is size of master --
+	recipientName(1) => STRING, -- default is senderName --
+	message(2) => STRING, -- default is "" --
+	copyCount(3) => CARDINAL, -- default is 1 --
 	pagesToPrint(4) => RECORD [
 		beginningPageNumber, -- default is 1, the first page of the master --
 		endingPageNumber: CARDINAL], -- default is the last page of the master --
-	mediumHint(5) => RECORD [value: Medium], -- default is implementation-dependent --
-	priorityHint(6) => RECORD [value: Priority], -- default is implementation-dependent --
-	releaseKey(7) => RECORD [value: Authentication.HashedPassword], -- default is 177777B --
-	staple(8) => RECORD [value: BOOLEAN], -- default is FALSE --
-	twoSided(9) => RECORD [value: BOOLEAN] }; -- default is FALSE --
-PrintOptions: TYPE = SEQUENCE 10 OF PrintOptionChoice;
+	mediumHint(5) => Medium, -- default is implementation-dependent --
+	priorityHint(6) => {low(0), normal(1), high(2)}, -- default is implementation-dependent --
+	releaseKey(7) => Authentication.HashedPassword, -- default is 177777B --
+	staple(8) => BOOLEAN, -- default is FALSE --
+	twoSided(9) => BOOLEAN }; -- default is FALSE --
 
-PrinterPropertyChoice: TYPE = CHOICE OF {
-	ppmedia(0) => RECORD [value: Media],
-	ppstaple(1) => RECORD [value: BOOLEAN], -- default is FALSE --
-	pptwoSided(2) => RECORD [value: BOOLEAN]}; -- default is FALSE --
-PrinterProperties: TYPE = SEQUENCE 3 OF PrinterPropertyChoice;
+PrinterProperties: TYPE = SEQUENCE 3 OF CHOICE OF {
+	ppmedia(0) => Media,
+	ppstaple(1) => BOOLEAN, -- default is FALSE --
+	pptwoSided(2) => BOOLEAN}; -- default is FALSE --
 
-SpoolerStatusEnum: TYPE = {available(0), busy(1), disabled(2), full(3)};
-FormatterStatusEnum: TYPE = {available(0), busy(1), disabled(2)};
-PrinterStatusEnum: TYPE = {available(0), busy(1), disabled(2), needsAttention(3), needsKeyOperator(4) };
-PrinterStatusChoice: TYPE = CHOICE OF {
-	spooler(0) => RECORD [value: SpoolerStatusEnum],
-	formatter(1) => RECORD [value: FormatterStatusEnum],
-	printer(2) => RECORD [value: PrinterStatusEnum],
-	media(3) => RECORD [value: Media] };
-PrinterStatus: TYPE = SEQUENCE 4 OF PrinterStatusChoice;
+PrinterStatus: TYPE = SEQUENCE 4 OF CHOICE OF {
+	spooler(0) => {available(0), busy(1), disabled(2), full(3)},
+	formatter(1) => {available(0), busy(1), disabled(2)},
+	printer(2) => {available(0), busy(1), disabled(2), needsAttention(3),
+		needsKeyOperator(4) },
+	media(3) => Media};
 
-RequestStatusCode: TYPE = {pending(0), inProgress(1), completed(2),
+
+RequestStatus: TYPE = SEQUENCE 2 OF CHOICE OF {
+	status(0) => {pending(0), inProgress(1), completed(2),
 		completedWithWarning(3), unknown(4), rejected(5), aborted(6),
-		canceled(7), held(8) };
-RequestStatusChoice: TYPE = CHOICE OF {
-	status(0) => RECORD [value: RequestStatusCode],
-	statusMessage(1) => RECORD [value: STRING]}; -- default is "" --
-RequestStatus: TYPE = SEQUENCE 2 OF RequestStatusChoice;
+		canceled(7), held(8) },
+	statusMessage(1) => STRING}; -- default is "" --
 
 -- Remote Errors --
 
