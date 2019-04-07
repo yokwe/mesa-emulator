@@ -671,12 +671,26 @@ public class Compiler {
 			}
 			
 			// generate choice struct
-			if (candidateType.kind == Type.Kind.RECORD) {
+			switch(candidateType.kind) {
+			case RECORD:
+			{
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
 				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
-			} else {
-				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
+			}
+				break;
+			case SEQUENCE:
+			case ARRAY:
+			case ENUM:
+			case REFERENCE:
+			{
+				String choiceType = toTypeString(candidateType);
+				String choiceName = String.format("CHOICE_%02d", maxChoiceNumber);
+				outh.format("using %s = %s;", choiceName, choiceType);
+			}
+				break;
+			default:
+				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));		
 			}
 		}
 		
@@ -761,12 +775,24 @@ public class Compiler {
 			}
 			
 			// generate choice struct
-			if (candidateType.kind == Type.Kind.RECORD) {
+			switch(candidateType.kind) {
+			case RECORD:
+			{
 				TypeRecord typeRecord = (TypeRecord)candidateType;
 				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
 				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
-			} else {
-				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));
+			}
+				break;
+			case SEQUENCE:
+			case ARRAY:
+			{
+				String choiceType = toTypeString(candidateType);
+				String choiceName = String.format("CHOICE_%02d", maxChoiceNumber);
+				outh.format("using %s = %s;", choiceName, choiceType);
+			}
+				break;
+			default:
+				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));		
 			}
 		}
 		
