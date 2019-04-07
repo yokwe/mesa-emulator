@@ -44,8 +44,6 @@ public class ProgramBuilder {
 
 	private static Map<String, Cache> programCache = new TreeMap<>();
 	public static void initialize(String directoryPath) {
-		programCache.clear();
-
 		boolean hasError = false;
 
 		File directory = new File(directoryPath);
@@ -67,7 +65,11 @@ public class ProgramBuilder {
 			// build declaration of program
 			builder.buildDecl(tree);
 			
-			if (!key.equals(program.info.getProgramVersion())) {
+			if (key.equals(program.info.getProgramVersion())) {
+				// Name with version number if version number is not zero
+			} else if (key.equals(String.format("%s%d", program.info.name, program.info.version))) {
+				// Name with version number
+			} else {
 				hasError = true;
 				logger.error(String.format("Filename and program name and version is inconsistent.  key = %s  info = %s", key, program.info.toString()));
 			}
