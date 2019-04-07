@@ -298,33 +298,8 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			for(Field field: typeProcedure.paramList) {
-				String fieldType;
-				String fieldName;
-				switch(field.type.kind) {
-				case ARRAY:
-				{
-					TypeArray typeArray = (TypeArray)field.type;
-					fieldType = toTypeString(field.type);
-					fieldName = String.format("%s{%d}", field.name, typeArray.size);	
-				}
-					break;
-				case SEQUENCE:
-				{
-					TypeSequence typeSequence = (TypeSequence)field.type;
-					fieldType = toTypeString(field.type);
-					if (typeSequence.size == TypeSequence.MAX_SIZE) {
-						fieldName = field.name;
-					} else {
-						fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
-					}
-				}
-					break;
-				default:
-					fieldType = toTypeString(field.type);
-					fieldName = field.name;
-					break;
-				}
-				
+				String fieldType = toTypeString(field.type);;
+				String fieldName = field.name;
 				c1.add(fieldType);
 				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 			}
@@ -339,33 +314,8 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			for(Field field: typeProcedure.resultList) {
-				String fieldType;
-				String fieldName;
-				switch(field.type.kind) {
-				case ARRAY:
-				{
-					TypeArray typeArray = (TypeArray)field.type;
-					fieldType = toTypeString(field.type);
-					fieldName = String.format("%s{%d}", field.name, typeArray.size);	
-				}
-					break;
-				case SEQUENCE:
-				{
-					TypeSequence typeSequence = (TypeSequence)field.type;
-					fieldType = toTypeString(field.type);
-					if (typeSequence.size == TypeSequence.MAX_SIZE) {
-						fieldName = field.name;
-					} else {
-						fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
-					}
-				}
-					break;
-				default:
-					fieldType = toTypeString(field.type);
-					fieldName = field.name;
-					break;
-				}
-				
+				String fieldType = toTypeString(field.type);;
+				String fieldName = field.name;
 				c1.add(fieldType);
 				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 			}
@@ -658,33 +608,8 @@ public class Compiler {
 		List<String> c1 = new ArrayList<>();
 		List<String> c2 = new ArrayList<>();
 		for(Field field: typeRecord.fields) {
-			String fieldType;
-			String fieldName;
-			switch(field.type.kind) {
-			case ARRAY:
-			{
-				TypeArray typeArray = (TypeArray)field.type;
-				fieldType = toTypeString(field.type);
-				fieldName = String.format("%s{%d}", field.name, typeArray.size);	
-			}
-				break;
-			case SEQUENCE:
-			{
-				TypeSequence typeSequence = (TypeSequence)field.type;
-				fieldType = toTypeString(field.type);
-				if (typeSequence.size == TypeSequence.MAX_SIZE) {
-					fieldName = field.name;
-				} else {
-					fieldName = String.format("%s{%d}", field.name, typeSequence.size);	
-				}
-			}
-				break;
-			default:
-				fieldType = toTypeString(field.type);
-				fieldName = field.name;
-				break;
-			}
-			
+			String fieldType = toTypeString(field.type);;
+			String fieldName = field.name;
 			c1.add(fieldType);
 			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 		}
