@@ -14,7 +14,8 @@ public class GenStub {
 	
 	public static void main(String[] args) throws Exception {
 		logger.debug("START");
-		ProgramBuilder.initialize("data/courier");
+		ProgramBuilder.initialize("data/courier/custom");
+		ProgramBuilder.initialize("data/courier/XNSonUX");
 		
 		for(int i = 0; i < args.length; i++) {
 			Program program;
