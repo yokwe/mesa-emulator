@@ -59,8 +59,8 @@ public:
         	T d;
         	d.v = true;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "T";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v T]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -70,8 +70,8 @@ public:
         	T d;
         	d.v = false;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "F";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v F]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -84,7 +84,7 @@ public:
         	d.v = true;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(2)0001";
@@ -98,7 +98,7 @@ public:
         	d.v = false;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(2)0000";
@@ -114,7 +114,7 @@ public:
         	d.v = false;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -127,7 +127,7 @@ public:
         	d.v = true;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -144,8 +144,8 @@ public:
         	T d;
         	d.v = 11;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "11";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v 11]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -158,7 +158,7 @@ public:
         	d.v = 0x11;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(1)11";
@@ -174,7 +174,7 @@ public:
         	d.v = 0x11;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -191,8 +191,8 @@ public:
         	T d;
         	d.v = 1111;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "1111";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v 1111]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -205,7 +205,7 @@ public:
         	d.v = 0x1122;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(2)1122";
@@ -221,7 +221,7 @@ public:
         	d.v = 0x1122;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -238,8 +238,8 @@ public:
         	T d;
         	d.v = 11112222;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "11112222";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v 11112222]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -252,7 +252,7 @@ public:
         	d.v = 0x11223344;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(4)11223344";
@@ -268,7 +268,7 @@ public:
         	d.v = 0x11223344;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -285,8 +285,8 @@ public:
         	T d;
         	d.v = "ABCD";
 
-        	QString a = Courier::toString(d.v);
-        	QString e = QString("ABCD");
+        	QString a = Courier::toString(d);
+        	QString e = QString("[[v \"ABCD\"]]");
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -299,7 +299,7 @@ public:
         	d.v = QString("ABCD");
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(6)000441424344";
@@ -313,7 +313,7 @@ public:
         	d.v = QString("ABC");
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(6)000341424300";
@@ -329,7 +329,7 @@ public:
         	d.v = "ABCD";
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -348,8 +348,8 @@ public:
         	T d;
         	d.v = 1111;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "1111";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v 1111]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -362,7 +362,7 @@ public:
         	d.v = 0x1122;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(2)1122";
@@ -378,7 +378,7 @@ public:
         	d.v = 0x1122;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -395,8 +395,8 @@ public:
         	T d;
         	d.v = 11112222;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "11112222";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v 11112222]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -409,7 +409,7 @@ public:
         	d.v = 0x11223344;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(4)11223344";
@@ -425,7 +425,7 @@ public:
         	d.v = 0x11223344;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
@@ -442,8 +442,8 @@ public:
         	T d;
         	d.v = 111122223333;
 
-        	QString a = Courier::toString(d.v);
-        	QString e = "111122223333";
+        	QString a = Courier::toString(d);
+        	QString e = "[[v 111122223333]]";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -456,7 +456,7 @@ public:
         	d.v = 0x112233445566;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
         	QString e = "(6)112233445566";
@@ -472,7 +472,7 @@ public:
         	d.v = 0x112233445566;
 
         	Courier::BlockData<100> blockData;
-        	Courier::serialize(blockData.block, d.v);
+        	Courier::serialize(blockData.block, d);
 
         	T s;
         	blockData.block.rewind();
