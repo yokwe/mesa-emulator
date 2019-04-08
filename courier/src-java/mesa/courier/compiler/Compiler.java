@@ -188,9 +188,9 @@ public class Compiler {
 	}
 	
 	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, DeclType declType) {
-		Type   type = declType.type;
-		String name = declType.name;
-		
+		genDeclType(outh, outc, namePrefix, declType.type, declType.name);
+	}
+	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name) {
 		switch(type.kind) {
 		// predefined
 		case BOOLEAN:
@@ -205,7 +205,7 @@ public class Compiler {
 			break;
 		// constructed
 		case ENUM:
-			genTypeDeclEnum(outh, outc, (TypeEnum)type, name, namePrefix);
+			genDeclTypeEnum(outh, outc, (TypeEnum)type, name, namePrefix);
 			break;
 		case ARRAY:
 			outh.format("using %s = %s;", name, toTypeString(type));
@@ -214,10 +214,10 @@ public class Compiler {
 			outh.format("using %s = %s;", name, toTypeString(type));
 			break;
 		case RECORD:
-			genTypeDeclRecord(outh, outc, (TypeRecord)type, name, namePrefix);
+			genDeclTypeRecord(outh, outc, (TypeRecord)type, name, namePrefix);
 			break;
 		case CHOICE:
-			genTypeDeclChoice(outh, outc, (TypeChoice)type, name, namePrefix);
+			genDeclTypeChoice(outh, outc, (TypeChoice)type, name, namePrefix);
 			break;
 		// reference
 		case REFERENCE:
@@ -530,8 +530,7 @@ public class Compiler {
 		String name         = decl.name;
 		Type   concreteType = type.getConcreteType();
 
-		out.format("// %s  %s", decl.kind, name);
-		out.format("//   %s", type);
+		out.format("// %s  %s  %s", decl.kind, name, type);
 		if (type.isReference()) {
 			out.format("//   %s", concreteType);
 		}
@@ -601,7 +600,7 @@ public class Compiler {
 		}
 	}
 
-	private void genTypeDeclRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix) {
+	private void genDeclTypeRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix) {
 		//
 		// Output declaration of class
 		//
@@ -626,7 +625,7 @@ public class Compiler {
 		}
 	}
 	
-	private void genTypeDeclEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
+	private void genDeclTypeEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
 		List<String>  c1 = new ArrayList<>();
 		List<Integer> c2 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
@@ -644,16 +643,16 @@ public class Compiler {
 		context.enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 	}
 	
-	private void genTypeDeclChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix) {
+	private void genDeclTypeChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix) {
 		if (typeChoice instanceof TypeChoice.Typed) {
-			genTypeDeclChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix);
+			genDeclTypeChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix);
 		} else if (typeChoice instanceof TypeChoice.Anon) {
-			genTypeDeclChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix);
+			genDeclTypeChoiceAnon(outh, outc, (TypeChoice.Anon)typeChoice, name, namePrefix);
 		} else {
 			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
 		}
 	}
-	private void genTypeDeclChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
+	private void genDeclTypeChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -670,28 +669,9 @@ public class Compiler {
 				choiceMap.put(choiceName, maxChoiceNumber);
 			}
 			
-			// generate choice struct
-			switch(candidateType.kind) {
-			case RECORD:
-			{
-				TypeRecord typeRecord = (TypeRecord)candidateType;
-				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
-			}
-				break;
-			case SEQUENCE:
-			case ARRAY:
-			case ENUM:
-			case REFERENCE:
-			{
-				String choiceType = toTypeString(candidateType);
-				String choiceName = String.format("CHOICE_%02d", maxChoiceNumber);
-				outh.format("using %s = %s;", choiceName, choiceType);
-			}
-				break;
-			default:
-				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));		
-			}
+			// generate choice type declaration
+			String candidateName = String.format("CHOICE_%02d", maxChoiceNumber);
+			genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
 		}
 		
 		outh.line();
@@ -739,7 +719,7 @@ public class Compiler {
 			context.choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
 		}
 	}
-	private void genTypeDeclChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
+	private void genDeclTypeChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -774,26 +754,9 @@ public class Compiler {
 				choiceMap.put(choiceName, maxChoiceNumber);
 			}
 			
-			// generate choice struct
-			switch(candidateType.kind) {
-			case RECORD:
-			{
-				TypeRecord typeRecord = (TypeRecord)candidateType;
-				String structName = String.format("CHOICE_%02d", maxChoiceNumber);
-				genTypeDeclRecord(outh, outc, typeRecord, structName, String.format("%s::%s", namePrefix, name));
-			}
-				break;
-			case SEQUENCE:
-			case ARRAY:
-			{
-				String choiceType = toTypeString(candidateType);
-				String choiceName = String.format("CHOICE_%02d", maxChoiceNumber);
-				outh.format("using %s = %s;", choiceName, choiceType);
-			}
-				break;
-			default:
-				throw new CompilerException(String.format("Unexpected candidateType %s", candidateType.toString()));		
-			}
+			// generate choice type declaration
+			String candidateName = String.format("CHOICE_%02d", maxChoiceNumber);
+			genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
 		}
 		
 		outh.line();
