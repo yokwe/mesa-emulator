@@ -203,7 +203,6 @@ private:
 			COURIER_FATAL_ERROR();
 		}
 		size = 0;
-		bzero(data, maxSize * sizeof(T));
 	}
 };
 template <typename T, int N>
