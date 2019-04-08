@@ -16,6 +16,7 @@ public class GenStub {
 		logger.debug("START");
 		ProgramBuilder.initialize("data/courier/custom");
 		ProgramBuilder.initialize("data/courier/XNSonUX");
+		ProgramBuilder.initialize("data/courier/test");
 		
 		for(int i = 0; i < args.length; i++) {
 			Program program;
