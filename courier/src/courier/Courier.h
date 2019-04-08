@@ -115,7 +115,7 @@ public:
 		initialize();
 		size = that.size;
 		for(int i = 0; i < size; i++) {
-			this->data[i] = that.data[i];
+			data[i] = that.data[i];
 		}
 	}
 	SEQUENCE& operator=(const SEQUENCE& that) {
@@ -138,12 +138,12 @@ public:
 			COURIER_FATAL_ERROR();
 		}
 		size = that.size;
-		data = this->data;
+		data = that.data;
 		that.data = nullptr;
 	}
 	SEQUENCE& operator=(SEQUENCE&& that) {
 		size = that.size;
-		data = this->data;
+		data = that.data;
 		that.data = nullptr;
 
 		return *this;
@@ -255,7 +255,7 @@ struct ARRAY {
 		}
 	}
 
-
+	// Copy constructor
 	ARRAY(const ARRAY& that) : maxSize(that.maxSize) {
 		initialize();
 		for(int i = 0; i < maxSize; i++) {
@@ -276,7 +276,7 @@ struct ARRAY {
 
 	// Move constructor
 	ARRAY(ARRAY&& that) : maxSize(that.maxSize) {
-		data = this->data;
+		data = that.data;
 		that.data = nullptr;
 	}
 	ARRAY& operator=(ARRAY&& that) {
@@ -284,7 +284,7 @@ struct ARRAY {
 			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
 			COURIER_FATAL_ERROR();
 		}
-		data = this->data;
+		data = that.data;
 		that.data = nullptr;
 
 		return *this;
