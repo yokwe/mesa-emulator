@@ -329,7 +329,6 @@ private:
 			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
 			COURIER_FATAL_ERROR();
 		}
-		bzero(data, maxSize * sizeof(T));
 	}
 };
 template <typename T, int N>
