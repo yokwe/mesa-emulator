@@ -243,7 +243,7 @@ public:
 			QString t = "abc";
 			
 			QString a = Courier::toString(t);
-			QString e("abc");
+			QString e("\"abc\"");
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
