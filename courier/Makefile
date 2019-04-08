@@ -81,6 +81,7 @@ COURIER_TARGET	:= Ethernet Datagram Echo Error PacketExchange Routing Boot Seque
 COURIER_TARGET	+= Protocol ExpeditedCourier
 #COURIER_TARGET	+= Time2 Authentication1 Authentication2 Authentication3 BulkData1 CHEntries0 Clearinghouse2 Clearinghouse3 Filing4 Filing5 Filing6 FilingSubset1
 
+COURIER_TARGET  += T_PRE
 
 
 clean-antlr:
