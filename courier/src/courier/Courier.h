@@ -97,6 +97,10 @@ public:
 	SEQUENCE() : maxSize(N) {
 		initialize();
 	}
+	~SEQUENCE() {
+		delete[] data;
+	}
+
 	SEQUENCE(std::initializer_list<T> initList) : maxSize(N) {
 		initialize();
 		setSize(initList.size());
@@ -105,20 +109,63 @@ public:
 			data[j++] = *i;
 		}
 	}
-	~SEQUENCE() {
-		delete[] data;
+
+	// Copy constructor
+	SEQUENCE(const SEQUENCE& that) : maxSize(that.maxSize) {
+		initialize();
+		size = that.size;
+		for(int i = 0; i < size; i++) {
+			this->data[i] = that.data[i];
+		}
+	}
+	SEQUENCE& operator=(const SEQUENCE& that) {
+		if (maxSize != that.maxSize) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+			COURIER_FATAL_ERROR();
+		}
+		size = that.size;
+		for(int i = 0; i < size; i++) {
+			data[i] = that.data[i];
+		}
+
+		return *this;
+	}
+
+	// Move constructor
+	SEQUENCE(SEQUENCE&& that) : maxSize(that.maxSize) {
+		if (maxSize != that.maxSize) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+			COURIER_FATAL_ERROR();
+		}
+		size = that.size;
+		data = this->data;
+		that.data = nullptr;
+	}
+	SEQUENCE& operator=(SEQUENCE&& that) {
+		size = that.size;
+		data = this->data;
+		that.data = nullptr;
+
+		return *this;
 	}
 
 	quint16 getSize() const {
-		return size;
+		return (quint16)size;
 	}
 	void setSize(int newValue) {
 		if (0 <= newValue && newValue <= maxSize) {
-			size = (quint16)newValue;
+			size = newValue;
 		} else {
 			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, maxSize);
 			COURIER_FATAL_ERROR();
 		}
+	}
+
+	T* begin() {
+		return data;
+	}
+	T* end() {
+		return data + size;
 	}
 
 	T& operator[](int i) {
@@ -141,8 +188,8 @@ public:
 	}
 
 private:
-	quint16 size;
-	T*      data;
+	int size;
+	T*  data;
 
 	void initialize() {
 		if (0 <= maxSize && maxSize <= MAX_SIZE) {
@@ -196,6 +243,10 @@ struct ARRAY {
 	ARRAY() : maxSize(N) {
 		initialize();
 	}
+	~ARRAY() {
+		delete[] data;
+	}
+
 	ARRAY(std::initializer_list<T> initList) : maxSize(N) {
 		initialize();
 		int j = 0;
@@ -203,8 +254,47 @@ struct ARRAY {
 			data[j++] = *i;
 		}
 	}
-	~ARRAY() {
-		delete[] data;
+
+
+	ARRAY(const ARRAY& that) : maxSize(that.maxSize) {
+		initialize();
+		for(int i = 0; i < maxSize; i++) {
+			this->data[i] = that.data[i];
+		}
+	}
+	ARRAY& operator=(const ARRAY& that) {
+		if (maxSize != that.maxSize) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+			COURIER_FATAL_ERROR();
+		}
+		for(int i = 0; i < maxSize; i++) {
+			data[i] = that.data[i];
+		}
+
+		return *this;
+	}
+
+	// Move constructor
+	ARRAY(ARRAY&& that) : maxSize(that.maxSize) {
+		data = this->data;
+		that.data = nullptr;
+	}
+	ARRAY& operator=(ARRAY&& that) {
+		if (maxSize != that.maxSize) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+			COURIER_FATAL_ERROR();
+		}
+		data = this->data;
+		that.data = nullptr;
+
+		return *this;
+	}
+
+	T* begin() {
+		return data;
+	}
+	T* end() {
+		return data + maxSize;
 	}
 
 	T& operator[](int i) {
