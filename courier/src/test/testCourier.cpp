@@ -566,7 +566,7 @@ public:
 		// initializer list
 		{
 			using A = Courier::ARRAY<quint16, 10>;
-			A t = {1, 2, 3};
+			A t = {1, 2, 3, 0, 0, 0, 0, 0, 0, 0};
 			CPPUNIT_ASSERT_EQUAL(10, t.maxSize);
 
 			QString a = Courier::toString(t);

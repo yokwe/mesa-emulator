@@ -12,7 +12,7 @@ SOURCES += testBase.cpp
 SOURCES += testMain.cpp testBlock.cpp testCourier.cpp
 
 HEADERS += ../stub/T_PRE.h
-SOURCES += ../stub/T_PRE.cpp testT_PRE_REC_PRE.cpp testT_PRE_REC_ALI.cpp testT_PRE_REC_SEQ.cpp
+SOURCES += ../stub/T_PRE.cpp testT_PRE_REC_PRE.cpp testT_PRE_REC_ALI.cpp testT_PRE_REC_SEQ.cpp testT_PRE_REC_ARR.cpp
 
 LIBS += ../../tmp/build/stub/libstub.a
 LIBS += ../../tmp/build/courier/libcourier.a
