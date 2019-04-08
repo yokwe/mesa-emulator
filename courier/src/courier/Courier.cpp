@@ -53,7 +53,7 @@ QString Courier::toString(const bool     value) {
 	return QString("%1").arg(value ? "T" : "F");
 }
 QString Courier::toString(const QString& value) {
-	return QString("%1").arg(value);
+	return QString("\"%1\"").arg(value);
 }
 QString Courier::toString(const quint16  value) {
 	if (value == 0) return "0";
