@@ -92,6 +92,7 @@ void deserialize(Block& block, quint64&  value);
 template <typename T, int N = 65535>
 struct SEQUENCE {
 public:
+	using ELEMENT = T;
 	static const int MAX_SIZE = 65535;
 	const int maxSize;
 	SEQUENCE() : maxSize(N) {
@@ -236,6 +237,7 @@ void deserialize(BLOCK& block, SEQUENCE<T, N>& value) {
 
 template <typename T, int N>
 struct ARRAY {
+	using ELEMENT = T;
 	static const int MAX_SIZE = 65535;
 	const int maxSize;
 
