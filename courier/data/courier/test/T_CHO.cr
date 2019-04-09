@@ -9,10 +9,10 @@ BEGIN
 --    REFERENCE
 
     E: TYPE = {e(0)};
-    A: TYPE = ARRAY 1 OF CARDINAL;
-    S: TYPE = SEQUENCE 1 OF CARDINAL;
-    R: TYPE = RECORD [ ];
-    C: TYPE = CHOICE OF { a(0) => RECORD [ ] };
+    A: TYPE = ARRAY 4 OF CARDINAL;
+    S: TYPE = SEQUENCE 4 OF CARDINAL;
+    R: TYPE = RECORD [ a: CARDINAL ];
+    C: TYPE = CHOICE OF { a(0) => CARDINAL };
 
     CHO_A_PRE01: TYPE = CHOICE OF { a(0) => BOOLEAN };
     CHO_A_PRE02: TYPE = CHOICE OF { a(0) => BYTE };
