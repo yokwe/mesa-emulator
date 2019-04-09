@@ -652,6 +652,13 @@ public class Compiler {
 			throw new CompilerException(String.format("Unexpected typeChoice %s", typeChoice.toString()));
 		}
 	}
+	
+	// If CHOICE contains CHOICE directly, nest struct CHOICE_01 contains declaration of struct CHOICE_01.
+	// To fix this problem, prepend struct name to choice type name.
+	private String getChoiceTypeName(int no, String name) {
+		return String.format("%s_CHOICE_%02d", name, no);
+//		return String.format("CHOICE_%02d", no);
+	}
 	private void genDeclTypeChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
@@ -670,7 +677,7 @@ public class Compiler {
 			}
 			
 			// generate choice type declaration
-			String candidateName = String.format("CHOICE_%02d", maxChoiceNumber);
+			String candidateName = getChoiceTypeName(maxChoiceNumber, name);
 			genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
 		}
 		
@@ -685,7 +692,7 @@ public class Compiler {
 			
 			for(String choiceName: choiceNameList) {
 				int structNumber = choiceMap.get(choiceName);
-				c1.add(String.format("CHOICE_%02d& %s()", structNumber, Util.sanitizeSymbol(choiceName)));
+				c1.add(String.format("%s& %s()", getChoiceTypeName(structNumber, name), Util.sanitizeSymbol(choiceName)));
 				c2.add("const;");
 			}
 
@@ -696,7 +703,7 @@ public class Compiler {
 
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
-			outh.format("mutable CHOICE_%02d  choice_%02d;", i, i);
+			outh.format("mutable %s  choice_%02d;", getChoiceTypeName(i, name), i);
 		}
 		
 		outh.line("};");
@@ -704,7 +711,7 @@ public class Compiler {
 		for(String choiceName: choiceNameList) {
 			int structNumber = choiceMap.get(choiceName);
 			outc.line();
-			outc.format("%s::%s::CHOICE_%02d& %s::%s::%s() const {", namePrefix, name, structNumber, namePrefix, name, Util.sanitizeSymbol(choiceName));
+			outc.format("%s::%s::%s& %s::%s::%s() const {", namePrefix, name, getChoiceTypeName(structNumber, name), namePrefix, name, Util.sanitizeSymbol(choiceName));
 			outc.format("if (choiceTag == CHOICE_TAG::%s) {", Util.sanitizeSymbol(choiceName));
 			outc.format("return choice_%02d;", structNumber);
 			outc.line("} else {");
@@ -755,7 +762,7 @@ public class Compiler {
 			}
 			
 			// generate choice type declaration
-			String candidateName = String.format("CHOICE_%02d", maxChoiceNumber);
+			String candidateName = getChoiceTypeName(maxChoiceNumber, name);
 			genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
 		}
 		
@@ -769,7 +776,7 @@ public class Compiler {
 			
 			for(String choiceName: choiceNameList) {
 				int structNumber = choiceMap.get(choiceName);
-				c1.add(String.format("CHOICE_%02d& %s()", structNumber, Util.sanitizeSymbol(choiceName)));
+				c1.add(String.format("%s& %s()", getChoiceTypeName(structNumber, name), Util.sanitizeSymbol(choiceName)));
 				c2.add("const;");
 			}
 
@@ -780,7 +787,7 @@ public class Compiler {
 
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
-			outh.format("mutable CHOICE_%02d  choice_%02d;", i, i);
+			outh.format("mutable %s  choice_%02d;", getChoiceTypeName(i, name), i);
 		}
 		
 		outh.line("};");
@@ -788,7 +795,7 @@ public class Compiler {
 		for(String choiceName: choiceNameList) {
 			int structNumber = choiceMap.get(choiceName);
 			outc.line();
-			outc.format("%s::%s::CHOICE_%02d& %s::%s::%s() const {", namePrefix, name, structNumber, namePrefix, name, Util.sanitizeSymbol(choiceName));
+			outc.format("%s::%s::%s& %s::%s::%s() const {", namePrefix, name, getChoiceTypeName(structNumber, name), namePrefix, name, Util.sanitizeSymbol(choiceName));
 			outc.format("if (choiceTag == CHOICE_TAG::%s) {", Util.sanitizeSymbol(choiceName));
 			outc.format("return choice_%02d;", structNumber);
 			outc.line("} else {");
