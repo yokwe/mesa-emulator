@@ -56,9 +56,8 @@ public:
         	T d;
         	d.choiceTag = T::CHOICE_TAG::e;
 
-        	auto& de = d.e();
-//        	de =decltype(da)::e;
-        	de = T::CHO_T_ALI01_CHOICE_01::e;
+        	auto de = d.e();
+        	d.e() = decltype(de)::e;
 
         	QString a = Courier::toString(d);
         	QString e = "[e e]";
@@ -73,8 +72,8 @@ public:
         	T d;
         	d.choiceTag = T::CHOICE_TAG::e;
 
-        	auto& de = d.e();
-        	de =T::CHO_T_ALI01_CHOICE_01::e;
+        	auto de = d.e();
+        	d.e() = decltype(de)::e;
 
         	Courier::BlockData<100> blockData;
         	Courier::serialize(blockData.block, d);
@@ -92,8 +91,8 @@ public:
         	T d;
         	d.choiceTag = T::CHOICE_TAG::e;
 
-        	auto& de = d.e();
-        	de =T::CHO_T_ALI01_CHOICE_01::e;
+        	auto de = d.e();
+        	d.e() = decltype(de)::e;
 
         	Courier::BlockData<100> blockData;
         	Courier::serialize(blockData.block, d);
