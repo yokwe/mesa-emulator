@@ -152,13 +152,391 @@ public:
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
     	}
     }
-    void testT_CHO_A_PRE02() {}
-    void testT_CHO_A_PRE03() {}
-    void testT_CHO_A_PRE04() {}
-    void testT_CHO_A_PRE05() {}
-    void testT_CHO_A_PRE06() {}
-    void testT_CHO_A_PRE07() {}
-    void testT_CHO_A_PRE08() {}
+    void testT_CHO_A_PRE02() {
+    	using T = Courier::T_CHO::CHO_A_PRE02;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 11;
+
+        	QString a = Courier::toString(d);
+        	QString e = "[a 11]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x11;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(3)000011";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x11;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
+    void testT_CHO_A_PRE03() {
+    	using T = Courier::T_CHO::CHO_A_PRE03;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 11111;
+
+        	QString a = Courier::toString(d);
+        	QString e = "[a 11111]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x1111;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(4)00001111";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x1111;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
+    void testT_CHO_A_PRE04() {
+    	using T = Courier::T_CHO::CHO_A_PRE04;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 1111111111;
+
+        	QString a = Courier::toString(d);
+        	QString e = "[a 1111111111]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x11112222;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(6)000011112222";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x11112222;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
+    void testT_CHO_A_PRE05() {
+    	using T = Courier::T_CHO::CHO_A_PRE05;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = "ABCD";
+
+        	QString a = Courier::toString(d);
+        	QString e = QString("[a \"ABCD\"]");
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = "ABCD";
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(8)0000000441424344";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = "ABCD";
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
+    void testT_CHO_A_PRE06() {
+    	using T = Courier::T_CHO::CHO_A_PRE06;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 11111;
+
+        	QString a = Courier::toString(d);
+        	QString e = "[a 11111]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x1111;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(4)00001111";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x1111;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
+    void testT_CHO_A_PRE07() {
+    	using T = Courier::T_CHO::CHO_A_PRE07;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 1111111111;
+
+        	QString a = Courier::toString(d);
+        	QString e = "[a 1111111111]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x11112222;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(6)000011112222";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x11112222;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
+    void testT_CHO_A_PRE08() {
+    	using T = Courier::T_CHO::CHO_A_PRE08;
+
+    	// toString
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 111112222233333;
+
+        	QString a = Courier::toString(d);
+        	QString e = "[a 111112222233333]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x111122223333;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(8)0000111122223333";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d.choiceTag = T::CHOICE_TAG::a;
+        	d.a() = 0x111122223333;
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
 
 };
 
