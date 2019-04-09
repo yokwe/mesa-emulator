@@ -653,8 +653,8 @@ public class Compiler {
 		}
 	}
 	
-	// If CHOICE contains CHOICE directly, nest struct CHOICE_01 contains declaration of struct CHOICE_01.
-	// To fix this problem, prepend struct name to choice type name.
+	// FIXME If CHOICE contains CHOICE directly, nest struct CHOICE_01 contains declaration of struct CHOICE_01.
+	//       To fix this problem, prepend struct name to choice type name.
 	private String getChoiceTypeName(int no, String name) {
 		return String.format("%s_CHOICE_%02d", name, no);
 //		return String.format("CHOICE_%02d", no);
