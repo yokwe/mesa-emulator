@@ -15,7 +15,7 @@ HEADERS += ../stub/T_PRE.h
 SOURCES += ../stub/T_PRE.cpp testT_PRE_REC_PRE.cpp testT_PRE_REC_ALI.cpp testT_PRE_REC_SEQ.cpp testT_PRE_REC_ARR.cpp
 
 HEADERS += ../stub/T_CHO.h
-SOURCES += ../stub/T_CHO.cpp testT_CHO_A_PRE.cpp testT_CHO_T_PRE.cpp
+SOURCES += ../stub/T_CHO.cpp testT_CHO_A_PRE.cpp testT_CHO_T_PRE.cpp testT_CHO_A_COM.cpp testT_CHO_T_COM.cpp
 
 LIBS += ../../tmp/build/stub/libstub.a
 LIBS += ../../tmp/build/courier/libcourier.a
