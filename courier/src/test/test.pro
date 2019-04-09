@@ -17,6 +17,9 @@ SOURCES += ../stub/T_PRE.cpp testT_PRE_REC_PRE.cpp testT_PRE_REC_ALI.cpp testT_P
 HEADERS += ../stub/T_CHO.h
 SOURCES += ../stub/T_CHO.cpp testT_CHO_A_PRE.cpp testT_CHO_T_PRE.cpp testT_CHO_A_COM.cpp testT_CHO_T_COM.cpp testT_CHO_A_ALI.cpp testT_CHO_T_ALI.cpp
 
+HEADERS += ../stub/T_SEQ.h
+SOURCES += ../stub/T_SEQ.cpp testT_SEQ_ALI.cpp
+
 LIBS += ../../tmp/build/stub/libstub.a
 LIBS += ../../tmp/build/courier/libcourier.a
 LIBS += ../../tmp/build/util/libutil.a
