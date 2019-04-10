@@ -57,16 +57,19 @@ public class Compiler {
 	}
 	
 	public static class ChoiceInfo {
-		public final TypeChoice   typeChoice;
-		public final String       name;
-		public final String       namePrefix;
-		public final List<String> choiceNameList; // choice name list in appearance order
+		public final TypeChoice        typeChoice;
+		public final String            name;
+		public final String            namePrefix;
+		public final List<String>      choiceNameList; // choice name list in appearance order
+		public final Map<String, Type> choiceTypeMap;   // choice name => Type
 
-		ChoiceInfo(TypeChoice typeChoice, String name, String namePrefix, List<String> choiceNameList) {
+
+		ChoiceInfo(TypeChoice typeChoice, String name, String namePrefix, List<String> choiceNameList, Map<String,Type> choiceTypeMap) {
 			this.typeChoice     = typeChoice;
 			this.name           = name;
 			this.namePrefix     = namePrefix;
 			this.choiceNameList = choiceNameList;
+			this.choiceTypeMap  = choiceTypeMap;
 		}
 	}
 	
@@ -262,6 +265,10 @@ public class Compiler {
 			}
 		}
 		
+		outh.line("// To use Argument-dependent name lookup in method name, we need to define following methods here.",
+				"QString toString();",
+				"void serialize(BLOCK& block);",
+				"void deserialize(BLOCK& block);");
 		outh.line("};");
 		
 		// Build recordInfo
@@ -307,6 +314,10 @@ public class Compiler {
 				outh.line(line);
 			}
 		}
+		outh.line("// To use Argument-dependent name lookup in method name, we need to define following methods here.",
+				"QString toString();",
+				"void serialize(BLOCK& block);",
+				"void deserialize(BLOCK& block);");
 		outh.line("};");
 		
 		outh.line("struct Result {");
@@ -323,6 +334,10 @@ public class Compiler {
 				outh.line(line);
 			}
 		}
+		outh.line("// To use Argument-dependent name lookup in method name, we need to define following methods here.",
+				"QString toString();",
+				"void serialize(BLOCK& block);",
+				"void deserialize(BLOCK& block);");
 		outh.line("};");
 		
 		outh.line();
@@ -568,8 +583,7 @@ public class Compiler {
 	private void logField(LinePrinter out, Type type, String name) {
 		Type concreteType = type.getConcreteType();
 
-		out.format("// %s", name);
-		out.format("//   %s", type);
+		out.format("// %s  %s", name, type);
 		if (type.isReference()) {
 			out.format("//   %s", concreteType);
 		}
@@ -617,6 +631,11 @@ public class Compiler {
 		for(String line: ColumnLayout.layoutStringString(c1, c2)) {
 			outh.line(line);
 		}
+		
+		outh.line("// To use Argument-dependent name lookup in method name, we need to define following methods here.",
+				"QString toString();",
+				"void serialize(BLOCK& block);",
+				"void deserialize(BLOCK& block);");
 		outh.line("};");
 		
 		// build context.recordInfoList
@@ -664,6 +683,7 @@ public class Compiler {
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
+		Map<String, Type>    choiceTypeMap   = new TreeMap<>();   // choice name => Type
 		int                  maxChoiceNumber = 0;
 		for(Candidate<String> candidate: typed.candidates) {
 			maxChoiceNumber++;
@@ -674,6 +694,7 @@ public class Compiler {
 				String choiceName = id;
 				choiceNameList.add(choiceName);
 				choiceMap.put(choiceName, maxChoiceNumber);
+				choiceTypeMap.put(choiceName, candidateType);
 			}
 			
 			// generate choice type declaration
@@ -701,6 +722,10 @@ public class Compiler {
 			}
 		}
 
+		outh.line("// To use Argument-dependent name lookup in method name, we need to define following methods here.",
+				"QString toString();",
+				"void serialize(BLOCK& block);",
+				"void deserialize(BLOCK& block);");
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
 			outh.format("mutable %s  choice_%02d;", getChoiceTypeName(i, name), i);
@@ -723,7 +748,7 @@ public class Compiler {
 		
 		// Build choideInfoList
 		{
-			context.choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList));
+			context.choiceInfoList.add(new ChoiceInfo(typed, name, namePrefix, choiceNameList, choiceTypeMap));
 		}
 	}
 	private void genDeclTypeChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
@@ -731,6 +756,7 @@ public class Compiler {
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
+		Map<String, Type>    choiceTypeMap   = new TreeMap<>();   // choice name => Type
 		int                  maxChoiceNumber = 0;
 
 		{
@@ -759,6 +785,7 @@ public class Compiler {
 				String choiceName = correspondence.id;
 				choiceNameList.add(choiceName);
 				choiceMap.put(choiceName, maxChoiceNumber);
+				choiceTypeMap.put(choiceName, candidateType);
 			}
 			
 			// generate choice type declaration
@@ -785,6 +812,10 @@ public class Compiler {
 			}
 		}
 
+		outh.line("// To use Argument-dependent name lookup in method name, we need to define following methods here.",
+				"QString toString();",
+				"void serialize(BLOCK& block);",
+				"void deserialize(BLOCK& block);");
 		outh.line("private:");
 		for(int i = 1; i <= maxChoiceNumber; i++) {
 			outh.format("mutable %s  choice_%02d;", getChoiceTypeName(i, name), i);
@@ -820,7 +851,7 @@ public class Compiler {
 		
 		// Build choideInfoList
 		{
-			context.choiceInfoList.add(new ChoiceInfo(anon, name, namePrefix, choiceNameList));
+			context.choiceInfoList.add(new ChoiceInfo(anon, name, namePrefix, choiceNameList, choiceTypeMap));
 		}
 	}
 	
@@ -1146,25 +1177,6 @@ public class Compiler {
 
 	private void genChoiceSerialize(LinePrinter outh, LinePrinter outc) {
 		if (context.choiceInfoList.isEmpty()) return;
-		
-		// Declaration
-		{
-			List<String> c1 = new ArrayList<>();
-			List<String> c2 = new ArrayList<>();
-			
-			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
-				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
-				c2.add("value);");
-			}
-			
-			outh.line("",
-					  "//",
-					  "// Choice serialize Function Declaration",
-					  "//");
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
-		}
 		
 		// Definition
 		{
