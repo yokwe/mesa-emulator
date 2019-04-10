@@ -38,7 +38,7 @@ namespace Courier {
 
 class Stream {
 public:
-	Stream(const quint8* data_, const int size_) : data(data_), size(size_), limit(0), pos(0) {}
+	Stream(quint8* data_, int size_) : data(data_), size(size_), limit(0), pos(0) {}
 
 	// Copy constructor
 	Stream(const Stream& that) : data(that.data), size(that.size), limit(that.limit), pos(that.pos) {}
