@@ -1367,6 +1367,8 @@ public class Compiler {
 			outc.line();
 			outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 			outc.line();
+			outc.line("#include \"../courier/Last.h\"");
+			outc.line();
 			
 			// generate type and constant declaration
 			// and build enmInfoList, context.recordInfoList and context.choiceInfoList

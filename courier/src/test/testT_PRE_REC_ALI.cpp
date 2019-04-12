@@ -35,6 +35,8 @@ static log4cpp::Category& logger = Logger::getLogger("testT_PRE_REC_ALI");
 #include "testBase.h"
 
 #include "../stub/T_PRE.h"
+#include "../courier/Last.h"
+
 
 class testT_PRE_REC_ALI : public testBase {
 	CPPUNIT_TEST_SUITE(testT_PRE_REC_ALI);

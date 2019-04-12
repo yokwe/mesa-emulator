@@ -37,6 +37,8 @@ static log4cpp::Category& logger = Logger::getLogger("testCourier");
 #include "../stub/Ethernet.h"
 #include "../stub/Time.h"
 
+#include "../courier/Last.h"
+
 class testCourier : public testBase {
 	CPPUNIT_TEST_SUITE(testCourier);
 

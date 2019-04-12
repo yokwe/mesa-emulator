@@ -206,33 +206,6 @@ private:
 		size = 0;
 	}
 };
-template <typename T, int N>
-QString toString(const SEQUENCE<T, N>& value) {
-	QStringList list;
-	quint16 size = value.getSize();
-	for(quint16 i = 0; i < size; i++) {
-		list << Courier::toString(value[i]);
-	}
-	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
-}
-template <typename T, int N>
-void serialize(BLOCK& block, const SEQUENCE<T, N>& value) {
-	quint16 size = value.getSize();
-	Courier::serialize(block, size);
-	for(int i = 0; i < size; i++) {
-		Courier::serialize(block, value[i]);
-	}
-}
-template <typename T, int N>
-void deserialize(BLOCK& block, SEQUENCE<T, N>& value) {
-	quint16 size;
-	Courier::deserialize(block, size);
-	value.setSize(size);
-	for(int i = 0; i < size; i++) {
-		Courier::deserialize(block, value[i]);
-	}
-}
-
 
 
 template <typename T, int N>
@@ -333,27 +306,6 @@ private:
 		}
 	}
 };
-template <typename T, int N>
-QString toString(const ARRAY<T, N>& value) {
-	quint16 maxSize = value.maxSize;
-	QStringList list;
-	for(int i = 0; i < maxSize; i++) {
-		list << Courier::toString(value[i]);
-	}
-	return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
-}
-template <typename T, int N>
-void serialize(BLOCK& block, const ARRAY<T, N>& value) {
-	for(int i = 0; i < value.maxSize; i++) {
-		Courier::serialize(block, value[i]);
-	}
-}
-template <typename T, int N>
-void deserialize(BLOCK& block, ARRAY<T, N>& value) {
-	for(int i = 0; i < value.maxSize; i++) {
-		Courier::deserialize(block, value[i]);
-	}
-}
 
 }
 

@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("testT_CHO_T_ALI");
 
 #include "../stub/T_CHO.h"
 
+#include "../courier/Last.h"
+
 class testT_CHO_T_ALI : public testBase {
 	CPPUNIT_TEST_SUITE(testT_CHO_T_ALI);
 

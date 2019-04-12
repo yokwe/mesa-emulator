@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("testT_SEQ_ALI");
 
 #include "../stub/T_SEQ.h"
 
+#include "../courier/Last.h"
+
 class testT_SEQ_ALI : public testBase {
 	CPPUNIT_TEST_SUITE(testT_SEQ_ALI);
 
