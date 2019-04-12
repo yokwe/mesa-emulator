@@ -88,6 +88,60 @@ void deserialize(Block& block, quint16&  value);
 void deserialize(Block& block, quint32&  value);
 void deserialize(Block& block, quint64&  value);
 
+class Enum {
+private:
+	int         ordinal;
+	const char* name;
+
+protected:
+	static constexpr const int   NULL_ORDINAL = -1;
+	static constexpr const char* NULL_NAME    = "#NULL#";;
+
+	class Pair {
+	public:
+		const int   ordinal;
+		const char* name;
+		Pair(int ordinal_, const char* name_) : ordinal(ordinal_),     name(name_) {}
+		Pair(const Pair& that)                : ordinal(that.ordinal), name(that.name) {}
+	};
+
+	static void initPairList(QList<Pair>& pairList, std::initializer_list<Enum::Pair> initList);
+	static const Pair& findPair(const QList<Pair>& pairList, const int ordinal);
+	static const Pair& findPair(const QList<Pair>& pairList, const char* name);
+
+	Enum(const Pair& pair) : ordinal(pair.ordinal), name(pair.name) {}
+	Enum(const Enum& that) : ordinal(that.ordinal), name(that.name) {}
+	Enum()                 : ordinal(NULL_ORDINAL), name(NULL_NAME) {}
+
+	void deserialize(const QList<Pair>& pairList, Block& block) {
+		quint16 ordinal_;
+		block.deserialize16(ordinal_);
+		Pair pair = findPair(pairList, ordinal_);
+
+		ordinal = pair.ordinal;
+		name    = pair.name;
+	}
+
+public:
+	Enum& operator= (const Enum& that) {
+		ordinal = that.ordinal;
+		name    = that.name;
+		return *this;
+	}
+	operator int() const {
+		return ordinal;
+	}
+	operator const char*() const {
+		return name;
+	}
+	QString toString() {
+		return QString(name);
+	}
+	void serialize(BLOCK& block);
+	bool isNull() {
+		return ordinal == NULL_ORDINAL;
+	}
+};
 
 template <typename T, int N = 65535>
 struct SEQUENCE {

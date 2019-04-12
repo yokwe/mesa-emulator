@@ -146,3 +146,79 @@ void Courier::deserialize(Block& block, quint64&  value) {
 	block.deserialize48(value);
 }
 
+
+//
+// Courier::Enum
+//
+
+void Courier::Enum::initPairList(QList<Courier::Enum::Pair>& pairList, std::initializer_list<Courier::Enum::Pair> initList) {
+	// Sanity check
+	{
+		bool foundProblem = false;
+		QSet<int> ordinalSet;
+		QSet<const char*> nameSet;
+		for(auto i = initList.begin(); i != initList.end(); i++) {
+			int         ordinal = i->ordinal;
+			const char* name    = i->name;
+			if (0 <= ordinal && ordinal <= 65535) {
+				// OK
+			} else {
+				// NG
+				logger.fatal("Overflow ordinal = %d", ordinal);
+				foundProblem = true;
+			}
+			if (ordinalSet.contains(ordinal)) {
+				// Duplicate
+				logger.fatal("Duplicate ordinal = %d", ordinal);
+				foundProblem = true;
+			}
+			if (nameSet.contains(name)) {
+				// Duplicate
+				logger.fatal("Duplicate name = %s", name);
+				foundProblem = true;
+			}
+			ordinalSet << ordinal;
+			nameSet    << name;
+		}
+		if (foundProblem) {
+	        COURIER_FATAL_ERROR();
+		}
+	}
+
+	pairList.clear();
+	for(auto i = initList.begin(); i != initList.end(); i++) {
+		pairList << *i;
+	}
+}
+
+const Courier::Enum::Pair& Courier::Enum::findPair(const QList<Courier::Enum::Pair>& pairList, const int ordinal) {
+	int size = pairList.size();
+	for(int i = 0; i < size; i++) {
+		const Pair& pair = pairList[i];
+		if (pair.ordinal == ordinal) {
+			return pair;
+		}
+	}
+	logger.fatal("Unexpected ordinal = %d", ordinal);
+    COURIER_FATAL_ERROR();
+}
+
+const Courier::Enum::Pair& Courier::Enum::findPair(const QList<Courier::Enum::Pair>& pairList, const char* name) {
+	int size = pairList.size();
+	for(int i = 0; i < size; i++) {
+		const Pair& pair = pairList[i];
+		if (strcmp(pair.name, name) == 0) {
+			return pair;
+		}
+	}
+	logger.fatal("Unexpected name = %s", name);
+    COURIER_FATAL_ERROR();
+}
+
+void Courier::Enum::serialize(BLOCK& block) {
+	if (ordinal == NULL_ORDINAL) {
+		logger.fatal("Unexpected ordinal is NULL name = %s", name);
+        COURIER_FATAL_ERROR();
+	}
+	block.serialize16((quint16)ordinal);
+}
