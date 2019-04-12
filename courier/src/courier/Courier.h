@@ -88,112 +88,60 @@ void deserialize(Block& block, quint16&  value);
 void deserialize(Block& block, quint32&  value);
 void deserialize(Block& block, quint64&  value);
 
-//class Enum {
-//private:
-//	const char* name;
-//	int         ordinal;
-//
-//protected:
-//	class Pair {
-//	public:
-//		const char* name;
-//		const int   ordinal;
-//		Pair(const char* name_, int ordinal_) : name(name_), ordinal(ordinal_) {}
-//		Pair(const Pair& that) : name(that.name), ordinal(that.ordinal) {}
-//	};
-//
-//	static QMap<const char*, QList<Pair>> mapList;
-//	static void init(const char* className, std::initializer_list<Enum::Pair> initList) {
-//		QList<Pair> list;
-//		for(auto i = initList.begin(); i != initList.end(); i++) {
-//			list.append(*i);
-//		}
-//		mapList[className] = list;
-//	}
-//	static Pair& findPair(const char* className, int ordinal) {
-//		QList<Pair>& list = mapList[className];
-//		int size = list.size();
-//		for(int i = 0; i < size; i++) {
-//			Pair& pair = list[i];
-//			if (pair.ordinal == ordinal) {
-//				return pair;
-//			}
-//		}
-//		logger.fatal("Unexpected");
-//		RUNTIME_ERROR();
-//	}
-//	static Pair& findPair(const char* className, const char* name) {
-//		QList<Pair>& list = mapList[className];
-//		int size = list.size();
-//		for(int i = 0; i < size; i++) {
-//			Pair& pair = list[i];
-//			if (strcmp(pair.name, name) == 0) {
-//				return pair;
-//			}
-//		}
-//		logger.fatal("Unexpected");
-//		RUNTIME_ERROR();
-//	}
-//
-//	Enum(const Pair& pair) : name(pair.name), ordinal(pair.ordinal) {}
-//	Enum(const Enum& that) : name(that.name), ordinal(that.ordinal) {}
-//
-//public:
-//	Enum& operator= (const Enum& that) {
-//		name    = that.name;
-//		ordinal = that.ordinal;
-//		return *this;
-//	}
-//
-//	operator int() const {
-//		return ordinal;
-//	}
-//	operator const char*() const {
-//		return name;
-//	}
-//};
-//
-//class Direction : public Enum {
-//public:
-//	static const Direction east; // east 1
-//	static const Direction west; // west 2
-//
-//	static const Direction getInstance(int ordinal) {
-//		return Direction(Enum::findPair(CLASS_NAME, ordinal));
-//	}
-//	static const Direction getInstance(const char* name) {
-//		return Direction(Enum::findPair(CLASS_NAME, name));
-//	}
-//
-//	static void init(std::initializer_list<Enum::Pair> initList) {
-//		Enum::init(CLASS_NAME, initList);
-//	}
-//
-//	Direction(const Direction& that) : Enum(that) {}
-//	Direction& operator= (const Direction& that) {
-//		Enum::operator =(that);
-//		return *this;
-//	}
-//
-//private:
-//	static constexpr const char* CLASS_NAME = "Direction";
-//	Direction(const Enum::Pair& pair) : Enum(pair) {}
-//};
-//
-//
-//QMap<const char*, QList<Enum::Pair>> Enum::mapList;
-//
-//class StaticInitializer {
-//public:
-//	StaticInitializer() {
-//		Direction::init({{"east", 1}, {"west", 2}});
-//	}
-//};
-//StaticInitializer staticInitializer;
-//
-//
-//const Direction Direction::east = Direction::getInstance(1);
-//const Direction Direction::west = Direction::getInstance("west");
+class Enum {
+private:
+	int         ordinal;
+	const char* name;
+
+protected:
+	static constexpr const int   NULL_ORDINAL = -1;
+	static constexpr const char* NULL_NAME    = "#NULL#";;
+
+	class Pair {
+	public:
+		const int   ordinal;
+		const char* name;
+		Pair(int ordinal_, const char* name_) : ordinal(ordinal_),     name(name_) {}
+		Pair(const Pair& that)                : ordinal(that.ordinal), name(that.name) {}
+	};
+
+	static void initPairList(QList<Pair>& pairList, std::initializer_list<Enum::Pair> initList);
+	static const Pair& findPair(const QList<Pair>& pairList, const int ordinal);
+	static const Pair& findPair(const QList<Pair>& pairList, const char* name);
+
+	Enum(const Pair& pair) : ordinal(pair.ordinal), name(pair.name) {}
+	Enum(const Enum& that) : ordinal(that.ordinal), name(that.name) {}
+	Enum()                 : ordinal(NULL_ORDINAL), name(NULL_NAME) {}
+
+	void deserialize(const QList<Pair>& pairList, Block& block) {
+		quint16 ordinal_;
+		block.deserialize16(ordinal_);
+		Pair pair = findPair(pairList, ordinal_);
+
+		ordinal = pair.ordinal;
+		name    = pair.name;
+	}
+
+public:
+	Enum& operator= (const Enum& that) {
+		ordinal = that.ordinal;
+		name    = that.name;
+		return *this;
+	}
+	operator int() const {
+		return ordinal;
+	}
+	operator const char*() const {
+		return name;
+	}
+	QString toString() {
+		return QString(name);
+	}
+	void serialize(BLOCK& block);
+	bool isNull() {
+		return ordinal == NULL_ORDINAL;
+	}
+};
 
 template <typename T, int N = 65535>
 struct SEQUENCE {
