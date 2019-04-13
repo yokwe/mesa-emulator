@@ -499,6 +499,13 @@ public:
 	}
 
 	void testARRAY() {
+		{
+			Courier::ARRAY<quint16, 2> t;
+
+			CPPUNIT_ASSERT_EQUAL(2, t.SIZE);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, t.getSize());
+		}
+
 		// toString
 		{
 			quint16 v1 = 1234;
@@ -565,7 +572,7 @@ public:
 		{
 			using A = Courier::ARRAY<quint16, 10>;
 			A t = {1, 2, 3, 0, 0, 0, 0, 0, 0, 0};
-			CPPUNIT_ASSERT_EQUAL(10, t.maxSize);
+			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
 
 			QString a = Courier::toString(t);
 			QString e = "(10)[1 2 3 0 0 0 0 0 0 0]";
@@ -580,6 +587,21 @@ public:
 	}
 
 	void testSEQUENCE() {
+		{
+			Courier::SEQUENCE<quint16, 10> t;
+			t.setSize(2);
+
+			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, t.getSize());
+		}
+		{
+			Courier::SEQUENCE<quint16> t;
+			t.setSize(2);
+
+			CPPUNIT_ASSERT_EQUAL(65535, t.SIZE);
+			CPPUNIT_ASSERT_EQUAL((quint16)2, t.getSize());
+		}
+
 		// toString
 		{
 			quint16 v1 = 1234;
@@ -665,7 +687,7 @@ public:
 		{
 			using A = Courier::SEQUENCE<quint16>;
 			A t = {1, 2, 3};
-			CPPUNIT_ASSERT_EQUAL(65535, t.maxSize);
+			CPPUNIT_ASSERT_EQUAL(65535, t.SIZE);
 			CPPUNIT_ASSERT_EQUAL((quint16)3, t.getSize());
 
 			QString a = Courier::toString(t);
@@ -680,7 +702,7 @@ public:
 		{
 			using A = Courier::SEQUENCE<quint16, 10>;
 			A t = {1, 2, 3};
-			CPPUNIT_ASSERT_EQUAL(10, t.maxSize);
+			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
 			CPPUNIT_ASSERT_EQUAL((quint16)3, t.getSize());
 
 			QString a = Courier::toString(t);

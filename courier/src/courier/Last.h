@@ -71,22 +71,24 @@ void deserialize(BLOCK& block, SEQUENCE<T, N>& value) {
 //
 template <typename T, int N>
 QString toString(const ARRAY<T, N>& value) {
-	quint16 maxSize = value.maxSize;
+	quint16 size = value.getSize();
 	QStringList list;
-	for(int i = 0; i < maxSize; i++) {
+	for(int i = 0; i < size; i++) {
 		list << Courier::toString(value[i]);
 	}
-	return QString("(%1)[%2]").arg(maxSize).arg(list.join(" "));
+	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 }
 template <typename T, int N>
 void serialize(BLOCK& block, const ARRAY<T, N>& value) {
-	for(int i = 0; i < value.maxSize; i++) {
+	quint16 size = value.getSize();
+	for(int i = 0; i < size; i++) {
 		Courier::serialize(block, value[i]);
 	}
 }
 template <typename T, int N>
 void deserialize(BLOCK& block, ARRAY<T, N>& value) {
-	for(int i = 0; i < value.maxSize; i++) {
+	quint16 size = value.getSize();
+	for(int i = 0; i < size; i++) {
 		Courier::deserialize(block, value[i]);
 	}
 }
