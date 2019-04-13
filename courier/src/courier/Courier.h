@@ -92,17 +92,18 @@ void deserialize(Block& block, quint64&  value);
 template <typename T, int N = 65535>
 struct SEQUENCE {
 public:
-	using ELEMENT = T;
 	static const int MAX_SIZE = 65535;
-	const int maxSize;
-	SEQUENCE() : maxSize(N) {
+	using     TYPE = T;
+	const int SIZE;
+
+	SEQUENCE() : SIZE(N) {
 		initialize();
 	}
 	~SEQUENCE() {
 		delete[] data;
 	}
 
-	SEQUENCE(std::initializer_list<T> initList) : maxSize(N) {
+	SEQUENCE(std::initializer_list<T> initList) : SIZE(N) {
 		initialize();
 		setSize(initList.size());
 		int j = 0;
@@ -112,7 +113,7 @@ public:
 	}
 
 	// Copy constructor
-	SEQUENCE(const SEQUENCE& that) : maxSize(that.maxSize) {
+	SEQUENCE(const SEQUENCE& that) : SIZE(that.SIZE) {
 		initialize();
 		size = that.size;
 		for(int i = 0; i < size; i++) {
@@ -120,8 +121,8 @@ public:
 		}
 	}
 	SEQUENCE& operator=(const SEQUENCE& that) {
-		if (maxSize != that.maxSize) {
-			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+		if (SIZE != that.SIZE) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->SIZE, that.SIZE);
 			COURIER_FATAL_ERROR();
 		}
 		size = that.size;
@@ -133,9 +134,9 @@ public:
 	}
 
 	// Move constructor
-	SEQUENCE(SEQUENCE&& that) : maxSize(that.maxSize) {
-		if (maxSize != that.maxSize) {
-			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+	SEQUENCE(SEQUENCE&& that) : SIZE(that.SIZE) {
+		if (SIZE != that.SIZE) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->SIZE, that.SIZE);
 			COURIER_FATAL_ERROR();
 		}
 		size = that.size;
@@ -154,10 +155,10 @@ public:
 		return (quint16)size;
 	}
 	void setSize(int newValue) {
-		if (0 <= newValue && newValue <= maxSize) {
+		if (0 <= newValue && newValue <= SIZE) {
 			size = newValue;
 		} else {
-			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, maxSize);
+			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, SIZE);
 			COURIER_FATAL_ERROR();
 		}
 	}
@@ -193,14 +194,14 @@ private:
 	T*  data;
 
 	void initialize() {
-		if (0 <= maxSize && maxSize <= MAX_SIZE) {
-			data = new (std::nothrow) T [maxSize];
+		if (0 <= SIZE && SIZE <= MAX_SIZE) {
+			data = new (std::nothrow) T [SIZE];
 			if (data == nullptr) {
-				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", SIZE, MAX_SIZE);
 				COURIER_FATAL_ERROR();
 			}
 		} else {
-			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", SIZE, MAX_SIZE);
 			COURIER_FATAL_ERROR();
 		}
 		size = 0;
@@ -210,18 +211,18 @@ private:
 
 template <typename T, int N>
 struct ARRAY {
-	using ELEMENT = T;
 	static const int MAX_SIZE = 65535;
-	const int maxSize;
+	using     TYPE = T;
+	const int SIZE;
 
-	ARRAY() : maxSize(N) {
+	ARRAY() : SIZE(N) {
 		initialize();
 	}
 	~ARRAY() {
 		delete[] data;
 	}
 
-	ARRAY(std::initializer_list<T> initList) : maxSize(N) {
+	ARRAY(std::initializer_list<T> initList) : SIZE(N) {
 		initialize();
 		int j = 0;
 		for(auto i = initList.begin(); i != initList.end(); i++) {
@@ -230,18 +231,18 @@ struct ARRAY {
 	}
 
 	// Copy constructor
-	ARRAY(const ARRAY& that) : maxSize(that.maxSize) {
+	ARRAY(const ARRAY& that) : SIZE(that.SIZE) {
 		initialize();
-		for(int i = 0; i < maxSize; i++) {
+		for(int i = 0; i < SIZE; i++) {
 			this->data[i] = that.data[i];
 		}
 	}
 	ARRAY& operator=(const ARRAY& that) {
-		if (maxSize != that.maxSize) {
-			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+		if (SIZE != that.SIZE) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->SIZE, that.SIZE);
 			COURIER_FATAL_ERROR();
 		}
-		for(int i = 0; i < maxSize; i++) {
+		for(int i = 0; i < SIZE; i++) {
 			data[i] = that.data[i];
 		}
 
@@ -249,13 +250,13 @@ struct ARRAY {
 	}
 
 	// Move constructor
-	ARRAY(ARRAY&& that) : maxSize(that.maxSize) {
+	ARRAY(ARRAY&& that) : SIZE(that.SIZE) {
 		data = that.data;
 		that.data = nullptr;
 	}
 	ARRAY& operator=(ARRAY&& that) {
-		if (maxSize != that.maxSize) {
-			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->maxSize, that.maxSize);
+		if (SIZE != that.SIZE) {
+			logger.error("Unexpected this.maxSize = %d  that.maxSize = %d", this->SIZE, that.SIZE);
 			COURIER_FATAL_ERROR();
 		}
 		data = that.data;
@@ -268,40 +269,44 @@ struct ARRAY {
 		return data;
 	}
 	T* end() {
-		return data + maxSize;
+		return data + SIZE;
 	}
 
 	T& operator[](int i) {
-		if (0 <= i && i < maxSize) {
+		if (0 <= i && i < SIZE) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, SIZE);
 			COURIER_FATAL_ERROR();
 		}
 		return data[i];
 	}
 	const T& operator[](int i) const {
-		if (0 <= i && i < maxSize) {
+		if (0 <= i && i < SIZE) {
 			// OK
 		} else {
-			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, maxSize);
+			logger.error("Unexpected overflow  i = %d  maxSize = %d", i, SIZE);
 			COURIER_FATAL_ERROR();
 		}
 		return data[i];
+	}
+
+	quint16 getSize() const {
+		return (quint16)SIZE;
 	}
 
 private:
 	T*      data;
 
 	void initialize() {
-		if (0 <= maxSize && maxSize <= MAX_SIZE) {
-			data = new (std::nothrow) T [maxSize];
+		if (0 <= SIZE && SIZE <= MAX_SIZE) {
+			data = new (std::nothrow) T [SIZE];
 			if (data == nullptr) {
-				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+				logger.error("Failed to allocate memory.  maxSize = %d  MAX_SIZE = %d", SIZE, MAX_SIZE);
 				COURIER_FATAL_ERROR();
 			}
 		} else {
-			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", maxSize, MAX_SIZE);
+			logger.error("Overflow  maxSize = %d  MAX_SIZE = %d", SIZE, MAX_SIZE);
 			COURIER_FATAL_ERROR();
 		}
 	}
