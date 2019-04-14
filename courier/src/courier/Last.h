@@ -36,11 +36,11 @@ namespace Courier {
 //
 
 //
-// Template functions for ARRAY
+// Template functions for SEQUENCE
 //
 
-template <typename T, int N>
-QString toString(const SEQUENCE<T, N>& value) {
+template <typename T>
+QString toString(const SEQUENCE<T>& value) {
 	QStringList list;
 	quint16 size = value.getSize();
 	for(quint16 i = 0; i < size; i++) {
@@ -48,16 +48,16 @@ QString toString(const SEQUENCE<T, N>& value) {
 	}
 	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 }
-template <typename T, int N>
-void serialize(BLOCK& block, const SEQUENCE<T, N>& value) {
+template <typename T>
+void serialize(BLOCK& block, const SEQUENCE<T>& value) {
 	quint16 size = value.getSize();
 	Courier::serialize(block, size);
 	for(int i = 0; i < size; i++) {
 		Courier::serialize(block, value[i]);
 	}
 }
-template <typename T, int N>
-void deserialize(BLOCK& block, SEQUENCE<T, N>& value) {
+template <typename T>
+void deserialize(BLOCK& block, SEQUENCE<T>& value) {
 	quint16 size;
 	Courier::deserialize(block, size);
 	value.setSize(size);
@@ -66,11 +66,29 @@ void deserialize(BLOCK& block, SEQUENCE<T, N>& value) {
 	}
 }
 
+
+//
+// Template functions for SEQUENCE_N
+//
+
+template <typename T, int N>
+QString toString(const SEQUENCE_N<T, N>& value) {
+	return Courier::toString(value.value);
+}
+template <typename T, int N>
+void serialize(BLOCK& block, const SEQUENCE_N<T, N>& value) {
+	Courier::serialize(block, value.value);
+}
+template <typename T, int N>
+void deserialize(BLOCK& block, SEQUENCE_N<T, N>& value) {
+	Courier::deserialize(block, value.value);
+}
+
 //
 // Template functions for ARRAY
 //
-template <typename T, int N>
-QString toString(const ARRAY<T, N>& value) {
+template <typename T>
+QString toString(const ARRAY<T>& value) {
 	quint16 size = value.getSize();
 	QStringList list;
 	for(int i = 0; i < size; i++) {
@@ -78,20 +96,39 @@ QString toString(const ARRAY<T, N>& value) {
 	}
 	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
 }
-template <typename T, int N>
-void serialize(BLOCK& block, const ARRAY<T, N>& value) {
+template <typename T>
+void serialize(BLOCK& block, const ARRAY<T>& value) {
 	quint16 size = value.getSize();
 	for(int i = 0; i < size; i++) {
 		Courier::serialize(block, value[i]);
 	}
 }
-template <typename T, int N>
-void deserialize(BLOCK& block, ARRAY<T, N>& value) {
+template <typename T>
+void deserialize(BLOCK& block, ARRAY<T>& value) {
 	quint16 size = value.getSize();
 	for(int i = 0; i < size; i++) {
 		Courier::deserialize(block, value[i]);
 	}
 }
+
+
+//
+// Template functions for ARRAY_N
+//
+
+template <typename T, int N>
+QString toString(const ARRAY_N<T, N>& value) {
+	return Courier::toString(value.value);
+}
+template <typename T, int N>
+void serialize(BLOCK& block, const ARRAY_N<T, N>& value) {
+	Courier::serialize(block, value.value);
+}
+template <typename T, int N>
+void deserialize(BLOCK& block, ARRAY_N<T, N>& value) {
+	Courier::deserialize(block, value.value);
+}
+
 
 }
 

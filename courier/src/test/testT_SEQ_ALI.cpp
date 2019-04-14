@@ -108,13 +108,10 @@ public:
 //    	// toString
 //    	{
 //        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {11111, 22222, 33333, 44444};
+//        	d = {1, 2, 3, 4};
 //
 //        	QString a = Courier::toString(d);
-//        	QString e = "[a (4)[11111 22222 33333 44444]]";
+//        	QString e = "(4)[1 2 3 4]";
 //
 //			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 //			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -124,16 +121,13 @@ public:
 //    	// Serialize
 //    	{
 //        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {0x1111, 0x2222, 0x3333, 0x4444};
+//        	d = {1, 2, 3, 4};
 //
 //        	Courier::BlockData<100> blockData;
 //        	Courier::serialize(blockData.block, d);
 //
 //        	QString a = Courier::toString(blockData.block);
-//        	QString e = "(10)00001111222233334444";
+//        	QString e = "(10)00040001000200030004";
 //
 //			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 //			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -143,10 +137,7 @@ public:
 //    	// Deserialize
 //    	{
 //        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {0x1111, 0x2222, 0x3333, 0x4444};
+//        	d = {T::TYPE::a, T::TYPE::b, T::TYPE::c, T::TYPE::d};
 //
 //        	Courier::BlockData<100> blockData;
 //        	Courier::serialize(blockData.block, d);

@@ -157,15 +157,15 @@ public class Compiler {
 		case ARRAY:
 		{
 			TypeArray typeArray = (TypeArray)type;
-			return String.format("ARRAY<%s,%d>", toTypeString(typeArray.type), typeArray.size);
+			return String.format("ARRAY_N<%s,%d>", toTypeString(typeArray.type), typeArray.size);
 		}
 		case SEQUENCE:
 		{
 			TypeSequence typeSequence = (TypeSequence)type;
 			if (typeSequence.size == TypeSequence.MAX_SIZE) {
-				return String.format("SEQUENCE<%s>", toTypeString(typeSequence.type));
+				return String.format("SEQUENCE_N<%s>", toTypeString(typeSequence.type));
 			} else {
-				return String.format("SEQUENCE<%s,%d>", toTypeString(typeSequence.type), typeSequence.size);
+				return String.format("SEQUENCE_N<%s,%d>", toTypeString(typeSequence.type), typeSequence.size);
 			}
 		}
 		case RECORD:
