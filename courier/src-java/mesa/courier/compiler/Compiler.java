@@ -109,6 +109,30 @@ public class Compiler {
 			this.code          = code;
 		}
 	}
+	
+	public static class SequenceInfo {
+		public final TypeSequence typeSequence;
+		public final String       name;
+		public final String       namePrefix;
+		
+		SequenceInfo(TypeSequence typeSequence, String name, String namePrefix) {
+			this.typeSequence = typeSequence;
+			this.name         = name;
+			this.namePrefix   = namePrefix;
+		}
+	}
+	
+	public static class ArrayInfo {
+		public final TypeArray typeArray;
+		public final String    name;
+		public final String    namePrefix;
+		
+		ArrayInfo(TypeArray typeArray, String name, String namePrefix) {
+			this.typeArray  = typeArray;
+			this.name       = name;
+			this.namePrefix = namePrefix;
+		}
+	}
 
 	public static class Context {
 		public final Program              program;
@@ -117,6 +141,8 @@ public class Compiler {
 		public final List<ChoiceInfo>     choiceInfoList;
 		public final List<ErrorInfo>      errorInfoList;
 		public final List<ProcedureInfo>  procedureInfoList;
+		public final List<SequenceInfo>   sequenceInfoList;
+		public final List<ArrayInfo>      arrayInfoList;
 		
 		Context(Program program) {
 			this.program           = program;
@@ -125,6 +151,8 @@ public class Compiler {
 			this.choiceInfoList    = new ArrayList<>();
 			this.errorInfoList     = new ArrayList<>();
 			this.procedureInfoList = new ArrayList<>();
+			this.sequenceInfoList  = new ArrayList<>();
+			this.arrayInfoList     = new ArrayList<>();
 			
 			contextMap.put(program.info.getProgramVersion(), this);
 		}
@@ -208,10 +236,10 @@ public class Compiler {
 			genDeclTypeEnum(outh, outc, (TypeEnum)type, name, namePrefix);
 			break;
 		case ARRAY:
-			outh.format("using %s = %s;", name, toTypeString(type));
+			genDeclTypeArray(outh, outc, (TypeArray)type, name, namePrefix);
 			break;
 		case SEQUENCE:
-			outh.format("using %s = %s;", name, toTypeString(type));
+			genDeclTypeSequence(outh, outc, (TypeSequence)type, name, namePrefix);
 			break;
 		case RECORD:
 			genDeclTypeRecord(outh, outc, (TypeRecord)type, name, namePrefix);
@@ -642,6 +670,24 @@ public class Compiler {
 		context.enumInfoList.add(new EnumInfo((TypeEnum)type, name, namePrefix));
 	}
 	
+	
+	private void genDeclTypeArray(LinePrinter outh, LinePrinter outc, TypeArray typeArray, String name, String namePrefix) {
+		outh.format("using %s = %s;", name, toTypeString(typeArray));
+		
+		{
+			ArrayInfo arrayInfo = new ArrayInfo(typeArray, name, namePrefix);
+			context.arrayInfoList.add(arrayInfo);
+		}
+	}
+	private void genDeclTypeSequence(LinePrinter outh, LinePrinter outc, TypeSequence typeSequence, String name, String namePrefix) {
+		outh.format("using %s = %s;", name, toTypeString(typeSequence));
+		
+		{
+			SequenceInfo sequenceInfo = new SequenceInfo(typeSequence, name, namePrefix);
+			context.sequenceInfoList.add(sequenceInfo);
+		}
+	}
+
 	private void genDeclTypeChoice(LinePrinter outh, LinePrinter outc, TypeChoice typeChoice, String name, String namePrefix) {
 		if (typeChoice instanceof TypeChoice.Typed) {
 			genDeclTypeChoiceTyped(outh, outc, (TypeChoice.Typed)typeChoice, name, namePrefix);
