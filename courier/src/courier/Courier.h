@@ -107,7 +107,7 @@ public:
 		for(auto i = initList.begin(); i != initList.end(); i++) {
 			data[j++] = *i;
 		}
-		// Change size -- only for SEQUENCE
+		// Update size -- only for SEQUENCE
 		int size = initList.size();
 		setSize(size);
 
@@ -118,6 +118,8 @@ public:
 	SEQUENCE(const SEQUENCE& that) {
 		int capacity_ = that.capacity;
 		allocate(capacity_);
+		// Update size -- only for SEQUENCE
+		setSize(that.size);
 		for(int i = 0; i < size; i++) {
 			data[i] = that.data[i];
 		}
@@ -126,6 +128,8 @@ public:
 		delete[] data;
 
 		allocate(that.capacity);
+		// Update size -- only for SEQUENCE
+		setSize(that.size);
 		for(int i = 0; i < size; i++) {
 			data[i] = that.data[i];
 		}
@@ -212,64 +216,29 @@ private:
 };
 
 template <typename T, int N = 65535>
-struct SEQUENCE_N {
-	using       TYPE = T;
+struct SEQUENCE_N : SEQUENCE<T> {
 	int         SIZE;
-	SEQUENCE<T> value;
 
-	SEQUENCE_N() : SIZE(N), value(SIZE) {}
+	SEQUENCE_N() : SEQUENCE<T>(N), SIZE(N) {}
 
-	SEQUENCE_N(std::initializer_list<T> initList) : SIZE(N), value(SIZE) {
-		value.operator =(initList);
-	}
-	SEQUENCE_N& operator=(std::initializer_list<T> initList) {
-		value.operator =(initList);
-
-		return *this;
+	SEQUENCE_N(std::initializer_list<T> initList) : SEQUENCE<T>(N), SIZE(N) {
+		SEQUENCE<T>::operator =(initList);
 	}
 
 	// Copy constructor
-	SEQUENCE_N(const SEQUENCE_N& that) : SIZE(that.SIZE), value(that.value) {}
-	SEQUENCE_N& operator=(const SEQUENCE_N& that) {
-		SIZE  = that.SIZE;
-		value.operator =(that.value);
-
+	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>(that.value), SIZE(that.SIZE) {}
+	SEQUENCE_N& operator=(const SEQUENCE_N&& that) {
+		SEQUENCE<T>::operator=(that);
 		return *this;
 	}
 
 	// Move constructor
-	SEQUENCE_N(SEQUENCE_N&& that) : SIZE(that.SIZE), value(that.value) {}
-
+	SEQUENCE_N(SEQUENCE_N&& that) : SEQUENCE<T>(that.value), SIZE(that.SIZE) {}
 	SEQUENCE_N& operator=(SEQUENCE_N&& that) {
-		SIZE = that.SIZE;
-		value.operator =(that.value);
-
+		SEQUENCE<T>::operator=(that);
 		return *this;
 	}
 
-	quint16 getSize() const {
-		return value.getSize();
-	}
-	void setSize(int newValue) {
-		value.setSize(newValue);
-	}
-	quint16 getCapacity() const {
-		return value.getCapacity();
-	}
-
-	T* begin() {
-		return value.begin();
-	}
-	T* end() {
-		return value.end();
-	}
-
-	T& operator[](int i) {
-		return value.operator [](i);
-	}
-	const T& operator[](int i) const {
-		return value.operator [](i);
-	}
 };
 
 
@@ -291,10 +260,6 @@ public:
 		for(auto i = initList.begin(); i != initList.end(); i++) {
 			data[j++] = *i;
 		}
-		// Don't change size
-		// int size = initList.size();
-		// setSize(size);
-
 		return *this;
 	}
 
@@ -337,14 +302,7 @@ public:
 		return (quint16)size;
 	}
 	// No setSize for ARRAY
-//	void setSize(int newValue) {
-//		if (0 <= newValue && newValue <= capacity) {
-//			size = newValue;
-//		} else {
-//			logger.error("Unexpected overflow  newValue = %d  maxSize = %d", newValue, capacity);
-//			COURIER_FATAL_ERROR();
-//		}
-//	}
+
 	quint16 getCapacity() const {
 		return (quint16)capacity;
 	}
@@ -397,64 +355,27 @@ private:
 };
 
 template <typename T, int N>
-struct ARRAY_N {
-	using    TYPE = T;
+struct ARRAY_N : ARRAY<T> {
 	int      SIZE;
-	ARRAY<T> value;
 
-	ARRAY_N() : SIZE(N), value(SIZE) {}
+	ARRAY_N() : ARRAY<T>(N), SIZE(N) {}
 
-	ARRAY_N(std::initializer_list<T> initList) : SIZE(N), value(SIZE) {
-		value.operator =(initList);
-	}
-	ARRAY_N& operator=(std::initializer_list<T> initList) {
-		value.operator =(initList);
-
-		return *this;
+	ARRAY_N(std::initializer_list<T> initList) : ARRAY<T>(N), SIZE(N) {
+		ARRAY<T>::operator =(initList);
 	}
 
 	// Copy constructor
-	ARRAY_N(const ARRAY_N& that) : SIZE(that.SIZE), value(that.value) {}
+	ARRAY_N(const ARRAY_N& that) : ARRAY<T>(that.value), SIZE(that.SIZE) {}
 	ARRAY_N& operator=(const ARRAY_N& that) {
-		SIZE  = that.SIZE;
-		value.operator =(that.value);
-
+		ARRAY<T>::operator=(that);
 		return *this;
 	}
 
 	// Move constructor
-	ARRAY_N(ARRAY_N&& that) : SIZE(that.SIZE), value(that.value) {}
-
+	ARRAY_N(ARRAY_N&& that) : ARRAY<T>(that.value), SIZE(that.SIZE) {}
 	ARRAY_N& operator=(ARRAY_N&& that) {
-		SIZE = that.SIZE;
-		value.operator =(that.value);
-
+		ARRAY<T>::operator=(that);
 		return *this;
-	}
-
-	quint16 getSize() const {
-		return value.getSize();
-	}
-	// No setSize for ARRAY
-//	void setSize(int newValue) {
-//		value.setSize(newValue);
-//	}
-	quint16 getCapacity() const {
-		return value.getCapacity();
-	}
-
-	T* begin() {
-		return value.begin();
-	}
-	T* end() {
-		return value.end();
-	}
-
-	T& operator[](int i) {
-		return value.operator [](i);
-	}
-	const T& operator[](int i) const {
-		return value.operator [](i);
 	}
 };
 
