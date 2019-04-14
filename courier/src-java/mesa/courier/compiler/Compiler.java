@@ -326,7 +326,7 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			for(Field field: typeProcedure.paramList) {
-				String fieldType = toTypeString(field.type);;
+				String fieldType = toTypeString(field.type);
 				String fieldName = field.name;
 				c1.add(fieldType);
 				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
@@ -342,7 +342,7 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			for(Field field: typeProcedure.resultList) {
-				String fieldType = toTypeString(field.type);;
+				String fieldType = toTypeString(field.type);
 				String fieldName = field.name;
 				c1.add(fieldType);
 				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
@@ -634,7 +634,7 @@ public class Compiler {
 		List<String> c1 = new ArrayList<>();
 		List<String> c2 = new ArrayList<>();
 		for(Field field: typeRecord.fields) {
-			String fieldType = toTypeString(field.type);;
+			String fieldType = toTypeString(field.type);
 			String fieldName = field.name;
 			c1.add(fieldType);
 			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
