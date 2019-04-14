@@ -73,15 +73,15 @@ void deserialize(BLOCK& block, SEQUENCE<T>& value) {
 
 template <typename T, int N>
 QString toString(const SEQUENCE_N<T, N>& value) {
-	return Courier::toString(value.value);
+	return Courier::toString((SEQUENCE<T>&)value);
 }
 template <typename T, int N>
 void serialize(BLOCK& block, const SEQUENCE_N<T, N>& value) {
-	Courier::serialize(block, value.value);
+	Courier::serialize(block, (SEQUENCE<T>&)value);
 }
 template <typename T, int N>
 void deserialize(BLOCK& block, SEQUENCE_N<T, N>& value) {
-	Courier::deserialize(block, value.value);
+	Courier::deserialize(block, (SEQUENCE<T>&)value);
 }
 
 //
@@ -118,15 +118,15 @@ void deserialize(BLOCK& block, ARRAY<T>& value) {
 
 template <typename T, int N>
 QString toString(const ARRAY_N<T, N>& value) {
-	return Courier::toString(value.value);
+	return Courier::toString((ARRAY<T>&)value);
 }
 template <typename T, int N>
 void serialize(BLOCK& block, const ARRAY_N<T, N>& value) {
-	Courier::serialize(block, value.value);
+	Courier::serialize(block, (ARRAY<T>&)value);
 }
 template <typename T, int N>
 void deserialize(BLOCK& block, ARRAY_N<T, N>& value) {
-	Courier::deserialize(block, value.value);
+	Courier::deserialize(block, (ARRAY<T>&)value);
 }
 
 
