@@ -240,4 +240,20 @@ public final class Program {
 		Program program = getProgram(typeRef.value.program);
 		return program.getType(typeRef.value.name);
 	}
+	
+	public boolean isRemoteType(Type type) {
+		if (type.isReference()) {
+			TypeReference typeReference = (TypeReference)type;
+			Type baseType = typeReference.getBaseType();
+			if (baseType.isReference()) {
+				TypeReference baseTypeReference = (TypeReference)baseType;
+				return baseTypeReference.value.program.compareTo(info.getProgramVersion()) != 0;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
 }
