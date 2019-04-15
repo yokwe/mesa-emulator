@@ -170,10 +170,10 @@ public class Compiler {
 	private String toTypeString(Type type) {
 		return toTypeString(type, true);
 	}
-	private String toTypeStringProgram(Type type) {
+	private String toTypeStringNotLocal(Type type) {
 		return toTypeString(type, false);
 	}
-	private String toTypeString(Type type, boolean useLocalRefName) {
+	private String toTypeString(Type type, boolean useLocalName) {
 		switch(type.kind) {
 		// predefined
 		case BOOLEAN:
@@ -191,15 +191,15 @@ public class Compiler {
 		case ARRAY:
 		{
 			TypeArray typeArray = (TypeArray)type;
-			return String.format("ARRAY_N<%s,%d>", toTypeString(typeArray.type, useLocalRefName), typeArray.size);
+			return String.format("ARRAY_N<%s,%d>", toTypeString(typeArray.type, useLocalName), typeArray.size);
 		}
 		case SEQUENCE:
 		{
 			TypeSequence typeSequence = (TypeSequence)type;
 			if (typeSequence.size == TypeSequence.MAX_SIZE) {
-				return String.format("SEQUENCE_N<%s>", toTypeString(typeSequence.type, useLocalRefName));
+				return String.format("SEQUENCE_N<%s>", toTypeString(typeSequence.type, useLocalName));
 			} else {
-				return String.format("SEQUENCE_N<%s,%d>", toTypeString(typeSequence.type, useLocalRefName), typeSequence.size);
+				return String.format("SEQUENCE_N<%s,%d>", toTypeString(typeSequence.type, useLocalName), typeSequence.size);
 			}
 		}
 		case RECORD:
@@ -213,7 +213,7 @@ public class Compiler {
 		case REFERENCE:
 		{
 			TypeReference typeReference = (TypeReference)type;
-			return useLocalRefName ? program.getLocalRefName(typeReference) : typeReference.value.toString();
+			return useLocalName ? program.getLocalRefName(typeReference) : typeReference.value.toString();
 		}
 		default:
 			break;
@@ -326,7 +326,7 @@ public class Compiler {
 			}
 		}
 
-		outh.format("struct %s {", name);		
+		outh.format("struct %s {", name);
 		outh.line("struct Param {");
 		{
 			List<String> c1 = new ArrayList<>();
@@ -423,7 +423,7 @@ public class Compiler {
 						} else {
 							throw new CompilerException(String.format("Unexpected componentName %s", componentName.toString()));
 						}
-					}					
+					}
 				} else {
 					throw new CompilerException(String.format("Unexpected concreteType %s", concreteType.toString()));
 				}
@@ -1252,11 +1252,11 @@ public class Compiler {
 					outc.line("break;");
 				}
 	
-				outc.line("default:");
-				outc.line("logger.error(\"Unexpected choiceTag = %d\", (quint16)value.choiceTag);");
-		        outc.line("COURIER_FATAL_ERROR();");
-		        outc.line("break;");
-				outc.line("}"); // end of switch
+				outc.line("default:",
+						 "logger.error(\"Unexpected choiceTag = %d\", (quint16)value.choiceTag);",
+						 "COURIER_FATAL_ERROR();",
+						 "break;",
+						 "}"); // end of switch
 	
 				outc.line("}"); // end of method
 			}
@@ -1372,13 +1372,13 @@ public class Compiler {
 		// Declaration
 		{
 			outh.line("",
-					  "// FIXME",
+					  "//",
 					  "// Sequence toString Function Declaration",
 					  "//");
 
 			for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
 				TypeSequence typeSequence = new TypeSequence(sequenceInfo.typeSequence.size, sequenceInfo.typeSequence.type.getConcreteType());
-				String       typeString   = toTypeStringProgram(typeSequence);
+				String       typeString   = toTypeStringNotLocal(typeSequence);
 				
 				outh.format("// SEQ  %s  %s  %s  %s", sequenceInfo.namePrefix, sequenceInfo.name, typeString, sequenceInfo.typeSequence.toString());
 				outh.format("QString toString(const %s& value);", typeString);
@@ -1387,28 +1387,27 @@ public class Compiler {
 		// Definition
 		{
 			outc.line("",
-					  "// FIXME",
+					  "//",
 					  "// Sequence toString Function Definition",
 					  "//");
 
 			for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
 				TypeSequence typeSequence = new TypeSequence(sequenceInfo.typeSequence.size, sequenceInfo.typeSequence.type.getConcreteType());
-				String       typeString   = toTypeStringProgram(typeSequence);
+				String       typeString   = toTypeStringNotLocal(typeSequence);
 
 				outc.format("// SEQ  %s  %s  %s  %s", sequenceInfo.namePrefix, sequenceInfo.name, typeString, sequenceInfo.typeSequence.toString());
 				outc.format("QString %s::toString(const %s& value) {", "Courier", typeString);
 				
-				outc.line("QStringList list;");
-				outc.line("quint16 size = value.getSize();");
-				outc.line("for(quint16 i = 0; i < size; i++) {");
-				outc.line("list << Courier::toString(value[i]);");
-				outc.line("}");
-				outc.line("return QString(\"(%1)[%2]\").arg(size).arg(list.join(\" \"));");
+				outc.line("QStringList list;",
+						  "quint16 size = value.getSize();",
+						  "for(quint16 i = 0; i < size; i++) {",
+						  "list << Courier::toString(value[i]);",
+						  "}",
+						  "return QString(\"(%1)[%2]\").arg(size).arg(list.join(\" \"));");
 
 				outc.line("}");
 			}
 		}
-	
 	}
 	private void genSequenceSerialize(LinePrinter outh, LinePrinter outc) {
 		if (context.sequenceInfoList.isEmpty()) return;
@@ -1416,13 +1415,13 @@ public class Compiler {
 		// Declaration
 		{
 			outh.line("",
-					  "// FIXME",
+					  "//",
 					  "// Sequence serialize Function Declaration",
 					  "//");
 
 			for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
 				TypeSequence typeSequence = new TypeSequence(sequenceInfo.typeSequence.size, sequenceInfo.typeSequence.type.getConcreteType());
-				String       typeString   = toTypeStringProgram(typeSequence);
+				String       typeString   = toTypeStringNotLocal(typeSequence);
 				
 				outh.format("// SEQ  %s  %s  %s  %s", sequenceInfo.namePrefix, sequenceInfo.name, typeString, sequenceInfo.typeSequence.toString());
 				outh.format("void serialize(BLOCK& block, const %s& value);", typeString);
@@ -1431,21 +1430,22 @@ public class Compiler {
 		// Definition
 		{
 			outc.line("",
-					  "// FIXME",
+					  "//",
 					  "// Sequence toString Function Definition",
 					  "//");
 
 			for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
 				TypeSequence typeSequence = new TypeSequence(sequenceInfo.typeSequence.size, sequenceInfo.typeSequence.type.getConcreteType());
-				String       typeString   = toTypeStringProgram(typeSequence);
+				String       typeString   = toTypeStringNotLocal(typeSequence);
 
 				outc.format("// SEQ  %s  %s  %s  %s", sequenceInfo.namePrefix, sequenceInfo.name, typeString, sequenceInfo.typeSequence.toString());
-				outc.format("void %s::serialize(BLOCK& block, const %s& value) {", "Courier", typeString);				
-				outc.line("quint16 size = value.getSize();");
-				outc.line("Courier::serialize(block, size);");
-				outc.line("for(quint16 i = 0; i < size; i++) {");
-				outc.line("Courier::serialize(block, value[i]);");
-				outc.line("}");
+				outc.format("void %s::serialize(BLOCK& block, const %s& value) {", "Courier", typeString);
+				
+				outc.line("quint16 size = value.getSize();",
+						  "Courier::serialize(block, size);",
+						  "for(quint16 i = 0; i < size; i++) {",
+						  "Courier::serialize(block, value[i]);",
+						  "}");
 
 				outc.line("}");
 			}
@@ -1453,18 +1453,175 @@ public class Compiler {
 	
 	}
 	private void genSequenceDeserialize(LinePrinter outh, LinePrinter outc) {
-		// FIXME implement this
+		if (context.sequenceInfoList.isEmpty()) return;
+		
+		// Declaration
+		{
+			outh.line("",
+					  "//",
+					  "// Sequence deserialize Function Declaration",
+					  "//");
+
+			for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
+				TypeSequence typeSequence = new TypeSequence(sequenceInfo.typeSequence.size, sequenceInfo.typeSequence.type.getConcreteType());
+				String       typeString   = toTypeStringNotLocal(typeSequence);
+				
+				outh.format("// SEQ  %s  %s  %s  %s", sequenceInfo.namePrefix, sequenceInfo.name, typeString, sequenceInfo.typeSequence.toString());
+				outh.format("void deserialize(BLOCK& block, %s& value);", typeString);
+			}
+		}
+		// Definition
+		{
+			outc.line("",
+					  "//",
+					  "// Sequence toString Function Definition",
+					  "//");
+
+			for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
+				TypeSequence typeSequence = new TypeSequence(sequenceInfo.typeSequence.size, sequenceInfo.typeSequence.type.getConcreteType());
+				String       typeString   = toTypeStringNotLocal(typeSequence);
+
+				outc.format("// SEQ  %s  %s  %s  %s", sequenceInfo.namePrefix, sequenceInfo.name, typeString, sequenceInfo.typeSequence.toString());
+				outc.format("void %s::deserialize(BLOCK& block, %s& value) {", "Courier", typeString);
+				
+				outc.line("quint16 size = value.getSize();",
+						  "Courier::deserialize(block, size);",
+						  "for(quint16 i = 0; i < size; i++) {",
+						  "Courier::deserialize(block, value[i]);",
+						  "}");
+
+				outc.line("}");
+			}
+		}
 	}
 	
 	
 	private void genArrayToString(LinePrinter outh, LinePrinter outc) {
-		// FIXME implement this
+		if (context.arrayInfoList.isEmpty()) return;
+		
+		// Declaration
+		{
+			outh.line("",
+					  "//",
+					  "// Sequence toString Function Declaration",
+					  "//");
+
+			for(ArrayInfo arrayInfo: context.arrayInfoList) {
+				TypeArray typeArray  = new TypeArray(arrayInfo.typeArray.size, arrayInfo.typeArray.type.getConcreteType());
+				String    typeString = toTypeStringNotLocal(typeArray);
+				
+				outh.format("// ARR  %s  %s  %s  %s", arrayInfo.namePrefix, arrayInfo.name, typeString, arrayInfo.typeArray.toString());
+				outh.format("QString toString(const %s& value);", typeString);
+			}
+		}
+		// Definition
+		{
+			outc.line("",
+					  "//",
+					  "// Sequence toString Function Definition",
+					  "//");
+
+			for(ArrayInfo arrayInfo: context.arrayInfoList) {
+				TypeArray typeArray  = new TypeArray(arrayInfo.typeArray.size, arrayInfo.typeArray.type.getConcreteType());
+				String    typeString = toTypeStringNotLocal(typeArray);
+
+				outh.format("// ARR  %s  %s  %s  %s", arrayInfo.namePrefix, arrayInfo.name, typeString, arrayInfo.typeArray.toString());
+				outc.format("QString %s::toString(const %s& value) {", "Courier", typeString);
+				
+				outc.line("QStringList list;",
+						  "quint16 size = value.getSize();",
+						  "for(quint16 i = 0; i < size; i++) {",
+						  "list << Courier::toString(value[i]);",
+						  "}",
+						  "return QString(\"(%1)[%2]\").arg(size).arg(list.join(\" \"));");
+
+				outc.line("}");
+			}
+		}
 	}
 	private void genArraySerialize(LinePrinter outh, LinePrinter outc) {
-		// FIXME implement this
+		if (context.arrayInfoList.isEmpty()) return;
+		
+		// Declaration
+		{
+			outh.line("",
+					  "//",
+					  "// Sequence serialize Function Declaration",
+					  "//");
+
+			for(ArrayInfo arrayInfo: context.arrayInfoList) {
+				TypeArray typeArray  = new TypeArray(arrayInfo.typeArray.size, arrayInfo.typeArray.type.getConcreteType());
+				String    typeString = toTypeStringNotLocal(typeArray);
+				
+				outh.format("// ARR  %s  %s  %s  %s", arrayInfo.namePrefix, arrayInfo.name, typeString, arrayInfo.typeArray.toString());
+				outh.format("void serialize(BLOCK& block, const %s& value);", typeString);
+			}
+		}
+		// Definition
+		{
+			outc.line("",
+					  "//",
+					  "// Sequence serialize Function Definition",
+					  "//");
+
+			for(ArrayInfo arrayInfo: context.arrayInfoList) {
+				TypeArray typeArray  = new TypeArray(arrayInfo.typeArray.size, arrayInfo.typeArray.type.getConcreteType());
+				String    typeString = toTypeStringNotLocal(typeArray);
+
+				outh.format("// ARR  %s  %s  %s  %s", arrayInfo.namePrefix, arrayInfo.name, typeString, arrayInfo.typeArray.toString());
+				outc.format("void %s::serialize(BLOCK& block, const %s& value) {", "Courier", typeString);
+				
+				outc.line("quint16 size = value.getSize();",
+						  "for(quint16 i = 0; i < size; i++) {",
+						  "Courier::serialize(block, value[i]);",
+						  "}");
+
+				outc.line("}");
+			}
+		}
+	
 	}
 	private void genArrayDeserialize(LinePrinter outh, LinePrinter outc) {
-		// FIXME implement this
+		if (context.arrayInfoList.isEmpty()) return;
+		
+		// Declaration
+		{
+			outh.line("",
+					  "//",
+					  "// Sequence deserialize Function Declaration",
+					  "//");
+
+			for(ArrayInfo arrayInfo: context.arrayInfoList) {
+				TypeArray typeArray  = new TypeArray(arrayInfo.typeArray.size, arrayInfo.typeArray.type.getConcreteType());
+				String    typeString = toTypeStringNotLocal(typeArray);
+				
+				outh.format("// ARR  %s  %s  %s  %s", arrayInfo.namePrefix, arrayInfo.name, typeString, arrayInfo.typeArray.toString());
+				outh.format("void deserialize(BLOCK& block, %s& value);", typeString);
+			}
+		}
+		// Definition
+		{
+			outc.line("",
+					  "//",
+					  "// Sequence deserialize Function Definition",
+					  "//");
+
+			for(ArrayInfo arrayInfo: context.arrayInfoList) {
+				TypeArray typeArray  = new TypeArray(arrayInfo.typeArray.size, arrayInfo.typeArray.type.getConcreteType());
+				String    typeString = toTypeStringNotLocal(typeArray);
+
+				outh.format("// ARR  %s  %s  %s  %s", arrayInfo.namePrefix, arrayInfo.name, typeString, arrayInfo.typeArray.toString());
+				outc.format("void %s::deserialize(BLOCK& block, %s& value) {", "Courier", typeString);
+				
+				outc.line("quint16 size = value.getSize();",
+						  "for(quint16 i = 0; i < size; i++) {",
+						  "Courier::serialize(block, value[i]);",
+						  "}");
+
+				outc.line("}");
+			}
+		}
+	
 	}
 
 	
@@ -1507,7 +1664,7 @@ public class Compiler {
 			outh.line();
 
 			// include courier header
-			outh.line("#include \"../courier/Courier.h\"");			
+			outh.line("#include \"../courier/Courier.h\"");
 			// include depend module
 			for(Program.Info info: program.depends) {
 				outh.format("#include \"../stub/%s.h\"", info.getProgramVersion());
