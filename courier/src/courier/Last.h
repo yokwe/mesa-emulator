@@ -68,21 +68,29 @@ void deserialize(BLOCK& block, SEQUENCE<T>& value) {
 
 
 //
-// Template functions for SEQUENCE_N
+// Explicit instantiation of basic type
 //
+// For SEQUENCE
+template QString toString(const SEQUENCE<bool>&    value);
+template QString toString(const SEQUENCE<QString>& value);
+template QString toString(const SEQUENCE<quint8>&  value);
+template QString toString(const SEQUENCE<quint16>& value);
+template QString toString(const SEQUENCE<quint32>& value);
+template QString toString(const SEQUENCE<quint64>& value);
 
-template <typename T, int N>
-QString toString(const SEQUENCE_N<T, N>& value) {
-	return Courier::toString((SEQUENCE<T>&)value);
-}
-template <typename T, int N>
-void serialize(BLOCK& block, const SEQUENCE_N<T, N>& value) {
-	Courier::serialize(block, (SEQUENCE<T>&)value);
-}
-template <typename T, int N>
-void deserialize(BLOCK& block, SEQUENCE_N<T, N>& value) {
-	Courier::deserialize(block, (SEQUENCE<T>&)value);
-}
+template void serialize(BLOCK& block, const SEQUENCE<bool>&    value);
+template void serialize(BLOCK& block, const SEQUENCE<QString>& value);
+template void serialize(BLOCK& block, const SEQUENCE<quint8>&  value);
+template void serialize(BLOCK& block, const SEQUENCE<quint16>& value);
+template void serialize(BLOCK& block, const SEQUENCE<quint32>& value);
+template void serialize(BLOCK& block, const SEQUENCE<quint64>& value);
+
+template void deserialize(BLOCK& block, SEQUENCE<bool>&    value);
+template void deserialize(BLOCK& block, SEQUENCE<QString>& value);
+template void deserialize(BLOCK& block, SEQUENCE<quint8>&  value);
+template void deserialize(BLOCK& block, SEQUENCE<quint16>& value);
+template void deserialize(BLOCK& block, SEQUENCE<quint32>& value);
+template void deserialize(BLOCK& block, SEQUENCE<quint64>& value);
 
 //
 // Template functions for ARRAY
@@ -111,9 +119,47 @@ void deserialize(BLOCK& block, ARRAY<T>& value) {
 	}
 }
 
+// For ARRAY
+template QString toString(const ARRAY<bool>&    value);
+template QString toString(const ARRAY<QString>& value);
+template QString toString(const ARRAY<quint8>&  value);
+template QString toString(const ARRAY<quint16>& value);
+template QString toString(const ARRAY<quint32>& value);
+template QString toString(const ARRAY<quint64>& value);
+
+template void serialize(BLOCK& block, const ARRAY<bool>&    value);
+template void serialize(BLOCK& block, const ARRAY<QString>& value);
+template void serialize(BLOCK& block, const ARRAY<quint8>&  value);
+template void serialize(BLOCK& block, const ARRAY<quint16>& value);
+template void serialize(BLOCK& block, const ARRAY<quint32>& value);
+template void serialize(BLOCK& block, const ARRAY<quint64>& value);
+
+template void deserialize(BLOCK& block, ARRAY<bool>&    value);
+template void deserialize(BLOCK& block, ARRAY<QString>& value);
+template void deserialize(BLOCK& block, ARRAY<quint8>&  value);
+template void deserialize(BLOCK& block, ARRAY<quint16>& value);
+template void deserialize(BLOCK& block, ARRAY<quint32>& value);
+template void deserialize(BLOCK& block, ARRAY<quint64>& value);
 
 //
-// Template functions for ARRAY_N
+// Template functions from SEQUENCE_N to SEQUENCE
+//
+
+template <typename T, int N>
+QString toString(const SEQUENCE_N<T, N>& value) {
+	return Courier::toString((SEQUENCE<T>&)value);
+}
+template <typename T, int N>
+void serialize(BLOCK& block, const SEQUENCE_N<T, N>& value) {
+	Courier::serialize(block, (SEQUENCE<T>&)value);
+}
+template <typename T, int N>
+void deserialize(BLOCK& block, SEQUENCE_N<T, N>& value) {
+	Courier::deserialize(block, (SEQUENCE<T>&)value);
+}
+
+//
+// Template functions from ARRAY_N to SEQUENCE
 //
 
 template <typename T, int N>

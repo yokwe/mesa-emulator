@@ -90,7 +90,7 @@ void deserialize(Block& block, quint64&  value);
 
 
 template <typename T>
-struct SEQUENCE {
+class SEQUENCE {
 public:
 	static const int MAX_SIZE = 65535;
 	using     TYPE = T;
@@ -194,7 +194,7 @@ public:
 		return data[i];
 	}
 
-private:
+protected:
 	int capacity;
 	int size;
 	T*  data;
@@ -214,36 +214,19 @@ private:
 		}
 	}
 };
-
-template <typename T, int N = 65535>
-struct SEQUENCE_N : SEQUENCE<T> {
-	int         SIZE;
-
-	SEQUENCE_N() : SEQUENCE<T>(N), SIZE(N) {}
-
-	SEQUENCE_N(std::initializer_list<T> initList) : SEQUENCE<T>(N), SIZE(N) {
-		SEQUENCE<T>::operator =(initList);
-	}
-
-	// Copy constructor
-	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>(that.value), SIZE(that.SIZE) {}
-	SEQUENCE_N& operator=(const SEQUENCE_N&& that) {
-		SEQUENCE<T>::operator=(that);
-		return *this;
-	}
-
-	// Move constructor
-	SEQUENCE_N(SEQUENCE_N&& that) : SEQUENCE<T>(that.value), SIZE(that.SIZE) {}
-	SEQUENCE_N& operator=(SEQUENCE_N&& that) {
-		SEQUENCE<T>::operator=(that);
-		return *this;
-	}
-
-};
+//
+// Explicit instantiation of basic type
+//
+template class SEQUENCE<bool>;
+template class SEQUENCE<QString>;
+template class SEQUENCE<quint8>;
+template class SEQUENCE<quint16>;
+template class SEQUENCE<quint32>;
+template class SEQUENCE<quint64>;
 
 
 template <typename T>
-struct ARRAY {
+class ARRAY {
 public:
 	static const int MAX_SIZE = 65535;
 	using     TYPE = T;
@@ -333,7 +316,7 @@ public:
 		return data[i];
 	}
 
-private:
+protected:
 	int capacity;
 	int size;
 	T*  data;
@@ -353,9 +336,52 @@ private:
 		}
 	}
 };
+//
+// Explicit instantiation of basic type
+//
+template class ARRAY<bool>;
+template class ARRAY<QString>;
+template class ARRAY<quint8>;
+template class ARRAY<quint16>;
+template class ARRAY<quint32>;
+template class ARRAY<quint64>;
 
+
+//
+// Template SEQUENCE_N
+//
+template <typename T, int N = 65535>
+class SEQUENCE_N : public SEQUENCE<T> {
+public:
+	int         SIZE;
+
+	SEQUENCE_N() : SEQUENCE<T>(N), SIZE(N) {}
+
+	SEQUENCE_N(std::initializer_list<T> initList) : SEQUENCE<T>(N), SIZE(N) {
+		SEQUENCE<T>::operator =(initList);
+	}
+
+	// Copy constructor
+	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>(that.value), SIZE(that.SIZE) {}
+	SEQUENCE_N& operator=(const SEQUENCE_N&& that) {
+		SEQUENCE<T>::operator=(that);
+		return *this;
+	}
+
+	// Move constructor
+	SEQUENCE_N(SEQUENCE_N&& that) : SEQUENCE<T>(that.value), SIZE(that.SIZE) {}
+	SEQUENCE_N& operator=(SEQUENCE_N&& that) {
+		SEQUENCE<T>::operator=(that);
+		return *this;
+	}
+};
+
+//
+// Template for ARRAY_N
+//
 template <typename T, int N>
-struct ARRAY_N : ARRAY<T> {
+class ARRAY_N : public ARRAY<T> {
+public:
 	int      SIZE;
 
 	ARRAY_N() : ARRAY<T>(N), SIZE(N) {}
@@ -378,7 +404,6 @@ struct ARRAY_N : ARRAY<T> {
 		return *this;
 	}
 };
-
 
 }
 
