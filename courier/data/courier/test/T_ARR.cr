@@ -8,9 +8,9 @@ BEGIN
 -- reference
 --    REFERENCE
 
-    E: TYPE = {e(0)};
+    E: TYPE = {a(1), b(2), c(3), d(4)};
     A: TYPE = ARRAY 4 OF CARDINAL;
-    S: TYPE = ARRAY 4 OF CARDINAL;
+    S: TYPE = SEQUENCE 4 OF CARDINAL;
     R: TYPE = RECORD [ a: CARDINAL ];
     C: TYPE = CHOICE OF { a(0) => CARDINAL };
     
