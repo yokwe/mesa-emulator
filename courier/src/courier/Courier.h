@@ -364,14 +364,14 @@ public:
 	// Copy constructor
 	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>((SEQUENCE<T>)that), SIZE(that.SIZE) {}
 	SEQUENCE_N& operator=(const SEQUENCE_N&& that) {
-		SEQUENCE<T>::operator=(that);
+		SEQUENCE<T>::operator=((SEQUENCE<T>)that);
 		return *this;
 	}
 
 	// Move constructor
 	SEQUENCE_N(SEQUENCE_N&& that) : SEQUENCE<T>((SEQUENCE<T>)that), SIZE(that.SIZE) {}
 	SEQUENCE_N& operator=(SEQUENCE_N&& that) {
-		SEQUENCE<T>::operator=(that);
+		SEQUENCE<T>::operator=((SEQUENCE<T>)that);
 		return *this;
 	}
 };
@@ -393,14 +393,14 @@ public:
 	// Copy constructor
 	ARRAY_N(const ARRAY_N& that) : ARRAY<T>((ARRAY<T>)that), SIZE(that.SIZE) {}
 	ARRAY_N& operator=(const ARRAY_N& that) {
-		ARRAY<T>::operator=(that);
+		ARRAY<T>::operator=((ARRAY<T>)that);
 		return *this;
 	}
 
 	// Move constructor
 	ARRAY_N(ARRAY_N&& that) : ARRAY<T>((ARRAY<T>)that), SIZE(that.SIZE) {}
 	ARRAY_N& operator=(ARRAY_N&& that) {
-		ARRAY<T>::operator=(that);
+		ARRAY<T>::operator=((ARRAY<T>)that);
 		return *this;
 	}
 };
