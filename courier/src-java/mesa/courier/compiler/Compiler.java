@@ -1615,7 +1615,7 @@ public class Compiler {
 				
 				outc.line("quint16 size = value.getSize();",
 						  "for(quint16 i = 0; i < size; i++) {",
-						  "Courier::serialize(block, value[i]);",
+						  "Courier::deserialize(block, value[i]);",
 						  "}");
 
 				outc.line("}");
