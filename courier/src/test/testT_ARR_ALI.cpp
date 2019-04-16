@@ -26,32 +26,32 @@ OF SUCH DAMAGE.
 
 
 //
-// testT_SEQ_ALI.cpp
+// testT_ARR_ALI.cpp
 //
 
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("testT_SEQ_ALI");
+static log4cpp::Category& logger = Logger::getLogger("testT_ARR_ALI");
 
 #include "testBase.h"
 
-#include "../stub/T_SEQ.h"
+#include "../stub/T_ARR.h"
 
 #include "../courier/Last.h"
 
-class testT_SEQ_ALI : public testBase {
-	CPPUNIT_TEST_SUITE(testT_SEQ_ALI);
+class testT_ARR_ALI : public testBase {
+	CPPUNIT_TEST_SUITE(testT_ARR_ALI);
 
-    CPPUNIT_TEST(testT_SEQ_ALI01);
-    CPPUNIT_TEST(testT_SEQ_ALI02);
-    CPPUNIT_TEST(testT_SEQ_ALI03);
-    CPPUNIT_TEST(testT_SEQ_ALI04);
-    CPPUNIT_TEST(testT_SEQ_ALI05);
+    CPPUNIT_TEST(testT_ARR_ALI01);
+    CPPUNIT_TEST(testT_ARR_ALI02);
+    CPPUNIT_TEST(testT_ARR_ALI03);
+    CPPUNIT_TEST(testT_ARR_ALI04);
+    CPPUNIT_TEST(testT_ARR_ALI05);
 
 	CPPUNIT_TEST_SUITE_END();
 
 public:
-    void testT_SEQ_ALI01() {
-    	using T = Courier::T_SEQ::SEQ_ALI01;
+    void testT_ARR_ALI01() {
+    	using T = Courier::T_ARR::ARR_ALI01;
 
     	// toString
     	{
@@ -75,7 +75,7 @@ public:
         	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
-        	QString e = "(10)00040001000200030004";
+        	QString e = "(8)0001000200030004";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -102,8 +102,8 @@ public:
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
     	}
     }
-    void testT_SEQ_ALI02() {
-    	using T = Courier::T_SEQ::SEQ_ALI02;
+    void testT_ARR_ALI02() {
+    	using T = Courier::T_ARR::ARR_ALI02;
 
     	// toString
     	{
@@ -127,7 +127,7 @@ public:
         	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
-        	QString e = "(34)00040011001200130014002100220023002400310032003300340041004200430044";
+        	QString e = "(32)0011001200130014002100220023002400310032003300340041004200430044";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -154,8 +154,8 @@ public:
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
     	}
     }
-    void testT_SEQ_ALI03() {
-//    	using T = Courier::T_SEQ::SEQ_ALI03;
+    void testT_ARR_ALI03() {
+//    	using T = Courier::T_ARR::ARR_ALI03;
 //
 //    	// toString
 //    	{
@@ -206,8 +206,8 @@ public:
 //			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 //    	}
     }
-    void testT_SEQ_ALI04() {
-    	using T = Courier::T_SEQ::SEQ_ALI04;
+    void testT_ARR_ALI04() {
+    	using T = Courier::T_ARR::ARR_ALI04;
 
     	// toString
     	{
@@ -231,7 +231,7 @@ public:
         	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
-        	QString e = "(10)00040001000200030004";
+        	QString e = "(8)0001000200030004";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -258,8 +258,8 @@ public:
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
     	}
     }
-    void testT_SEQ_ALI05() {
-    	using T = Courier::T_SEQ::SEQ_ALI05;
+    void testT_ARR_ALI05() {
+    	using T = Courier::T_ARR::ARR_ALI05;
 
     	// toString
     	{
@@ -298,7 +298,7 @@ public:
         	Courier::serialize(blockData.block, d);
 
         	QString a = Courier::toString(blockData.block);
-        	QString e = "(18)000400000001000000020000000300000004";
+        	QString e = "(16)00000001000000020000000300000004";
 
 			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
@@ -335,4 +335,4 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(testT_SEQ_ALI);
+CPPUNIT_TEST_SUITE_REGISTRATION(testT_ARR_ALI);

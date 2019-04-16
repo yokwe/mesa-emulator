@@ -20,6 +20,9 @@ SOURCES += ../stub/T_CHO.cpp testT_CHO_A_PRE.cpp testT_CHO_T_PRE.cpp testT_CHO_A
 HEADERS += ../stub/T_SEQ.h
 SOURCES += ../stub/T_SEQ.cpp testT_SEQ_ALI.cpp
 
+HEADERS += ../stub/T_ARR.h
+SOURCES += ../stub/T_ARR.cpp testT_ARR_ALI.cpp
+
 LIBS += ../../tmp/build/stub/libstub.a
 LIBS += ../../tmp/build/courier/libcourier.a
 LIBS += ../../tmp/build/util/libutil.a
