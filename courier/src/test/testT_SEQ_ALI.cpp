@@ -43,7 +43,7 @@ class testT_SEQ_ALI : public testBase {
 
     CPPUNIT_TEST(testT_SEQ_ALI01);
     CPPUNIT_TEST(testT_SEQ_ALI02);
-//    CPPUNIT_TEST(testT_SEQ_ALI03);
+    CPPUNIT_TEST(testT_SEQ_ALI03);
 //    CPPUNIT_TEST(testT_SEQ_ALI04);
 //    CPPUNIT_TEST(testT_SEQ_ALI05);
 
@@ -133,117 +133,79 @@ public:
 			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
     	}
-//
-//    	// Deserialize
-//    	{
-//        	T d;
-//        	d = {T::TYPE::a, T::TYPE::b, T::TYPE::c, T::TYPE::d};
-//
-//        	Courier::BlockData<100> blockData;
-//        	Courier::serialize(blockData.block, d);
-//
-//        	T s;
-//        	blockData.block.rewind();
-//        	Courier::deserialize(blockData.block, s);
-//
-//        	QString a = Courier::toString(s);
-//        	QString e = Courier::toString(d);
-//
-//			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-//			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-//			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-//    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d = {{0x11, 0x12, 0x13, 0x14}, {0x21, 0x22, 0x23, 0x24}, {0x31, 0x32, 0x33, 0x34}, {0x41, 0x42, 0x43, 0x44}};
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
     }
-//    void testT_SEQ_ALI03() {
-//    	using T = Courier::T_SEQ::SEQ_ALI03;
-//
-//    	// toString
-//    	{
-//        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {11111, 22222, 33333, 44444};
-//
-//        	QString a = Courier::toString(d);
-//        	QString e = "[a (4)[11111 22222 33333 44444]]";
-//
-//			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-//			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-//			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-//    	}
-//    	{
-//        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {11111, 22222, 33333};
-//
-//        	QString a = Courier::toString(d);
-//        	QString e = "[a (3)[11111 22222 33333]]";
-//
-//			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-//			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-//			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-//    	}
-//
-//    	// Serialize
-//    	{
-//        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {0x1111, 0x2222, 0x3333, 0x4444};
-//
-//        	Courier::BlockData<100> blockData;
-//        	Courier::serialize(blockData.block, d);
-//
-//        	QString a = Courier::toString(blockData.block);
-//        	QString e = "(12)000000041111222233334444";
-//
-//			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-//			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-//			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-//    	}
-//    	{
-//        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//
-//        	auto& da = d.a();
-//        	da = {0x1111, 0x2222, 0x3333};
-//
-//        	Courier::BlockData<100> blockData;
-//        	Courier::serialize(blockData.block, d);
-//
-//        	QString a = Courier::toString(blockData.block);
-//        	QString e = "(10)00000003111122223333";
-//
-//			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-//			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-//			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-//    	}
-//
-//    	// Deserialize
-//    	{
-//        	T d;
-//        	d.choiceTag = T::CHOICE_TAG::a;
-//        	d.a() = {0x1111, 0x2222, 0x3333, 0x4444};
-//
-//        	Courier::BlockData<100> blockData;
-//        	Courier::serialize(blockData.block, d);
-//
-//        	T s;
-//        	blockData.block.rewind();
-//        	Courier::deserialize(blockData.block, s);
-//
-//        	QString a = Courier::toString(s);
-//        	QString e = Courier::toString(d);
-//
-//			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-//			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-//			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-//    	}
-//    }
+    void testT_SEQ_ALI03() {
+    	using T = Courier::T_SEQ::SEQ_ALI03;
+
+    	// toString
+    	{
+        	T d;
+        	d = {{11, 12, 13, 14}, {21, 22, 23, 24}, {31, 32, 33, 34}, {41, 42, 43, 44}};
+
+        	QString a = Courier::toString(d);
+        	QString e = "(4)[(4)[11 12 13 14] (4)[21 22 23 24] (4)[31 32 33 34] (4)[41 42 43 44]]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Serialize
+    	{
+        	T d;
+        	d = {{0x11, 0x12, 0x13, 0x14}, {0x21, 0x22, 0x23, 0x24}, {0x31, 0x32, 0x33, 0x34}, {0x41, 0x42, 0x43, 0x44}};
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(42)000400040011001200130014000400210022002300240004003100320033003400040041004200430044";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+
+    	// Deserialize
+    	{
+        	T d;
+        	d = {{0x11, 0x12, 0x13, 0x14}, {0x21, 0x22, 0x23, 0x24}, {0x31, 0x32, 0x33, 0x34}, {0x41, 0x42, 0x43, 0x44}};
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, d);
+
+        	T s;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, s);
+
+        	QString a = Courier::toString(s);
+        	QString e = Courier::toString(d);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+    }
 //    void testT_SEQ_ALI04() {
 //    	using T = Courier::T_SEQ::SEQ_ALI04;
 //
