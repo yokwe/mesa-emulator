@@ -372,23 +372,21 @@ template class ARRAY<quint64>;
 template <typename T, int N = 65535>
 class SEQUENCE_N : public SEQUENCE<T> {
 public:
-	int         SIZE;
+	SEQUENCE_N() : SEQUENCE<T>(N) {}
 
-	SEQUENCE_N() : SEQUENCE<T>(N), SIZE(N) {}
-
-	SEQUENCE_N(std::initializer_list<T> initList) : SEQUENCE<T>(N), SIZE(N) {
+	SEQUENCE_N(std::initializer_list<T> initList) : SEQUENCE<T>(N) {
 		SEQUENCE<T>::operator =(initList);
 	}
 
 	// Copy constructor
-	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>((SEQUENCE<T>)that), SIZE(that.SIZE) {}
+	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>((SEQUENCE<T>)that) {}
 	SEQUENCE_N& operator=(const SEQUENCE_N&& that) {
 		SEQUENCE<T>::operator=((SEQUENCE<T>)that);
 		return *this;
 	}
 
 	// Move constructor
-	SEQUENCE_N(SEQUENCE_N&& that) : SEQUENCE<T>((SEQUENCE<T>)that), SIZE(that.SIZE) {}
+	SEQUENCE_N(SEQUENCE_N&& that) : SEQUENCE<T>((SEQUENCE<T>)that) {}
 	SEQUENCE_N& operator=(SEQUENCE_N&& that) {
 		SEQUENCE<T>::operator=((SEQUENCE<T>)that);
 		return *this;
@@ -401,23 +399,21 @@ public:
 template <typename T, int N>
 class ARRAY_N : public ARRAY<T> {
 public:
-	int      SIZE;
+	ARRAY_N() : ARRAY<T>(N) {}
 
-	ARRAY_N() : ARRAY<T>(N), SIZE(N) {}
-
-	ARRAY_N(std::initializer_list<T> initList) : ARRAY<T>(N), SIZE(N) {
+	ARRAY_N(std::initializer_list<T> initList) : ARRAY<T>(N) {
 		ARRAY<T>::operator =(initList);
 	}
 
 	// Copy constructor
-	ARRAY_N(const ARRAY_N& that) : ARRAY<T>((ARRAY<T>)that), SIZE(that.SIZE) {}
+	ARRAY_N(const ARRAY_N& that) : ARRAY<T>((ARRAY<T>)that) {}
 	ARRAY_N& operator=(const ARRAY_N& that) {
 		ARRAY<T>::operator=((ARRAY<T>)that);
 		return *this;
 	}
 
 	// Move constructor
-	ARRAY_N(ARRAY_N&& that) : ARRAY<T>((ARRAY<T>)that), SIZE(that.SIZE) {}
+	ARRAY_N(ARRAY_N&& that) : ARRAY<T>((ARRAY<T>)that) {}
 	ARRAY_N& operator=(ARRAY_N&& that) {
 		ARRAY<T>::operator=((ARRAY<T>)that);
 		return *this;
