@@ -146,3 +146,56 @@ void Courier::deserialize(Block& block, quint64&  value) {
 	block.deserialize48(value);
 }
 
+template <>void Courier::SEQUENCE<bool>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = false;
+	}
+}
+template <>void Courier::SEQUENCE<quint8>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+template <>void Courier::SEQUENCE<quint16>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+template <>void Courier::SEQUENCE<quint32>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+template <>void Courier::SEQUENCE<quint64>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+
+
+// Specialization of method initData()s
+template <>void Courier::ARRAY<bool>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = false;
+	}
+}
+template <>void Courier::ARRAY<quint8>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+template <>void Courier::ARRAY<quint16>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+template <>void Courier::ARRAY<quint32>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}
+template <>void Courier::ARRAY<quint64>::initData() {
+	for(int i = 0; i < capacity; i++) {
+		data[i] = 0;
+	}
+}

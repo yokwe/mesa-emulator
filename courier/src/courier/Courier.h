@@ -208,12 +208,21 @@ protected:
 				logger.error("Failed to allocate memory.  capacity = %d  MAX_SIZE = %d", capacity, MAX_SIZE);
 				COURIER_FATAL_ERROR();
 			}
+			initData();
 		} else {
 			logger.error("Overflow  capacity = %d  MAX_SIZE = %d", capacity, MAX_SIZE);
 			COURIER_FATAL_ERROR();
 		}
 	}
+	void initData() {}
 };
+// Specialization of method initData()
+template <>void SEQUENCE<bool>::initData();
+template <>void SEQUENCE<quint8>::initData();
+template <>void SEQUENCE<quint16>::initData();
+template <>void SEQUENCE<quint32>::initData();
+template <>void SEQUENCE<quint64>::initData();
+
 //
 // Explicit instantiation of basic type
 //
@@ -330,12 +339,22 @@ protected:
 				logger.error("Failed to allocate memory.  capacity = %d  MAX_SIZE = %d", capacity, MAX_SIZE);
 				COURIER_FATAL_ERROR();
 			}
+			initData();
 		} else {
 			logger.error("Overflow  capacity = %d  MAX_SIZE = %d", capacity, MAX_SIZE);
 			COURIER_FATAL_ERROR();
 		}
 	}
+	void initData() {}
 };
+
+// Specialization of method initData()
+template <>void ARRAY<bool>::initData();
+template <>void ARRAY<quint8>::initData();
+template <>void ARRAY<quint16>::initData();
+template <>void ARRAY<quint32>::initData();
+template <>void ARRAY<quint64>::initData();
+
 //
 // Explicit instantiation of basic type
 //
