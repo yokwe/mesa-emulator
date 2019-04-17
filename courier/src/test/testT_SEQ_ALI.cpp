@@ -155,6 +155,7 @@ public:
     	}
     }
     void testT_SEQ_ALI03() {
+// FIXME
 //    	using T = Courier::T_SEQ::SEQ_ALI03;
 //
 //    	// toString

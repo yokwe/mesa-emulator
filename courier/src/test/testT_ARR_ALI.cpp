@@ -155,6 +155,7 @@ public:
     	}
     }
     void testT_ARR_ALI03() {
+// FIXME
 //    	using T = Courier::T_ARR::ARR_ALI03;
 //
 //    	// toString
