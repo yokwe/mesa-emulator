@@ -568,7 +568,7 @@ public class Compiler {
 			out.format("// %s  %s  %s", decl.kind, name, type);
 			break;
 		case CONST:
-			out.format("// %s  %s  %s  %s", decl.kind, name, type, decl.getConstant());
+			out.format("// %s  %s  %s  %s", decl.kind, name, decl.getConstant(), type);
 			break;
 		default:
 			throw new CompilerException(String.format("Unexpected decl %s", decl));
