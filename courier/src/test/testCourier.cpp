@@ -501,13 +501,11 @@ public:
 	void testSEQUENCE() {
 		{
 			Courier::SEQUENCE_N<quint16, 10> t;
-			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
 			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getCapacity());
 			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getSize());
 
 			t.setSize(2);
 
-			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
 			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getCapacity());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, t.getSize());
 		}
@@ -515,7 +513,6 @@ public:
 			Courier::SEQUENCE_N<quint16> t;
 			t.setSize(2);
 
-			CPPUNIT_ASSERT_EQUAL(65535, t.SIZE);
 			CPPUNIT_ASSERT_EQUAL((quint16)65535, t.getCapacity());
 			CPPUNIT_ASSERT_EQUAL((quint16)2, t.getSize());
 		}
@@ -605,7 +602,7 @@ public:
 		{
 			using A = Courier::SEQUENCE_N<quint16>;
 			A t = {1, 2, 3};
-			CPPUNIT_ASSERT_EQUAL(65535, t.SIZE);
+			CPPUNIT_ASSERT_EQUAL((quint16)65535, t.getCapacity());
 			CPPUNIT_ASSERT_EQUAL((quint16)3, t.getSize());
 
 			QString a = Courier::toString(t);
@@ -620,8 +617,8 @@ public:
 		{
 			using A = Courier::SEQUENCE_N<quint16, 10>;
 			A t = {1, 2, 3};
-			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
-			CPPUNIT_ASSERT_EQUAL((quint16)3, t.getSize());
+			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getCapacity());
+			CPPUNIT_ASSERT_EQUAL((quint16)3,  t.getSize());
 
 			QString a = Courier::toString(t);
 			QString e = "(3)[1 2 3]";
@@ -639,7 +636,6 @@ public:
 		{
 			Courier::ARRAY_N<quint16, 10> t;
 
-			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
 			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getCapacity());
 			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getSize());
 		}
@@ -709,8 +705,8 @@ public:
 		// initializer list
 		{
 			using A = Courier::ARRAY_N<quint16, 10>;
-			A t = {1, 2, 3, 0, 0, 0, 0, 0, 0, 0};
-			CPPUNIT_ASSERT_EQUAL(10, t.SIZE);
+			A t = {1, 2, 3};
+			CPPUNIT_ASSERT_EQUAL((quint16)10, t.getCapacity());
 
 			QString a = Courier::toString(t);
 			QString e = "(10)[1 2 3 0 0 0 0 0 0 0]";
