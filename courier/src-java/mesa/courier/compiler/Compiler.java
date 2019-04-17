@@ -562,7 +562,6 @@ public class Compiler {
 	private void logDecl(LinePrinter out, Decl decl) {
 		Type   type         = decl.type;
 		String name         = decl.name;
-		Type   concreteType = type.getConcreteType();
 
 		switch(decl.kind) {
 		case TYPE:
@@ -574,40 +573,9 @@ public class Compiler {
 		default:
 			throw new CompilerException(String.format("Unexpected decl %s", decl));
 		}
-		if (type.isReference()) {
-			out.format("//   %s  =  %s", type, concreteType);
-		}
-						
-		switch(concreteType.kind) {
-		case ARRAY:
-		{
-			TypeArray typeArray = (TypeArray)concreteType;
-			if (typeArray.type.isReference()) {
-				Type elementType = typeArray.type.getConcreteType();
-				out.format("//     %s  =  %s", typeArray.type, elementType);
-			} else {
-				if (!typeArray.type.isPredefine()) {
-					out.format("//     %s", typeArray.type);
-				}
-			}
-		}
-			break;
-		case SEQUENCE:
-		{
-			TypeSequence typeSequence = (TypeSequence)concreteType;
-			if (typeSequence.type.isReference()) {
-				Type elementType = typeSequence.type.getConcreteType();
-				out.format("//     %s  =  %s", typeSequence.type, elementType);
-			} else {
-				if (!typeSequence.type.isPredefine()) {
-					out.format("//     %s", typeSequence.type);
-				}
-			}
-		}
-			break;
-		default:
-			break;
-		}
+		if (type.toString().compareTo(type.getTrueConcreteType().toString()) != 0) {
+			out.format("//   %s", type.getTrueConcreteType());
+		}			
 	}
 
 	private void logField(LinePrinter out, Type type, String name) {
