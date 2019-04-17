@@ -380,7 +380,7 @@ public:
 
 	// Copy constructor
 	SEQUENCE_N(const SEQUENCE_N& that) : SEQUENCE<T>((SEQUENCE<T>)that) {}
-	SEQUENCE_N& operator=(const SEQUENCE_N&& that) {
+	SEQUENCE_N& operator=(const SEQUENCE_N& that) {
 		SEQUENCE<T>::operator=((SEQUENCE<T>)that);
 		return *this;
 	}
