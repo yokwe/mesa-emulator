@@ -564,33 +564,44 @@ public class Compiler {
 		String name         = decl.name;
 		Type   concreteType = type.getConcreteType();
 
-		out.format("// %s  %s  %s", decl.kind, name, type);
-		if (type.isReference()) {
-			out.format("//   %s", concreteType);
+		switch(decl.kind) {
+		case TYPE:
+			out.format("// %s  %s  %s", decl.kind, name, type);
+			break;
+		case CONST:
+			out.format("// %s  %s  %s  %s", decl.kind, name, type, decl.getConstant());
+			break;
+		default:
+			throw new CompilerException(String.format("Unexpected decl %s", decl));
 		}
-		if (decl.isConstant()) {
-			Constant constant = decl.getConstant();
-			out.format("//   %s", constant);
+		if (type.isReference()) {
+			out.format("//   %s  =  %s", type, concreteType);
 		}
 						
 		switch(concreteType.kind) {
 		case ARRAY:
 		{
 			TypeArray typeArray = (TypeArray)concreteType;
-			out.format("//     %s", typeArray.type);
 			if (typeArray.type.isReference()) {
 				Type elementType = typeArray.type.getConcreteType();
-				out.format("//       %s", elementType);
+				out.format("//     %s  =  %s", typeArray.type, elementType);
+			} else {
+				if (!typeArray.type.isPredefine()) {
+					out.format("//     %s", typeArray.type);
+				}
 			}
 		}
 			break;
 		case SEQUENCE:
 		{
 			TypeSequence typeSequence = (TypeSequence)concreteType;
-			out.format("//     %s", typeSequence.type);
 			if (typeSequence.type.isReference()) {
 				Type elementType = typeSequence.type.getConcreteType();
-				out.format("//       %s", elementType);
+				out.format("//     %s  =  %s", typeSequence.type, elementType);
+			} else {
+				if (!typeSequence.type.isPredefine()) {
+					out.format("//     %s", typeSequence.type);
+				}
 			}
 		}
 			break;
