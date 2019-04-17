@@ -1,5 +1,8 @@
 package mesa.courier.program;
 
+import mesa.courier.compiler.CompilerException;
+import mesa.courier.program.TypeChoice.Candidate;
+
 public abstract class Type {
 	public static enum Kind {
 		// predefined
@@ -39,6 +42,94 @@ public abstract class Type {
 		Type type;
 		for(type = this; type.isReference(); type = Program.dereference((TypeReference)type)) ;
 		return type;
+	}
+	public Type getTrueConcreteType() {
+		Type type = getConcreteType();
+		switch(type.kind) {
+		case BOOLEAN:
+		case BYTE:
+		case CARDINAL:
+		case LONG_CARDINAL:
+		case STRING:
+		case UNSPECIFIED:
+		case UNSPECIFIED2:
+		case UNSPECIFIED3:
+		case ENUM:
+			return type;
+		case ARRAY:
+		{
+			TypeArray typeArray = (TypeArray)type;
+			return new TypeArray(typeArray.size, typeArray.type.getConcreteType());
+		}
+		case SEQUENCE:
+		{
+			TypeSequence typeSequence = (TypeSequence)type;
+			return new TypeSequence(typeSequence.size, typeSequence.type.getConcreteType());
+		}
+		case RECORD:
+		{
+			TypeRecord newType = new TypeRecord();
+			TypeRecord typeRecord = (TypeRecord)type;			
+			for(Field field: typeRecord.fields) {
+				newType.addField(new Field(field.name, field.type.getConcreteType()));
+			}
+			return newType;
+		}
+		case CHOICE:
+		{
+			TypeChoice typeChoice = (TypeChoice)type;
+			if (typeChoice instanceof TypeChoice.Anon) {
+				TypeChoice.Anon anon = (TypeChoice.Anon)typeChoice;
+				TypeChoice.Anon newType = new TypeChoice.Anon();
+				for(Candidate<Correspondence> candidate: anon.candidates) {
+					Candidate<Correspondence> newCandidate = new Candidate<>(candidate.type.getConcreteType());
+					for(Correspondence designator: candidate.designators) {
+						newCandidate.addDesignator(designator);
+					}
+					newType.addCandidate(candidate);
+				}
+				return newType;
+			}
+			if (typeChoice instanceof TypeChoice.Typed) {
+				TypeChoice.Typed typed = (TypeChoice.Typed)typeChoice;
+				TypeChoice.Typed newType = new TypeChoice.Typed(typed.type.getConcreteType());
+				for(Candidate<String> candidate: typed.candidates) {
+					Candidate<String> newCandidate = new Candidate<>(candidate.type.getConcreteType());
+					for(String designator: candidate.designators) {
+						newCandidate.addDesignator(designator);
+					}
+					newType.addCandidate(candidate);
+				}
+				return newType;
+			}
+		}
+			break;
+		case PROCEDURE:
+		{
+			TypeProcedure newType = new TypeProcedure();
+			TypeProcedure typeProcedure = (TypeProcedure)type;
+			
+			for(Field field: typeProcedure.paramList) {
+				newType.addParam(new Field(field.name, field.type.getConcreteType()));
+			}
+			for(Field field: typeProcedure.resultList) {
+				newType.addResult(new Field(field.name, field.type.getConcreteType()));
+			}
+			return newType;
+		}
+		case ERROR:
+		{
+			TypeError newType = new TypeError();
+			TypeError typeError = (TypeError)type;
+			for(Field field: typeError.paramList) {
+				newType.addParam(new Field(field.name, field.type.getConcreteType()));
+			}
+			return newType;
+		}
+		default:
+			break;
+		}
+		throw new CompilerException(String.format("Unexpected type %s", type));
 	}
 	
 	public Type getBaseType() {
