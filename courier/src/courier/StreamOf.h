@@ -103,12 +103,12 @@ template <typename T>
 struct StreamOf {
 	using TYPE = T;
 
-	QVector<StreamOfSegment<T>> segmens;
+	QVector<StreamOfSegment<T>> segments;
 };
 template <typename T>
 QString toString(const StreamOf<T>& value) {
 	QStringList list;
-	int size = value.segmens.size();
+	int size = value.segments.size();
 	for(int i = 0; i < size; i++) {
 		const StreamOfSegment<T>& segment = value.segments.at(i);
 		list << Courier::toString(segment);
@@ -117,7 +117,7 @@ QString toString(const StreamOf<T>& value) {
 }
 template <typename T>
 void serialize(BLOCK& block, const Courier::StreamOf<T>& value) {
-	int size = value.segmens.size();
+	int size = value.segments.size();
 	for(int i = 0; i < size; i++) {
 		const StreamOfSegment<T>& segment = value.segments.at(i);
 		Courier::serialize(block, segment);
