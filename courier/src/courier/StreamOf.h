@@ -65,7 +65,7 @@ QString toString(const StreamOfSegment<T>& value) {
 	for(int i = 0; i < size; i++) {
 		list << Courier::toString(value.segment[i]);
 	}
-	return QString("[%1 %2]").arg(size).arg(list.join(" "));
+	return QString("[%1 (%2)[%3]]").arg(Courier::toString(value.segmentType)).arg(size).arg(list.join(" "));
 }
 template <typename T>
 void serialize(BLOCK& block, const Courier::StreamOfSegment<T>& value) {
