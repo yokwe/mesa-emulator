@@ -9,7 +9,7 @@ TEMPLATE = app
 HEADERS += testBase.h
 SOURCES += testBase.cpp
 
-SOURCES += testMain.cpp testBlock.cpp testCourier.cpp
+SOURCES += testMain.cpp testBlock.cpp testCourier.cpp testStreamOf.cpp
 
 HEADERS += ../stub/T_PRE.h
 SOURCES += ../stub/T_PRE.cpp testT_PRE_REC_PRE.cpp testT_PRE_REC_ALI.cpp testT_PRE_REC_SEQ.cpp testT_PRE_REC_ARR.cpp
