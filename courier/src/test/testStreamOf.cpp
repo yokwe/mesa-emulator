@@ -45,7 +45,7 @@ class testStreamOf : public testBase {
 	CPPUNIT_TEST(testStreamOfSegmentTypeLastSegment);
 	CPPUNIT_TEST(testStreamOfSegmentCARDINAL);
 	CPPUNIT_TEST(testStreamOfSegmentREC_PRE03);
-	CPPUNIT_TEST(testStreamOf_);
+	CPPUNIT_TEST(testStreamOfCARDINAL);
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -229,7 +229,81 @@ public:
 			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 		}
 	}
-	void testStreamOf_() {}
+	void testStreamOfCARDINAL() {
+		using T = Courier::StreamOf<Courier::CARDINAL>;
+
+		{
+			T value;
+
+			Courier::StreamOfSegment<T::TYPE> e1;
+			e1.segmentType = Courier::StreamOfSegmentType::nextSegment;
+			e1.segment = {1, 2, 3};
+			value.segments.append(e1);
+
+			Courier::StreamOfSegment<T::TYPE> e2;
+			e2.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			e2.segment = {4, 5, 6};
+			value.segments.append(e2);
+
+
+			QString a = Courier::toString(value);
+			QString e = "(2)[[nextSegment (3)[1 2 3]] [lastSegment (3)[4 5 6]]]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		{
+			T value;
+
+			Courier::StreamOfSegment<T::TYPE> e1;
+			e1.segmentType = Courier::StreamOfSegmentType::nextSegment;
+			e1.segment = {1, 2, 3};
+			value.segments.append(e1);
+
+			Courier::StreamOfSegment<T::TYPE> e2;
+			e2.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			e2.segment = {4, 5, 6};
+			value.segments.append(e2);
+
+			Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(20)0000000300010002000300010003000400050006";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+		{
+			T value;
+
+			Courier::StreamOfSegment<T::TYPE> e1;
+			e1.segmentType = Courier::StreamOfSegmentType::nextSegment;
+			e1.segment = {1, 2, 3};
+			value.segments.append(e1);
+
+			Courier::StreamOfSegment<T::TYPE> e2;
+			e2.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			e2.segment = {4, 5, 6};
+			value.segments.append(e2);
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	T result;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, result);
+
+        	QString a = Courier::toString(result);
+        	QString e = Courier::toString(value);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+	}
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(testStreamOf);
