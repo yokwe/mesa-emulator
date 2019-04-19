@@ -267,13 +267,6 @@ public class Compiler {
 		//
 		// Output declaration of class
 		//
-		List<String> c1 = new ArrayList<>();
-		List<String> c2 = new ArrayList<>();
-		for(Field field: typeError.paramList) {
-			c1.add(toTypeString(field.type));
-			c2.add(String.format("%s;", Util.sanitizeSymbol(field.name)));
-		}
-		
 		long code;
 		{
 			if (constant.kind == Constant.Kind.NUMBER) {
@@ -291,9 +284,13 @@ public class Compiler {
 			//
 		} else {
 			outh.line();
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			for(Field field: typeError.paramList) {
+				c1.add(toTypeString(field.type));
+				c2.add(String.format("%s;", Util.sanitizeSymbol(field.name)));
 			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		outh.line("};");
@@ -337,9 +334,7 @@ public class Compiler {
 				c1.add(fieldType);
 				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 			}
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		outh.line("};");
 		
@@ -353,9 +348,7 @@ public class Compiler {
 				c1.add(fieldType);
 				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
 			}
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		outh.line("};");
 		
@@ -600,9 +593,7 @@ public class Compiler {
 		}
 
 		outh.format("struct %s {", name);
-		for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-			outh.line(line);
-		}
+		ColumnLayout.layoutStringString(outh, c1, c2);
 		outh.line("};");
 		
 		// build context.recordInfoList
@@ -620,9 +611,7 @@ public class Compiler {
 		}
 		
 		outh.format("enum class %s : quint16 {", name);
-		for(String line: ColumnLayout.layoutEnumElement(c1, c2)) {
-			outh.line(line);
-		}
+		ColumnLayout.layoutEnumElement(outh, c1, c2);
 		outh.line("};");
 		
 		// build context.enumInfoList
@@ -717,10 +706,7 @@ public class Compiler {
 				c1.add(String.format("%s& %s()", getChoiceTypeName(structNumber, name), Util.sanitizeSymbol(choiceName)));
 				c2.add("const;");
 			}
-
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 
 		outh.line("private:");
@@ -766,9 +752,7 @@ public class Compiler {
 			}
 			
 			outh.format("enum class %s : quint16 {", "CHOICE_TAG");
-			for(String line: ColumnLayout.layoutEnumElement(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutEnumElement(outh, c1, c2);
 			outh.line("};");
 		}
 		
@@ -801,10 +785,7 @@ public class Compiler {
 				c1.add(String.format("%s& %s()", getChoiceTypeName(structNumber, name), Util.sanitizeSymbol(choiceName)));
 				c2.add("const;");
 			}
-
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 
 		outh.line("private:");
@@ -868,10 +849,7 @@ public class Compiler {
 				c1.add(String.format("QString toString(const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -889,9 +867,7 @@ public class Compiler {
 			outc.format("QString %s::toString(const %s::%s value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
 			outc.format("static QMap<%s::%s, QString> map = {", enumInfo.namePrefix, enumInfo.name);
 			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outc.line(line);
-			}
+			ColumnLayout.layoutStringString(outc, c1, c2);
 			
 			outc.line("};"); // end of static QMap
 			
@@ -919,10 +895,7 @@ public class Compiler {
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -947,10 +920,7 @@ public class Compiler {
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -986,10 +956,7 @@ public class Compiler {
 				c1.add(String.format("QString toString(const %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Record toString definition
@@ -1027,10 +994,7 @@ public class Compiler {
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -1062,10 +1026,7 @@ public class Compiler {
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -1106,10 +1067,7 @@ public class Compiler {
 				c1.add(String.format("QString toString(const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Choice toString definition
@@ -1146,10 +1104,7 @@ public class Compiler {
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -1188,10 +1143,7 @@ public class Compiler {
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		// Definition
@@ -1294,10 +1246,7 @@ public class Compiler {
 				c1.add(String.format("QString toString(const %s&", typeString));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		// Definition
 		for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
@@ -1333,10 +1282,7 @@ public class Compiler {
 				c1.add(String.format("void serialize(BLOCK& block, const %s&", typeString));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		// Definition
 		for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
@@ -1371,10 +1317,7 @@ public class Compiler {
 				c1.add(String.format("void deserialize(BLOCK& block, %s&", typeString));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		// Definition
 		for(SequenceInfo sequenceInfo: context.sequenceInfoList) {
@@ -1420,10 +1363,7 @@ public class Compiler {
 				c1.add(String.format("QString toString(const %s&", typeString));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		// Definition
 		for(ArrayInfo arrayInfo: context.arrayInfoList) {
@@ -1459,10 +1399,7 @@ public class Compiler {
 				c1.add(String.format("void serialize(BLOCK& block, const %s&", typeString));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		// Definition
 		for(ArrayInfo arrayInfo: context.arrayInfoList) {
@@ -1496,10 +1433,7 @@ public class Compiler {
 				c1.add(String.format("void deserialize(BLOCK& block, %s&", typeString));
 				c2.add("value);");
 			}
-			
-			for(String line: ColumnLayout.layoutStringString(c1, c2)) {
-				outh.line(line);
-			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		// Definition
 		for(ArrayInfo arrayInfo: context.arrayInfoList) {
