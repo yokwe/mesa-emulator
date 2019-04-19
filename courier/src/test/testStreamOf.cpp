@@ -34,60 +34,201 @@ static log4cpp::Category& logger = Logger::getLogger("testStreamOf");
 
 #include "testBase.h"
 
+#include "../stub/T_PRE.h"
 #include "../courier/StreamOf.h"
+#include "../courier/Last.h"
 
 class testStreamOf : public testBase {
 	CPPUNIT_TEST_SUITE(testStreamOf);
 
-	CPPUNIT_TEST(testStreamOfSegmentType);
-	CPPUNIT_TEST(testStreamOfSegment);
+	CPPUNIT_TEST(testStreamOfSegmentTypeNextSegment);
+	CPPUNIT_TEST(testStreamOfSegmentTypeLastSegment);
+	CPPUNIT_TEST(testStreamOfSegmentCARDINAL);
+	CPPUNIT_TEST(testStreamOfSegmentREC_PRE03);
 	CPPUNIT_TEST(testStreamOf_);
 
 	CPPUNIT_TEST_SUITE_END();
 
 public:
-	void testStreamOfSegmentType() {
+	void testStreamOfSegmentTypeNextSegment() {
+		using T = Courier::StreamOfSegmentType;
+		T value = T::nextSegment;
+
 		{
-			using T = Courier::StreamOfSegmentType;
-			T value = T::nextSegment;
+			QString a = Courier::toString(value);
+			QString e = "nextSegment";
 
-			{
-				QString a = Courier::toString(value);
-				QString e = "nextSegment";
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		{
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
 
-				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-			}
-			{
-	        	Courier::BlockData<100> blockData;
-	        	Courier::serialize(blockData.block, value);
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(2)0000";
 
-	        	QString a = Courier::toString(blockData.block);
-	        	QString e = "(2)0000";
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+		{
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
 
-				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-	    	}
-			{
-	        	Courier::BlockData<100> blockData;
-	        	Courier::serialize(blockData.block, value);
+        	T result;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, result);
 
-	        	T result;
-	        	blockData.block.rewind();
-	        	Courier::deserialize(blockData.block, result);
+        	QString a = Courier::toString(result);
+        	QString e = Courier::toString(value);
 
-	        	QString a = Courier::toString(result);
-	        	QString e = Courier::toString(value);
-
-				logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
-				logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
-				CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
-			}
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
 		}
 	}
-	void testStreamOfSegment() {}
+	void testStreamOfSegmentTypeLastSegment() {
+		using T = Courier::StreamOfSegmentType;
+		T value = T::lastSegment;
+
+		{
+			QString a = Courier::toString(value);
+			QString e = "lastSegment";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		{
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(2)0001";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+		{
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	T result;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, result);
+
+        	QString a = Courier::toString(result);
+        	QString e = Courier::toString(value);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+	}
+
+	void testStreamOfSegmentCARDINAL() {
+		using T = Courier::StreamOfSegment<Courier::CARDINAL>;
+
+		{
+			T value;
+			value.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			value.segment = {1, 2, 3};
+
+			QString a = Courier::toString(value);
+			QString e = "[lastSegment (3)[1 2 3]]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		{
+			T value;
+			value.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			value.segment = {1, 2, 3};
+
+			Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(10)00010003000100020003";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+		{
+			T value;
+			value.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			value.segment = {1, 2, 3};
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	T result;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, result);
+
+        	QString a = Courier::toString(result);
+        	QString e = Courier::toString(value);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+	}
+	void testStreamOfSegmentREC_PRE03() {
+		using T = Courier::StreamOfSegment<Courier::T_PRE::REC_PRE03>;
+
+		{
+			T value;
+			value.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			value.segment = {{1}, {2}, {3}};
+
+			QString a = Courier::toString(value);
+			QString e = "[lastSegment (3)[[[v 1]] [[v 2]] [[v 3]]]]";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+		{
+			T value;
+			value.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			value.segment = {{1}, {2}, {3}};
+
+			Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	QString a = Courier::toString(blockData.block);
+        	QString e = "(10)00010003000100020003";
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+    	}
+		{
+			T value;
+			value.segmentType = Courier::StreamOfSegmentType::lastSegment;
+			value.segment = {{1}, {2}, {3}};
+
+        	Courier::BlockData<100> blockData;
+        	Courier::serialize(blockData.block, value);
+
+        	T result;
+        	blockData.block.rewind();
+        	Courier::deserialize(blockData.block, result);
+
+        	QString a = Courier::toString(result);
+        	QString e = Courier::toString(value);
+
+			logger.info("%s %d e = %s", __FILE__, __LINE__, e.toLocal8Bit().constData());
+			logger.info("%s %d a = %s", __FILE__, __LINE__, a.toLocal8Bit().constData());
+			CPPUNIT_ASSERT_EQUAL(true, QString::compare(e, a) == 0);
+		}
+	}
 	void testStreamOf_() {}
 };
 
