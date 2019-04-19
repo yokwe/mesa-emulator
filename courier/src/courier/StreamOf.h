@@ -87,6 +87,7 @@ void deserialize(BLOCK& block, Courier::StreamOfSegment<T>& value) {
 	// size
 	quint16 size;
 	Courier::deserialize(block, size);
+	value.segment.reserve(size);
 	// data
 	for(int i = 0; i < size; i++) {
 		T data;
@@ -98,7 +99,6 @@ void deserialize(BLOCK& block, Courier::StreamOfSegment<T>& value) {
 //
 // StreamOf
 //
-
 template <typename T>
 struct StreamOf {
 	using TYPE = T;
