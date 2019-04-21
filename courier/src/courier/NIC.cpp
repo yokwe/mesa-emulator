@@ -108,6 +108,34 @@ QString Courier::toString(const Courier::NIC::Type value) {
     }
 }
 
+QString Courier::NIC::toStarStyleAddress(quint64 value) {
+	const QChar ZERO = QLatin1Char('0');
+
+	// special case for less than 1000
+	if (value < 1000) {
+		return QString("0-%1").arg(QString("%1").arg(value, 3, 10, ZERO));
+	}
+
+	QString ret(QString("%1").arg(value % 1000, 3, 10, ZERO));
+	value = value / 1000;
+
+	for(;;) {
+		quint64 nnn = value % 1000;
+
+		if (value < 1000) {
+			ret.prepend(QString("%1-").arg(nnn, 0, 10, ZERO));
+			break;
+		} else {
+			ret.prepend(QString("%1-").arg(nnn, 3, 10, ZERO));
+		}
+
+		value = value / 1000;
+	}
+
+	return ret;
+}
+
+
 
 // Frame
 QString Courier::toString(const NIC::Frame& value) {

@@ -87,6 +87,11 @@ public:
 	void receive (Block& block) const;
 	void transmit(Block& block) const;
 
+	static QString toStarStyleAddress(quint64 value);
+	static QString toStarStyleAddress(Host value) {
+		return toStarStyleAddress((quint64)value);
+	}
+
 private:
 	UtillNIC utilNIC;
 };
