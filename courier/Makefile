@@ -18,6 +18,7 @@ all:
 	(cd src/pex;     make all)
 	(cd src/app;     make all)
 	(cd src/test;    make all)
+	(cd src/courier-app; make all)
 	
 qmake:
 	(cd src/util;    qmake)
@@ -28,6 +29,8 @@ qmake:
 	(cd src/app;     qmake)
 	(cd src/test;    qmake)
 	(cd src/stub;    qmake)
+	(cd src/courier-app; qmake)
+	
 	qmake --version
 
 qt5-default:
@@ -45,6 +48,7 @@ clean:
 	mkdir  tmp/build/app
 	mkdir  tmp/build/test
 	mkdir  tmp/build/stub
+	mkdir  tmp/build/courier-app
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -54,9 +58,22 @@ distclean: clean
 	rm -f  src/*/object_script.*.Release
 	rm -f  src/*/.qmake.stash
 
-run-app: all
+run-app:
+	(cd src/util;    make all)
+	(cd src/courier; make all)
+	(cd src/itp;     make all)
+	(cd src/service; make all)
+	(cd src/pex;     make all)
 	echo -n >tmp/debug.log
 	tmp/build/app/app
+
+run-courier-app:
+	(cd src/util;    make all)
+	(cd src/courier; make all)
+	(cd src/stub;    make all)
+	(cd src/courier-app; make all)
+	echo -n >tmp/debug.log
+	tmp/build/courier-app/courier-app
 
 run-test:
 	(cd src/util;    make all)
@@ -99,7 +116,7 @@ gen-antlr:
 gen-stub:
 	rm   -rf src/stub/*.cpp src/stub/*.h
 	java -cp $(CLASSPATH) mesa.app.GenStub $(COURIER_TARGET)
-	cp   -p  src/stub_custom/*.cpp src/stub_custom/*.h src/stub
+	cp   -p  src/stub-custom/*.cpp src/stub-custom/*.h src/stub
 
 dump-courier:
 	java -cp $(CLASSPATH) mesa.app.DumpCourier Clearinghouse2
