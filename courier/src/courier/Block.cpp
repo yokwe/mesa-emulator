@@ -42,7 +42,7 @@ QString Courier::Block::toString() const {
 		quint8 c = data[i];
 		hexString.append(QString("%1").arg((quint16)c, 2, 16, QChar('0')).toUpper());
 	}
-	return QString("(%1)%2").arg(limit).arg(hexString);
+	return QString("(%1)%2").arg(limit - offset).arg(hexString);
 }
 
 Courier::Block Courier::Block::remnant() {
