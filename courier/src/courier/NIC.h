@@ -49,19 +49,10 @@ public:
 	static const int minFrameSize = headerSize + minDataSize;
 	static const int maxFrameSize = headerSize + maxDataSize;
 
-	// packet type of Xerox IDP
-	enum class Type : quint16 {
-		IDP = Ethernet::frameTypeIDP,
-	};
-
-    enum class Address : quint64 {
-        BROADCAST = Ethernet::broadcastAddress,
-    };
-
     using Header = Ethernet::Header;
     struct Frame {
-    	Header header;
-    	Block  data;
+    	Header header{};
+    	Block  data{nullptr, 0};
     };
 
 	class Data {
@@ -75,8 +66,8 @@ public:
 	NIC() : utilNIC() {}
 
 	const char* getName()    const;
-	Type        getType()    const;
-	Address     getAddress() const;
+	quint16     getType()    const;
+	quint64     getAddress() const;
 
 	void attach(const char* name);
 	void detach();
@@ -90,9 +81,6 @@ public:
 private:
 	UtillNIC utilNIC;
 };
-
-QString toString(const NIC::Address value);
-QString toString(const NIC::Type    value);
 
 // Frame
 QString toString(const NIC::Frame&  frame);
