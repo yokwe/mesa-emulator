@@ -39,15 +39,15 @@ static log4cpp::Category& logger = Logger::getLogger("cr/nic");
 const char* Courier::NIC::getName() const {
 	return utilNIC.getName();
 }
-Courier::NIC::Type Courier::NIC::getType() const {
-	return (Courier::NIC::Type)utilNIC.getType();
+quint16 Courier::NIC::getType() const {
+	return (quint16)utilNIC.getType();
 }
-Courier::NIC::Address Courier::NIC::getAddress() const {
-	return (Courier::NIC::Address) utilNIC.getAddress();
+quint64 Courier::NIC::getAddress() const {
+	return (quint64) utilNIC.getAddress();
 }
 
 void Courier::NIC::attach(const char* name) {
-	utilNIC.attach(name, (quint16)Type::IDP);
+	utilNIC.attach(name, Ethernet::frameTypeIDP);
 }
 void Courier::NIC::detach() {
 	utilNIC.detach();
@@ -68,6 +68,7 @@ void Courier::NIC::receive (Block& block) const {
 	}
 	block.clear();
 	block.setLimit((quint16)ret);
+	block.rewind();
 }
 void Courier::NIC::transmit(Block& block) const {
 	int opErrno = 0;
@@ -84,42 +85,24 @@ void Courier::NIC::transmit(Block& block) const {
 	}
 }
 
-
-QString Courier::toString(const NIC::Address value) {
-	switch(value) {
-	case NIC::Address::BROADCAST:
-		return "BROADCAST";
-	default:
-		return QString("%1").arg((quint64)value, 0, 16);
-	}
-}
-QString Courier::toString(const NIC::Type value) {
-	switch(value) {
-	case NIC::Type::IDP:
-		return "IDP";
-	default:
-		return QString("%1").arg((quint64)value, 4, 16, QLatin1Char('0'));
-	}
-}
-
 // Frame
 QString Courier::toString(const NIC::Frame&  frame) {
+	QString dst  = (frame.header.destination == Ethernet::broadcastAddress) ? "BROADCAST" : QString("%1").arg(frame.header.destination, 0, 16).toUpper();
+	QString src  = (frame.header.source      == Ethernet::broadcastAddress) ? "BROADCAST" : QString("%1").arg(frame.header.source, 0, 16).toUpper();
+	QString type = (frame.header.type        == Ethernet::frameTypeIDP)     ? "IDP"       : QString("%1").arg(frame.header.source, 0, 16).toUpper();
+
 	QString ret = QString("[%1 %2 %3] %4")
-			.arg(toString(frame.header.destination))
-			.arg(toString(frame.header.source))
-			.arg(toString(frame.header.type))
+			.arg(dst)
+			.arg(src)
+			.arg(type)
 			.arg(toString(frame.data));
 	return ret;
 }
 void Courier::serialize(Block& block, const NIC::Frame& frame) {
-	Courier::serialize(block, frame.header.destination);
-	Courier::serialize(block, frame.header.source);
-	Courier::serialize(block, frame.header.type);
+	Courier::serialize(block, frame.header);
 	Courier::serialize(block, frame.data);
 }
 void Courier::deserialize(Block& block, NIC::Frame& frame) {
-	Courier::deserialize(block, frame.header.destination);
-	Courier::deserialize(block, frame.header.source);
-	Courier::deserialize(block, frame.header.type);
-	Courier::deserialize(block, frame.data);
+	Courier::deserialize(block, frame.header);
+	frame.data = block.remainder();
 }
