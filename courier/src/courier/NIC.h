@@ -49,10 +49,19 @@ public:
 	static const int minFrameSize = headerSize + minDataSize;
 	static const int maxFrameSize = headerSize + maxDataSize;
 
+	enum class Host : quint64 {
+		ALL = Ethernet::broadcastAddress, // Broadcast
+	};
+	enum class Type : quint16 {
+		IDP = Ethernet::frameTypeIDP, // Xerox IDP
+	};
+
     using Header = Ethernet::Header;
     struct Frame {
-    	Header header{};
-    	Block  data{nullptr, 0};
+    	Host  dst;  // destination
+    	Host  src;  // source
+        Type  type; // frame type
+    	Block data{nullptr, 0};
     };
 
 	class Data {
@@ -82,10 +91,13 @@ private:
 	UtillNIC utilNIC;
 };
 
+QString toString(const Courier::NIC::Host value);
+QString toString(const Courier::NIC::Type value);
+
 // Frame
-QString toString(const NIC::Frame&  frame);
-void serialize(Block& block, const NIC::Frame& frame);
-void deserialize(Block& block, NIC::Frame& frame);
+QString toString(const Courier::NIC::Frame& value);
+void serialize(Block& block, const Courier::NIC::Frame& value);
+void deserialize(Block& block, Courier::NIC::Frame& value);
 
 }
 

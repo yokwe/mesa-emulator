@@ -85,24 +85,54 @@ void Courier::NIC::transmit(Block& block) const {
 	}
 }
 
-// Frame
-QString Courier::toString(const NIC::Frame&  frame) {
-	QString dst  = (frame.header.destination == Ethernet::broadcastAddress) ? "BROADCAST" : QString("%1").arg(frame.header.destination, 0, 16).toUpper();
-	QString src  = (frame.header.source      == Ethernet::broadcastAddress) ? "BROADCAST" : QString("%1").arg(frame.header.source, 0, 16).toUpper();
-	QString type = (frame.header.type        == Ethernet::frameTypeIDP)     ? "IDP"       : QString("%1").arg(frame.header.source, 0, 16).toUpper();
+QString Courier::toString(const Courier::NIC::Host value) {
+    static QMap<Courier::NIC::Host, QString> map = {
+        {Courier::NIC::Host::ALL, "ALL"},
+    };
 
+    if (map.contains(value)) {
+        return map[value];
+    } else {
+        return QString("%1").arg((quint64)value, 0, 16).toUpper();
+    }
+}
+QString Courier::toString(const Courier::NIC::Type value) {
+    static QMap<Courier::NIC::Type, QString> map = {
+        {Courier::NIC::Type::IDP, "IDP"},
+    };
+
+    if (map.contains(value)) {
+        return map[value];
+    } else {
+        return QString("%1").arg((quint64)value, 0, 16).toUpper();
+    }
+}
+
+
+// Frame
+QString Courier::toString(const NIC::Frame& value) {
 	QString ret = QString("[%1 %2 %3] %4")
-			.arg(dst)
-			.arg(src)
-			.arg(type)
-			.arg(toString(frame.data));
+			.arg(toString(value.dst))
+			.arg(toString(value.src))
+			.arg(toString(value.type))
+			.arg(toString(value.data));
 	return ret;
 }
-void Courier::serialize(Block& block, const NIC::Frame& frame) {
-	Courier::serialize(block, frame.header);
-	Courier::serialize(block, frame.data);
+void Courier::serialize(Block& block, const Courier::NIC::Frame& value) {
+	Ethernet::Header header;
+	header.destination = (decltype(header.destination))value.dst;
+	header.source      = (decltype(header.source))     value.src;
+	header.type        = (decltype(header.type))       value.type;
+
+	Courier::serialize(block, header);
+	Courier::serialize(block, value.data);
 }
-void Courier::deserialize(Block& block, NIC::Frame& frame) {
-	Courier::deserialize(block, frame.header);
-	frame.data = block.remainder();
+void Courier::deserialize(Block& block, Courier::NIC::Frame& value) {
+	Ethernet::Header header;
+	Courier::deserialize(block, header);
+	value.data = block.remainder();
+
+	value.dst  = (decltype(value.dst)) header.destination;
+	value.src  = (decltype(value.src)) header.source;
+	value.type = (decltype(value.type))header.type;
 }
