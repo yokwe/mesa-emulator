@@ -29,10 +29,10 @@ OF SUCH DAMAGE.
 
 #include "../util/Debug.h"
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courierApp");
-
+static log4cpp::Category& logger = Logger::getLogger("courier-app");
 
 #include "../courier/NIC.h"
+#include "../courier/IDP.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -41,17 +41,22 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	Courier::NIC nic;
 	nic.attach("ens192");
+
+	logger.info("host = %s", Courier::NIC::toStarStyleAddress(nic.getAddress()).toLocal8Bit().constData());
 	nic.discardPacket();
 
-	Courier::NIC::Data data;
-	Courier::NIC::Frame frame;
+	Courier::NIC::Data  data;
+	Courier::NIC::Frame ether;
+	Courier::IDP::Frame idp;
 
 	for(int i = 0; i < 10; i++) {
 		nic.receive(data.block);
 
-		Courier::deserialize(data.block, frame);
+		Courier::deserialize(data.block, ether);
+//		logger.info(" data %s", Courier::toString(ether).toLocal8Bit().constData());
 
-		logger.info(" data %s", Courier::toString(frame).toLocal8Bit().constData());
+		Courier::deserialize(ether.data, idp);
+		logger.info("%s", Courier::toString(idp).toLocal8Bit().constData());
 	}
 	nic.detach();
 
