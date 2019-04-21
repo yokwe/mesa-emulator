@@ -92,9 +92,12 @@ private:
 };
 
 QString toString(const NIC::Address value);
-QString toString(const NIC::Frame&  frame);
+QString toString(const NIC::Type    value);
 
-void serialize(Block& bloc, )
+// Frame
+QString toString(const NIC::Frame&  frame);
+void serialize(Block& block, const NIC::Frame& frame);
+void deserialize(Block& block, NIC::Frame& frame);
 
 }
 

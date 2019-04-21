@@ -59,10 +59,8 @@ void Courier::NIC::discardPacket() const {
 }
 
 void Courier::NIC::receive (Block& block) const {
-	int opErrno = 0;
-	quint8 frame[maxFrameSize];
-
 	block.zero();
+	int opErrno = 0;
 	int ret = utilNIC.receive(block.getData(), block.getCapacity(), opErrno);
 	if (ret < 0) {
 		logger.fatal("receive ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
@@ -80,8 +78,48 @@ void Courier::NIC::transmit(Block& block) const {
 		logger.fatal("transmit ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
 		RUNTIME_ERROR();
 	}
-	if ((quint32)ret != limit) {
+	if (ret != limit) {
 		logger.fatal("transmit ret = %d  limit = %d", ret, limit);
 		RUNTIME_ERROR();
 	}
+}
+
+
+QString Courier::toString(const NIC::Address value) {
+	switch(value) {
+	case NIC::Address::BROADCAST:
+		return "BROADCAST";
+	default:
+		return QString("%1").arg((quint64)value, 0, 16);
+	}
+}
+QString Courier::toString(const NIC::Type value) {
+	switch(value) {
+	case NIC::Type::IDP:
+		return "IDP";
+	default:
+		return QString("%1").arg((quint64)value, 4, 16, QLatin1Char('0'));
+	}
+}
+
+// Frame
+QString Courier::toString(const NIC::Frame&  frame) {
+	QString ret = QString("[%1 %2 %3] %4")
+			.arg(toString(frame.header.destination))
+			.arg(toString(frame.header.source))
+			.arg(toString(frame.header.type))
+			.arg(toString(frame.data));
+	return ret;
+}
+void Courier::serialize(Block& block, const NIC::Frame& frame) {
+	Courier::serialize(block, frame.header.destination);
+	Courier::serialize(block, frame.header.source);
+	Courier::serialize(block, frame.header.type);
+	Courier::serialize(block, frame.data);
+}
+void Courier::deserialize(Block& block, NIC::Frame& frame) {
+	Courier::deserialize(block, frame.header.destination);
+	Courier::deserialize(block, frame.header.source);
+	Courier::deserialize(block, frame.header.type);
+	Courier::deserialize(block, frame.data);
 }
