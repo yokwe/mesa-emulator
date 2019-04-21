@@ -82,6 +82,12 @@ public:
 	quint8* getData();
 	void    setLimit(quint16 newValue);
 
+	Block remainder() {
+		Block ret(*this);
+		ret.offset = ret.pos;
+		return ret;
+	}
+
 	bool equals(const Block& that) const;
 
 	// serialize - write value to Block
