@@ -49,7 +49,7 @@ QString Courier::toString(const Courier::IDP::PacketType value) {
 	if (map.contains(value)) {
 		return map[value];
 	} else {
-		return QString("%1").arg((quint16)value);
+		return QString("%1").arg((quint8)value);
 	}
 }
 QString Courier::toString(const Courier::IDP::Socket     value) {
@@ -76,7 +76,7 @@ QString Courier::toString(const Courier::IDP::Socket     value) {
 	if (map.contains(value)) {
 		return map[value];
 	} else {
-		return QString("%1").arg((quint8)value);
+		return QString("%1").arg((quint16)value, 4, 16).toUpper();
 	}
 }
 QString Courier::toString(const Courier::IDP::Network    value) {
