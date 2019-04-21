@@ -100,6 +100,25 @@ quint16 Courier::Block::getCapacity() const {
 quint16 Courier::Block::getOffset() const {
 	return offset;
 }
+
+quint8* Courier::Block::getData() {
+	return data;
+}
+void Courier::Block::setLimit(quint16 newValue) {
+	if (state == State::write) {
+		if (capacity < (offset + newValue)) {
+			logger.error("Unexpected overflow  capacity = %d  offset = %d  newValue = %d", capacity, offset, newValue);
+			COURIER_FATAL_ERROR();
+		}
+		limit = offset + newValue;
+	} else {
+		logger.error("Unexpected state");
+		COURIER_FATAL_ERROR();
+	}
+}
+
+
+
 bool Courier::Block::equals(const Block& that) const {
 	if (this->offset == that.offset && this->limit == that.limit) {
 		for(quint16 i = offset; i < limit; i++) {

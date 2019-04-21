@@ -79,6 +79,9 @@ public:
 	quint16 getCapacity() const;
 	quint16 getOffset()   const;
 
+	quint8* getData();
+	void    setLimit(quint16 newValue);
+
 	bool equals(const Block& that) const;
 
 	// serialize - write value to Block
