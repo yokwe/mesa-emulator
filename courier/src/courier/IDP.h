@@ -30,7 +30,7 @@ OF SUCH DAMAGE.
 //
 
 #ifndef COURIER_IDP_H__
-#define COURIER_NIC_H__
+#define COURIER_IDP_H__
 
 #include "../courier/Block.h"
 #include "../stub/Datagram.h"
