@@ -1470,9 +1470,6 @@ public class Compiler {
 		logger.info(String.format("pathc = %s", pathc));
 		logger.info(String.format("pathh = %s", pathh));
 		
-		String namespace = "Courier";
-		String namePrefix = String.format("%s::%s", namespace, programName);
-		
 		try (
 				LinePrinter outc = new LinePrinter(new PrintWriter(pathc));
 				LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
@@ -1499,8 +1496,12 @@ public class Compiler {
 
 			// output namespace
 			outh.line();
-			outh.format("namespace %s {", namespace);
+			outh.format("namespace %s {", "Courier");
+			outh.format("namespace %s {", "Stub");
 
+			String namespace = "Courier::Stub";
+			String namePrefix = String.format("%s::%s", namespace, programName);
+			
 			// output main namespace
 			outh.format("namespace %s {", program.info.getProgramVersion());
 			if (program.info.version != 0) {
@@ -1530,6 +1531,9 @@ public class Compiler {
 			genDecl(outh, outc, namePrefix);
 			
 			// Close program namespace
+			outh.line("}");
+
+			// Close Stub namespace
 			outh.line("}");
 
 			// generate toString for enum using context.enumInfoList
@@ -1565,8 +1569,7 @@ public class Compiler {
 			// generate deserialize for Record
 			genArrayDeserialize(outh, outc);
 			
-
-			// Close courier namespace
+			// Close Courier namespace
 			outh.line("}");
 			
 			// #endif
