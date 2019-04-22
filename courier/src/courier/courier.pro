@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Courier.h   Block.h   StreamOf.h   NIC.h   IDP.h   RIP.h
-SOURCES += Courier.cpp Block.cpp StreamOf.cpp NIC.cpp IDP.cpp RIP.cpp
+HEADERS += Courier.h   Block.h   StreamOf.h   NIC.h   IDP.h   RIP.h   Time.h
+SOURCES += Courier.cpp Block.cpp StreamOf.cpp NIC.cpp IDP.cpp RIP.cpp Time.cpp
 
 ###############################################
 
