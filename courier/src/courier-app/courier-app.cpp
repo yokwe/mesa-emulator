@@ -34,6 +34,8 @@ static log4cpp::Category& logger = Logger::getLogger("courier-app");
 #include "../courier/NIC.h"
 #include "../courier/IDP.h"
 #include "../courier/RIP.h"
+#include "../courier/PEX.h"
+#include "../courier/Time.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -64,6 +66,31 @@ int main(int /*argc*/, char** /*argv*/) {
 			Courier::RIP::Frame rip;
 			Courier::deserialize(ether.data, rip);
 			logger.info("RIP  %s", Courier::toString(rip).toLocal8Bit().constData());
+		}
+			break;
+		case Courier::IDP::Socket::TIME:
+		{
+			if (idp.packetType == Courier::IDP::PacketType::PEX) {
+				Courier::PEX::Frame pex;
+				Courier::deserialize(ether.data, pex);
+				logger.info("PEX  %s", Courier::toString(pex).toLocal8Bit().constData());
+				Courier::Time::Frame time;
+				Courier::deserialize(pex.data, time);
+				logger.info("TIME %s", Courier::toString(time).toLocal8Bit().constData());
+			} else {
+				logger.info("IDP  %s", Courier::toString(idp).toLocal8Bit().constData());
+			}
+		}
+			break;
+		case Courier::IDP::Socket::CHS:
+		{
+			if (idp.packetType == Courier::IDP::PacketType::PEX) {
+				Courier::PEX::Frame pex;
+				Courier::deserialize(ether.data, pex);
+				logger.info("PEX  %s", Courier::toString(pex).toLocal8Bit().constData());
+			} else {
+				logger.info("IDP  %s", Courier::toString(idp).toLocal8Bit().constData());
+			}
 		}
 			break;
 		default:
