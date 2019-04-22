@@ -25,54 +25,56 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// RIP.h
+//
 
-#include "../util/Debug.h"
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courier-app");
+#ifndef COURIER_RIP_H__
+#define COURIER_RIP_H__
 
-#include "../courier/NIC.h"
+#include "../courier/Block.h"
 #include "../courier/IDP.h"
-#include "../courier/RIP.h"
+#include "../stub/Routing.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+namespace Courier {
 
-	setSignalHandler();
+class RIP {
+public:
+	using Network  = Courier::IDP::Network;
+	using Tuple    = Courier::Routing::Tuple;
+	using Operation = Courier::Routing::Operation;
 
-	Courier::NIC nic;
-	nic.attach("ens192");
-
-	logger.info("host = %s", Courier::NIC::toStarStyleAddress(nic.getAddress()).toLocal8Bit().constData());
-	nic.discardPacket();
-
-	Courier::NIC::Data  data;
-	Courier::NIC::Frame ether;
-	Courier::IDP::Frame idp;
-
-	for(int i = 0; i < 1000; i++) {
-		nic.receive(data.block);
-
-		Courier::deserialize(data.block, ether);
-//		logger.info(" data %s", Courier::toString(ether).toLocal8Bit().constData());
-
-		Courier::deserialize(ether.data, idp);
-
-		switch(idp.dst.socket) {
-		case Courier::IDP::Socket::RIP:
-		{
-			Courier::RIP::Frame rip;
-			Courier::deserialize(ether.data, rip);
-			logger.info("RIP  %s", Courier::toString(rip).toLocal8Bit().constData());
-		}
-			break;
-		default:
-			logger.info("IDP  %s", Courier::toString(idp).toLocal8Bit().constData());
-			break;
-		}
+	static void setLocalNetwork(Network newValue) {
+		localNetwork = newValue;
 	}
-	nic.detach();
+	static Network getLocalNetwork() {
+		return localNetwork;
+	}
 
-	logger.info("STOP");
-	return 0;
+	static void addNetwork(quint32 network, CARDINAL hopCout);
+	static void removeNetwork(quint32 network);
+	static QList<Tuple> getNetworkList();
+
+	struct Frame {
+		Operation    operation;
+		QList<Tuple> tupleList;
+	};
+
+//	RIP() : Listener("rip", ITP::IDP::Socket::RIP) {}
+
+//	bool process(Courier::IDP& request, Courier::IDP& response);
+
+private:
+	static Network                localNetwork;
+	static QMap<Network, quint16> networkMap;
+};
+
+// Frame
+QString toString(const Courier::RIP::Frame&  frame);
+void serialize(Block& block, const Courier::RIP::Frame& frame);
+void deserialize(Block& block, Courier::RIP::Frame& frame);
+
 }
+
+#endif
+

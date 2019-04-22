@@ -25,54 +25,41 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// RIP.cpp
+//
 
 #include "../util/Debug.h"
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courier-app");
+static log4cpp::Category& logger = Logger::getLogger("cr/rip");
 
-#include "../courier/NIC.h"
-#include "../courier/IDP.h"
 #include "../courier/RIP.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
 
-	setSignalHandler();
+// Frame
 
-	Courier::NIC nic;
-	nic.attach("ens192");
-
-	logger.info("host = %s", Courier::NIC::toStarStyleAddress(nic.getAddress()).toLocal8Bit().constData());
-	nic.discardPacket();
-
-	Courier::NIC::Data  data;
-	Courier::NIC::Frame ether;
-	Courier::IDP::Frame idp;
-
-	for(int i = 0; i < 1000; i++) {
-		nic.receive(data.block);
-
-		Courier::deserialize(data.block, ether);
-//		logger.info(" data %s", Courier::toString(ether).toLocal8Bit().constData());
-
-		Courier::deserialize(ether.data, idp);
-
-		switch(idp.dst.socket) {
-		case Courier::IDP::Socket::RIP:
-		{
-			Courier::RIP::Frame rip;
-			Courier::deserialize(ether.data, rip);
-			logger.info("RIP  %s", Courier::toString(rip).toLocal8Bit().constData());
-		}
-			break;
-		default:
-			logger.info("IDP  %s", Courier::toString(idp).toLocal8Bit().constData());
-			break;
-		}
+QString Courier::toString(const RIP::Frame&  value) {
+	QStringList list;
+	int size = value.tupleList.size();
+	for(int i = 0; i < size; i++) {
+		const RIP::Tuple& tuple = value.tupleList.at(i);
+		list << QString("[%1 %2]").arg(Courier::toString((Courier::IDP::Network)tuple.network)).arg(Courier::toString((Courier::IDP::HopCount)tuple.hop));
 	}
-	nic.detach();
-
-	logger.info("STOP");
-	return 0;
+	return QString("[%1 (%2)[%3]]").arg(Courier::toString(value.operation)).arg(list.size()).arg(list.join(" "));
 }
+void Courier::serialize(Block& block, const RIP::Frame& value) {
+	Courier::serialize(block, value.operation);
+	for(RIP::Tuple tuple: value.tupleList) {
+		Courier::serialize(block, tuple.network);
+		Courier::serialize(block, tuple.hop);
+	}
+}
+void Courier::deserialize(Block& block, RIP::Frame& value) {
+	Courier::deserialize(block, value.operation);
+	while(0 < block.remaining()) {
+		RIP::Tuple tuple;
+		Courier::deserialize(block, tuple);
+		value.tupleList.append(tuple);
+	}
+}
+
