@@ -53,6 +53,7 @@ public class Util {
 	
 	private static Map<String, String> sanitizeMap = new TreeMap<>();
 	static {
+		sanitizeMap.put("abort",  "abort__");
 		sanitizeMap.put("and",    "and__");
 		sanitizeMap.put("not",    "not__");
 		sanitizeMap.put("or",     "or__");
