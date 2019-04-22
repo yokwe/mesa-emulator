@@ -4,7 +4,7 @@ BEGIN
 
 Header: TYPE = RECORD [
     protRange: Protocol.ProtocolRange,
-    body:      Protocol.Protocol3Body
+    body:      Protocol.Protocol3
 ];
 
 END.

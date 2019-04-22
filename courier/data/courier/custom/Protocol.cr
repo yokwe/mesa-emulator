@@ -1,7 +1,7 @@
 Protocol: PROGRAM 0 VERSION 0 =
 BEGIN
 
-ProtocolType: TYPE = {protocol0(0), protocol1(1), protocol2(2), protocol3(3)};
+ProtocolType: TYPE = {protocol2(2), protocol3(3)};
 MessageType:  TYPE = {call(0), reject(1), return(2), abort(3)};
 
 RejectCode: TYPE = {
@@ -10,9 +10,9 @@ RejectCode: TYPE = {
     noSuchProcedureValue(2),
     invalidArguments(3)};
 
-Protocol2Body: TYPE = CHOICE MessageType OF {
+Protocol2: TYPE = CHOICE MessageType OF {
     call   => RECORD [transaction, program, version, procedure: CARDINAL],
-    reject => RECORD [transaction: CARDINAL, reject: RejectCode],
+    reject => RECORD [transaction: CARDINAL, rejectCode: RejectCode],
     return => RECORD [transaction: CARDINAL],
     abort  => RECORD [transaction: CARDINAL, abort: CARDINAL]};
 
@@ -21,25 +21,25 @@ VersionRange:  TYPE = RECORD [low, high: CARDINAL];
 pvLow:  ProtocolType = protocol2;
 pvHigh: ProtocolType = protocol3;
 
-RejectBody: TYPE = CHOICE RejectCode OF {
-    noSuchProgramNumber, noSuchProcedureValue, invalidArguments => RECORD [],
+Reject: TYPE = CHOICE RejectCode OF {
+    noSuchProgramNumber,
+    noSuchProcedureValue,
+    invalidArguments    => RECORD [],
     noSuchVersionNumber => RECORD [range: VersionRange]
 };
 
-Protocol3Body: TYPE = CHOICE MessageType OF {
+Protocol3: TYPE = CHOICE MessageType OF {
     call   => RECORD [transaction: CARDINAL,
                       program:     LONG CARDINAL,
                       version:     CARDINAL,
                       procedure:   CARDINAL],
-    reject => RECORD [transaction: CARDINAL, rejectBody:  RejectBody],
+    reject => RECORD [transaction: CARDINAL, reject:  Reject],
     return => RECORD [transaction: CARDINAL],
     abort  => RECORD [transaction: CARDINAL, abort: CARDINAL]};
 
-MessageObject: TYPE = CHOICE ProtocolType OF {
-    protocol0 => RECORD[],
-    protocol1 => RECORD[],
-    protocol2 => RECORD[ protocol2Body: Protocol2Body],
-    protocol3 => RECORD[ protocol3Body: Protocol3Body]
+Message: TYPE = CHOICE ProtocolType OF {
+    protocol2 => RECORD[ protocol2: Protocol2],
+    protocol3 => RECORD[ protocol3: Protocol3]
 };
 
 END.
