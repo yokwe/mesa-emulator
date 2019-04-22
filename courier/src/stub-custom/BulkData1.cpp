@@ -6,7 +6,7 @@ static log4cpp::Category& logger = Logger::getLogger("stub/BulkData1");
 #include "../courier/Last.h"
 
 
-Courier::BulkData1::Descriptor::Descriptor_CHOICE_01& Courier::BulkData1::Descriptor::null() const {
+Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01& Courier::Stub::BulkData1::Descriptor::null() const {
     if (choiceTag == CHOICE_TAG::null) {
         return choice_01;
     } else {
@@ -15,7 +15,7 @@ Courier::BulkData1::Descriptor::Descriptor_CHOICE_01& Courier::BulkData1::Descri
     }
 }
 
-Courier::BulkData1::Descriptor::Descriptor_CHOICE_01& Courier::BulkData1::Descriptor::immediate() const {
+Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01& Courier::Stub::BulkData1::Descriptor::immediate() const {
     if (choiceTag == CHOICE_TAG::immediate) {
         return choice_01;
     } else {
@@ -24,7 +24,7 @@ Courier::BulkData1::Descriptor::Descriptor_CHOICE_01& Courier::BulkData1::Descri
     }
 }
 
-Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& Courier::BulkData1::Descriptor::passive() const {
+Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02& Courier::Stub::BulkData1::Descriptor::passive() const {
     if (choiceTag == CHOICE_TAG::passive) {
         return choice_02;
     } else {
@@ -33,7 +33,7 @@ Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& Courier::BulkData1::Descri
     }
 }
 
-Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& Courier::BulkData1::Descriptor::active() const {
+Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02& Courier::Stub::BulkData1::Descriptor::active() const {
     if (choiceTag == CHOICE_TAG::active) {
         return choice_02;
     } else {
@@ -46,12 +46,12 @@ Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& Courier::BulkData1::Descri
 // Enum Function Definition
 //
 
-QString Courier::toString(const Courier::BulkData1::Descriptor::CHOICE_TAG value) {
-    static QMap<Courier::BulkData1::Descriptor::CHOICE_TAG, QString> map = {
-        {Courier::BulkData1::Descriptor::CHOICE_TAG::null,      "null"},
-        {Courier::BulkData1::Descriptor::CHOICE_TAG::immediate, "immediate"},
-        {Courier::BulkData1::Descriptor::CHOICE_TAG::passive,   "passive"},
-        {Courier::BulkData1::Descriptor::CHOICE_TAG::active,    "active"},
+QString Courier::toString(const Courier::Stub::BulkData1::Descriptor::CHOICE_TAG value) {
+    static QMap<Courier::Stub::BulkData1::Descriptor::CHOICE_TAG, QString> map = {
+        {Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::null,      "null"},
+        {Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::immediate, "immediate"},
+        {Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::passive,   "passive"},
+        {Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::active,    "active"},
     };
 
     if (map.contains(value)) {
@@ -62,21 +62,21 @@ QString Courier::toString(const Courier::BulkData1::Descriptor::CHOICE_TAG value
 }
 
 
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Descriptor::CHOICE_TAG value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor::CHOICE_TAG value) {
     Courier::serialize(block, (quint16)value);
 }
 
 
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Descriptor::CHOICE_TAG& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor::CHOICE_TAG& value) {
     quint16 t;
     Courier::deserialize(block, t);
-    value = (Courier::BulkData1::Descriptor::CHOICE_TAG)t;
+    value = (Courier::Stub::BulkData1::Descriptor::CHOICE_TAG)t;
 }
 
 //
 // Record Function Definition
 //
-QString Courier::toString(const Courier::BulkData1::Identifier& value) {
+QString Courier::toString(const Courier::Stub::BulkData1::Identifier& value) {
     QStringList list;
     // host  [ARRAY (3)UNSPECIFIED]]
     list << QString("[%1 %2]").arg("host").arg(Courier::toString(value.host));
@@ -84,10 +84,10 @@ QString Courier::toString(const Courier::BulkData1::Identifier& value) {
     list << QString("[%1 %2]").arg("hostRelativeIdentifier").arg(Courier::toString(value.hostRelativeIdentifier));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::BulkData1::Descriptor::Descriptor_CHOICE_01&) {
+QString Courier::toString(const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& value) {
+QString Courier::toString(const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02& value) {
     QStringList list;
     // network  [ARRAY (2)UNSPECIFIED]]
     list << QString("[%1 %2]").arg("network").arg(Courier::toString(value.network));
@@ -98,25 +98,25 @@ QString Courier::toString(const Courier::BulkData1::Descriptor::Descriptor_CHOIC
     list << QString("[%1 %2]").arg("identifier").arg(Courier::toString(value.identifier));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::BulkData1::InvalidDescriptor&) {
+QString Courier::toString(const Courier::Stub::BulkData1::InvalidDescriptor&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::NoSuchIdentifier&) {
+QString Courier::toString(const Courier::Stub::BulkData1::NoSuchIdentifier&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::IdentifierBusy&) {
+QString Courier::toString(const Courier::Stub::BulkData1::IdentifierBusy&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::WrongHost&) {
+QString Courier::toString(const Courier::Stub::BulkData1::WrongHost&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::WrongDirection&) {
+QString Courier::toString(const Courier::Stub::BulkData1::WrongDirection&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::TransferAborted&) {
+QString Courier::toString(const Courier::Stub::BulkData1::TransferAborted&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::Send::Param& value) {
+QString Courier::toString(const Courier::Stub::BulkData1::Send::Param& value) {
     QStringList list;
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
@@ -128,10 +128,10 @@ QString Courier::toString(const Courier::BulkData1::Send::Param& value) {
     list << QString("[%1 %2]").arg("timeout").arg(Courier::toString(value.timeout));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::BulkData1::Send::Result&) {
+QString Courier::toString(const Courier::Stub::BulkData1::Send::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::Receive::Param& value) {
+QString Courier::toString(const Courier::Stub::BulkData1::Receive::Param& value) {
     QStringList list;
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
@@ -143,10 +143,10 @@ QString Courier::toString(const Courier::BulkData1::Receive::Param& value) {
     list << QString("[%1 %2]").arg("timeout").arg(Courier::toString(value.timeout));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::BulkData1::Receive::Result&) {
+QString Courier::toString(const Courier::Stub::BulkData1::Receive::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::BulkData1::Cancel::Param& value) {
+QString Courier::toString(const Courier::Stub::BulkData1::Cancel::Param& value) {
     QStringList list;
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
@@ -155,19 +155,19 @@ QString Courier::toString(const Courier::BulkData1::Cancel::Param& value) {
     list << QString("[%1 %2]").arg("timeout").arg(Courier::toString(value.timeout));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::BulkData1::Cancel::Result&) {
+QString Courier::toString(const Courier::Stub::BulkData1::Cancel::Result&) {
     return "[]";
 }
 
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Identifier& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Identifier& value) {
     // host  [ARRAY (3)UNSPECIFIED]]
     Courier::serialize(block, value.host);
     // hostRelativeIdentifier  [ARRAY (2)UNSPECIFIED]]
     Courier::serialize(block, value.hostRelativeIdentifier);
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::Descriptor::Descriptor_CHOICE_01&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02& value) {
     // network  [ARRAY (2)UNSPECIFIED]]
     Courier::serialize(block, value.network);
     // host  [ARRAY (3)UNSPECIFIED]]
@@ -176,19 +176,19 @@ void Courier::serialize(BLOCK& block, const Courier::BulkData1::Descriptor::Desc
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::serialize(block, value.identifier);
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::InvalidDescriptor&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::InvalidDescriptor&) {
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::NoSuchIdentifier&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::NoSuchIdentifier&) {
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::IdentifierBusy&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::IdentifierBusy&) {
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::WrongHost&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::WrongHost&) {
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::WrongDirection&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::WrongDirection&) {
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::TransferAborted&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::TransferAborted&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Send::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Send::Param& value) {
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::serialize(block, value.identifier);
@@ -198,9 +198,9 @@ void Courier::serialize(BLOCK& block, const Courier::BulkData1::Send::Param& val
     // timeout  CARDINAL
     Courier::serialize(block, value.timeout);
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::Send::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::Send::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Receive::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Receive::Param& value) {
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::serialize(block, value.identifier);
@@ -210,27 +210,27 @@ void Courier::serialize(BLOCK& block, const Courier::BulkData1::Receive::Param& 
     // timeout  CARDINAL
     Courier::serialize(block, value.timeout);
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::Receive::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::Receive::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Cancel::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Cancel::Param& value) {
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::serialize(block, value.identifier);
     // timeout  CARDINAL
     Courier::serialize(block, value.timeout);
 }
-void Courier::serialize(BLOCK&, const Courier::BulkData1::Cancel::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::BulkData1::Cancel::Result&) {
 }
 
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Identifier& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Identifier& value) {
     // host  [ARRAY (3)UNSPECIFIED]]
     Courier::deserialize(block, value.host);
     // hostRelativeIdentifier  [ARRAY (2)UNSPECIFIED]]
     Courier::deserialize(block, value.hostRelativeIdentifier);
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::Descriptor::Descriptor_CHOICE_01&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Descriptor::Descriptor_CHOICE_02& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02& value) {
     // network  [ARRAY (2)UNSPECIFIED]]
     Courier::deserialize(block, value.network);
     // host  [ARRAY (3)UNSPECIFIED]]
@@ -239,19 +239,19 @@ void Courier::deserialize(BLOCK& block, Courier::BulkData1::Descriptor::Descript
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::deserialize(block, value.identifier);
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::InvalidDescriptor&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::InvalidDescriptor&) {
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::NoSuchIdentifier&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::NoSuchIdentifier&) {
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::IdentifierBusy&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::IdentifierBusy&) {
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::WrongHost&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::WrongHost&) {
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::WrongDirection&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::WrongDirection&) {
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::TransferAborted&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::TransferAborted&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Send::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Send::Param& value) {
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::deserialize(block, value.identifier);
@@ -261,9 +261,9 @@ void Courier::deserialize(BLOCK& block, Courier::BulkData1::Send::Param& value) 
     // timeout  CARDINAL
     Courier::deserialize(block, value.timeout);
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::Send::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::Send::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Receive::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Receive::Param& value) {
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::deserialize(block, value.identifier);
@@ -273,30 +273,30 @@ void Courier::deserialize(BLOCK& block, Courier::BulkData1::Receive::Param& valu
     // timeout  CARDINAL
     Courier::deserialize(block, value.timeout);
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::Receive::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::Receive::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Cancel::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Cancel::Param& value) {
     // identifier  [REF BulkData1::Identifier]
     //   RECORD [host: [ARRAY (3)UNSPECIFIED]], hostRelativeIdentifier: [ARRAY (2)UNSPECIFIED]]]
     Courier::deserialize(block, value.identifier);
     // timeout  CARDINAL
     Courier::deserialize(block, value.timeout);
 }
-void Courier::deserialize(BLOCK&, Courier::BulkData1::Cancel::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::BulkData1::Cancel::Result&) {
 }
 
 //
 // Choice Function Definition
 //
-QString Courier::toString(const Courier::BulkData1::Descriptor& value) {
+QString Courier::toString(const Courier::Stub::BulkData1::Descriptor& value) {
     switch(value.choiceTag) {
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::null:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::null:
         return QString("[%1 %2]").arg("null").arg(Courier::toString(value.null()));
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::immediate:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::immediate:
         return QString("[%1 %2]").arg("immediate").arg(Courier::toString(value.immediate()));
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::passive:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::passive:
         return QString("[%1 %2]").arg("passive").arg(Courier::toString(value.passive()));
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::active:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::active:
         return QString("[%1 %2]").arg("active").arg(Courier::toString(value.active()));
     default:
         logger.error("Unexpected choiceTag = %d", (quint16)value.choiceTag);
@@ -305,19 +305,19 @@ QString Courier::toString(const Courier::BulkData1::Descriptor& value) {
     }
 }
 
-void Courier::serialize(BLOCK& block, const Courier::BulkData1::Descriptor& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor& value) {
     block.serialize16((quint16)value.choiceTag);
     switch(value.choiceTag) {
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::null:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::null:
         Courier::serialize(block, value.null());
         break;
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::immediate:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::immediate:
         Courier::serialize(block, value.immediate());
         break;
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::passive:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::passive:
         Courier::serialize(block, value.passive());
         break;
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::active:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::active:
         Courier::serialize(block, value.active());
         break;
     default:
@@ -327,21 +327,21 @@ void Courier::serialize(BLOCK& block, const Courier::BulkData1::Descriptor& valu
     }
 }
 
-void Courier::deserialize(BLOCK& block, Courier::BulkData1::Descriptor& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor& value) {
     quint16 choiceTag_;
     block.deserialize16(choiceTag_);
-    value.choiceTag = (Courier::BulkData1::Descriptor::CHOICE_TAG)choiceTag_;
+    value.choiceTag = (Courier::Stub::BulkData1::Descriptor::CHOICE_TAG)choiceTag_;
     switch(value.choiceTag) {
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::null:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::null:
         Courier::deserialize(block, value.null());
         break;
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::immediate:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::immediate:
         Courier::deserialize(block, value.immediate());
         break;
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::passive:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::passive:
         Courier::deserialize(block, value.passive());
         break;
-    case Courier::BulkData1::Descriptor::CHOICE_TAG::active:
+    case Courier::Stub::BulkData1::Descriptor::CHOICE_TAG::active:
         Courier::deserialize(block, value.active());
         break;
     default:

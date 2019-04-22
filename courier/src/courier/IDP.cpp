@@ -34,6 +34,7 @@ OF SUCH DAMAGE.
 static log4cpp::Category& logger = Logger::getLogger("cr/idp");
 
 #include "../courier/IDP.h"
+#include "../stub/Datagram.h"
 
 
 QString Courier::toString(const Courier::IDP::PacketType value) {
@@ -147,7 +148,7 @@ QString Courier::toString(const IDP::Frame&  value) {
 	return ret;
 }
 void Courier::serialize(Block& block, const IDP::Frame& value) {
-	Datagram::Header header;
+	Stub::Datagram::Header header;
 	header.checksum    = (decltype(header.checksum))   value.checksum;
 	header.length      = (decltype(header.length))     value.length;
 	header.hopCount    = (decltype(header.hopCount))   value.hopCount;
@@ -165,7 +166,7 @@ void Courier::serialize(Block& block, const IDP::Frame& value) {
 	Courier::serialize(block, value.data);
 }
 void Courier::deserialize(Block& block, IDP::Frame& value) {
-	Datagram::Header header;
+	Stub::Datagram::Header header;
 	Courier::deserialize(block, header);
 	// reflect header.length in block
 	block.setLimit(header.length);

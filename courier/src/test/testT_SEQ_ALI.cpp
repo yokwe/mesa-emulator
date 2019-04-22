@@ -51,7 +51,7 @@ class testT_SEQ_ALI : public testBase {
 
 public:
     void testT_SEQ_ALI01() {
-    	using T = Courier::T_SEQ::SEQ_ALI01;
+    	using T = Courier::Stub::T_SEQ::SEQ_ALI01;
 
     	// toString
     	{
@@ -103,7 +103,7 @@ public:
     	}
     }
     void testT_SEQ_ALI02() {
-    	using T = Courier::T_SEQ::SEQ_ALI02;
+    	using T = Courier::Stub::T_SEQ::SEQ_ALI02;
 
     	// toString
     	{
@@ -155,7 +155,7 @@ public:
     	}
     }
     void testT_SEQ_ALI03() {
-    	using T = Courier::T_SEQ::SEQ_ALI03;
+    	using T = Courier::Stub::T_SEQ::SEQ_ALI03;
 
     	// toString
     	{
@@ -207,7 +207,7 @@ public:
     	}
     }
     void testT_SEQ_ALI04() {
-    	using T = Courier::T_SEQ::SEQ_ALI04;
+    	using T = Courier::Stub::T_SEQ::SEQ_ALI04;
 
     	// toString
     	{
@@ -259,7 +259,7 @@ public:
     	}
     }
     void testT_SEQ_ALI05() {
-    	using T = Courier::T_SEQ::SEQ_ALI05;
+    	using T = Courier::Stub::T_SEQ::SEQ_ALI05;
 
     	// toString
     	{

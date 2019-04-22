@@ -50,7 +50,7 @@ class testT_CHO_A_COM : public testBase {
 
 public:
     void testT_CHO_A_COM01() {
-    	using T = Courier::T_CHO::CHO_A_COM01;
+    	using T = Courier::Stub::T_CHO::CHO_A_COM01;
 
     	// toString
     	{
@@ -105,7 +105,7 @@ public:
     	}
     }
     void testT_CHO_A_COM02() {
-    	using T = Courier::T_CHO::CHO_A_COM02;
+    	using T = Courier::Stub::T_CHO::CHO_A_COM02;
 
     	// toString
     	{
@@ -187,7 +187,7 @@ public:
     	}
     }
     void testT_CHO_A_COM03() {
-    	using T = Courier::T_CHO::CHO_A_COM03;
+    	using T = Courier::Stub::T_CHO::CHO_A_COM03;
 
     	// toString
     	{
@@ -242,7 +242,7 @@ public:
     	}
     }
     void testT_CHO_A_COM04() {
-    	using T = Courier::T_CHO::CHO_A_COM04;
+    	using T = Courier::Stub::T_CHO::CHO_A_COM04;
 
     	// toString
     	{

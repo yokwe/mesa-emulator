@@ -51,7 +51,7 @@ class testT_CHO_A_ALI : public testBase {
 
 public:
     void testT_CHO_A_ALI01() {
-    	using T = Courier::T_CHO::CHO_A_ALI01;
+    	using T = Courier::Stub::T_CHO::CHO_A_ALI01;
 
     	// toString
     	{
@@ -112,7 +112,7 @@ public:
     	}
     }
     void testT_CHO_A_ALI02() {
-    	using T = Courier::T_CHO::CHO_A_ALI02;
+    	using T = Courier::Stub::T_CHO::CHO_A_ALI02;
 
     	// toString
     	{
@@ -173,7 +173,7 @@ public:
     	}
     }
     void testT_CHO_A_ALI03() {
-    	using T = Courier::T_CHO::CHO_A_ALI03;
+    	using T = Courier::Stub::T_CHO::CHO_A_ALI03;
 
     	// toString
     	{
@@ -263,14 +263,14 @@ public:
     	}
     }
     void testT_CHO_A_ALI04() {
-    	using T = Courier::T_CHO::CHO_A_ALI04;
+    	using T = Courier::Stub::T_CHO::CHO_A_ALI04;
 
     	// toString
     	{
         	T d;
         	d.choiceTag = T::CHOICE_TAG::a;
 
-        	Courier::T_CHO::R& da = d.a();
+        	Courier::Stub::T_CHO::R& da = d.a();
         	da.a = {11111};
 
         	QString a = Courier::toString(d);
@@ -324,7 +324,7 @@ public:
     	}
     }
     void testT_CHO_A_ALI05() {
-    	using T = Courier::T_CHO::CHO_A_ALI05;
+    	using T = Courier::Stub::T_CHO::CHO_A_ALI05;
 
     	// toString
     	{

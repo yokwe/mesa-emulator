@@ -40,9 +40,9 @@ namespace Courier {
 
 class RIP {
 public:
-	using Network  = Courier::IDP::Network;
-	using Tuple    = Courier::Routing::Tuple;
-	using Operation = Courier::Routing::Operation;
+	using Network   = Courier::IDP::Network;
+	using Tuple     = Courier::Stub::Routing::Tuple;
+	using Operation = Courier::Stub::Routing::Operation;
 
 	static void setLocalNetwork(Network newValue) {
 		localNetwork = newValue;

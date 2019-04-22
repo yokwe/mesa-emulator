@@ -54,7 +54,7 @@ class testT_PRE_REC_PRE : public testBase {
 
 public:
     void testT_PRE_REC_PRE01() {
-    	using T = Courier::T_PRE::REC_PRE01;
+    	using T = Courier::Stub::T_PRE::REC_PRE01;
 
     	// toString
     	{
@@ -139,7 +139,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE02() {
-    	using T = Courier::T_PRE::REC_PRE02;
+    	using T = Courier::Stub::T_PRE::REC_PRE02;
 
     	// toString
     	{
@@ -186,7 +186,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE03() {
-    	using T = Courier::T_PRE::REC_PRE03;
+    	using T = Courier::Stub::T_PRE::REC_PRE03;
 
     	// toString
     	{
@@ -233,7 +233,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE04() {
-    	using T = Courier::T_PRE::REC_PRE04;
+    	using T = Courier::Stub::T_PRE::REC_PRE04;
 
     	// toString
     	{
@@ -280,7 +280,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE05() {
-    	using T = Courier::T_PRE::REC_PRE05;
+    	using T = Courier::Stub::T_PRE::REC_PRE05;
 
     	// toString
     	{
@@ -343,7 +343,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE06() {
-    	using T = Courier::T_PRE::REC_PRE06;
+    	using T = Courier::Stub::T_PRE::REC_PRE06;
 
     	// toString
     	{
@@ -390,7 +390,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE07() {
-    	using T = Courier::T_PRE::REC_PRE07;
+    	using T = Courier::Stub::T_PRE::REC_PRE07;
 
     	// toString
     	{
@@ -437,7 +437,7 @@ public:
     	}
     }
     void testT_PRE_REC_PRE08() {
-    	using T = Courier::T_PRE::REC_PRE08;
+    	using T = Courier::Stub::T_PRE::REC_PRE08;
 
     	// toString
     	{

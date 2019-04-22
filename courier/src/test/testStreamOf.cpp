@@ -180,7 +180,7 @@ public:
 		}
 	}
 	void testStreamOfSegmentREC_PRE03() {
-		using T = Courier::StreamOfSegment<Courier::T_PRE::REC_PRE03>;
+		using T = Courier::StreamOfSegment<Courier::Stub::T_PRE::REC_PRE03>;
 
 		{
 			T value;

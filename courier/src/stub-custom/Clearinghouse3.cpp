@@ -10,10 +10,10 @@ static log4cpp::Category& logger = Logger::getLogger("stub/Clearinghouse3");
 // Enum Function Definition
 //
 
-QString Courier::toString(const Courier::Clearinghouse3::WhichArgument value) {
-    static QMap<Courier::Clearinghouse3::WhichArgument, QString> map = {
-        {Courier::Clearinghouse3::WhichArgument::first,  "first"},
-        {Courier::Clearinghouse3::WhichArgument::second, "second"},
+QString Courier::toString(const Courier::Stub::Clearinghouse3::WhichArgument value) {
+    static QMap<Courier::Stub::Clearinghouse3::WhichArgument, QString> map = {
+        {Courier::Stub::Clearinghouse3::WhichArgument::first,  "first"},
+        {Courier::Stub::Clearinghouse3::WhichArgument::second, "second"},
     };
 
     if (map.contains(value)) {
@@ -23,15 +23,15 @@ QString Courier::toString(const Courier::Clearinghouse3::WhichArgument value) {
     }
 }
 
-QString Courier::toString(const Courier::Clearinghouse3::ArgumentProblem value) {
-    static QMap<Courier::Clearinghouse3::ArgumentProblem, QString> map = {
-        {Courier::Clearinghouse3::ArgumentProblem::illegalProperty,         "illegalProperty"},
-        {Courier::Clearinghouse3::ArgumentProblem::illegalOrganizationName, "illegalOrganizationName"},
-        {Courier::Clearinghouse3::ArgumentProblem::illegalDomainName,       "illegalDomainName"},
-        {Courier::Clearinghouse3::ArgumentProblem::illegalObjectName,       "illegalObjectName"},
-        {Courier::Clearinghouse3::ArgumentProblem::noSuchOrganization,      "noSuchOrganization"},
-        {Courier::Clearinghouse3::ArgumentProblem::noSuchDomain,            "noSuchDomain"},
-        {Courier::Clearinghouse3::ArgumentProblem::noSuchObject,            "noSuchObject"},
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ArgumentProblem value) {
+    static QMap<Courier::Stub::Clearinghouse3::ArgumentProblem, QString> map = {
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::illegalProperty,         "illegalProperty"},
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::illegalOrganizationName, "illegalOrganizationName"},
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::illegalDomainName,       "illegalDomainName"},
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::illegalObjectName,       "illegalObjectName"},
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::noSuchOrganization,      "noSuchOrganization"},
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::noSuchDomain,            "noSuchDomain"},
+        {Courier::Stub::Clearinghouse3::ArgumentProblem::noSuchObject,            "noSuchObject"},
     };
 
     if (map.contains(value)) {
@@ -41,13 +41,13 @@ QString Courier::toString(const Courier::Clearinghouse3::ArgumentProblem value) 
     }
 }
 
-QString Courier::toString(const Courier::Clearinghouse3::CallProblem value) {
-    static QMap<Courier::Clearinghouse3::CallProblem, QString> map = {
-        {Courier::Clearinghouse3::CallProblem::accessRightsInsufficient, "accessRightsInsufficient"},
-        {Courier::Clearinghouse3::CallProblem::tooBusy,                  "tooBusy"},
-        {Courier::Clearinghouse3::CallProblem::serverDown,               "serverDown"},
-        {Courier::Clearinghouse3::CallProblem::useCourier,               "useCourier"},
-        {Courier::Clearinghouse3::CallProblem::other,                    "other"},
+QString Courier::toString(const Courier::Stub::Clearinghouse3::CallProblem value) {
+    static QMap<Courier::Stub::Clearinghouse3::CallProblem, QString> map = {
+        {Courier::Stub::Clearinghouse3::CallProblem::accessRightsInsufficient, "accessRightsInsufficient"},
+        {Courier::Stub::Clearinghouse3::CallProblem::tooBusy,                  "tooBusy"},
+        {Courier::Stub::Clearinghouse3::CallProblem::serverDown,               "serverDown"},
+        {Courier::Stub::Clearinghouse3::CallProblem::useCourier,               "useCourier"},
+        {Courier::Stub::Clearinghouse3::CallProblem::other,                    "other"},
     };
 
     if (map.contains(value)) {
@@ -57,10 +57,10 @@ QString Courier::toString(const Courier::Clearinghouse3::CallProblem value) {
     }
 }
 
-QString Courier::toString(const Courier::Clearinghouse3::PropertyProblem value) {
-    static QMap<Courier::Clearinghouse3::PropertyProblem, QString> map = {
-        {Courier::Clearinghouse3::PropertyProblem::missing,   "missing"},
-        {Courier::Clearinghouse3::PropertyProblem::wrongType, "wrongType"},
+QString Courier::toString(const Courier::Stub::Clearinghouse3::PropertyProblem value) {
+    static QMap<Courier::Stub::Clearinghouse3::PropertyProblem, QString> map = {
+        {Courier::Stub::Clearinghouse3::PropertyProblem::missing,   "missing"},
+        {Courier::Stub::Clearinghouse3::PropertyProblem::wrongType, "wrongType"},
     };
 
     if (map.contains(value)) {
@@ -70,12 +70,12 @@ QString Courier::toString(const Courier::Clearinghouse3::PropertyProblem value) 
     }
 }
 
-QString Courier::toString(const Courier::Clearinghouse3::UpdateProblem value) {
-    static QMap<Courier::Clearinghouse3::UpdateProblem, QString> map = {
-        {Courier::Clearinghouse3::UpdateProblem::noChange,         "noChange"},
-        {Courier::Clearinghouse3::UpdateProblem::outOfDate,        "outOfDate"},
-        {Courier::Clearinghouse3::UpdateProblem::objectOverflow,   "objectOverflow"},
-        {Courier::Clearinghouse3::UpdateProblem::databaseOverflow, "databaseOverflow"},
+QString Courier::toString(const Courier::Stub::Clearinghouse3::UpdateProblem value) {
+    static QMap<Courier::Stub::Clearinghouse3::UpdateProblem, QString> map = {
+        {Courier::Stub::Clearinghouse3::UpdateProblem::noChange,         "noChange"},
+        {Courier::Stub::Clearinghouse3::UpdateProblem::outOfDate,        "outOfDate"},
+        {Courier::Stub::Clearinghouse3::UpdateProblem::objectOverflow,   "objectOverflow"},
+        {Courier::Stub::Clearinghouse3::UpdateProblem::databaseOverflow, "databaseOverflow"},
     };
 
     if (map.contains(value)) {
@@ -86,61 +86,61 @@ QString Courier::toString(const Courier::Clearinghouse3::UpdateProblem value) {
 }
 
 
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::WhichArgument value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::WhichArgument value) {
     Courier::serialize(block, (quint16)value);
 }
 
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ArgumentProblem value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ArgumentProblem value) {
     Courier::serialize(block, (quint16)value);
 }
 
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CallProblem value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::CallProblem value) {
     Courier::serialize(block, (quint16)value);
 }
 
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::PropertyProblem value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::PropertyProblem value) {
     Courier::serialize(block, (quint16)value);
 }
 
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::UpdateProblem value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::UpdateProblem value) {
     Courier::serialize(block, (quint16)value);
 }
 
 
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::WhichArgument& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::WhichArgument& value) {
     quint16 t;
     Courier::deserialize(block, t);
-    value = (Courier::Clearinghouse3::WhichArgument)t;
+    value = (Courier::Stub::Clearinghouse3::WhichArgument)t;
 }
 
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ArgumentProblem& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ArgumentProblem& value) {
     quint16 t;
     Courier::deserialize(block, t);
-    value = (Courier::Clearinghouse3::ArgumentProblem)t;
+    value = (Courier::Stub::Clearinghouse3::ArgumentProblem)t;
 }
 
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CallProblem& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::CallProblem& value) {
     quint16 t;
     Courier::deserialize(block, t);
-    value = (Courier::Clearinghouse3::CallProblem)t;
+    value = (Courier::Stub::Clearinghouse3::CallProblem)t;
 }
 
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::PropertyProblem& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::PropertyProblem& value) {
     quint16 t;
     Courier::deserialize(block, t);
-    value = (Courier::Clearinghouse3::PropertyProblem)t;
+    value = (Courier::Stub::Clearinghouse3::PropertyProblem)t;
 }
 
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::UpdateProblem& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::UpdateProblem& value) {
     quint16 t;
     Courier::deserialize(block, t);
-    value = (Courier::Clearinghouse3::UpdateProblem)t;
+    value = (Courier::Stub::Clearinghouse3::UpdateProblem)t;
 }
 
 //
 // Record Function Definition
 //
-QString Courier::toString(const Courier::Clearinghouse3::TwoPartName& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::TwoPartName& value) {
     QStringList list;
     // organization  [REF Clearinghouse3::Organization]
     //   STRING
@@ -150,7 +150,7 @@ QString Courier::toString(const Courier::Clearinghouse3::TwoPartName& value) {
     list << QString("[%1 %2]").arg("domain").arg(Courier::toString(value.domain));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ThreePartName& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ThreePartName& value) {
     QStringList list;
     // organization  [REF Clearinghouse3::Organization]
     //   STRING
@@ -163,7 +163,7 @@ QString Courier::toString(const Courier::Clearinghouse3::ThreePartName& value) {
     list << QString("[%1 %2]").arg("object").arg(Courier::toString(value.object));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::NetworkAddress& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::NetworkAddress& value) {
     QStringList list;
     // network  [ARRAY (2)UNSPECIFIED]]
     list << QString("[%1 %2]").arg("network").arg(Courier::toString(value.network));
@@ -173,7 +173,7 @@ QString Courier::toString(const Courier::Clearinghouse3::NetworkAddress& value) 
     list << QString("[%1 %2]").arg("socket").arg(Courier::toString(value.socket));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::Authenticator& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::Authenticator& value) {
     QStringList list;
     // credentials  [REF Authentication3::Credentials]
     //   RECORD [type: ENUM [[simple  0], [strong  1]], value: [SEQUENCE (65535)UNSPECIFIED]]]
@@ -183,7 +183,7 @@ QString Courier::toString(const Courier::Clearinghouse3::Authenticator& value) {
     list << QString("[%1 %2]").arg("verifier").arg(Courier::toString(value.verifier));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ArgumentError& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ArgumentError& value) {
     QStringList list;
     // problem  [REF Clearinghouse3::ArgumentProblem]
     //   ENUM [[illegalProperty  10], [illegalOrganizationName  11], [illegalDomainName  12], [illegalObjectName  13], [noSuchOrganization  14], [noSuchDomain  15], [noSuchObject  16]]
@@ -193,21 +193,21 @@ QString Courier::toString(const Courier::Clearinghouse3::ArgumentError& value) {
     list << QString("[%1 %2]").arg("which").arg(Courier::toString(value.which));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AuthenticationError& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AuthenticationError& value) {
     QStringList list;
     // problem  [REF Authentication3::Problem]
     //   ENUM [[credentialsInvalid  0], [verifierInvalid  1], [verifierExpired  2], [verifierReused  3], [credentialsExpired  4], [inappropriateCredentials  5], [proxyInvalid  6], [proxyExpired  7], [otherProblem  8]]
     list << QString("[%1 %2]").arg("problem").arg(Courier::toString(value.problem));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::CallError& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::CallError& value) {
     QStringList list;
     // problem  [REF Clearinghouse3::CallProblem]
     //   ENUM [[accessRightsInsufficient  1], [tooBusy  2], [serverDown  3], [useCourier  4], [other  5]]
     list << QString("[%1 %2]").arg("problem").arg(Courier::toString(value.problem));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::PropertyError& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::PropertyError& value) {
     QStringList list;
     // problem  [REF Clearinghouse3::PropertyProblem]
     //   ENUM [[missing  20], [wrongType  21]]
@@ -217,7 +217,7 @@ QString Courier::toString(const Courier::Clearinghouse3::PropertyError& value) {
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::UpdateError& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::UpdateError& value) {
     QStringList list;
     // problem  [REF Clearinghouse3::UpdateProblem]
     //   ENUM [[noChange  30], [outOfDate  31], [objectOverflow  32], [databaseOverflow  33]]
@@ -232,14 +232,14 @@ QString Courier::toString(const Courier::Clearinghouse3::UpdateError& value) {
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::WrongServer& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::WrongServer& value) {
     QStringList list;
     // hint  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("hint").arg(Courier::toString(value.hint));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::CreateObject::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::CreateObject::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -249,10 +249,10 @@ QString Courier::toString(const Courier::Clearinghouse3::CreateObject::Param& va
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::CreateObject::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::CreateObject::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteObject::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteObject::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -262,10 +262,10 @@ QString Courier::toString(const Courier::Clearinghouse3::DeleteObject::Param& va
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteObject::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteObject::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::LookupObject::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::LookupObject::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -275,14 +275,14 @@ QString Courier::toString(const Courier::Clearinghouse3::LookupObject::Param& va
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::LookupObject::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::LookupObject::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListOrganizations::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListOrganizations::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::OrganizationNamePattern]
     //   STRING
@@ -295,10 +295,10 @@ QString Courier::toString(const Courier::Clearinghouse3::ListOrganizations::Para
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListOrganizations::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListOrganizations::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListDomain::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListDomain::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::DomainNamePattern]
     //   RECORD [organization: STRING, domain: STRING]
@@ -311,10 +311,10 @@ QString Courier::toString(const Courier::Clearinghouse3::ListDomain::Param& valu
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListDomain::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListDomain::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListObjects::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListObjects::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -330,10 +330,10 @@ QString Courier::toString(const Courier::Clearinghouse3::ListObjects::Param& val
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListObjects::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListObjects::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListAliasesOf::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListAliasesOf::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -346,14 +346,14 @@ QString Courier::toString(const Courier::Clearinghouse3::ListAliasesOf::Param& v
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListAliasesOf::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListAliasesOf::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::CreateAlias::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::CreateAlias::Param& value) {
     QStringList list;
     // alias  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -366,14 +366,14 @@ QString Courier::toString(const Courier::Clearinghouse3::CreateAlias::Param& val
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::CreateAlias::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::CreateAlias::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteAlias::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteAlias::Param& value) {
     QStringList list;
     // alias  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -383,14 +383,14 @@ QString Courier::toString(const Courier::Clearinghouse3::DeleteAlias::Param& val
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteAlias::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteAlias::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListAliases::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListAliases::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -403,10 +403,10 @@ QString Courier::toString(const Courier::Clearinghouse3::ListAliases::Param& val
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListAliases::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListAliases::Result&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteProperty::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteProperty::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -419,14 +419,14 @@ QString Courier::toString(const Courier::Clearinghouse3::DeleteProperty::Param& 
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteProperty::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteProperty::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListProperties::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListProperties::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -436,7 +436,7 @@ QString Courier::toString(const Courier::Clearinghouse3::ListProperties::Param& 
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListProperties::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListProperties::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -446,7 +446,7 @@ QString Courier::toString(const Courier::Clearinghouse3::ListProperties::Result&
     list << QString("[%1 %2]").arg("properties").arg(Courier::toString(value.properties));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddItemProperty::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddItemProperty::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -462,14 +462,14 @@ QString Courier::toString(const Courier::Clearinghouse3::AddItemProperty::Param&
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddItemProperty::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddItemProperty::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::RetrieveItem::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::RetrieveItem::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -482,7 +482,7 @@ QString Courier::toString(const Courier::Clearinghouse3::RetrieveItem::Param& va
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::RetrieveItem::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::RetrieveItem::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -492,7 +492,7 @@ QString Courier::toString(const Courier::Clearinghouse3::RetrieveItem::Result& v
     list << QString("[%1 %2]").arg("value").arg(Courier::toString(value.value));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ChangeItem::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ChangeItem::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -508,14 +508,14 @@ QString Courier::toString(const Courier::Clearinghouse3::ChangeItem::Param& valu
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ChangeItem::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ChangeItem::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddGroupProperty::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddGroupProperty::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -531,14 +531,14 @@ QString Courier::toString(const Courier::Clearinghouse3::AddGroupProperty::Param
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddGroupProperty::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddGroupProperty::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::RetrieveMembers::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::RetrieveMembers::Param& value) {
     QStringList list;
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -554,14 +554,14 @@ QString Courier::toString(const Courier::Clearinghouse3::RetrieveMembers::Param&
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::RetrieveMembers::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::RetrieveMembers::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddMember::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddMember::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -577,14 +577,14 @@ QString Courier::toString(const Courier::Clearinghouse3::AddMember::Param& value
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddMember::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddMember::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddSelf::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddSelf::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -597,14 +597,14 @@ QString Courier::toString(const Courier::Clearinghouse3::AddSelf::Param& value) 
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::AddSelf::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::AddSelf::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteMember::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteMember::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -620,14 +620,14 @@ QString Courier::toString(const Courier::Clearinghouse3::DeleteMember::Param& va
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteMember::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteMember::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteSelf::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteSelf::Param& value) {
     QStringList list;
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -640,14 +640,14 @@ QString Courier::toString(const Courier::Clearinghouse3::DeleteSelf::Param& valu
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::DeleteSelf::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::DeleteSelf::Result& value) {
     QStringList list;
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::IsMember::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::IsMember::Param& value) {
     QStringList list;
     // memberOf  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
@@ -666,7 +666,7 @@ QString Courier::toString(const Courier::Clearinghouse3::IsMember::Param& value)
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::IsMember::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::IsMember::Result& value) {
     QStringList list;
     // isMember  BOOLEAN
     list << QString("[%1 %2]").arg("isMember").arg(Courier::toString(value.isMember));
@@ -675,17 +675,17 @@ QString Courier::toString(const Courier::Clearinghouse3::IsMember::Result& value
     list << QString("[%1 %2]").arg("distinguishedObject").arg(Courier::toString(value.distinguishedObject));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::RetrieveAddresses::Param&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::RetrieveAddresses::Param&) {
     return "[]";
 }
-QString Courier::toString(const Courier::Clearinghouse3::RetrieveAddresses::Result& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::RetrieveAddresses::Result& value) {
     QStringList list;
     // address  [REF Clearinghouse3::NetworkAddressList]
     //   [SEQUENCE (40)RECORD [network: [ARRAY (2)UNSPECIFIED]], host: [ARRAY (3)UNSPECIFIED]], socket: UNSPECIFIED]]]
     list << QString("[%1 %2]").arg("address").arg(Courier::toString(value.address));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListDomainServed::Param& value) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListDomainServed::Param& value) {
     QStringList list;
     // domains  [REF BulkData1::Sink]
     //   [CHOICE [[[[null  0], [immediate  1]] => RECORD []], [[[passive  2], [active  3]] => RECORD [network: [ARRAY (2)UNSPECIFIED]], host: [ARRAY (3)UNSPECIFIED]], identifier: [REF BulkData1::Identifier]]]]]
@@ -695,11 +695,11 @@ QString Courier::toString(const Courier::Clearinghouse3::ListDomainServed::Param
     list << QString("[%1 %2]").arg("agent").arg(Courier::toString(value.agent));
     return QString("[%1]").arg(list.join(" "));
 }
-QString Courier::toString(const Courier::Clearinghouse3::ListDomainServed::Result&) {
+QString Courier::toString(const Courier::Stub::Clearinghouse3::ListDomainServed::Result&) {
     return "[]";
 }
 
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::TwoPartName& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::TwoPartName& value) {
     // organization  [REF Clearinghouse3::Organization]
     //   STRING
     Courier::serialize(block, value.organization);
@@ -707,7 +707,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::TwoPartName
     //   STRING
     Courier::serialize(block, value.domain);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ThreePartName& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ThreePartName& value) {
     // organization  [REF Clearinghouse3::Organization]
     //   STRING
     Courier::serialize(block, value.organization);
@@ -718,7 +718,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ThreePartNa
     //   STRING
     Courier::serialize(block, value.object);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::NetworkAddress& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::NetworkAddress& value) {
     // network  [ARRAY (2)UNSPECIFIED]]
     Courier::serialize(block, value.network);
     // host  [ARRAY (3)UNSPECIFIED]]
@@ -726,7 +726,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::NetworkAddr
     // socket  UNSPECIFIED
     Courier::serialize(block, value.socket);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::Authenticator& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::Authenticator& value) {
     // credentials  [REF Authentication3::Credentials]
     //   RECORD [type: ENUM [[simple  0], [strong  1]], value: [SEQUENCE (65535)UNSPECIFIED]]]
     Courier::serialize(block, value.credentials);
@@ -734,7 +734,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::Authenticat
     //   [SEQUENCE (12)UNSPECIFIED]]
     Courier::serialize(block, value.verifier);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ArgumentError& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ArgumentError& value) {
     // problem  [REF Clearinghouse3::ArgumentProblem]
     //   ENUM [[illegalProperty  10], [illegalOrganizationName  11], [illegalDomainName  12], [illegalObjectName  13], [noSuchOrganization  14], [noSuchDomain  15], [noSuchObject  16]]
     Courier::serialize(block, value.problem);
@@ -742,17 +742,17 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ArgumentErr
     //   ENUM [[first  1], [second  2]]
     Courier::serialize(block, value.which);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AuthenticationError& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AuthenticationError& value) {
     // problem  [REF Authentication3::Problem]
     //   ENUM [[credentialsInvalid  0], [verifierInvalid  1], [verifierExpired  2], [verifierReused  3], [credentialsExpired  4], [inappropriateCredentials  5], [proxyInvalid  6], [proxyExpired  7], [otherProblem  8]]
     Courier::serialize(block, value.problem);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CallError& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::CallError& value) {
     // problem  [REF Clearinghouse3::CallProblem]
     //   ENUM [[accessRightsInsufficient  1], [tooBusy  2], [serverDown  3], [useCourier  4], [other  5]]
     Courier::serialize(block, value.problem);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::PropertyError& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::PropertyError& value) {
     // problem  [REF Clearinghouse3::PropertyProblem]
     //   ENUM [[missing  20], [wrongType  21]]
     Courier::serialize(block, value.problem);
@@ -760,7 +760,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::PropertyErr
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::UpdateError& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::UpdateError& value) {
     // problem  [REF Clearinghouse3::UpdateProblem]
     //   ENUM [[noChange  30], [outOfDate  31], [objectOverflow  32], [databaseOverflow  33]]
     Courier::serialize(block, value.problem);
@@ -773,12 +773,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::UpdateError
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::WrongServer& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::WrongServer& value) {
     // hint  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.hint);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CreateObject::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::CreateObject::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -786,9 +786,9 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CreateObjec
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::CreateObject::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::CreateObject::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteObject::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteObject::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -796,9 +796,9 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteObjec
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::DeleteObject::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::DeleteObject::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::LookupObject::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::LookupObject::Param& value) {
     // name  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -806,12 +806,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::LookupObjec
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::LookupObject::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::LookupObject::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListOrganizations::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListOrganizations::Param& value) {
     // pattern  [REF Clearinghouse3::OrganizationNamePattern]
     //   STRING
     Courier::serialize(block, value.pattern);
@@ -822,9 +822,9 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListOrganiz
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::ListOrganizations::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::ListOrganizations::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListDomain::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListDomain::Param& value) {
     // pattern  [REF Clearinghouse3::DomainNamePattern]
     //   RECORD [organization: STRING, domain: STRING]
     Courier::serialize(block, value.pattern);
@@ -835,9 +835,9 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListDomain:
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::ListDomain::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::ListDomain::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListObjects::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListObjects::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.pattern);
@@ -851,9 +851,9 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListObjects
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::ListObjects::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::ListObjects::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListAliasesOf::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListAliasesOf::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.pattern);
@@ -864,12 +864,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListAliases
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListAliasesOf::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListAliasesOf::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CreateAlias::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::CreateAlias::Param& value) {
     // alias  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.alias);
@@ -880,12 +880,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CreateAlias
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::CreateAlias::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::CreateAlias::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteAlias::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteAlias::Param& value) {
     // alias  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.alias);
@@ -893,12 +893,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteAlias
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteAlias::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteAlias::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListAliases::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListAliases::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.pattern);
@@ -909,9 +909,9 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListAliases
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::ListAliases::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::ListAliases::Result&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteProperty::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteProperty::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -922,12 +922,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeletePrope
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteProperty::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteProperty::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListProperties::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListProperties::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.pattern);
@@ -935,7 +935,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListPropert
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListProperties::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListProperties::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
@@ -943,7 +943,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListPropert
     //   [SEQUENCE (250)LONG_CARDINAL]]
     Courier::serialize(block, value.properties);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddItemProperty::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddItemProperty::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -957,12 +957,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddItemProp
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddItemProperty::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddItemProperty::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveItem::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::RetrieveItem::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.pattern);
@@ -973,7 +973,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveIte
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveItem::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::RetrieveItem::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
@@ -981,7 +981,7 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveIte
     //   [SEQUENCE (500)UNSPECIFIED]]
     Courier::serialize(block, value.value);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ChangeItem::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ChangeItem::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -995,12 +995,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ChangeItem:
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ChangeItem::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ChangeItem::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddGroupProperty::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddGroupProperty::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -1014,12 +1014,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddGroupPro
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddGroupProperty::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddGroupProperty::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveMembers::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::RetrieveMembers::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.pattern);
@@ -1033,12 +1033,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveMem
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveMembers::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::RetrieveMembers::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddMember::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddMember::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -1052,12 +1052,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddMember::
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddMember::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddMember::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddSelf::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddSelf::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -1068,12 +1068,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddSelf::Pa
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::AddSelf::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::AddSelf::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteMember::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteMember::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -1087,12 +1087,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteMembe
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteMember::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteMember::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteSelf::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteSelf::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.name);
@@ -1103,12 +1103,12 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteSelf:
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::DeleteSelf::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::DeleteSelf::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::IsMember::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::IsMember::Param& value) {
     // memberOf  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.memberOf);
@@ -1125,21 +1125,21 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::IsMember::P
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::IsMember::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::IsMember::Result& value) {
     // isMember  BOOLEAN
     Courier::serialize(block, value.isMember);
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::serialize(block, value.distinguishedObject);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::RetrieveAddresses::Param&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::RetrieveAddresses::Param&) {
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::RetrieveAddresses::Result& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::RetrieveAddresses::Result& value) {
     // address  [REF Clearinghouse3::NetworkAddressList]
     //   [SEQUENCE (40)RECORD [network: [ARRAY (2)UNSPECIFIED]], host: [ARRAY (3)UNSPECIFIED]], socket: UNSPECIFIED]]]
     Courier::serialize(block, value.address);
 }
-void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListDomainServed::Param& value) {
+void Courier::serialize(BLOCK& block, const Courier::Stub::Clearinghouse3::ListDomainServed::Param& value) {
     // domains  [REF BulkData1::Sink]
     //   [CHOICE [[[[null  0], [immediate  1]] => RECORD []], [[[passive  2], [active  3]] => RECORD [network: [ARRAY (2)UNSPECIFIED]], host: [ARRAY (3)UNSPECIFIED]], identifier: [REF BulkData1::Identifier]]]]]
     Courier::serialize(block, value.domains);
@@ -1147,10 +1147,10 @@ void Courier::serialize(BLOCK& block, const Courier::Clearinghouse3::ListDomainS
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::serialize(block, value.agent);
 }
-void Courier::serialize(BLOCK&, const Courier::Clearinghouse3::ListDomainServed::Result&) {
+void Courier::serialize(BLOCK&, const Courier::Stub::Clearinghouse3::ListDomainServed::Result&) {
 }
 
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::TwoPartName& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::TwoPartName& value) {
     // organization  [REF Clearinghouse3::Organization]
     //   STRING
     Courier::deserialize(block, value.organization);
@@ -1158,7 +1158,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::TwoPartName& va
     //   STRING
     Courier::deserialize(block, value.domain);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ThreePartName& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ThreePartName& value) {
     // organization  [REF Clearinghouse3::Organization]
     //   STRING
     Courier::deserialize(block, value.organization);
@@ -1169,7 +1169,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ThreePartName& 
     //   STRING
     Courier::deserialize(block, value.object);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::NetworkAddress& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::NetworkAddress& value) {
     // network  [ARRAY (2)UNSPECIFIED]]
     Courier::deserialize(block, value.network);
     // host  [ARRAY (3)UNSPECIFIED]]
@@ -1177,7 +1177,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::NetworkAddress&
     // socket  UNSPECIFIED
     Courier::deserialize(block, value.socket);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::Authenticator& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::Authenticator& value) {
     // credentials  [REF Authentication3::Credentials]
     //   RECORD [type: ENUM [[simple  0], [strong  1]], value: [SEQUENCE (65535)UNSPECIFIED]]]
     Courier::deserialize(block, value.credentials);
@@ -1185,7 +1185,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::Authenticator& 
     //   [SEQUENCE (12)UNSPECIFIED]]
     Courier::deserialize(block, value.verifier);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ArgumentError& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ArgumentError& value) {
     // problem  [REF Clearinghouse3::ArgumentProblem]
     //   ENUM [[illegalProperty  10], [illegalOrganizationName  11], [illegalDomainName  12], [illegalObjectName  13], [noSuchOrganization  14], [noSuchDomain  15], [noSuchObject  16]]
     Courier::deserialize(block, value.problem);
@@ -1193,17 +1193,17 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ArgumentError& 
     //   ENUM [[first  1], [second  2]]
     Courier::deserialize(block, value.which);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AuthenticationError& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AuthenticationError& value) {
     // problem  [REF Authentication3::Problem]
     //   ENUM [[credentialsInvalid  0], [verifierInvalid  1], [verifierExpired  2], [verifierReused  3], [credentialsExpired  4], [inappropriateCredentials  5], [proxyInvalid  6], [proxyExpired  7], [otherProblem  8]]
     Courier::deserialize(block, value.problem);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CallError& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::CallError& value) {
     // problem  [REF Clearinghouse3::CallProblem]
     //   ENUM [[accessRightsInsufficient  1], [tooBusy  2], [serverDown  3], [useCourier  4], [other  5]]
     Courier::deserialize(block, value.problem);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::PropertyError& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::PropertyError& value) {
     // problem  [REF Clearinghouse3::PropertyProblem]
     //   ENUM [[missing  20], [wrongType  21]]
     Courier::deserialize(block, value.problem);
@@ -1211,7 +1211,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::PropertyError& 
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::UpdateError& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::UpdateError& value) {
     // problem  [REF Clearinghouse3::UpdateProblem]
     //   ENUM [[noChange  30], [outOfDate  31], [objectOverflow  32], [databaseOverflow  33]]
     Courier::deserialize(block, value.problem);
@@ -1224,12 +1224,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::UpdateError& va
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::WrongServer& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::WrongServer& value) {
     // hint  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.hint);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CreateObject::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::CreateObject::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1237,9 +1237,9 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CreateObject::P
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::CreateObject::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::CreateObject::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteObject::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteObject::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1247,9 +1247,9 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteObject::P
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::DeleteObject::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::DeleteObject::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::LookupObject::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::LookupObject::Param& value) {
     // name  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1257,12 +1257,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::LookupObject::P
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::LookupObject::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::LookupObject::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListOrganizations::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListOrganizations::Param& value) {
     // pattern  [REF Clearinghouse3::OrganizationNamePattern]
     //   STRING
     Courier::deserialize(block, value.pattern);
@@ -1273,9 +1273,9 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListOrganizatio
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::ListOrganizations::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::ListOrganizations::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListDomain::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListDomain::Param& value) {
     // pattern  [REF Clearinghouse3::DomainNamePattern]
     //   RECORD [organization: STRING, domain: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1286,9 +1286,9 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListDomain::Par
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::ListDomain::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::ListDomain::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListObjects::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListObjects::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1302,9 +1302,9 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListObjects::Pa
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::ListObjects::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::ListObjects::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListAliasesOf::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListAliasesOf::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1315,12 +1315,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListAliasesOf::
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListAliasesOf::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListAliasesOf::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CreateAlias::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::CreateAlias::Param& value) {
     // alias  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.alias);
@@ -1331,12 +1331,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CreateAlias::Pa
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::CreateAlias::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::CreateAlias::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteAlias::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteAlias::Param& value) {
     // alias  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.alias);
@@ -1344,12 +1344,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteAlias::Pa
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteAlias::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteAlias::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListAliases::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListAliases::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1360,9 +1360,9 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListAliases::Pa
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::ListAliases::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::ListAliases::Result&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteProperty::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteProperty::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1373,12 +1373,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteProperty:
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteProperty::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteProperty::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListProperties::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListProperties::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1386,7 +1386,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListProperties:
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListProperties::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListProperties::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
@@ -1394,7 +1394,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListProperties:
     //   [SEQUENCE (250)LONG_CARDINAL]]
     Courier::deserialize(block, value.properties);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddItemProperty::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddItemProperty::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1408,12 +1408,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddItemProperty
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddItemProperty::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddItemProperty::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveItem::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::RetrieveItem::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1424,7 +1424,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveItem::P
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveItem::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::RetrieveItem::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
@@ -1432,7 +1432,7 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveItem::R
     //   [SEQUENCE (500)UNSPECIFIED]]
     Courier::deserialize(block, value.value);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ChangeItem::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ChangeItem::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1446,12 +1446,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ChangeItem::Par
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ChangeItem::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ChangeItem::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddGroupProperty::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddGroupProperty::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1465,12 +1465,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddGroupPropert
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddGroupProperty::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddGroupProperty::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveMembers::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::RetrieveMembers::Param& value) {
     // pattern  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.pattern);
@@ -1484,12 +1484,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveMembers
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveMembers::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::RetrieveMembers::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddMember::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddMember::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1503,12 +1503,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddMember::Para
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddMember::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddMember::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddSelf::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddSelf::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1519,12 +1519,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddSelf::Param&
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::AddSelf::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::AddSelf::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteMember::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteMember::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1538,12 +1538,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteMember::P
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteMember::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteMember::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteSelf::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteSelf::Param& value) {
     // name  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.name);
@@ -1554,12 +1554,12 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteSelf::Par
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::DeleteSelf::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::DeleteSelf::Result& value) {
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::IsMember::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::IsMember::Param& value) {
     // memberOf  [REF Clearinghouse3::ObjectNamePattern]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.memberOf);
@@ -1576,21 +1576,21 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::IsMember::Param
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::IsMember::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::IsMember::Result& value) {
     // isMember  BOOLEAN
     Courier::deserialize(block, value.isMember);
     // distinguishedObject  [REF Clearinghouse3::ObjectName]
     //   RECORD [organization: STRING, domain: STRING, object: STRING]
     Courier::deserialize(block, value.distinguishedObject);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::RetrieveAddresses::Param&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::RetrieveAddresses::Param&) {
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::RetrieveAddresses::Result& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::RetrieveAddresses::Result& value) {
     // address  [REF Clearinghouse3::NetworkAddressList]
     //   [SEQUENCE (40)RECORD [network: [ARRAY (2)UNSPECIFIED]], host: [ARRAY (3)UNSPECIFIED]], socket: UNSPECIFIED]]]
     Courier::deserialize(block, value.address);
 }
-void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListDomainServed::Param& value) {
+void Courier::deserialize(BLOCK& block, Courier::Stub::Clearinghouse3::ListDomainServed::Param& value) {
     // domains  [REF BulkData1::Sink]
     //   [CHOICE [[[[null  0], [immediate  1]] => RECORD []], [[[passive  2], [active  3]] => RECORD [network: [ARRAY (2)UNSPECIFIED]], host: [ARRAY (3)UNSPECIFIED]], identifier: [REF BulkData1::Identifier]]]]]
     Courier::deserialize(block, value.domains);
@@ -1598,5 +1598,5 @@ void Courier::deserialize(BLOCK& block, Courier::Clearinghouse3::ListDomainServe
     //   RECORD [credentials: RECORD [type: [REF Authentication3::CredentialsType], value: [SEQUENCE (65535)UNSPECIFIED]]], verifier: [SEQUENCE (12)UNSPECIFIED]]]
     Courier::deserialize(block, value.agent);
 }
-void Courier::deserialize(BLOCK&, Courier::Clearinghouse3::ListDomainServed::Result&) {
+void Courier::deserialize(BLOCK&, Courier::Stub::Clearinghouse3::ListDomainServed::Result&) {
 }

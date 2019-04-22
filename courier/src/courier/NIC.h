@@ -42,21 +42,21 @@ namespace Courier {
 
 class NIC {
 public:
-	static const int headerSize  = Ethernet::headerLength;
-	static const int minDataSize = Ethernet::minDataLength;
-	static const int maxDataSize = Ethernet::maxDataLength;
+	static const int headerSize  = Stub::Ethernet::headerLength;
+	static const int minDataSize = Stub::Ethernet::minDataLength;
+	static const int maxDataSize = Stub::Ethernet::maxDataLength;
 
 	static const int minFrameSize = headerSize + minDataSize;
 	static const int maxFrameSize = headerSize + maxDataSize;
 
 	enum class Host : quint64 {
-		ALL = Ethernet::broadcastAddress, // Broadcast
+		ALL = Stub::Ethernet::broadcastAddress, // Broadcast
 	};
 	enum class Type : quint16 {
-		IDP = Ethernet::frameTypeIDP, // Xerox IDP
+		IDP = Stub::Ethernet::frameTypeIDP, // Xerox IDP
 	};
 
-    using Header = Ethernet::Header;
+    using Header = Stub::Ethernet::Header;
     struct Frame {
     	Host  dst;  // destination
     	Host  src;  // source

@@ -5,6 +5,7 @@
 #include "../courier/StreamOf.h"
 
 namespace Courier {
+	namespace Stub {
     namespace BulkData1 {
 
         const quint32 PROGRAM_NUMBER = 0;
@@ -150,77 +151,78 @@ namespace Courier {
             // throw NoSuchIdentifier, IdentifierBusy, WrongHost
         };
     }
+	}
 
     //
     // Enum Function Declaration
     //
-    QString toString(const Courier::BulkData1::Descriptor::CHOICE_TAG          value);
+    QString toString(const Courier::Stub::BulkData1::Descriptor::CHOICE_TAG          value);
 
-    void serialize(BLOCK& block, const Courier::BulkData1::Descriptor::CHOICE_TAG          value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor::CHOICE_TAG          value);
 
-    void deserialize(BLOCK& block, Courier::BulkData1::Descriptor::CHOICE_TAG&          value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor::CHOICE_TAG&          value);
 
     //
     // Record Function Declaration
     //
-    QString toString(const Courier::BulkData1::Identifier&                                         value);
-    QString toString(const Courier::BulkData1::Descriptor::Descriptor_CHOICE_01&                   value);
-    QString toString(const Courier::BulkData1::Descriptor::Descriptor_CHOICE_02&                   value);
-    QString toString(const Courier::BulkData1::InvalidDescriptor&                                  value);
-    QString toString(const Courier::BulkData1::NoSuchIdentifier&                                   value);
-    QString toString(const Courier::BulkData1::IdentifierBusy&                                     value);
-    QString toString(const Courier::BulkData1::WrongHost&                                          value);
-    QString toString(const Courier::BulkData1::WrongDirection&                                     value);
-    QString toString(const Courier::BulkData1::TransferAborted&                                    value);
-    QString toString(const Courier::BulkData1::Send::Param&                                        value);
-    QString toString(const Courier::BulkData1::Send::Result&                                       value);
-    QString toString(const Courier::BulkData1::Receive::Param&                                     value);
-    QString toString(const Courier::BulkData1::Receive::Result&                                    value);
-    QString toString(const Courier::BulkData1::Cancel::Param&                                      value);
-    QString toString(const Courier::BulkData1::Cancel::Result&                                     value);
+    QString toString(const Courier::Stub::BulkData1::Identifier&                                         value);
+    QString toString(const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01&                   value);
+    QString toString(const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02&                   value);
+    QString toString(const Courier::Stub::BulkData1::InvalidDescriptor&                                  value);
+    QString toString(const Courier::Stub::BulkData1::NoSuchIdentifier&                                   value);
+    QString toString(const Courier::Stub::BulkData1::IdentifierBusy&                                     value);
+    QString toString(const Courier::Stub::BulkData1::WrongHost&                                          value);
+    QString toString(const Courier::Stub::BulkData1::WrongDirection&                                     value);
+    QString toString(const Courier::Stub::BulkData1::TransferAborted&                                    value);
+    QString toString(const Courier::Stub::BulkData1::Send::Param&                                        value);
+    QString toString(const Courier::Stub::BulkData1::Send::Result&                                       value);
+    QString toString(const Courier::Stub::BulkData1::Receive::Param&                                     value);
+    QString toString(const Courier::Stub::BulkData1::Receive::Result&                                    value);
+    QString toString(const Courier::Stub::BulkData1::Cancel::Param&                                      value);
+    QString toString(const Courier::Stub::BulkData1::Cancel::Result&                                     value);
 
-    void serialize(BLOCK& block, const Courier::BulkData1::Identifier&                                         value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Descriptor::Descriptor_CHOICE_01&                   value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Descriptor::Descriptor_CHOICE_02&                   value);
-    void serialize(BLOCK& block, const Courier::BulkData1::InvalidDescriptor&                                  value);
-    void serialize(BLOCK& block, const Courier::BulkData1::NoSuchIdentifier&                                   value);
-    void serialize(BLOCK& block, const Courier::BulkData1::IdentifierBusy&                                     value);
-    void serialize(BLOCK& block, const Courier::BulkData1::WrongHost&                                          value);
-    void serialize(BLOCK& block, const Courier::BulkData1::WrongDirection&                                     value);
-    void serialize(BLOCK& block, const Courier::BulkData1::TransferAborted&                                    value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Send::Param&                                        value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Send::Result&                                       value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Receive::Param&                                     value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Receive::Result&                                    value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Cancel::Param&                                      value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Cancel::Result&                                     value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Identifier&                                         value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01&                   value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02&                   value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::InvalidDescriptor&                                  value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::NoSuchIdentifier&                                   value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::IdentifierBusy&                                     value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::WrongHost&                                          value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::WrongDirection&                                     value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::TransferAborted&                                    value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Send::Param&                                        value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Send::Result&                                       value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Receive::Param&                                     value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Receive::Result&                                    value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Cancel::Param&                                      value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Cancel::Result&                                     value);
 
-    void deserialize(BLOCK& block, Courier::BulkData1::Identifier&                                         value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Descriptor::Descriptor_CHOICE_01&                   value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Descriptor::Descriptor_CHOICE_02&                   value);
-    void deserialize(BLOCK& block, Courier::BulkData1::InvalidDescriptor&                                  value);
-    void deserialize(BLOCK& block, Courier::BulkData1::NoSuchIdentifier&                                   value);
-    void deserialize(BLOCK& block, Courier::BulkData1::IdentifierBusy&                                     value);
-    void deserialize(BLOCK& block, Courier::BulkData1::WrongHost&                                          value);
-    void deserialize(BLOCK& block, Courier::BulkData1::WrongDirection&                                     value);
-    void deserialize(BLOCK& block, Courier::BulkData1::TransferAborted&                                    value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Send::Param&                                        value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Send::Result&                                       value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Receive::Param&                                     value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Receive::Result&                                    value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Cancel::Param&                                      value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Cancel::Result&                                     value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Identifier&                                         value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_01&                   value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor::Descriptor_CHOICE_02&                   value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::InvalidDescriptor&                                  value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::NoSuchIdentifier&                                   value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::IdentifierBusy&                                     value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::WrongHost&                                          value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::WrongDirection&                                     value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::TransferAborted&                                    value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Send::Param&                                        value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Send::Result&                                       value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Receive::Param&                                     value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Receive::Result&                                    value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Cancel::Param&                                      value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Cancel::Result&                                     value);
 
     //
     // Choice Function Declaration
     //
-//    QString toString(const Courier::BulkData1::StreamOfUnspecified& value);
-    QString toString(const Courier::BulkData1::Descriptor&          value);
+//    QString toString(const Courier::Stub::BulkData1::StreamOfUnspecified& value);
+    QString toString(const Courier::Stub::BulkData1::Descriptor&          value);
 
-//    void serialize(BLOCK& block, const Courier::BulkData1::StreamOfUnspecified& value);
-    void serialize(BLOCK& block, const Courier::BulkData1::Descriptor&          value);
+//    void serialize(BLOCK& block, const Courier::Stub::BulkData1::StreamOfUnspecified& value);
+    void serialize(BLOCK& block, const Courier::Stub::BulkData1::Descriptor&          value);
 
-//    void deserialize(BLOCK& block, Courier::BulkData1::StreamOfUnspecified& value);
-    void deserialize(BLOCK& block, Courier::BulkData1::Descriptor&          value);
+//    void deserialize(BLOCK& block, Courier::Stub::BulkData1::StreamOfUnspecified& value);
+    void deserialize(BLOCK& block, Courier::Stub::BulkData1::Descriptor&          value);
 }
 #endif

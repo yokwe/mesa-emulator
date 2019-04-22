@@ -47,7 +47,7 @@ quint64 Courier::NIC::getAddress() const {
 }
 
 void Courier::NIC::attach(const char* name) {
-	utilNIC.attach(name, Ethernet::frameTypeIDP);
+	utilNIC.attach(name, Stub::Ethernet::frameTypeIDP);
 }
 void Courier::NIC::detach() {
 	utilNIC.detach();
@@ -147,7 +147,7 @@ QString Courier::toString(const NIC::Frame& value) {
 	return ret;
 }
 void Courier::serialize(Block& block, const Courier::NIC::Frame& value) {
-	Ethernet::Header header;
+	Stub::Ethernet::Header header;
 	header.destination = (decltype(header.destination))value.dst;
 	header.source      = (decltype(header.source))     value.src;
 	header.type        = (decltype(header.type))       value.type;
@@ -156,7 +156,7 @@ void Courier::serialize(Block& block, const Courier::NIC::Frame& value) {
 	Courier::serialize(block, value.data);
 }
 void Courier::deserialize(Block& block, Courier::NIC::Frame& value) {
-	Ethernet::Header header;
+	Stub::Ethernet::Header header;
 	Courier::deserialize(block, header);
 	value.data = block.remainder();
 

@@ -33,7 +33,6 @@ OF SUCH DAMAGE.
 #define COURIER_IDP_H__
 
 #include "../courier/Block.h"
-#include "../stub/Datagram.h"
 
 namespace Courier {
 
