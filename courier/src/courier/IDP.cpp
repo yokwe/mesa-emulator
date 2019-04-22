@@ -167,6 +167,8 @@ void Courier::serialize(Block& block, const IDP::Frame& value) {
 void Courier::deserialize(Block& block, IDP::Frame& value) {
 	Datagram::Header header;
 	Courier::deserialize(block, header);
+	// reflect header.length in block
+	block.setLimit(header.length);
 	value.data = block.remainder();
 
 	value.checksum   = (decltype(value.checksum))  header.checksum;
