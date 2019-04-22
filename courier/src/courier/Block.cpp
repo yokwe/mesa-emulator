@@ -105,16 +105,11 @@ quint8* Courier::Block::getData() {
 	return data;
 }
 void Courier::Block::setLimit(quint16 newValue) {
-	if (state == State::write) {
-		if (capacity < (offset + newValue)) {
-			logger.error("Unexpected overflow  capacity = %d  offset = %d  newValue = %d", capacity, offset, newValue);
-			COURIER_FATAL_ERROR();
-		}
-		limit = offset + newValue;
-	} else {
-		logger.error("Unexpected state");
+	if (capacity < (offset + newValue)) {
+		logger.error("Unexpected overflow  capacity = %d  offset = %d  newValue = %d", capacity, offset, newValue);
 		COURIER_FATAL_ERROR();
 	}
+	limit = offset + newValue;
 }
 
 
