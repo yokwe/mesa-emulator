@@ -11,6 +11,9 @@ CONFIG  += staticlib
 HEADERS += Courier.h   Block.h   StreamOf.h   NIC.h   IDP.h   RIP.h   PEX.h   Time.h
 SOURCES += Courier.cpp Block.cpp StreamOf.cpp NIC.cpp IDP.cpp RIP.cpp PEX.cpp Time.cpp
 
+HEADERS += Protocol.h
+SOURCES += Protocol.cpp
+
 ###############################################
 
 INCLUDEPATH += .
