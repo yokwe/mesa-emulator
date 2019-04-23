@@ -20,6 +20,8 @@ SOURCES += Protocol.cpp ExpeditedCourier.cpp
 HEADERS += Time2.h   Authentication1.h   Authentication2.h   Authentication3.h   BulkData1.h   CHEntries.h   Clearinghouse2.h   Clearinghouse3.h
 SOURCES += Time2.cpp Authentication1.cpp Authentication2.cpp Authentication3.cpp BulkData1.cpp CHEntries.cpp Clearinghouse2.cpp Clearinghouse3.cpp
 
+HEADERS += Programs.h
+
 ###############################################
 
 INCLUDEPATH += .
