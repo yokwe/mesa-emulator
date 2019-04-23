@@ -14,7 +14,7 @@ Protocol2: TYPE = CHOICE MessageType OF {
     call   => RECORD [transaction, program, version, procedure: CARDINAL],
     reject => RECORD [transaction: CARDINAL, rejectCode: RejectCode],
     return => RECORD [transaction: CARDINAL],
-    abort  => RECORD [transaction: CARDINAL, abort: CARDINAL]};
+    abort  => RECORD [transaction: CARDINAL, abortCode: CARDINAL]};
 
 ProtocolRange: TYPE = RECORD [low, high: ProtocolType];
 VersionRange:  TYPE = RECORD [low, high: CARDINAL];
@@ -35,7 +35,7 @@ Protocol3: TYPE = CHOICE MessageType OF {
                       procedure:   CARDINAL],
     reject => RECORD [transaction: CARDINAL, reject:  Reject],
     return => RECORD [transaction: CARDINAL],
-    abort  => RECORD [transaction: CARDINAL, abort: CARDINAL]};
+    abort  => RECORD [transaction: CARDINAL, abortCode: CARDINAL]};
 
 Message: TYPE = CHOICE ProtocolType OF {
     protocol2 => RECORD[ protocol2: Protocol2],
