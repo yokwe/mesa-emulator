@@ -129,6 +129,23 @@ Courier::Protocol::Protocol3::AbortMessage& Courier::Protocol::Protocol3::abort_
         COURIER_FATAL_ERROR();
 	}
 }
+// Message
+Courier::Protocol::Protocol2& Courier::Protocol::Message::protocol2() const {
+	if (protocolType == Courier::Protocol::ProtocolType::protocol2) {
+		return CHOICE_protocol2;
+	} else {
+        logger.error("Unexpected protocolType = %d", (quint16)protocolType);
+        COURIER_FATAL_ERROR();
+	}
+}
+Courier::Protocol::Protocol3& Courier::Protocol::Message::protocol3() const {
+	if (protocolType == Courier::Protocol::ProtocolType::protocol3) {
+		return CHOICE_protocol3;
+	} else {
+        logger.error("Unexpected protocolType = %d", (quint16)protocolType);
+        COURIER_FATAL_ERROR();
+	}
+}
 
 
 // ProtocolType
