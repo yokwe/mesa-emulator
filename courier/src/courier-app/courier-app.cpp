@@ -36,6 +36,8 @@ static log4cpp::Category& logger = Logger::getLogger("courier-app");
 #include "../courier/RIP.h"
 #include "../courier/PEX.h"
 #include "../courier/Time.h"
+#include "../courier/ExpeditedCourier.h"
+#include "../courier/Programs.h"
 
 int main(int /*argc*/, char** /*argv*/) {
 	logger.info("START");
@@ -88,6 +90,24 @@ int main(int /*argc*/, char** /*argv*/) {
 				Courier::PEX::Frame pex;
 				Courier::deserialize(ether.data, pex);
 				logger.info("PEX  %s", Courier::toString(pex).toLocal8Bit().constData());
+
+				Courier::ExpeditedCourier::Frame expedited;
+				Courier::deserialize(pex.data, expedited);
+				logger.info("EXP  %s", Courier::toString(expedited).toLocal8Bit().constData());
+
+				switch(expedited.message.messageType) {
+				case Courier::Protocol::MessageType::call:
+				{
+					Courier::Protocol::Protocol3::CallMessage& callMessage = expedited.message.call();
+					Courier::Programs::Program& program = Courier::Programs::Program::getProgram(callMessage.program);
+					Courier::Programs::Procedure& procedure = Courier::Programs::Program::getProcedure(callMessage.program, callMessage.version, callMessage.procedure);
+					logger.info("     %s%d::%s", program.name.toLocal8Bit().constData(), callMessage.version, procedure.name.toLocal8Bit().constData());
+				}
+					break;
+				default:
+					break;
+				}
+
 			} else {
 				logger.info("IDP  %s", Courier::toString(idp).toLocal8Bit().constData());
 			}
