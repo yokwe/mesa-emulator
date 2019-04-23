@@ -391,19 +391,19 @@ void    Courier::deserialize(Block& block,       Protocol::Protocol2& value) {
 }
 // Protocol2::Call
 QString Courier::toString   (              const Protocol::Protocol2::CallMessage& value) {
-	return QString("[%1 %2 %3 %4]").arg(value.transaction, 4, 16).arg(value.program, 2).arg(value.version).arg(value.procedure, 2);
+	return QString("[%1 %2 %3 %4]").arg(value.transaction, 4, 16, QChar('0')).arg(value.program, 2).arg(value.version).arg(value.procedure, 2);
 }
 // Protocol2::Reject
 QString Courier::toString   (              const Protocol::Protocol2::RejectMessage& value) {
-	return QString("[%1 %2]").arg(value.transaction, 4, 16).arg(Courier::toString(value.rejectCode));
+	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(Courier::toString(value.rejectCode));
 }
 // Protocol2::Return
 QString Courier::toString   (              const Protocol::Protocol2::ReturnMessage& value) {
-	return QString("[%1]").arg(value.transaction, 4, 16);
+	return QString("[%1]").arg(value.transaction, 4, 16, QChar('0'));
 }
 // Protocol2::Abort
 QString Courier::toString   (              const Protocol::Protocol2::AbortMessage& value) {
-	return QString("[%1 %2]").arg(value.transaction, 4, 16).arg(value.abortCode, 2);
+	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(value.abortCode, 2);
 }
 // Protocol3
 QString Courier::toString   (              const Protocol::Protocol3& value) {
@@ -528,19 +528,19 @@ void    Courier::deserialize(Block& block,       Protocol::Protocol3& value) {
 }
 // Protocol3::Call
 QString Courier::toString   (              const Protocol::Protocol3::CallMessage& value) {
-	return QString("[%1 %2 %3 %4]").arg(value.transaction, 4, 16).arg(value.program, 2).arg(value.version).arg(value.procedure, 2);
+	return QString("[%1 %2 %3 %4]").arg(value.transaction, 4, 16, QChar('0')).arg(value.program, 2).arg(value.version).arg(value.procedure, 2);
 }
 // Protocol3::Reject
 QString Courier::toString   (              const Protocol::Protocol3::RejectMessage& value) {
-	return QString("[%1 %2]").arg(value.transaction, 4, 16).arg(Courier::toString(value.reject));
+	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(Courier::toString(value.reject));
 }
 // Protocol3::Return
 QString Courier::toString   (              const Protocol::Protocol3::ReturnMessage& value) {
-	return QString("[%1]").arg(value.transaction, 4, 16);
+	return QString("[%1]").arg(value.transaction, 4, 16, QChar('0'));
 }
 // Protocol3::Abort
 QString Courier::toString   (              const Protocol::Protocol3::AbortMessage& value) {
-	return QString("[%1 %2]").arg(value.transaction, 4, 16).arg(value.abortCode, 2);
+	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(value.abortCode, 2);
 }
 // Message
 QString Courier::toString   (              const Protocol::Message& value) {
