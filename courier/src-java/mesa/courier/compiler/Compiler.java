@@ -504,7 +504,7 @@ public class Compiler {
 			if (type.kind == Type.Kind.REFERENCE && constant.kind == Constant.Kind.REFERENCE) {
 				String typeString = program.getLocalRefName((TypeReference)type);
 				String constString = program.getLocalRefName((ConstantReference)constant);
-				outh.format("%s %s = %s::%s;", typeString, name, typeString, constString);
+				outh.format("const %s %s = %s::%s;", typeString, name, typeString, constString);
 			} else {
 				throw new CompilerException(String.format("Unexpected type %s", type.toString()));
 			}
