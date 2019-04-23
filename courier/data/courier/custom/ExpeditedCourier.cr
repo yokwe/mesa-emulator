@@ -3,8 +3,8 @@ BEGIN
     DEPENDS UPON Protocol(0) VERSION 0;
 
 Header: TYPE = RECORD [
-    protRange: Protocol.ProtocolRange,
-    body:      Protocol.Protocol3
+    protocolRange: Protocol.ProtocolRange,
+    message:       Protocol.Protocol3
 ];
 
 END.
