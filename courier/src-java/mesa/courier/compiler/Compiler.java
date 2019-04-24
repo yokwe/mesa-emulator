@@ -277,7 +277,7 @@ public class Compiler {
 			}
 		}
 
-		outh.format("struct %s {", name);
+		outh.format("struct %s : public Protocol::Abort {", name);
 		outh.format("static const quint16 CODE = %d;", code);
 		
 		if (typeError.paramList.isEmpty()) {
@@ -1471,8 +1471,8 @@ public class Compiler {
 		logger.info(String.format("pathh = %s", pathh));
 		
 		try (
-				LinePrinter outc = new LinePrinter(new PrintWriter(pathc));
-				LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
+			LinePrinter outc = new LinePrinter(new PrintWriter(pathc));
+			LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
 			// for outh
 			// write opening lines
 			if (SHOW_BUILD_TIME) {
@@ -1489,6 +1489,7 @@ public class Compiler {
 
 			// include courier header
 			outh.line("#include \"../courier/Courier.h\"");
+			outh.line("#include \"../courier/Protocol.h\""); // for Protocol::Abort
 			// include depend module
 			for(Program.Info info: program.depends) {
 				outh.format("#include \"../stub/%s.h\"", info.getProgramVersion());
