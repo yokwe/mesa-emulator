@@ -33,7 +33,6 @@ OF SUCH DAMAGE.
 #define COURIER_PROTOCOL_H__
 
 #include "../courier/Block.h"
-#include "../courier/IDP.h"
 
 namespace Courier {
 namespace Protocol {
@@ -56,23 +55,44 @@ enum class RejectCode : quint16 {
     noSuchProcedureValue = 2,
     invalidArguments     = 3,
 };
+const RejectCode REJECTCODE_noSuchProgramNumber  = RejectCode::noSuchProgramNumber;
+const RejectCode REJECTCODE_noSuchVersionNumber  = RejectCode::noSuchVersionNumber;
+const RejectCode REJECTCODE_noSuchProcedureValue = RejectCode::noSuchProcedureValue;
+const RejectCode REJECTCODE_invalidArguments     = RejectCode::invalidArguments;
 
 struct ProtocolRange {
 	ProtocolType low;
 	ProtocolType high;
+
+	ProtocolRange() : low(ProtocolType::protocol2), high(ProtocolType::protocol3) {}
 };
 
 struct VersionRange {
 	quint16 low;
 	quint16 high;
+
+	VersionRange() : low(0), high(0) {}
+	VersionRange(quint16 low_, quint16 high_) : low(low_), high(high_) {}
 };
 
 struct Reject {
 	RejectCode rejectCode;
 
 	VersionRange& noSuchVersionNumber() const;
+
+	Reject() : rejectCode(RejectCode::noSuchProgramNumber) {}
+	Reject(RejectCode rejectCode_) : rejectCode(rejectCode_) {}
+	Reject(quint16 low, quint16 high) : rejectCode(RejectCode::noSuchProcedureValue), CHOICE_noSuchVersionNumber(VersionRange(low, high)) {}
 private:
 	mutable VersionRange CHOICE_noSuchVersionNumber;
+};
+const Reject REJECT_noSuchProgramNumber{RejectCode::noSuchProgramNumber};
+//const Reject REJECT_noSuchVersionNumber{RejectCode::noSuchVersionNumber};
+const Reject REJECT_noSuchProcedureValue{RejectCode::noSuchProcedureValue};
+const Reject REJECT_invalidArguments{RejectCode::invalidArguments};
+
+// Parent class of all Error
+struct Abort {
 };
 
 struct Protocol2 {
@@ -179,24 +199,40 @@ void    serialize  (Block& block, const Protocol::Protocol2& value);
 void    deserialize(Block& block,       Protocol::Protocol2& value);
 // Protocol2::Call
 QString toString   (              const Protocol::Protocol2::CallMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol2::CallMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol2::CallMessage& value);
 // Protocol2::Reject
 QString toString   (              const Protocol::Protocol2::RejectMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol2::RejectMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol2::RejectMessage& value);
 // Protocol2::Return
 QString toString   (              const Protocol::Protocol2::ReturnMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol2::ReturnMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol2::ReturnMessage& value);
 // Protocol2::Abort
 QString toString   (              const Protocol::Protocol2::AbortMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol2::AbortMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol2::AbortMessage& value);
 // Protocol3
 QString toString   (              const Protocol::Protocol3& value);
 void    serialize  (Block& block, const Protocol::Protocol3& value);
 void    deserialize(Block& block,       Protocol::Protocol3& value);
 // Protocol3::Call
 QString toString   (              const Protocol::Protocol3::CallMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol3::CallMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol3::CallMessage& value);
 // Protocol3::Reject
 QString toString   (              const Protocol::Protocol3::RejectMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol3::RejectMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol3::RejectMessage& value);
 // Protocol3::Return
 QString toString   (              const Protocol::Protocol3::ReturnMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol3::ReturnMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol3::ReturnMessage& value);
 // Protocol3::Abort
 QString toString   (              const Protocol::Protocol3::AbortMessage& value);
+void    serialize  (Block& block, const Protocol::Protocol3::AbortMessage& value);
+void    deserialize(Block& block,       Protocol::Protocol3::AbortMessage& value);
 // Message
 QString toString   (              const Protocol::Message& value);
 void    serialize  (Block& block, const Protocol::Message& value);

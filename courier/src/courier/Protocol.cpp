@@ -53,7 +53,6 @@ static void copy(Courier::Stub::Protocol::VersionRange& left, const Courier::Pro
 	left.low  = right.low;
 	left.high = right.high;
 }
-
 // Reject
 Courier::Protocol::VersionRange& Courier::Protocol::Reject::noSuchVersionNumber() const {
 	if (rejectCode == Courier::Protocol::RejectCode::noSuchVersionNumber) {
@@ -393,17 +392,80 @@ void    Courier::deserialize(Block& block,       Protocol::Protocol2& value) {
 QString Courier::toString   (              const Protocol::Protocol2::CallMessage& value) {
 	return QString("[%1 %2 %3 %4]").arg(value.transaction, 4, 16, QChar('0')).arg(value.program, 2).arg(value.version).arg(value.procedure, 2);
 }
+void    Courier::serialize  (Block& block, const Protocol::Protocol2::CallMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_01 left;
+
+	left.transaction = value.transaction;
+	left.program     = value.program;
+	left.version     = value.version;
+	left.procedure   = value.procedure;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol2::CallMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_01 right;
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+	value.program     = right.program;
+	value.version     = right.version;
+	value.procedure   = right.procedure;
+}
 // Protocol2::Reject
 QString Courier::toString   (              const Protocol::Protocol2::RejectMessage& value) {
 	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(Courier::toString(value.rejectCode));
+}
+void    Courier::serialize  (Block& block, const Protocol::Protocol2::RejectMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_02 left;
+
+	left.transaction = value.transaction;
+	left.rejectCode  = (decltype(left.rejectCode))value.rejectCode;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol2::RejectMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_02 right;
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+	value.rejectCode  = (decltype(value.rejectCode))right.rejectCode;
 }
 // Protocol2::Return
 QString Courier::toString   (              const Protocol::Protocol2::ReturnMessage& value) {
 	return QString("[%1]").arg(value.transaction, 4, 16, QChar('0'));
 }
+void    Courier::serialize  (Block& block, const Protocol::Protocol2::ReturnMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_03 left;
+
+	left.transaction = value.transaction;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol2::ReturnMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_03 right;
+
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+}
 // Protocol2::Abort
 QString Courier::toString   (              const Protocol::Protocol2::AbortMessage& value) {
 	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(value.abortCode, 2);
+}
+void    Courier::serialize  (Block& block, const Protocol::Protocol2::AbortMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_04 left;
+
+	left.transaction = value.transaction;
+	left.abortCode   = value.abortCode;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol2::AbortMessage& value) {
+	Courier::Stub::Protocol::Protocol2::Protocol2_CHOICE_04 right;
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+	value.abortCode   = right.abortCode;
 }
 // Protocol3
 QString Courier::toString   (              const Protocol::Protocol3& value) {
@@ -530,19 +592,88 @@ void    Courier::deserialize(Block& block,       Protocol::Protocol3& value) {
 QString Courier::toString   (              const Protocol::Protocol3::CallMessage& value) {
 	return QString("[%1 %2 %3 %4]").arg(value.transaction, 4, 16, QChar('0')).arg(value.program, 2).arg(value.version).arg(value.procedure, 2);
 }
+void    Courier::serialize  (Block& block, const Protocol::Protocol3::CallMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_01 left;
+
+	left.transaction = value.transaction;
+	left.program     = value.program;
+	left.version     = value.version;
+	left.procedure   = value.procedure;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol3::CallMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_01 right;
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+	value.program     = right.program;
+	value.version     = right.version;
+	value.procedure   = right.procedure;
+}
 // Protocol3::Reject
 QString Courier::toString   (              const Protocol::Protocol3::RejectMessage& value) {
 	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(Courier::toString(value.reject));
 }
-// Protocol3::Return
+void    Courier::serialize  (Block& block, const Protocol::Protocol3::RejectMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_02 left;
+
+	left.transaction = value.transaction;
+	left.reject.choiceTag  = (decltype(left.reject.choiceTag))value.reject.rejectCode;
+	if (left.reject.choiceTag == Courier::Stub::Protocol::RejectCode::noSuchVersionNumber) {
+		copy(left.reject.noSuchVersionNumber().range, value.reject.noSuchVersionNumber());
+	}
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol3::RejectMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_02 right;
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+	value.reject.rejectCode  = (decltype(value.reject.rejectCode))right.reject.choiceTag;
+	if (value.reject.rejectCode == Protocol::RejectCode::noSuchVersionNumber) {
+		copy(value.reject.noSuchVersionNumber(), right.reject.noSuchVersionNumber().range);
+	}
+}
+/// Protocol3::Return
 QString Courier::toString   (              const Protocol::Protocol3::ReturnMessage& value) {
 	return QString("[%1]").arg(value.transaction, 4, 16, QChar('0'));
 }
-// Protocol3::Abort
+void    Courier::serialize  (Block& block, const Protocol::Protocol3::ReturnMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_03 left;
+
+	left.transaction = value.transaction;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol3::ReturnMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_03 right;
+
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+}
+/// Protocol3::Abort
 QString Courier::toString   (              const Protocol::Protocol3::AbortMessage& value) {
 	return QString("[%1 %2]").arg(value.transaction, 4, 16, QChar('0')).arg(value.abortCode, 2);
 }
-// Message
+void    Courier::serialize  (Block& block, const Protocol::Protocol3::AbortMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_04 left;
+
+	left.transaction = value.transaction;
+	left.abortCode   = value.abortCode;
+
+	Courier::serialize(block, left);
+}
+void    Courier::deserialize(Block& block,       Protocol::Protocol3::AbortMessage& value) {
+	Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_04 right;
+	Courier::deserialize(block, right);
+
+	value.transaction = right.transaction;
+	value.abortCode   = right.abortCode;
+}
+/// Message
 QString Courier::toString   (              const Protocol::Message& value) {
     switch(value.protocolType) {
     case Courier::Protocol::ProtocolType::protocol2:
