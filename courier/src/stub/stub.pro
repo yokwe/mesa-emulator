@@ -22,6 +22,9 @@ SOURCES += Time2.cpp Authentication1.cpp Authentication2.cpp Authentication3.cpp
 
 HEADERS += Programs.h
 
+HEADERS += service_Authentication2.h   service_Authentication3.h   service_BulkData1.h   service_Clearinghouse2.h   service_Clearinghouse3.h
+SOURCES += service_Authentication2.cpp service_Authentication3.cpp service_BulkData1.cpp service_Clearinghouse2.cpp service_Clearinghouse3.cpp
+
 ###############################################
 
 INCLUDEPATH += .
