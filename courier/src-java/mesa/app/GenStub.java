@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mesa.courier.compiler.Compiler;
+import mesa.courier.compiler.Compiler.ProcedureInfo;
 import mesa.courier.compiler.CompilerException;
 import mesa.courier.compiler.LinePrinter;
 import mesa.courier.program.Program;
@@ -34,52 +35,11 @@ public class GenStub {
 			compiler.genStub();
 		}
 		
+		// generate courier/stub/Programs.h
+		genPrograms();
+		
+		genService();
 		// TODO generate program version procedure mapping table
-		{
-			String programName = "Programs";
-			String pathc = String.format("%s%s.cpp", Compiler.STUB_DIR_PATH, "Programs");
-			String pathh = String.format("%s%s.h",   Compiler.STUB_DIR_PATH, "Programs");
-			logger.info(String.format("pathc = %s", pathc));
-			logger.info(String.format("pathh = %s", pathh));
-			
-			try (LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
-				
-				outh.format("#ifndef STUB_%s_H__", programName);
-				outh.format("#define STUB_%s_H__", programName);
-				outh.line();
-				// include courier header
-				outh.line("#include \"../courier/Programs.h\"");
-				
-				// output namespace
-				outh.line();
-				outh.format("namespace %s {", "Courier");
-				outh.format("namespace %s {", "Stub");
-				outh.format("namespace %s {", programName);
-				
-				outh.line("QList<Courier::Programs::Info> infoList = {");
-				
-				for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
-					Program program = entry.getValue().program;
-					Compiler.Context context        = entry.getValue();
-					
-					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
-						// 	static void     addProgram(int programCode, QString programName, int versionCode, int procudureCode, QString procedureName);
-						outh.format(" {%2d, \"%s\", %2d, %2d, \"%s\"},", program.info.program, program.info.name, program.info.version, procedureInfo.code, procedureInfo.name);
-					}
-				}
-
-				outh.line("};");
-
-				// Close namespace
-				outh.line("}");
-				outh.line("}");
-				outh.line("}");
-				// #endif
-				outh.line("#endif");
-			} catch (FileNotFoundException e) {
-				throw new CompilerException("FileNotFoundException", e);
-			}
-		}
 		for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
 			Program myProgram = entry.getValue().program;
 			
@@ -92,12 +52,189 @@ public class GenStub {
 			for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
 				logger.info("{}  {}  {}  PROC  {}  {}", program, programName, version, procedureInfo.code, procedureInfo.name);
 			}
-
-			for(Compiler.ErrorInfo errorInfo: context.errorInfoList) {
-				logger.info("{}  {}  {}  ERROR {}  {}", program, programName, version, errorInfo.code, errorInfo.name);
-			}
 		}
 		
 		logger.debug("STOP");
+	}
+	
+	private static void genPrograms() {
+		String programName = "Programs";
+		String pathc = String.format("%s%s.cpp", Compiler.STUB_DIR_PATH, programName);
+		String pathh = String.format("%s%s.h",   Compiler.STUB_DIR_PATH, programName);
+		logger.info(String.format("pathc = %s", pathc));
+		logger.info(String.format("pathh = %s", pathh));
+		
+		try (LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
+			outh.format("#ifndef STUB_%s_H__", programName);
+			outh.format("#define STUB_%s_H__", programName);
+			outh.line();
+			// include courier header
+			outh.line("#include \"../courier/Programs.h\"");
+			
+			// output namespace
+			outh.line();
+			outh.format("namespace %s {", "Courier");
+			outh.format("namespace %s {", "Stub");
+			outh.format("namespace %s {", programName);
+			
+			outh.line("QList<Courier::Programs::Info> infoList = {");
+			
+			for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
+				Program          program = entry.getValue().program;
+				Compiler.Context context = entry.getValue();
+				
+				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					// 	static void     addProgram(int programCode, QString programName, int versionCode, int procudureCode, QString procedureName);
+					outh.format(" {%2d, \"%s\", %2d, %2d, \"%s\"},", program.info.program, program.info.name, program.info.version, procedureInfo.code, procedureInfo.name);
+				}
+			}
+
+			outh.line("};");
+
+			// Close namespace
+			outh.line("}");
+			outh.line("}");
+			outh.line("}");
+			// #endif
+			outh.line("#endif");
+		} catch (FileNotFoundException e) {
+			throw new CompilerException("FileNotFoundException", e);
+		}
+	}
+	
+	private static void genService() {
+		for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
+			Program          program = entry.getValue().program;
+			Compiler.Context context = entry.getValue();
+			
+			if (context.procedureInfoList.isEmpty()) continue;
+			
+			String programName = program.info.getProgramVersion();
+			String serviceName = String.format("service_%s", programName);
+			String pathc = String.format("%s%s.cpp", Compiler.STUB_DIR_PATH, serviceName);
+			String pathh = String.format("%s%s.h",   Compiler.STUB_DIR_PATH, serviceName);
+			logger.info(String.format("pathc = %s", pathc));
+			logger.info(String.format("pathh = %s", pathh));
+			
+			try (
+				LinePrinter outc = new LinePrinter(new PrintWriter(pathc));
+				LinePrinter outh = new LinePrinter(new PrintWriter(pathh));) {
+				outh.format("#ifndef STUB_%s_H__", serviceName);
+				outh.format("#define STUB_%s_H__", serviceName);
+				outh.line();
+				outh.line("#include \"../courier/Protocol.h\"");
+				// include corresponding stub header
+				outh.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
+				
+				// output namespace
+				outh.line();
+				outh.format("namespace %s {", "Courier");
+				outh.format("namespace %s {", "Stub");
+				
+				// output class
+				outh.format("class %s {", serviceName);
+				outh.line("public:");
+				outh.line("struct CallTable {");
+				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					// 	static void     addProgram(int programCode, QString programName, int versionCode, int procudureCode, QString procedureName);
+					//south.format(" {%2d, \"%s\", %2d, %2d, \"%s\"},", program.info.program, program.info.name, program.info.version, procedureInfo.code, procedureInfo.name);
+					outh.format("/* %2d */ %s::%s::call call%s = nullptr;", procedureInfo.code, programName, procedureInfo.name, procedureInfo.name);
+				}
+				outh.line("};");
+				outh.line();
+				outh.line(
+						"void setCallTable(CallTable callTable_) {",
+						"callTable = callTable_;",
+						"}");
+
+				outh.line();
+				outh.line("void call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
+				outh.line();
+				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outh.format("void call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);", procedureInfo.name);
+	            }
+
+				outh.line("private:");
+				outh.line("CallTable callTable;");
+				outh.line("};");
+				// Close namespace
+				outh.line("}");
+				outh.line("}");
+				// #endif
+				outh.line("#endif");
+				
+				
+				outc.line("#include \"../util/Util.h\"");
+				outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub-svc/%s\");", program.info.getProgramVersion());
+				outc.line();
+				outc.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
+				outc.format("#include \"../stub/%s.h\"", serviceName);
+				outc.line();
+				outc.line("#include \"../courier/Last.h\"");
+				outc.line();
+				
+				outc.format("void %s::%s::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
+				outc.line("switch(callMessage.procedure) {");
+
+				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
+					outc.format("call%s(callMessage, request, response);", procedureInfo.name);
+					outc.line("break;");
+	            }
+				outc.line("default:",
+						  "logger.error(\"Unexpected callMessage.procedure = %d\", callMessage.procedure);",
+						  "COURIER_FATAL_ERROR();");
+				outc.line("}"); // switch
+				outc.line("}"); // call
+				
+				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outc.format("void %s::%s::call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
+
+					outc.format("if (callTable.call%s == nullptr) {", procedureInfo.name);
+					outc.line("throw Courier::Protocol::REJECT_noSuchProcedureValue;",
+							  "}");
+
+					outc.line("try {");
+					outc.format("%s::%s::Param  param;", programName, procedureInfo.name);
+					outc.format("%s::%s::Result result;", programName, procedureInfo.name);
+					
+					outc.line("Courier::deserialize(request, param);");
+					outc.format("callTable.call%s(param, result);", procedureInfo.name);
+					outc.line("Protocol::Protocol3::ReturnMessage returnMessage;",
+							  "returnMessage.transaction = callMessage.transaction;",
+							  "",
+							  "Courier::serialize(response, returnMessage);",
+							  "Courier::serialize(response, result);");
+
+					for(String errorName: procedureInfo.typeProcedure.errroList) {
+						outc.format("} catch(const %s::%s& e) {", programName, errorName);
+						outc.line("Protocol::Protocol3::AbortMessage abortMessage;",
+								  "abortMessage.transaction = callMessage.transaction;",
+								  "abortMessage.abortCode   = e.CODE;",
+								  "",
+								  "Courier::serialize(response, abortMessage);",
+								  "Courier::serialize(response, e);");
+					}
+					outc.line("} catch(const Protocol::Abort& e) {",
+							  "logger.error(\"Protocol::Abort\");",
+							  "COURIER_FATAL_ERROR();");
+					outc.line("} catch(const std::runtime_error& e) {",
+							  "logger.error(\"std::runtime_error %s\", e.what());",
+							  "COURIER_FATAL_ERROR();");
+					outc.line("} catch(const std::exception& e) {",
+							  "logger.error(\"std::exception %s\", e.what());",
+							  "COURIER_FATAL_ERROR();");
+					outc.line("} catch(...) {",
+							  "COURIER_FATAL_ERROR();");
+					
+					outc.line("}"); // try
+					outc.line("}"); // callXXX
+				}
+
+			} catch (FileNotFoundException e) {
+				throw new CompilerException("FileNotFoundException", e);
+			}
+			
+		}
 	}
 }
