@@ -175,7 +175,19 @@ public class GenStub {
 						"}");
 
 				outh.line();
-				outh.line("void call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
+				outh.line("const char* getProgramName() {");
+				outh.format("return %s::%s::PROGRAM_NAME;", "Courier::Stub", program.info.getProgramVersion());
+				outh.line("}");
+				outh.line("int         getProgramCode() {");
+				outh.format("return %s::%s::PROGRAM_CODE;", "Courier::Stub", program.info.getProgramVersion());
+				outh.line("}");
+				outh.line("int         getVersion() {");
+				outh.format("return %s::%s::VERSION_CODE;", "Courier::Stub", program.info.getProgramVersion());
+				outh.line("}");
+				outh.line("bool        isValidProcedure(int code);");
+				outh.line("bool        isProcedureInstalled(int code);");
+				outh.line("const char* getProcedureName(int code);");
+				outh.line("void        call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
 				outh.line();
 				
 				outh.line("private:");
@@ -210,6 +222,41 @@ public class GenStub {
 				outc.line("#include \"../courier/Last.h\"");
 				outc.line();
 				
+				outc.format("bool        %s::%s::isValidProcedure(int code) {", "Courier::Stub", serviceName);
+				outc.line("switch(code) {");
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
+					outc.line("return true;");
+	            }
+				outc.line("default:",
+						  "return false;",
+						  "}",
+						  "}");
+
+				outc.format("bool        %s::%s::isProcedureInstalled(int code) {", "Courier::Stub", serviceName);
+				outc.line("switch(code) {");
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
+					outc.format("return callTable.call%s != nullptr;", procedureInfo.name);
+	            }
+				outc.line("default:",
+						  "logger.error(\"Unexpected code = %d\", code);",
+						  "COURIER_FATAL_ERROR();",
+						  "}",
+						  "}");
+				
+				outc.format("const char* %s::%s::getProcedureName(int code) {", "Courier::Stub", serviceName);
+				outc.line("switch(code) {");
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
+					outc.format("return %s::%s::NAME;", programName, procedureInfo.name);
+	            }
+				outc.line("default:",
+						  "logger.error(\"Unexpected code = %d\", code);",
+						  "COURIER_FATAL_ERROR();",
+						  "}",
+						  "}");
+
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("void %s::%s::setCallTable%s(%s::%s::call newValue) {", "Courier::Stub", serviceName, procedureInfo.name, programName, procedureInfo.name);
 					outc.format("callTable.call%s = newValue;", procedureInfo.name);
@@ -218,7 +265,6 @@ public class GenStub {
 
 				outc.format("void %s::%s::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
-
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
 					outc.format("call%s(callMessage, request, response);", procedureInfo.name);
