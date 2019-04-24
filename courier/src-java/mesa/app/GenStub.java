@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import mesa.courier.compiler.ColumnLayout;
 import mesa.courier.compiler.Compiler;
+import mesa.courier.compiler.Compiler.Context;
 import mesa.courier.compiler.Compiler.ProcedureInfo;
 import mesa.courier.compiler.CompilerException;
 import mesa.courier.compiler.LinePrinter;
@@ -43,16 +44,16 @@ public class GenStub {
 		
 		genService();
 		// TODO generate program version procedure mapping table
-		for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
+		for(Map.Entry<String, Context> entry: Compiler.contextMap.entrySet()) {
 			Program myProgram = entry.getValue().program;
 			
 			String programName = myProgram.info.name;
 			int    program     = myProgram.info.program;
 			int    version     = myProgram.info.version;
 					
-			Compiler.Context context        = entry.getValue();
+			Context context        = entry.getValue();
 			
-			for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+			for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 				logger.info("{}  {}  {}  PROC  {}  {}", program, programName, version, procedureInfo.code, procedureInfo.name);
 			}
 		}
@@ -82,11 +83,11 @@ public class GenStub {
 			
 			outh.line("QList<Courier::Programs::Info> infoList = {");
 			
-			for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
-				Program          program = entry.getValue().program;
-				Compiler.Context context = entry.getValue();
+			for(Map.Entry<String, Context> entry: Compiler.contextMap.entrySet()) {
+				Program program = entry.getValue().program;
+				Context context = entry.getValue();
 				
-				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					// 	static void     addProgram(int programCode, QString programName, int versionCode, int procudureCode, QString procedureName);
 					outh.format(" {%2d, \"%s\", %2d, %2d, \"%s\"},", program.info.program, program.info.name, program.info.version, procedureInfo.code, procedureInfo.name);
 				}
@@ -106,9 +107,9 @@ public class GenStub {
 	}
 	
 	private static void genService() {
-		for(Map.Entry<String, Compiler.Context> entry: Compiler.contextMap.entrySet()) {
-			Program          program = entry.getValue().program;
-			Compiler.Context context = entry.getValue();
+		for(Map.Entry<String, Context> entry: Compiler.contextMap.entrySet()) {
+			Program program = entry.getValue().program;
+			Context context = entry.getValue();
 			
 			if (context.procedureInfoList.isEmpty()) continue;
 			
@@ -144,7 +145,7 @@ public class GenStub {
 					List<String> c2 = new ArrayList<>();
 					List<String> c3 = new ArrayList<>();
 					
-					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("%s::%s::call", programName, procedureInfo.name));
 						c2.add(String.format("call%s", procedureInfo.name));
 						c3.add(String.format("= nullptr; // %2d", procedureInfo.code));
@@ -159,7 +160,7 @@ public class GenStub {
 					List<String> c2 = new ArrayList<>();
 					List<String> c3 = new ArrayList<>();
 
-					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("void setCallTable%s", procedureInfo.name));
 						c2.add(String.format("(%s::%s::call", programName, procedureInfo.name));
 						c3.add("newValue);");
@@ -185,7 +186,7 @@ public class GenStub {
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
 					
-					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("void call%s", procedureInfo.name));
 						c2.add("(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
 		            }
@@ -209,7 +210,7 @@ public class GenStub {
 				outc.line("#include \"../courier/Last.h\"");
 				outc.line();
 				
-				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("void %s::%s::setCallTable%s(%s::%s::call newValue) {", "Courier::Stub", serviceName, procedureInfo.name, programName, procedureInfo.name);
 					outc.format("callTable.call%s = newValue;", procedureInfo.name);
 					outc.line("}");
@@ -218,7 +219,7 @@ public class GenStub {
 				outc.format("void %s::%s::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
 
-				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
 					outc.format("call%s(callMessage, request, response);", procedureInfo.name);
 					outc.line("break;");
@@ -229,7 +230,7 @@ public class GenStub {
 				outc.line("}"); // switch
 				outc.line("}"); // call
 				
-				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("void %s::%s::call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
 
 					outc.format("if (callTable.call%s == nullptr) {", procedureInfo.name);
