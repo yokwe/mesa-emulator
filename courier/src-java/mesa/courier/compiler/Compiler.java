@@ -353,7 +353,8 @@ public class Compiler {
 		outh.line("};");
 		
 		outh.line();
-		outh.format("static const quint16 CODE = %d;", code);
+		outh.format("static constexpr const quint16 CODE = %d;", code);
+		outh.format("static constexpr const char*   NAME = \"%s\";", name);
 		outh.line();
 		outh.line("using call = void (*)(Param& param, Result& result);");
 		if (typeProcedure.errroList.isEmpty()) {
@@ -1507,8 +1508,9 @@ public class Compiler {
 			outh.format("namespace %s {", program.info.getProgramVersion());
 			if (program.info.version != 0) {
 				outh.line();
-				outh.format("const quint32 PROGRAM_NUMBER = %d;", program.info.program);
-				outh.format("const quint32 VERSION_NUMBER = %d;", program.info.version);
+				outh.format("constexpr const char*   PROGRAM_NAME = \"%s\";", program.info.name);
+				outh.format("constexpr const quint32 PROGRAM_CODE = %d;", program.info.program);
+				outh.format("constexpr const quint32 VERSION_CODE = %d;", program.info.version);
 			}
 
 			// for outc
