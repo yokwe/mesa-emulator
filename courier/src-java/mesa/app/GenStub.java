@@ -2,11 +2,14 @@ package mesa.app;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mesa.courier.compiler.ColumnLayout;
 import mesa.courier.compiler.Compiler;
 import mesa.courier.compiler.Compiler.ProcedureInfo;
 import mesa.courier.compiler.CompilerException;
@@ -135,12 +138,35 @@ public class GenStub {
 				outh.format("class %s {", serviceName);
 				outh.line("public:");
 				outh.line("struct CallTable {");
-				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
-					// 	static void     addProgram(int programCode, QString programName, int versionCode, int procudureCode, QString procedureName);
-					//south.format(" {%2d, \"%s\", %2d, %2d, \"%s\"},", program.info.program, program.info.name, program.info.version, procedureInfo.code, procedureInfo.name);
-					outh.format("/* %2d */ %s::%s::call call%s = nullptr;", procedureInfo.code, programName, procedureInfo.name, procedureInfo.name);
+				
+				{
+					List<String> c1 = new ArrayList<>();
+					List<String> c2 = new ArrayList<>();
+					List<String> c3 = new ArrayList<>();
+					
+					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+						c1.add(String.format("%s::%s::call", programName, procedureInfo.name));
+						c2.add(String.format("call%s", procedureInfo.name));
+						c3.add(String.format("= nullptr; // %2d", procedureInfo.code));
+					}
+					ColumnLayout.layoutStringString(outh, c1, c2, c3);
 				}
 				outh.line("};");
+				
+				outh.line();
+				{
+					List<String> c1 = new ArrayList<>();
+					List<String> c2 = new ArrayList<>();
+					List<String> c3 = new ArrayList<>();
+
+					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+						c1.add(String.format("void setCallTable%s", procedureInfo.name));
+						c2.add(String.format("(%s::%s::call", programName, procedureInfo.name));
+						c3.add("newValue);");
+					}
+					ColumnLayout.layoutStringString(outh, c1, c2, c3);
+				}
+				
 				outh.line();
 				outh.line(
 						"void setCallTable(CallTable callTable_) {",
@@ -150,12 +176,22 @@ public class GenStub {
 				outh.line();
 				outh.line("void call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
 				outh.line();
-				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outh.format("void call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);", procedureInfo.name);
-	            }
-
+				
 				outh.line("private:");
 				outh.line("CallTable callTable;");
+				
+				outh.line();
+				{
+					List<String> c1 = new ArrayList<>();
+					List<String> c2 = new ArrayList<>();
+					
+					for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+						c1.add(String.format("void call%s", procedureInfo.name));
+						c2.add("(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
+		            }
+					ColumnLayout.layoutStringString(outh, c1, c2);
+				}
+
 				outh.line("};");
 				// Close namespace
 				outh.line("}");
@@ -173,6 +209,12 @@ public class GenStub {
 				outc.line("#include \"../courier/Last.h\"");
 				outc.line();
 				
+				for(Compiler.ProcedureInfo procedureInfo: context.procedureInfoList) {
+					outc.format("void %s::%s::setCallTable%s(%s::%s::call newValue) {", "Courier::Stub", serviceName, procedureInfo.name, programName, procedureInfo.name);
+					outc.format("callTable.call%s = newValue;", procedureInfo.name);
+					outc.line("}");
+				}
+
 				outc.format("void %s::%s::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
 
