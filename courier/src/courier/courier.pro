@@ -14,8 +14,8 @@ SOURCES += Courier.cpp Block.cpp StreamOf.cpp NIC.cpp IDP.cpp RIP.cpp PEX.cpp Ti
 HEADERS += Protocol.h   ExpeditedCourier.h
 SOURCES += Protocol.cpp ExpeditedCourier.cpp
 
-HEADERS += Programs.h
-SOURCES += Programs.cpp
+HEADERS += Programs.h   Service.h
+SOURCES += Programs.cpp Service.cpp
 
 ###############################################
 
