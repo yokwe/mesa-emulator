@@ -138,8 +138,12 @@ public class GenStub {
 				// output class
 				outh.format("class %s {", serviceName);
 				outh.line("public:");
-				outh.line("struct CallTable {");
+				outh.format("const char*   PROGRAM_NAME = \"%s\";", program.info.name);
+				outh.format("const quint32 PROGRAM_CODE = %d;", program.info.program);
+				outh.format("const quint32 VERSION_CODE = %d;", program.info.version);
+				outh.line();
 				
+				outh.line("struct CallTable {");
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
@@ -168,30 +172,21 @@ public class GenStub {
 					ColumnLayout.layoutStringString(outh, c1, c2, c3);
 				}
 				
-				outh.line();
-				outh.line(
-						"void setCallTable(CallTable callTable_) {",
-						"callTable = callTable_;",
-						"}");
+				outh.line("",
+						  "void setCallTable(CallTable callTable_) {",
+						  "callTable = callTable_;",
+						  "}");
 
-				outh.line();
-				outh.line("const char* getProgramName() {");
-				outh.format("return %s::%s::PROGRAM_NAME;", "Courier::Stub", program.info.getProgramVersion());
-				outh.line("}");
-				outh.line("int         getProgramCode() {");
-				outh.format("return %s::%s::PROGRAM_CODE;", "Courier::Stub", program.info.getProgramVersion());
-				outh.line("}");
-				outh.line("int         getVersion() {");
-				outh.format("return %s::%s::VERSION_CODE;", "Courier::Stub", program.info.getProgramVersion());
-				outh.line("}");
-				outh.line("bool        isValidProcedure(int code);");
-				outh.line("bool        isProcedureInstalled(int code);");
-				outh.line("const char* getProcedureName(int code);");
-				outh.line("void        call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
-				outh.line();
+				outh.line("",
+						  "bool        isProcedureValid    (int code);",
+						  "bool        isProcedureInstalled(int code);",
+						  "const char* getProcedureName    (int code);",
+						  "void        call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
 				
-				outh.line("private:");
-				outh.line("CallTable callTable;");
+				outh.line();
+				outh.line("",
+						  "private:",
+						  "CallTable callTable;");
 				
 				outh.line();
 				{
@@ -205,7 +200,8 @@ public class GenStub {
 					ColumnLayout.layoutStringString(outh, c1, c2);
 				}
 
-				outh.line("};");
+				outh.line("};"); // end of class
+				
 				// Close namespace
 				outh.line("}");
 				outh.line("}");
@@ -213,6 +209,9 @@ public class GenStub {
 				outh.line("#endif");
 				
 				
+				//
+				// Generation of outc starts
+				//
 				outc.line("#include \"../util/Util.h\"");
 				outc.format("static log4cpp::Category& logger = Logger::getLogger(\"stub-svc/%s\");", program.info.getProgramVersion());
 				outc.line();
@@ -222,7 +221,7 @@ public class GenStub {
 				outc.line("#include \"../courier/Last.h\"");
 				outc.line();
 				
-				outc.format("bool        %s::%s::isValidProcedure(int code) {", "Courier::Stub", serviceName);
+				outc.format("bool        %s::%s::isProcedureValid(int code) {", "Courier::Stub", serviceName);
 				outc.line("switch(code) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
@@ -289,19 +288,22 @@ public class GenStub {
 					
 					outc.line("Courier::deserialize(request, param);");
 					outc.format("callTable.call%s(param, result);", procedureInfo.name);
-					outc.line("Protocol::Protocol3::ReturnMessage returnMessage;",
-							  "returnMessage.transaction = callMessage.transaction;",
+					outc.line("",
+							  "Protocol::Protocol3 protocol3;",
+							  "protocol3.messageType = Protocol::MessageType::return__;",
+							  "protocol3.return__().transaction = callMessage.transaction;",
 							  "",
-							  "Courier::serialize(response, returnMessage);",
+							  "Courier::serialize(response, protocol3);",
 							  "Courier::serialize(response, result);");
 
 					for(String errorName: procedureInfo.typeProcedure.errroList) {
 						outc.format("} catch(const %s::%s& e) {", programName, errorName);
-						outc.line("Protocol::Protocol3::AbortMessage abortMessage;",
-								  "abortMessage.transaction = callMessage.transaction;",
-								  "abortMessage.abortCode   = e.CODE;",
-								  "",
-								  "Courier::serialize(response, abortMessage);",
+						outc.line("Protocol::Protocol3 protocol3;",
+								  "protocol3.messageType = Protocol::MessageType::abort__;",
+								  "protocol3.abort__().transaction = callMessage.transaction;");
+						outc.format("protocol3.abort__().abortCode   = %s::%s::CODE;", programName, errorName);
+						outc.line("",
+								  "Courier::serialize(response, protocol3);",
 								  "Courier::serialize(response, e);");
 					}
 					outc.line("} catch(const Protocol::Abort& e) {",
