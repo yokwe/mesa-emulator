@@ -278,7 +278,9 @@ public class Compiler {
 		}
 
 		outh.format("struct %s : public Protocol::Abort {", name);
-		outh.format("static const quint16 CODE = %d;", code);
+		outh.format("static constexpr const char*   NAME = \"%s\";", name);
+		outh.format("static constexpr const quint16 CODE = %d;", code);
+
 		
 		if (typeError.paramList.isEmpty()) {
 			//
@@ -324,6 +326,9 @@ public class Compiler {
 		}
 
 		outh.format("struct %s {", name);
+		outh.format("static constexpr const char*   NAME = \"%s\";", name);
+		outh.format("static constexpr const quint16 CODE = %d;", code);
+		outh.line();
 		outh.line("struct Param {");
 		{
 			List<String> c1 = new ArrayList<>();
@@ -352,9 +357,6 @@ public class Compiler {
 		}
 		outh.line("};");
 		
-		outh.line();
-		outh.format("static constexpr const quint16 CODE = %d;", code);
-		outh.format("static constexpr const char*   NAME = \"%s\";", name);
 		outh.line();
 		outh.line("using call = void (*)(Param& param, Result& result);");
 		if (typeProcedure.errroList.isEmpty()) {
@@ -736,6 +738,29 @@ public class Compiler {
 		}
 	}
 	private void genDeclTypeChoiceAnon(LinePrinter outh, LinePrinter outc, TypeChoice.Anon anon, String name, String namePrefix) {
+		// Check for StreamOf special case
+		{
+			if (name.startsWith("StreamOf") && anon.candidates.size() == 2) {
+				Candidate<Correspondence> nextSegment = anon.candidates.get(0);
+				Candidate<Correspondence> lastSegment = anon.candidates.get(1);
+				
+				String nextSegmentName = nextSegment.designators.get(0).id;
+				String lastSegmentName = lastSegment.designators.get(0).id;
+				
+				if (nextSegmentName.compareTo("nextSegment") == 0 && lastSegmentName.compareTo("lastSegment") == 0) {
+					Type lastSegmentType = lastSegment.type;
+					if (lastSegmentType.kind == Type.Kind.SEQUENCE) {
+						TypeSequence typeSequence = (TypeSequence)lastSegmentType;
+						Type elementType = typeSequence.type;
+						
+						outh.line("// FIXME");
+						outh.format("using %s = Courier::StreamOf<%s>;", name, toTypeString(elementType));
+						return;
+					}
+				}
+			}
+		}
+
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
@@ -1491,9 +1516,14 @@ public class Compiler {
 			// include courier header
 			outh.line("#include \"../courier/Courier.h\"");
 			outh.line("#include \"../courier/Protocol.h\""); // for Protocol::Abort
+			outh.line("#include \"../courier/StreamOf.h\""); // for StreaOf<T>
+			
 			// include depend module
-			for(Program.Info info: program.depends) {
-				outh.format("#include \"../stub/%s.h\"", info.getProgramVersion());
+			if (!program.depends.isEmpty()) {
+				outh.line();
+				for(Program.Info info: program.depends) {
+					outh.format("#include \"../stub/%s.h\"", info.getProgramVersion());
+				}
 			}
 
 			// output namespace
