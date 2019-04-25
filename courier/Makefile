@@ -116,7 +116,7 @@ gen-antlr:
 gen-stub:
 	rm   -rf src/stub/*.cpp src/stub/*.h
 	java -cp $(CLASSPATH) mesa.app.GenStub $(COURIER_TARGET)
-	cp   -p  src/stub-custom/*.cpp src/stub-custom/*.h src/stub
+#	cp   -p  src/stub-custom/*.cpp src/stub-custom/*.h src/stub
 
 dump-courier:
 	java -cp $(CLASSPATH) mesa.app.DumpCourier Clearinghouse2
