@@ -58,43 +58,6 @@ struct StreamOfSegment {
 	StreamOfSegmentType segmentType;
 	QVector<T>          segment;
 };
-template <typename T>
-QString toString(const StreamOfSegment<T>& value) {
-	QStringList list;
-	int size = value.segment.size();
-	for(int i = 0; i < size; i++) {
-		list << Courier::toString(value.segment[i]);
-	}
-	return QString("[%1 (%2)[%3]]").arg(Courier::toString(value.segmentType)).arg(size).arg(list.join(" "));
-}
-template <typename T>
-void serialize(BLOCK& block, const Courier::StreamOfSegment<T>& value) {
-	// type
-	Courier::serialize(block, value.segmentType);
-	// size
-	quint16 size = (quint16)value.segment.size();
-	Courier::serialize(block, size);
-	// data
-	for(int i = 0; i < size; i++) {
-		const T& data = value.segment.at(i);
-		Courier::serialize(block, data);
-	}
-}
-template <typename T>
-void deserialize(BLOCK& block, Courier::StreamOfSegment<T>& value) {
-	// type
-	Courier::deserialize(block, value.segmentType);
-	// size
-	quint16 size;
-	Courier::deserialize(block, size);
-	value.segment.reserve(size);
-	// data
-	for(int i = 0; i < size; i++) {
-		T data;
-		Courier::deserialize(block, data);
-		value.segment.append(data);
-	}
-}
 
 //
 // StreamOf
@@ -105,34 +68,6 @@ struct StreamOf {
 
 	QVector<StreamOfSegment<T>> segments;
 };
-template <typename T>
-QString toString(const StreamOf<T>& value) {
-	QStringList list;
-	int size = value.segments.size();
-	for(int i = 0; i < size; i++) {
-		const StreamOfSegment<T>& segment = value.segments.at(i);
-		list << Courier::toString(segment);
-	}
-	return QString("(%1)[%2]").arg(size).arg(list.join(" "));
-}
-template <typename T>
-void serialize(BLOCK& block, const Courier::StreamOf<T>& value) {
-	int size = value.segments.size();
-	for(int i = 0; i < size; i++) {
-		const StreamOfSegment<T>& segment = value.segments.at(i);
-		Courier::serialize(block, segment);
-	}
-}
-template <typename T>
-void deserialize(BLOCK& block, Courier::StreamOf<T>& value) {
-	for(;;) {
-		StreamOfSegment<T> segment;
-		Courier::deserialize(block, segment);
-		value.segments.append(segment);
-
-		if (segment.segmentType == StreamOfSegmentType::lastSegment) break;
-	}
-}
 
 }
 #endif
