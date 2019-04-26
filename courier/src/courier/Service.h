@@ -49,13 +49,11 @@ public:
     	PROGRAM_NAME(programName), PROGRAM_CODE(programCode), VERSION_CODE(versionCode) {}
     virtual ~ServiceBase();
 
-	using CallMessage = Protocol::Protocol3::CallMessage;
-
     virtual bool        isProcedureValid    (quint16 code) const = 0;
     virtual bool        isProcedureInstalled(quint16 code) const = 0;
     virtual const char* getProcedureName    (quint16 code) const = 0;
 
-    virtual void        call(CallMessage& callMessage, Block& request, Block& response) const = 0;
+    virtual void        call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const = 0;
 };
 
 class ServiceManager {
