@@ -183,7 +183,6 @@ public class GenStub {
 						  "const char* getProcedureName    (int code);",
 						  "void        call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
 				
-				outh.line();
 				outh.line("",
 						  "private:",
 						  "CallTable callTable;");
@@ -296,12 +295,12 @@ public class GenStub {
 
 					for(String errorName: procedureInfo.typeProcedure.errroList) {
 						outc.format("} catch(const %s::%s& e) {", programName, errorName);
-						outc.format("Protocol::Protocol3 protocol3 = Protocol::Protocol3::abort__(callMessage, %s::%s::CODE);", programName, errorName);
+						outc.line("Protocol::Protocol3 protocol3 = Protocol::Protocol3::abort__(callMessage, e.CODE);");
 						outc.line("Courier::serialize(response, protocol3);",
 								  "Courier::serialize(response, e);");
 					}
 					outc.line("} catch(const Protocol::Abort& e) {",
-							  "logger.error(\"Protocol::Abort\");",
+							  "logger.error(\"Uncaught Protocol::Abort  %s%d  %s\", e.PROGRAM_NAME, e.VERSION_CODE, e.NAME);",
 							  "COURIER_FATAL_ERROR();");
 					outc.line("} catch(const std::runtime_error& e) {",
 							  "logger.error(\"std::runtime_error %s\", e.what());",

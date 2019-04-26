@@ -276,11 +276,15 @@ public class Compiler {
 				throw new CompilerException(String.format("Unexpected constant.kind %s", constant.toString()));
 			}
 		}
-
+		
 		outh.format("struct %s : public Protocol::Abort {", name);
-		outh.format("static constexpr const char*   NAME = \"%s\";", name);
-		outh.format("static constexpr const quint16 CODE = %d;", code);
-
+		{
+			StringBuffer initList = new StringBuffer();
+			for(Field field: typeError.paramList) {
+				initList.append(String.format(", %s()", field.name));
+			}
+			outh.format("%s() : Protocol::Abort(PROGRAM_NAME, PROGRAM_CODE, VERSION_CODE, \"%s\", %d)%s {}", name, name, code, initList.toString());
+		}
 		
 		if (typeError.paramList.isEmpty()) {
 			//
