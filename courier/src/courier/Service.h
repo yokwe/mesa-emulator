@@ -41,12 +41,12 @@ namespace Service {
 
 class ServiceBase {
 public:
-    const char*   PROGRAM_NAME;
-    const quint32 PROGRAM_CODE;
-    const quint16 VERSION_CODE;
+    const char*   programName;
+    const quint32 programCode;
+    const quint16 versionCode;
 
-    ServiceBase(const char* programName, quint32 programCode, quint16 versionCode) :
-    	PROGRAM_NAME(programName), PROGRAM_CODE(programCode), VERSION_CODE(versionCode) {}
+    ServiceBase(const char* programName_, quint32 programCode_, quint16 versionCode_) :
+    	programName(programName_), programCode(programCode_), versionCode(versionCode_) {}
     virtual ~ServiceBase();
 
     virtual bool        isProcedureValid    (quint16 code) const = 0;

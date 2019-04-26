@@ -85,15 +85,15 @@ private:
 
 // Parent class of all Error
 struct Abort {
-    const char*   PROGRAM_NAME;
-    const quint32 PROGRAM_CODE;
-    const quint16 VERSION_CODE;
+    const char*   programName;
+    const quint32 programCode;
+    const quint16 versionCode;
 
-    const char*   NAME;
-    const quint16 CODE;
+    const char*   abortName;
+    const quint16 abortCode;
 
-    Abort(const char* programName, quint32 programCode, quint16 versionCode, const char* name, quint16 code) :
-    	PROGRAM_NAME(programName), PROGRAM_CODE(programCode), VERSION_CODE(versionCode), NAME(name), CODE(code) {}
+    Abort(const char* programName_, quint32 programCode_, quint16 versionCode_, const char* name_, quint16 code_) :
+    	programName(programName_), programCode(programCode_), versionCode(versionCode_), abortName(name_), abortCode(code_) {}
 };
 
 struct Protocol2 {
