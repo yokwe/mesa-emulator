@@ -283,7 +283,7 @@ public class Compiler {
 			for(Field field: typeError.paramList) {
 				initList.append(String.format(", %s()", field.name));
 			}
-			outh.format("%s() : Protocol::Abort(PROGRAM_NAME, PROGRAM_CODE, VERSION_CODE, \"%s\", %d)%s {}", name, name, code, initList.toString());
+			outh.format("%s() : Protocol::Abort(programName, programCode, versionCode, \"%s\", %d)%s {}", name, name, code, initList.toString());
 		}
 		
 		if (typeError.paramList.isEmpty()) {

@@ -278,7 +278,7 @@ public class GenStub {
 					outc.format("void %s::%s::call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
 
 					outc.format("if (callTable.call%s == nullptr) {", procedureInfo.name);
-					outc.line("logger.error(\"Procedure is not installed  %d  %s%d\", PROGRAM_CODE, PROGRAM_NAME, VERSION_CODE);",
+					outc.line("logger.error(\"Procedure is not installed  %d  %s%d\", programCode, programName, versionCode);",
 							  "COURIER_FATAL_ERROR();",
 							  "}");
 
@@ -295,12 +295,12 @@ public class GenStub {
 
 					for(String errorName: procedureInfo.typeProcedure.errroList) {
 						outc.format("} catch(const %s::%s& e) {", programName, errorName);
-						outc.line("Protocol::Protocol3 protocol3 = Protocol::Protocol3::abort__(callMessage, e.CODE);");
+						outc.line("Protocol::Protocol3 protocol3 = Protocol::Protocol3::abort__(callMessage, e.abortCode);");
 						outc.line("Courier::serialize(response, protocol3);",
 								  "Courier::serialize(response, e);");
 					}
 					outc.line("} catch(const Protocol::Abort& e) {",
-							  "logger.error(\"Uncaught Protocol::Abort  %s%d  %s\", e.PROGRAM_NAME, e.VERSION_CODE, e.NAME);",
+							  "logger.error(\"Uncaught Protocol::Abort  %s%d  %s\", e.programName, e.versionCode, e.abortName);",
 							  "COURIER_FATAL_ERROR();");
 					outc.line("} catch(const std::runtime_error& e) {",
 							  "logger.error(\"std::runtime_error %s\", e.what());",

@@ -38,13 +38,13 @@ static log4cpp::Category& logger = Logger::getLogger("cr/service");
 #include "../stub/Programs.h"
 
 void Courier::Service::ServiceManager::addService(ServiceBase* service) {
-	quint32 programCode = service->PROGRAM_CODE;
-	quint32 versionCode = service->VERSION_CODE;
+	quint32 programCode = service->programCode;
+	quint32 versionCode = service->versionCode;
 
 	if (serviceMap.contains(programCode)) {
 		QMap<quint16, ServiceBase*>& versionMap = serviceMap[programCode];
 		if (versionMap.contains(versionCode)) {
-			logger.error("Unexpected duplicate %s %d", service->PROGRAM_NAME, versionCode);
+			logger.error("Unexpected duplicate %s %d", service->programName, versionCode);
 			COURIER_FATAL_ERROR();
 		} else {
 			versionMap[versionCode] = service;
