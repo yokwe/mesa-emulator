@@ -55,10 +55,6 @@ enum class RejectCode : quint16 {
     noSuchProcedureValue = 2,
     invalidArguments     = 3,
 };
-const RejectCode REJECTCODE_noSuchProgramNumber  = RejectCode::noSuchProgramNumber;
-const RejectCode REJECTCODE_noSuchVersionNumber  = RejectCode::noSuchVersionNumber;
-const RejectCode REJECTCODE_noSuchProcedureValue = RejectCode::noSuchProcedureValue;
-const RejectCode REJECTCODE_invalidArguments     = RejectCode::invalidArguments;
 
 struct ProtocolRange {
 	ProtocolType low;
@@ -86,10 +82,6 @@ struct Reject {
 private:
 	mutable VersionRange CHOICE_noSuchVersionNumber;
 };
-const Reject REJECT_noSuchProgramNumber{RejectCode::noSuchProgramNumber};
-//const Reject REJECT_noSuchVersionNumber{RejectCode::noSuchVersionNumber};
-const Reject REJECT_noSuchProcedureValue{RejectCode::noSuchProcedureValue};
-const Reject REJECT_invalidArguments{RejectCode::invalidArguments};
 
 // Parent class of all Error
 struct Abort {
