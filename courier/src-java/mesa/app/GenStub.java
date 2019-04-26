@@ -114,7 +114,7 @@ public class GenStub {
 			if (context.procedureInfoList.isEmpty()) continue;
 			
 			String programName = program.info.getProgramVersion();
-			String serviceName = String.format("service_%s", programName);
+			String serviceName = String.format("Service_%s", programName);
 			String pathc = String.format("%s%s.cpp", Compiler.STUB_DIR_PATH, serviceName);
 			String pathh = String.format("%s%s.h",   Compiler.STUB_DIR_PATH, serviceName);
 			logger.info(String.format("pathc = %s", pathc));
@@ -127,6 +127,7 @@ public class GenStub {
 				outh.format("#define STUB_%s_H__", serviceName);
 				outh.line();
 				outh.line("#include \"../courier/Protocol.h\"");
+				outh.line("#include \"../courier/Service.h\"");
 				// include corresponding stub header
 				outh.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
 				
@@ -136,14 +137,13 @@ public class GenStub {
 				outh.format("namespace %s {", "Stub");
 				
 				// output class
-				outh.format("class %s {", serviceName);
+				outh.format("class %s : public Service::ServiceBase {", serviceName);
 				outh.line("public:");
-				outh.format("const char*   PROGRAM_NAME = \"%s\";", program.info.name);
-				outh.format("const quint32 PROGRAM_CODE = %d;", program.info.program);
-				outh.format("const quint32 VERSION_CODE = %d;", program.info.version);
-				outh.line();
 				
-				outh.line("struct CallTable {");
+				outh.format("%s() : Service::ServiceBase(\"%s\", %d, %d) {}", serviceName, program.info.name, program.info.program, program.info.version);
+
+				outh.line("",
+						  "struct CallTable {");
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
