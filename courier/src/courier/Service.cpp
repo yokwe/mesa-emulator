@@ -63,57 +63,41 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol2::CallMessage& ca
 	const quint16 procedureCode = callMessage.procedure;
 
 	if (!serviceMap.contains(programCode)) {
-		Protocol::Protocol2 protocol2;
-		protocol2.messageType          = Protocol::MessageType::reject;
-		protocol2.reject().transaction = transaction;
-		protocol2.reject().rejectCode  = Protocol::RejectCode::noSuchProgramNumber;
-
+		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchProgramNumber);
 		Courier::serialize(response, protocol2);
 		return;
 	}
 
 	const QMap<quint16, ServiceBase*>& versionMap = serviceMap[programCode];
 	if (!versionMap.contains(versionCode)) {
-		Protocol::Protocol2 protocol2;
-		protocol2.messageType          = Protocol::MessageType::reject;
-		protocol2.reject().transaction = transaction;
-		protocol2.reject().rejectCode  = Protocol::RejectCode::noSuchVersionNumber;
-
+		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchVersionNumber);
 		Courier::serialize(response, protocol2);
 		return;
 	}
 
 	ServiceBase* service = versionMap[versionCode];
 	if (!service->isProcedureValid(procedureCode)) {
-		Protocol::Protocol2 protocol2;
-		protocol2.messageType          = Protocol::MessageType::reject;
-		protocol2.reject().transaction = transaction;
-		protocol2.reject().rejectCode  = Protocol::RejectCode::noSuchProcedureValue;
-
+		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchProcedureValue);
 		Courier::serialize(response, protocol2);
 		return;
 	}
 
 	Protocol::Protocol3::CallMessage callMessage3;
-	callMessage3.transaction = callMessage.transaction;
-	callMessage3.program     = callMessage.program;
-	callMessage3.version     = callMessage.version;
-	callMessage3.procedure   = callMessage.procedure;
+	callMessage3.transaction = transaction;
+	callMessage3.program     = programCode;
+	callMessage3.version     = versionCode;
+	callMessage3.procedure   = procedureCode;
 
 	call(callMessage3, request, response);
 }
 void Courier::Service::ServiceManager::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
-	const quint16 transaction   = callMessage.transaction;
+//	const quint16 transaction   = callMessage.transaction;
 	const quint32 programCode   = callMessage.program;
 	const quint16 versionCode   = callMessage.version;
 	const quint16 procedureCode = callMessage.procedure;
 
 	if (!serviceMap.contains(programCode)) {
-		Protocol::Protocol3 protocol3;
-		protocol3.messageType                = Protocol::MessageType::reject;
-		protocol3.reject().transaction       = transaction;
-		protocol3.reject().reject.rejectCode = Protocol::RejectCode::noSuchProgramNumber;
-
+		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchProgramNumber);
 		Courier::serialize(response, protocol3);
 		return;
 	}
@@ -124,10 +108,7 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol3::CallMessage& ca
 		quint16 low  = *std::min_element(versionList.begin(), versionList.end());
 		quint16 high = *std::max_element(versionList.begin(), versionList.end());
 
-		Protocol::Protocol3 protocol3;
-		protocol3.messageType                                = Protocol::MessageType::reject;
-		protocol3.reject().transaction                       = transaction;
-		protocol3.reject().reject.rejectCode                 = Protocol::RejectCode::noSuchVersionNumber;
+		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchVersionNumber);
 		protocol3.reject().reject.noSuchVersionNumber().low  = low;
 		protocol3.reject().reject.noSuchVersionNumber().high = high;
 
@@ -137,11 +118,7 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol3::CallMessage& ca
 
 	ServiceBase* service = versionMap[versionCode];
 	if (!service->isProcedureValid(procedureCode)) {
-		Protocol::Protocol3 protocol3;
-		protocol3.messageType                = Protocol::MessageType::reject;
-		protocol3.reject().transaction       = transaction;
-		protocol3.reject().reject.rejectCode = Protocol::RejectCode::noSuchProcedureValue;
-
+		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchProcedureValue);
 		Courier::serialize(response, protocol3);
 		return;
 	}

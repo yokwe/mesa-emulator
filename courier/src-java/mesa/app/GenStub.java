@@ -279,7 +279,8 @@ public class GenStub {
 					outc.format("void %s::%s::call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
 
 					outc.format("if (callTable.call%s == nullptr) {", procedureInfo.name);
-					outc.line("throw Courier::Protocol::REJECT_noSuchProcedureValue;",
+					outc.line("logger.error(\"Procedure is not installed  %d  %s%d\", PROGRAM_CODE, PROGRAM_NAME, VERSION_CODE);",
+							  "COURIER_FATAL_ERROR();",
 							  "}");
 
 					outc.line("try {");
@@ -289,21 +290,14 @@ public class GenStub {
 					outc.line("Courier::deserialize(request, param);");
 					outc.format("callTable.call%s(param, result);", procedureInfo.name);
 					outc.line("",
-							  "Protocol::Protocol3 protocol3;",
-							  "protocol3.messageType = Protocol::MessageType::return__;",
-							  "protocol3.return__().transaction = callMessage.transaction;",
-							  "",
+							  "Protocol::Protocol3 protocol3 = Protocol::Protocol3::return__(callMessage);",
 							  "Courier::serialize(response, protocol3);",
 							  "Courier::serialize(response, result);");
 
 					for(String errorName: procedureInfo.typeProcedure.errroList) {
 						outc.format("} catch(const %s::%s& e) {", programName, errorName);
-						outc.line("Protocol::Protocol3 protocol3;",
-								  "protocol3.messageType = Protocol::MessageType::abort__;",
-								  "protocol3.abort__().transaction = callMessage.transaction;");
-						outc.format("protocol3.abort__().abortCode   = %s::%s::CODE;", programName, errorName);
-						outc.line("",
-								  "Courier::serialize(response, protocol3);",
+						outc.format("Protocol::Protocol3 protocol3 = Protocol::Protocol3::abort__(callMessage, %s::%s::CODE);", programName, errorName);
+						outc.line("Courier::serialize(response, protocol3);",
 								  "Courier::serialize(response, e);");
 					}
 					outc.line("} catch(const Protocol::Abort& e) {",
