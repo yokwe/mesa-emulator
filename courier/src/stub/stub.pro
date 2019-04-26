@@ -22,8 +22,8 @@ SOURCES += Time2.cpp Authentication1.cpp Authentication2.cpp Authentication3.cpp
 
 HEADERS += Programs.h
 
-HEADERS += service_Authentication2.h   service_Authentication3.h   service_BulkData1.h   service_Clearinghouse2.h   service_Clearinghouse3.h
-SOURCES += service_Authentication2.cpp service_Authentication3.cpp service_BulkData1.cpp service_Clearinghouse2.cpp service_Clearinghouse3.cpp
+HEADERS += Service_Authentication2.h   Service_Authentication3.h   Service_BulkData1.h   Service_Clearinghouse2.h   Service_Clearinghouse3.h
+SOURCES += Service_Authentication2.cpp Service_Authentication3.cpp Service_BulkData1.cpp Service_Clearinghouse2.cpp Service_Clearinghouse3.cpp
 
 ###############################################
 
