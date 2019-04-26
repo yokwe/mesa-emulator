@@ -111,6 +111,14 @@ struct Protocol2 {
 	RejectMessage& reject()   const;
 	ReturnMessage& return__() const;
 	AbortMessage&  abort__()  const;
+
+	static Protocol2 reject(const CallMessage& callMessage, RejectCode rejectCode) {
+		Protocol2 ret;
+		ret.messageType = Protocol::MessageType::reject;
+		ret.reject().transaction = callMessage.transaction;
+		ret.reject().rejectCode = rejectCode;
+		return ret;
+	}
 private:
 	mutable CallMessage   CHOICE_call;
 	mutable RejectMessage CHOICE_reject;
@@ -142,6 +150,28 @@ struct Protocol3 {
 	RejectMessage& reject()   const;
 	ReturnMessage& return__() const;
 	AbortMessage&  abort__()  const;
+
+	static Protocol3 reject(const CallMessage& callMessage, RejectCode rejectCode) {
+		Protocol3 ret;
+		ret.messageType = Protocol::MessageType::reject;
+		ret.reject().transaction       = callMessage.transaction;
+		ret.reject().reject.rejectCode = rejectCode;
+		return ret;
+	}
+	static Protocol3 return__(const CallMessage& callMessage) {
+		Protocol3 ret;
+		ret.messageType = Protocol::MessageType::return__;
+		ret.return__().transaction = callMessage.transaction;
+		return ret;
+	}
+	static Protocol3 abort__(const CallMessage& callMessage, quint16 abortCode) {
+		Protocol3 ret;
+		ret.messageType = Protocol::MessageType::abort__;
+		ret.abort__().transaction = callMessage.transaction;
+		ret.abort__().abortCode   = abortCode;
+		return ret;
+	}
+
 private:
 	mutable CallMessage   CHOICE_call;
 	mutable RejectMessage CHOICE_reject;
