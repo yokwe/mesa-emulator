@@ -123,5 +123,5 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol3::CallMessage& ca
 		return;
 	}
 
-	service->call(callMessage, request, response);
+	service->service(callMessage, request, response);
 }

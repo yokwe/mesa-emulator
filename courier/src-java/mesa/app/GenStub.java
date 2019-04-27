@@ -143,11 +143,23 @@ public class GenStub {
 				outh.format("%s() : Service::ServiceBase(\"%s\", %d, %d) {}", serviceName, program.info.name, program.info.program, program.info.version);
 
 				outh.line("",
+						  "using CallInit    = void (*)();",
+						  "using CallDestroy = void (*)();");
+				outh.line("",
 						  "struct CallTable {");
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
 					List<String> c3 = new ArrayList<>();
+					
+					// init
+					c1.add("CallInit");
+					c2.add("callInit");
+					c3.add("= nullptr;");
+					// destroy
+					c1.add("CallDestroy");
+					c2.add("callDestroy");
+					c3.add("= nullptr;");					
 					
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("%s::%s::call", programName, procedureInfo.name));
@@ -163,9 +175,18 @@ public class GenStub {
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
 					List<String> c3 = new ArrayList<>();
+					
+					// init
+					c1.add("void setCallInit");
+					c2.add("(CallInit");
+					c3.add("newValue);");					
+					// destroy
+					c1.add("void setCallDestroy");
+					c2.add("(CallDestroy");
+					c3.add("newValue);");					
 
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-						c1.add(String.format("void setCallTable%s", procedureInfo.name));
+						c1.add(String.format("void setCall%s", procedureInfo.name));
 						c2.add(String.format("(%s::%s::call", programName, procedureInfo.name));
 						c3.add("newValue);");
 					}
@@ -181,7 +202,10 @@ public class GenStub {
 						  "bool        isProcedureValid    (int code);",
 						  "bool        isProcedureInstalled(int code);",
 						  "const char* getProcedureName    (int code);",
-						  "void        call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
+						  "",
+						  "void        init   ();",
+						  "void        destroy();",
+						  "void        service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
 				
 				outh.line("",
 						  "private:",
@@ -255,13 +279,38 @@ public class GenStub {
 						  "}",
 						  "}");
 
+				outc.format("void %s::%s::setCallInit(CallInit newValue) {", "Courier::Stub", serviceName);
+				outc.line("callTable.callInit = newValue;",
+						  "}");
+				outc.format("void %s::%s::setCallDestroy(CallDestroy newValue) {", "Courier::Stub", serviceName);
+				outc.line("callTable.callDestroy = newValue;",
+						  "}");
+				
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("void %s::%s::setCallTable%s(%s::%s::call newValue) {", "Courier::Stub", serviceName, procedureInfo.name, programName, procedureInfo.name);
+					outc.format("void %s::%s::setCall%s(%s::%s::call newValue) {", "Courier::Stub", serviceName, procedureInfo.name, programName, procedureInfo.name);
 					outc.format("callTable.call%s = newValue;", procedureInfo.name);
 					outc.line("}");
 				}
+				
+				outc.format("void %s::%s::init() {", "Courier::Stub", serviceName);
+				outc.line("if (callTable.callInit == nullptr) {",
+						  "logger.error(\"callInit is not installed\");",
+						  "COURIER_FATAL_ERROR();",
+						  "} else {",
+						  "callTable.callInit();",
+						  "}",
+						  "}");
+				
+				outc.format("void %s::%s::destroy() {", "Courier::Stub", serviceName);
+				outc.line("if (callTable.callDestroy == nullptr) {",
+						  "logger.error(\"callDestroy is not installed\");",
+						  "COURIER_FATAL_ERROR();",
+						  "} else {",
+						  "callTable.callDestroy();",
+						  "}",
+						  "}");
 
-				outc.format("void %s::%s::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
+				outc.format("void %s::%s::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
