@@ -42,30 +42,40 @@ namespace Socket {
 using Socket = IDP::Socket;
 using Frame  = IDP::Frame;
 
-class ListenerBase {
+class SocketBase {
 public:
 	const char*  name;
 	const Socket socket;
 
-	ListenerBase(const char* name_, Socket socket_) : name(name_), socket(socket_) {}
-	virtual ~ListenerBase() {}
+	SocketBase(const char* name_, Socket socket_) : name(name_), socket(socket_) {}
+	virtual ~SocketBase() {}
+
+    void callInit();
+    void callDestroy();
+    void callService(Frame& request, Frame& reply, bool& sendReply) const;
+
+private:
+    bool initialized = false;
 
 	// init, destroy and service is life cycle event
 	virtual void init()    = 0;
 	virtual void destroy() = 0;
-	virtual void service(Frame& request, Frame& reply, bool& sendReply) = 0;
+	virtual void service(Frame& request, Frame& reply, bool& sendReply) const = 0;
 };
 
 class Manager {
 public:
 	Manager(NIC& nic_) : nic(nic_) {}
 
-	void addListener(ListenerBase& listener);
+	void addSocket(SocketBase* socketBase);
 
+	void init   ();
+	void destroy();
 private:
 	NIC& nic;
 
-	QMap<Socket, ListenerBase*> socketMap;
+    bool initialized = false;
+	QMap<Socket, SocketBase*> socketMap;
 };
 
 }
