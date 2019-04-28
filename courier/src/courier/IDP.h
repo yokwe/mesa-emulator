@@ -81,7 +81,8 @@ public:
     };
 
     enum class HopCount : quint8 {
-    	MAX = 16,
+    	ZERO = 0,
+    	MAX  = 16,
     };
 
     struct NetworkAddress {
