@@ -53,7 +53,7 @@ public:
     virtual bool        isProcedureInstalled(quint16 code) const = 0;
     virtual const char* getProcedureName    (quint16 code) const = 0;
 
-    virtual void        init();
+    virtual void        init   ();
     virtual void        destroy();
     virtual void        service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const = 0;
 };
@@ -62,8 +62,10 @@ class ServiceManager {
 public:
 	void addService(ServiceBase* service);
 
-    void call(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const;
-    void call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const;
+	void init   ();
+	void destroy();
+    void service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const;
+    void service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const;
 
 private:
     //   program       version

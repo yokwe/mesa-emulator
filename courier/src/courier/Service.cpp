@@ -55,8 +55,25 @@ void Courier::Service::ServiceManager::addService(ServiceBase* service) {
 		serviceMap[programCode] = versionMap;
 	}
 }
+void Courier::Service::ServiceManager::init() {
+	for(auto& map: serviceMap.values()) {
+		for(ServiceBase* serviceBase: map.values()) {
+			logger.info("init %s%d", serviceBase->programName, serviceBase->versionCode);
+			serviceBase->init();
+		}
+	}
+}
+void Courier::Service::ServiceManager::destroy() {
+	for(auto& map: serviceMap.values()) {
+		for(ServiceBase* serviceBase: map.values()) {
+			logger.info("destroy %s%d", serviceBase->programName, serviceBase->versionCode);
+			serviceBase->destroy();
+		}
+	}
+}
 
-void Courier::Service::ServiceManager::call(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const {
+
+void Courier::Service::ServiceManager::service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const {
 	const quint16 transaction   = callMessage.transaction;
 	const quint32 programCode   = callMessage.program;
 	const quint16 versionCode   = callMessage.version;
@@ -75,8 +92,8 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol2::CallMessage& ca
 		return;
 	}
 
-	ServiceBase* service = versionMap[versionCode];
-	if (!service->isProcedureValid(procedureCode)) {
+	ServiceBase* serviceBase = versionMap[versionCode];
+	if (!serviceBase->isProcedureValid(procedureCode)) {
 		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchProcedureValue);
 		Courier::serialize(response, protocol2);
 		return;
@@ -88,9 +105,9 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol2::CallMessage& ca
 	callMessage3.version     = versionCode;
 	callMessage3.procedure   = procedureCode;
 
-	call(callMessage3, request, response);
+	serviceBase->service(callMessage3, request, response);
 }
-void Courier::Service::ServiceManager::call(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
+void Courier::Service::ServiceManager::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
 //	const quint16 transaction   = callMessage.transaction;
 	const quint32 programCode   = callMessage.program;
 	const quint16 versionCode   = callMessage.version;
@@ -116,12 +133,12 @@ void Courier::Service::ServiceManager::call(Protocol::Protocol3::CallMessage& ca
 		return;
 	}
 
-	ServiceBase* service = versionMap[versionCode];
-	if (!service->isProcedureValid(procedureCode)) {
+	ServiceBase* serviceBase = versionMap[versionCode];
+	if (!serviceBase->isProcedureValid(procedureCode)) {
 		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchProcedureValue);
 		Courier::serialize(response, protocol3);
 		return;
 	}
 
-	service->service(callMessage, request, response);
+	serviceBase->service(callMessage, request, response);
 }
