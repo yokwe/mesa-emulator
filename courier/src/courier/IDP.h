@@ -33,11 +33,17 @@ OF SUCH DAMAGE.
 #define COURIER_IDP_H__
 
 #include "../courier/Block.h"
+#include "../courier/NIC.h"
+#include "../stub/Datagram.h"
 
 namespace Courier {
 
 class IDP {
 public:
+	static const int headerSize  = Stub::Datagram::headerLength;
+	static const int minDataSize = Stub::Ethernet::minDataLength - headerSize;
+	static const int maxDataSize = Stub::Ethernet::maxDataLength - headerSize;
+
     enum class PacketType : quint8 {
         RIP   = 1, // Routing
         ECHO  = 2,
@@ -72,9 +78,7 @@ public:
     	ALL     = 0xFFFFFFFF,
     };
 
-    enum class Host : quint64 {
-    	ALL = 0xFFFFFFFFFFFFLL,
-    };
+    using Host = NIC::Host;
 
     enum class Checksum : quint16 {
     	NONE = 0xFFFF,
@@ -101,13 +105,11 @@ public:
 
     	Block  data{nullptr, 0};
     };
-
 };
 
 QString toString(const Courier::IDP::PacketType value);
 QString toString(const Courier::IDP::Socket     value);
 QString toString(const Courier::IDP::Network    value);
-QString toString(const Courier::IDP::Host       value);
 QString toString(const Courier::IDP::Checksum   value);
 QString toString(const Courier::IDP::HopCount   value);
 

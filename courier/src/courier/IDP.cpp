@@ -36,7 +36,6 @@ static log4cpp::Category& logger = Logger::getLogger("cr/idp");
 #include "../courier/IDP.h"
 #include "../stub/Datagram.h"
 
-
 QString Courier::toString(const Courier::IDP::PacketType value) {
 	static QMap<Courier::IDP::PacketType, QString> map = {
 	    {Courier::IDP::PacketType::RIP,   "RIP"},
@@ -90,17 +89,6 @@ QString Courier::toString(const Courier::IDP::Network    value) {
 		return map[value];
 	} else {
 		return QString("%1").arg((quint32)value, 0, 16).toUpper();
-	}
-}
-QString Courier::toString(const Courier::IDP::Host       value) {
-	static QMap<Courier::IDP::Host, QString> map = {
-		    {Courier::IDP::Host::ALL, "ALL"},
-	};
-
-	if (map.contains(value)) {
-		return map[value];
-	} else {
-		return QString("%1").arg((quint64)value, 0, 16).toUpper();
 	}
 }
 QString Courier::toString(const Courier::IDP::Checksum value) {
