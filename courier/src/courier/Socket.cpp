@@ -33,6 +33,7 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("cr/socket");
 
+#include "../courier/Error.h"
 #include "../courier/Socket.h"
 
 #include "../stub/Programs.h"
@@ -130,9 +131,8 @@ void Courier::Socket::Manager::stopService() {
 // Socket::ServiceThread
 //
 void Courier::Socket::ServiceThread::run() {
-	quint16 timeoutInSec = 1;
-	quint64 myAddress    = nic.getAddress();
-
+	quint16   timeoutInSec = 1;
+	NIC::Host myAddress    = (NIC::Host)nic.getAddress();
 
 	Courier::NIC::Data  dataRequest;
 	Courier::NIC::Frame etherRequest;
@@ -142,9 +142,8 @@ void Courier::Socket::ServiceThread::run() {
 	Courier::NIC::Frame etherResponse;
 	Courier::IDP::Frame idpResponse;
 
-
 	for(;;) {
-		if (stop) break;
+		if (needStop) break;
 		int ret = nic.select(timeoutInSec);
 		if (ret == 0) continue;
 		nic.receive(dataRequest.block);
@@ -171,12 +170,19 @@ void Courier::Socket::ServiceThread::run() {
 		etherResponse.data = dataResponse.block.remainder();
 
 		// supply default values
-		idpResponse.checksum   = IDP::Checksum::NONE;
-		idpResponse.length     = 0;
-		idpResponse.hopCount   = IDP::HopCount::ZERO;
-		idpResponse.packetType = idpRequest.packetType;
-		idpResponse.dst        = idpRequest.src;
-		idpResponse.src        = myAddress;
+		idpResponse.checksum    = idpRequest.checksum;
+		idpResponse.length      = 0;
+		idpResponse.hopCount    = IDP::HopCount::ZERO;
+		idpResponse.packetType  = idpRequest.packetType;
+
+		idpResponse.dst.network = idpRequest.src.network;
+		idpResponse.dst.host    = idpRequest.src.host;
+		idpResponse.dst.socket  = idpRequest.src.socket;
+
+		idpResponse.src.network = idpRequest.dst.network;
+		idpResponse.src.host    = myAddress;
+		idpResponse.src.socket  = idpRequest.dst.socket;
+
 		Courier::serialize(etherResponse.data, idpResponse);
 		idpResponse.data       = etherResponse.data.remainder();
 
@@ -184,16 +190,34 @@ void Courier::Socket::ServiceThread::run() {
 		bool sendResponse = false;
 		try {
 			socketBase->callService(idpRequest, idpResponse, sendResponse);
-		} catch (...) {
-			// FIXME catch error for error packet and create error packet
+		} catch (Error::ErrorNumber& e) {
+			// Change packet type to ERROR
+			idpResponse.packetType = IDP::PacketType::ERROR;
+			// Clear block in case of middle of writing
+			idpResponse.data.clear();
+			// Need to send response
+			sendResponse = true;
+
+			Error::Frame frame;
+			frame.number    = e;
+			frame.parameter = 0;
+			Courier::serialize(idpResponse.data, frame);
 		}
 		if (!sendResponse) continue;
 		// Don't send error packet for broadcast request
 		if (idpResponse.packetType == IDP::PacketType::ERROR) {
-			if (idpRequest.dst == IDP::Host::ALL) continue;
+			if (idpRequest.dst.host == IDP::Host::ALL) continue;
 		}
-		// FIXME if packet size is less than 60, add padding
-		// FIXME calculate checksum of idpResponse and set
+		// If packet size is less than IDP::minDataSize, add padding
+		for(;;) {
+			quint16 size = idpResponse.data.getLimit();
+			if (IDP::minDataSize <= size) break;
+			idpResponse.data.serialize16((quint16)0);
+		}
+		// Calculate checksum of idpResponse and set
+		if (idpResponse.checksum != IDP::Checksum::NONE) {
+			idpResponse.checksum = (IDP::Checksum)etherResponse.data.computeChecksum();
+		}
 
 		dataResponse.block.clear();
 		Courier::serialize(etherResponse.data, idpResponse);
@@ -202,5 +226,3 @@ void Courier::Socket::ServiceThread::run() {
 		nic.transmit(dataResponse.block);
 	}
 }
-
-
