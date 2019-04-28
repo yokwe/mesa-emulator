@@ -141,84 +141,68 @@ public class GenStub {
 				outh.line("public:");
 				
 				outh.format("%s() : Service::ServiceBase(\"%s\", %d, %d) {}", serviceName, program.info.name, program.info.program, program.info.version);
+				outh.format("virtual ~%s() {}", serviceName, programName);
 
-				outh.line("",
-						  "using CallInit    = void (*)();",
-						  "using CallDestroy = void (*)();");
-				outh.line("",
-						  "struct CallTable {");
+
+				outh.line();
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
-					List<String> c3 = new ArrayList<>();
 					
-					// init
-					c1.add("CallInit");
-					c2.add("callInit");
-					c3.add("= nullptr;");
-					// destroy
-					c1.add("CallDestroy");
-					c2.add("callDestroy");
-					c3.add("= nullptr;");					
-					
+					c1.add("using CallMessage =");
+					c2.add("Protocol::Protocol3::CallMessage;");
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-						c1.add(String.format("%s::%s::call", programName, procedureInfo.name));
-						c2.add(String.format("call%s", procedureInfo.name));
-						c3.add(String.format("= nullptr; // %2d", procedureInfo.code));
+						c1.add(String.format("using %s =", procedureInfo.name));
+						c2.add(String.format("%s::%s;", programName, procedureInfo.name));
 					}
-					ColumnLayout.layoutStringString(outh, c1, c2, c3);
+					ColumnLayout.layoutStringString(outh, c1, c2);
 				}
-				outh.line("};");
 				
 				outh.line();
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
 					List<String> c3 = new ArrayList<>();
+					List<String> c4 = new ArrayList<>();
 					
 					// init
-					c1.add("void setCallInit");
-					c2.add("(CallInit");
-					c3.add("newValue);");					
+					c1.add("virtual void init");
+					c2.add("()");
+					c3.add("");
+					c4.add("= 0;");
 					// destroy
-					c1.add("void setCallDestroy");
-					c2.add("(CallDestroy");
-					c3.add("newValue);");					
-
+					c1.add("virtual void destroy");
+					c2.add("()");
+					c3.add("");
+					c4.add("= 0;");
+					
+					//             virtual void retrieveAddresses(RetrieveAddresses::Param& param, RetrieveAddresses::Result& result) = 0;
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-						c1.add(String.format("void setCall%s", procedureInfo.name));
-						c2.add(String.format("(%s::%s::call", programName, procedureInfo.name));
-						c3.add("newValue);");
+						String procedureName = procedureInfo.name.substring(0, 1).toLowerCase() + procedureInfo.name.substring(1, procedureInfo.name.length());
+						
+						c1.add(String.format("virtual void %s", procedureName));
+						c2.add(String.format("(%s::Param& param,", procedureInfo.name));
+						c3.add(String.format("%s::Result& result)", procedureInfo.name));
+						c4.add("= 0;");
 					}
-					ColumnLayout.layoutStringString(outh, c1, c2, c3);
+					ColumnLayout.layoutStringString(outh, c1, c2, c3, c4);
 				}
 				
-				outh.line("",
-						  "void setCallTable(CallTable callTable_) {",
-						  "callTable = callTable_;",
-						  "}");
-
 				outh.line("",
 						  "bool        isProcedureValid    (int code);",
-						  "bool        isProcedureInstalled(int code);",
 						  "const char* getProcedureName    (int code);",
-						  "",
-						  "void        init   ();",
-						  "void        destroy();",
-						  "void        service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
+						  "void        service             (CallMessage& callMessage, Block& request, Block& response);");
 				
 				outh.line("",
-						  "private:",
-						  "CallTable callTable;");
+						  "private:");
 				
-				outh.line();
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
 					
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("void call%s", procedureInfo.name));
-						c2.add("(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response);");
+						c2.add("(CallMessage& callMessage, Block& request, Block& response);");
 		            }
 					ColumnLayout.layoutStringString(outh, c1, c2);
 				}
@@ -247,7 +231,7 @@ public class GenStub {
 				outc.format("bool        %s::%s::isProcedureValid(int code) {", "Courier::Stub", serviceName);
 				outc.line("switch(code) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
+					outc.format("case %s::CODE:", procedureInfo.name);
 					outc.line("return true;");
 	            }
 				outc.line("default:",
@@ -255,65 +239,22 @@ public class GenStub {
 						  "}",
 						  "}");
 
-				outc.format("bool        %s::%s::isProcedureInstalled(int code) {", "Courier::Stub", serviceName);
-				outc.line("switch(code) {");
-				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
-					outc.format("return callTable.call%s != nullptr;", procedureInfo.name);
-	            }
-				outc.line("default:",
-						  "logger.error(\"Unexpected code = %d\", code);",
-						  "COURIER_FATAL_ERROR();",
-						  "}",
-						  "}");
-				
 				outc.format("const char* %s::%s::getProcedureName(int code) {", "Courier::Stub", serviceName);
 				outc.line("switch(code) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
-					outc.format("return %s::%s::NAME;", programName, procedureInfo.name);
+					outc.format("case %s::CODE:", procedureInfo.name);
+					outc.format("return %s::NAME;", procedureInfo.name);
 	            }
 				outc.line("default:",
 						  "logger.error(\"Unexpected code = %d\", code);",
 						  "COURIER_FATAL_ERROR();",
-						  "}",
-						  "}");
-
-				outc.format("void %s::%s::setCallInit(CallInit newValue) {", "Courier::Stub", serviceName);
-				outc.line("callTable.callInit = newValue;",
-						  "}");
-				outc.format("void %s::%s::setCallDestroy(CallDestroy newValue) {", "Courier::Stub", serviceName);
-				outc.line("callTable.callDestroy = newValue;",
-						  "}");
-				
-				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("void %s::%s::setCall%s(%s::%s::call newValue) {", "Courier::Stub", serviceName, procedureInfo.name, programName, procedureInfo.name);
-					outc.format("callTable.call%s = newValue;", procedureInfo.name);
-					outc.line("}");
-				}
-				
-				outc.format("void %s::%s::init() {", "Courier::Stub", serviceName);
-				outc.line("if (callTable.callInit == nullptr) {",
-						  "logger.error(\"callInit is not installed\");",
-						  "COURIER_FATAL_ERROR();",
-						  "} else {",
-						  "callTable.callInit();",
-						  "}",
-						  "}");
-				
-				outc.format("void %s::%s::destroy() {", "Courier::Stub", serviceName);
-				outc.line("if (callTable.callDestroy == nullptr) {",
-						  "logger.error(\"callDestroy is not installed\");",
-						  "COURIER_FATAL_ERROR();",
-						  "} else {",
-						  "callTable.callDestroy();",
 						  "}",
 						  "}");
 
 				outc.format("void %s::%s::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("case %s::%s::CODE:", programName, procedureInfo.name);
+					outc.format("case %s::CODE:", procedureInfo.name);
 					outc.format("call%s(callMessage, request, response);", procedureInfo.name);
 					outc.line("break;");
 	            }
@@ -324,19 +265,15 @@ public class GenStub {
 				outc.line("}"); // call
 				
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
-					outc.format("void %s::%s::call%s(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
+					String procedureName = procedureInfo.name.substring(0, 1).toLowerCase() + procedureInfo.name.substring(1, procedureInfo.name.length());
 
-					outc.format("if (callTable.call%s == nullptr) {", procedureInfo.name);
-					outc.line("logger.error(\"Procedure is not installed  %d  %s%d\", programCode, programName, versionCode);",
-							  "COURIER_FATAL_ERROR();",
-							  "}");
-
-					outc.line("try {");
-					outc.format("%s::%s::Param  param;", programName, procedureInfo.name);
-					outc.format("%s::%s::Result result;", programName, procedureInfo.name);
+					outc.format("void %s::%s::call%s(CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
 					
+					outc.line("try {");
+					outc.format("%s::Param  param;", procedureInfo.name);
+					outc.format("%s::Result result;", procedureInfo.name);
 					outc.line("Courier::deserialize(request, param);");
-					outc.format("callTable.call%s(param, result);", procedureInfo.name);
+					outc.format("%s(param, result);", procedureName);
 					outc.line("",
 							  "Protocol::Protocol3 protocol3 = Protocol::Protocol3::return__(callMessage);",
 							  "Courier::serialize(response, protocol3);",
