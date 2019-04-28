@@ -37,67 +37,170 @@ static log4cpp::Category& logger = Logger::getLogger("cr/socket");
 
 #include "../stub/Programs.h"
 
+//
+// Socket::SocketBase
+//
 void Courier::Socket::SocketBase::callInit() {
     if (initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
-    } else {
-        init();
-        initialized = true;
     }
+    init();
+    initialized = true;
 }
 
 void Courier::Socket::SocketBase::callDestroy() {
     if (!initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
-    } else {
-        destroy();
-        initialized = false;
     }
+    destroy();
+    initialized = false;
 }
-void Courier::Socket::SocketBase::callService(Frame& request, Frame& reply, bool& sendReply) const {
+void Courier::Socket::SocketBase::callService(Frame& request, Frame& response, bool& sendResponse) const {
     if (!initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
-    } else {
-        service(request, reply, sendReply);
     }
+    service(request, response, sendResponse);
 }
 
+
+//
+// Socket::Manager
+//
 void Courier::Socket::Manager::addSocket(SocketBase* socketBase) {
-	Socket socket = socketBase->socket;
+	if (started) {
+		logger.error("Unexpected state started");
+		COURIER_FATAL_ERROR();
+	}
 
+	Socket socket = socketBase->socket;
+	logger.info("addSocket  %s  %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
 	if (socketMap.contains(socket)) {
-		SocketBase* old = socketMap[socket];
-		logger.error("Unexpected duplicate %s %d", old->name, socket);
+        logger.error("Unexpected duplicate socket");
+        COURIER_FATAL_ERROR();
+	}
+	socketMap[socket] = socketBase;
+}
+void Courier::Socket::Manager::startService() {
+	if (started) {
+		logger.error("Unexpected state started");
 		COURIER_FATAL_ERROR();
-	} else {
-		socketMap[socket] = socketBase;
+	}
+	// init SocketBase
+	logger.info("init    sockeMap");
+	for(SocketBase* socketBase: socketMap.values()) {
+		logger.info("init %s %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
+		socketBase->callInit();
+	}
+	logger.info("try start service thread");
+	serviceThread = new ServiceThread(nic, socketMap);
+	// reserve one thread
+	QThreadPool::globalInstance()->reserveThread();
+	QThreadPool::globalInstance()->start(serviceThread);
+	logger.info("service thread started");
+	started = true;
+}
+void Courier::Socket::Manager::stopService() {
+	if (!started) {
+		logger.error("Unexpected state started");
+		COURIER_FATAL_ERROR();
+	}
+	logger.info("try stop  service thread");
+	serviceThread->stop();
+	for(int i = 0; i < 100; i++) {
+		if (QThreadPool::globalInstance()->waitForDone(1000)) break;
+		logger.info("try stop  service thread %2d", i + 1);
+	}
+	logger.info("service thread stopped");
+	// release one thread
+	QThreadPool::globalInstance()->releaseThread();
+	serviceThread = nullptr;
+	started       = false;
+	logger.info("destroy sockeMap");
+	for(SocketBase* socketBase: socketMap.values()) {
+		logger.info("destroy %s %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
+		socketBase->callDestroy();
 	}
 }
-void Courier::Socket::Manager::init() {
-	if (initialized) {
-		logger.error("Unexpected state initialized");
-		COURIER_FATAL_ERROR();
-	} else {
-		for(SocketBase* socketBase: socketMap.values()) {
-			logger.info("init %s %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
-			socketBase->callInit();
+
+
+//
+// Socket::ServiceThread
+//
+void Courier::Socket::ServiceThread::run() {
+	quint16 timeoutInSec = 1;
+	quint64 myAddress    = nic.getAddress();
+
+
+	Courier::NIC::Data  dataRequest;
+	Courier::NIC::Frame etherRequest;
+	Courier::IDP::Frame idpRequest;
+
+	Courier::NIC::Data  dataResponse;
+	Courier::NIC::Frame etherResponse;
+	Courier::IDP::Frame idpResponse;
+
+
+	for(;;) {
+		if (stop) break;
+		int ret = nic.select(timeoutInSec);
+		if (ret == 0) continue;
+		nic.receive(dataRequest.block);
+
+		Courier::deserialize(dataRequest.block, etherRequest);
+		Courier::deserialize(etherRequest.data, idpRequest);
+
+		if (!socketMap.contains(idpRequest.dst.socket)) {
+			logger.warn("No socket service  %s -> %s",
+					Courier::toString(idpRequest.src).toLocal8Bit().constData(),
+					Courier::toString(idpRequest.dst).toLocal8Bit().constData());
+			continue;
 		}
-		initialized = true;
-	}
-}
-void Courier::Socket::Manager::destroy() {
-	if (!initialized) {
-		logger.error("Unexpected state initialized");
-		COURIER_FATAL_ERROR();
-	} else {
-		for(SocketBase* socketBase: socketMap.values()) {
-			logger.info("destroy %s %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
-			socketBase->callDestroy();
+		SocketBase* socketBase = socketMap[idpRequest.dst.socket];
+
+		dataResponse.block.zero();
+		dataResponse.block.clear();
+
+		// supply default values
+		etherResponse.dst  = etherRequest.src;
+		etherResponse.src  = myAddress;
+		etherResponse.type = etherRequest.type;
+		Courier::serialize(dataResponse.block, etherResponse);
+		etherResponse.data = dataResponse.block.remainder();
+
+		// supply default values
+		idpResponse.checksum   = IDP::Checksum::NONE;
+		idpResponse.length     = 0;
+		idpResponse.hopCount   = IDP::HopCount::ZERO;
+		idpResponse.packetType = idpRequest.packetType;
+		idpResponse.dst        = idpRequest.src;
+		idpResponse.src        = myAddress;
+		Courier::serialize(etherResponse.data, idpResponse);
+		idpResponse.data       = etherResponse.data.remainder();
+
+		// call service method of socketBase
+		bool sendResponse = false;
+		try {
+			socketBase->callService(idpRequest, idpResponse, sendResponse);
+		} catch (...) {
+			// FIXME catch error for error packet and create error packet
 		}
-		initialized = false;
+		if (!sendResponse) continue;
+		// Don't send error packet for broadcast request
+		if (idpResponse.packetType == IDP::PacketType::ERROR) {
+			if (idpRequest.dst == IDP::Host::ALL) continue;
+		}
+		// FIXME if packet size is less than 60, add padding
+		// FIXME calculate checksum of idpResponse and set
+
+		dataResponse.block.clear();
+		Courier::serialize(etherResponse.data, idpResponse);
+		dataResponse.block.clear();
+		Courier::serialize(dataResponse.block, etherResponse);
+		nic.transmit(dataResponse.block);
 	}
 }
+
 

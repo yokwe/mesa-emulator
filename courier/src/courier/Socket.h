@@ -52,7 +52,7 @@ public:
 
     void callInit();
     void callDestroy();
-    void callService(Frame& request, Frame& reply, bool& sendReply) const;
+    void callService(Frame& request, Frame& response, bool& sendResponse) const;
 
 private:
     bool initialized = false;
@@ -60,7 +60,22 @@ private:
 	// init, destroy and service is life cycle event
 	virtual void init()    = 0;
 	virtual void destroy() = 0;
-	virtual void service(Frame& request, Frame& reply, bool& sendReply) const = 0;
+	virtual void service(Frame& request, Frame& response, bool& sendResponse) const = 0;
+};
+
+class ServiceThread : public QRunnable {
+public:
+	ServiceThread(const NIC& nic_, const QMap<Socket, SocketBase*>& socketMap_) : nic(nic_), socketMap(socketMap_) {}
+
+	void run();
+	void stop() {
+		needStop = true;
+	}
+private:
+	const NIC&                       nic;
+	const QMap<Socket, SocketBase*>& socketMap;
+
+	bool needStop = false;
 };
 
 class Manager {
@@ -69,14 +84,20 @@ public:
 
 	void addSocket(SocketBase* socketBase);
 
-	void init   ();
-	void destroy();
+	// start service thread
+	void startService();
+	// stop service thread
+	void stopService();
+
 private:
 	NIC& nic;
 
-    bool initialized = false;
 	QMap<Socket, SocketBase*> socketMap;
+
+    bool           started       = false;
+	ServiceThread* serviceThread = nullptr;
 };
+
 
 }
 }
