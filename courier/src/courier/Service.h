@@ -63,7 +63,7 @@ private:
     virtual void        service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const = 0;
 };
 
-class ServiceManager {
+class Manager {
 public:
 	void addService(ServiceBase* service);
 

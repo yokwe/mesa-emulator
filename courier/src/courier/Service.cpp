@@ -65,7 +65,7 @@ void Courier::Service::ServiceBase::callService(Protocol::Protocol3::CallMessage
     }
 }
 
-void Courier::Service::ServiceManager::addService(ServiceBase* service) {
+void Courier::Service::Manager::addService(ServiceBase* service) {
 	quint32 programCode = service->programCode;
 	quint32 versionCode = service->versionCode;
 
@@ -83,7 +83,7 @@ void Courier::Service::ServiceManager::addService(ServiceBase* service) {
 		serviceMap[programCode] = versionMap;
 	}
 }
-void Courier::Service::ServiceManager::init() {
+void Courier::Service::Manager::init() {
 	if (initialized) {
 		logger.error("Unexpected state initialized");
 		COURIER_FATAL_ERROR();
@@ -97,7 +97,7 @@ void Courier::Service::ServiceManager::init() {
 		initialized = true;
 	}
 }
-void Courier::Service::ServiceManager::destroy() {
+void Courier::Service::Manager::destroy() {
 	if (!initialized) {
 		logger.error("Unexpected state initialized");
 		COURIER_FATAL_ERROR();
@@ -113,7 +113,7 @@ void Courier::Service::ServiceManager::destroy() {
 }
 
 
-void Courier::Service::ServiceManager::service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const {
+void Courier::Service::Manager::service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const {
 	if (!initialized) {
 		logger.error("Unexpected state initialized");
 		COURIER_FATAL_ERROR();
@@ -152,7 +152,7 @@ void Courier::Service::ServiceManager::service(Protocol::Protocol2::CallMessage&
 
 	serviceBase->callService(callMessage3, request, response);
 }
-void Courier::Service::ServiceManager::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
+void Courier::Service::Manager::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
 	if (!initialized) {
 		logger.error("Unexpected state initialized");
 		COURIER_FATAL_ERROR();
