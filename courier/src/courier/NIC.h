@@ -83,6 +83,9 @@ public:
 
 	// discard already received packet
 	void discardPacket() const;
+	// unit of timeout is second
+	int  select(quint32 timeoutInSec) const;
+
 
 	void receive (Block& block) const;
 	void transmit(Block& block) const;

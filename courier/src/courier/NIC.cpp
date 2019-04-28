@@ -58,6 +58,16 @@ void Courier::NIC::discardPacket() const {
 	utilNIC.discardRecievedPacket();
 }
 
+int Courier::NIC::select(quint32 timeoutInSec) const {
+	int opErrno = 0;
+	int ret = utilNIC.select(timeoutInSec, opErrno);
+	if (ret < 0) {
+		logger.fatal("receive select = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
+		RUNTIME_ERROR();
+	}
+	return ret;
+}
+
 void Courier::NIC::receive (Block& block) const {
 	block.zero();
 	int opErrno = 0;
