@@ -112,6 +112,7 @@ public:
 	// read rest of value and pos of value will change
 	void deserialize(Block&   value);
 
+	quint16 computeChecksum() const;
 private:
 	// Make private to detect unintentional invocation of default constructor
 	Block() : state(State::write), capacity(0), offset(0), pos(0), limit(0), data(nullptr) {}

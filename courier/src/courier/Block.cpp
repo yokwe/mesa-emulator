@@ -405,3 +405,24 @@ void Courier::Block::deserialize(Block&  value) {
 		COURIER_FATAL_ERROR();
 	}
 }
+
+quint16 Courier::Block::computeChecksum() const {
+	quint32 s = 0;
+
+	// Calculate checksum based 16 bit word. not 8 bit.
+	// So if length is odd number, one bye beyond length is used to calculate checksum
+	// In offset + 2, 2 is for checksum field itself.
+	for(quint16 i = offset + 2; i < limit; i += 2) {
+		quint16 w = data[i + 0] & 0x00ffU;
+		w = (w << 8) | (data[i + 1] & 0x00ffU);
+		// add w to s
+		s += w;
+		// if there is overflow, increment t
+		if (0x10000U <= s) s = (s + 1) & 0xffffU;
+		// shift left
+		s <<= 1;
+		// if there is overflow, increment t
+		if (0x10000U <= s) s = (s + 1) & 0xffffU;
+	}
+	return (quint16)s;
+}
