@@ -159,31 +159,22 @@ public class GenStub {
 				}
 				
 				outh.line();
+				outh.line("virtual void init()    = 0;",
+						  "virtual void destroy() = 0;",
+						  "");
 				{
 					List<String> c1 = new ArrayList<>();
 					List<String> c2 = new ArrayList<>();
 					List<String> c3 = new ArrayList<>();
 					List<String> c4 = new ArrayList<>();
 					
-					// init
-					c1.add("virtual void init");
-					c2.add("()");
-					c3.add("");
-					c4.add("= 0;");
-					// destroy
-					c1.add("virtual void destroy");
-					c2.add("()");
-					c3.add("");
-					c4.add("= 0;");
-					
-					//             virtual void retrieveAddresses(RetrieveAddresses::Param& param, RetrieveAddresses::Result& result) = 0;
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						String procedureName = procedureInfo.name.substring(0, 1).toLowerCase() + procedureInfo.name.substring(1, procedureInfo.name.length());
 						
 						c1.add(String.format("virtual void %s", procedureName));
-						c2.add(String.format("(%s::Param& param,", procedureInfo.name));
-						c3.add(String.format("%s::Result& result)", procedureInfo.name));
-						c4.add("= 0;");
+						c2.add(String.format("(quint16 transaction, const %s::Param& ", procedureInfo.name));
+						c3.add(String.format("param, %s::Result&", procedureInfo.name));
+						c4.add("result) = 0;");
 					}
 					ColumnLayout.layoutStringString(outh, c1, c2, c3, c4);
 				}
@@ -191,7 +182,7 @@ public class GenStub {
 				outh.line("",
 						  "bool        isProcedureValid    (int code);",
 						  "const char* getProcedureName    (int code);",
-						  "void        service             (CallMessage& callMessage, Block& request, Block& response);");
+						  "void        service             (const CallMessage& callMessage, Block& request, Block& response);");
 				
 				outh.line("",
 						  "private:");
@@ -202,7 +193,7 @@ public class GenStub {
 					
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("void call%s", procedureInfo.name));
-						c2.add("(CallMessage& callMessage, Block& request, Block& response);");
+						c2.add("(const CallMessage& callMessage, Block& request, Block& response);");
 		            }
 					ColumnLayout.layoutStringString(outh, c1, c2);
 				}
@@ -251,7 +242,7 @@ public class GenStub {
 						  "}",
 						  "}");
 
-				outc.format("void %s::%s::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
+				outc.format("void %s::%s::service(const Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("case %s::CODE:", procedureInfo.name);
@@ -267,13 +258,13 @@ public class GenStub {
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					String procedureName = procedureInfo.name.substring(0, 1).toLowerCase() + procedureInfo.name.substring(1, procedureInfo.name.length());
 
-					outc.format("void %s::%s::call%s(CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
+					outc.format("void %s::%s::call%s(const CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName, procedureInfo.name);
 					
 					outc.line("try {");
 					outc.format("%s::Param  param;", procedureInfo.name);
 					outc.format("%s::Result result;", procedureInfo.name);
 					outc.line("Courier::deserialize(request, param);");
-					outc.format("%s(param, result);", procedureName);
+					outc.format("%s(callMessage.transaction, param, result);", procedureName);
 					outc.line("",
 							  "Protocol::Protocol3 protocol3 = Protocol::Protocol3::return__(callMessage);",
 							  "Courier::serialize(response, protocol3);",
