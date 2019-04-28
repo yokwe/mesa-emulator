@@ -50,8 +50,13 @@ public:
     virtual ~ServiceBase();
 
     virtual bool        isProcedureValid    (quint16 code) const = 0;
-    virtual bool        isProcedureInstalled(quint16 code) const = 0;
     virtual const char* getProcedureName    (quint16 code) const = 0;
+
+    void callInit();
+    void callDestroy();
+    void callService(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const;
+private:
+    bool initialized = false;
 
     virtual void        init   ();
     virtual void        destroy();
@@ -68,6 +73,7 @@ public:
     void service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const;
 
 private:
+    bool initialized = false;
     //   program       version
     QMap<quint32, QMap<quint16, ServiceBase*>> serviceMap;
 };

@@ -37,6 +37,34 @@ static log4cpp::Category& logger = Logger::getLogger("cr/service");
 
 #include "../stub/Programs.h"
 
+void Courier::Service::ServiceBase::callInit() {
+    if (initialized) {
+        logger.error("Unexpected state initialized");
+        COURIER_FATAL_ERROR();
+    } else {
+        init();
+        initialized = true;
+    }
+}
+
+void Courier::Service::ServiceBase::callDestroy() {
+    if (!initialized) {
+        logger.error("Unexpected state initialized");
+        COURIER_FATAL_ERROR();
+    } else {
+        destroy();
+        initialized = false;
+    }
+}
+void Courier::Service::ServiceBase::callService(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
+    if (!initialized) {
+        logger.error("Unexpected state initialized");
+        COURIER_FATAL_ERROR();
+    } else {
+        service(callMessage, request, response);
+    }
+}
+
 void Courier::Service::ServiceManager::addService(ServiceBase* service) {
 	quint32 programCode = service->programCode;
 	quint32 versionCode = service->versionCode;
@@ -56,24 +84,41 @@ void Courier::Service::ServiceManager::addService(ServiceBase* service) {
 	}
 }
 void Courier::Service::ServiceManager::init() {
-	for(auto& map: serviceMap.values()) {
-		for(ServiceBase* serviceBase: map.values()) {
-			logger.info("init %s%d", serviceBase->programName, serviceBase->versionCode);
-			serviceBase->init();
+	if (initialized) {
+		logger.error("Unexpected state initialized");
+		COURIER_FATAL_ERROR();
+	} else {
+		for(auto& map: serviceMap.values()) {
+			for(ServiceBase* serviceBase: map.values()) {
+				logger.info("init %s%d", serviceBase->programName, serviceBase->versionCode);
+				serviceBase->callInit();
+			}
 		}
+		initialized = true;
 	}
 }
 void Courier::Service::ServiceManager::destroy() {
-	for(auto& map: serviceMap.values()) {
-		for(ServiceBase* serviceBase: map.values()) {
-			logger.info("destroy %s%d", serviceBase->programName, serviceBase->versionCode);
-			serviceBase->destroy();
+	if (!initialized) {
+		logger.error("Unexpected state initialized");
+		COURIER_FATAL_ERROR();
+	} else {
+		for(auto& map: serviceMap.values()) {
+			for(ServiceBase* serviceBase: map.values()) {
+				logger.info("destroy %s%d", serviceBase->programName, serviceBase->versionCode);
+				serviceBase->callDestroy();
+			}
 		}
+		initialized = false;
 	}
 }
 
 
 void Courier::Service::ServiceManager::service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const {
+	if (!initialized) {
+		logger.error("Unexpected state initialized");
+		COURIER_FATAL_ERROR();
+	}
+
 	const quint16 transaction   = callMessage.transaction;
 	const quint32 programCode   = callMessage.program;
 	const quint16 versionCode   = callMessage.version;
@@ -105,10 +150,14 @@ void Courier::Service::ServiceManager::service(Protocol::Protocol2::CallMessage&
 	callMessage3.version     = versionCode;
 	callMessage3.procedure   = procedureCode;
 
-	serviceBase->service(callMessage3, request, response);
+	serviceBase->callService(callMessage3, request, response);
 }
 void Courier::Service::ServiceManager::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
-//	const quint16 transaction   = callMessage.transaction;
+	if (!initialized) {
+		logger.error("Unexpected state initialized");
+		COURIER_FATAL_ERROR();
+	}
+
 	const quint32 programCode   = callMessage.program;
 	const quint16 versionCode   = callMessage.version;
 	const quint16 procedureCode = callMessage.procedure;
@@ -140,5 +189,5 @@ void Courier::Service::ServiceManager::service(Protocol::Protocol3::CallMessage&
 		return;
 	}
 
-	serviceBase->service(callMessage, request, response);
+	serviceBase->callService(callMessage, request, response);
 }
