@@ -38,7 +38,7 @@ static log4cpp::Category& logger = Logger::getLogger("cr/error");
 // Frame
 
 QString Courier::toString(const Error::Frame&  value) {
-	QString ret = QString("[%1 %2 %3s]")
+	QString ret = QString("[%1 %2 %3]")
 			.arg(Courier::toString(value.number))
 			.arg(value.parameter)
 			.arg(Courier::toString(value.data));
