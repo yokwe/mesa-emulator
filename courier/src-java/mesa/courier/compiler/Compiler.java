@@ -319,7 +319,7 @@ public class Compiler {
 	private void genDeclConstProcedure(LinePrinter outh, LinePrinter outc, String namePrefix, TypeProcedure typeProcedure, String name, Constant constant) {
 		//
 		// Output declaration of class
-		//		
+		//
 		long code;
 		{
 			if (constant.kind == Constant.Kind.NUMBER) {
@@ -576,7 +576,7 @@ public class Compiler {
 		}
 		if (type.toString().compareTo(type.getTrueConcreteType().toString()) != 0) {
 			out.format("//   %s", type.getTrueConcreteType());
-		}			
+		}
 	}
 
 	private void logField(LinePrinter out, Type type, String name) {
@@ -584,7 +584,7 @@ public class Compiler {
 		
 		if (type.toString().compareTo(type.getTrueConcreteType().toString()) != 0) {
 			out.format("//   %s", type.getTrueConcreteType());
-		}			
+		}
 	}
 
 	private void genDeclTypeRecord(LinePrinter outh, LinePrinter outc, TypeRecord typeRecord, String name, String namePrefix) {
@@ -880,23 +880,18 @@ public class Compiler {
 	
 	private void genEnumToString(LinePrinter outh, LinePrinter outc) {
 		if (context.enumInfoList.isEmpty()) return;
-		outh.line();
-		outc.line();
 
-		outh.line("//",
+		// Declaration
+		outh.line("",
+				  "//",
 				  "// Enum Function Declaration",
 				  "//");
 
-		outc.line("//",
-				  "// Enum Function Definition",
-				  "//");
-
-		// Declaration
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(EnumInfo enumInfo: context.enumInfoList) {				
+			for(EnumInfo enumInfo: context.enumInfoList) {
 				c1.add(String.format("QString toString(const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
@@ -904,6 +899,11 @@ public class Compiler {
 		}
 		
 		// Definition
+		outc.line("",
+				  "//",
+				  "// Enum Function Definition",
+				  "//");
+
 		for(EnumInfo enumInfo: context.enumInfoList) {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
@@ -932,6 +932,20 @@ public class Compiler {
 			outc.line("}"); // end of toString
 		}
 	}
+	private static String toEnumTypeString(Type type) {
+		switch(type.getConcreteType().kind) {
+		case BYTE:
+			return "quint8";
+		case UNSPECIFIED:
+			return "quint16";
+		case UNSPECIFIED2:
+			return "quint32";
+		case UNSPECIFIED3:
+			return "quint64";
+		default:
+			throw new CompilerException(String.format("Unexpected type %s", type));
+		}
+	}
 	private void genEnumSerialize(LinePrinter outh, LinePrinter outc) {
 		if (context.enumInfoList.isEmpty()) return;
 		outh.line();
@@ -942,7 +956,7 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(EnumInfo enumInfo: context.enumInfoList) {				
+			for(EnumInfo enumInfo: context.enumInfoList) {
 				c1.add(String.format("void serialize(BLOCK& block, const %s::%s", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
@@ -950,10 +964,10 @@ public class Compiler {
 		}
 		
 		// Definition
-		for(EnumInfo enumInfo: context.enumInfoList) {							
+		for(EnumInfo enumInfo: context.enumInfoList) {
 			outc.line();
 			outc.format("void %s::serialize(BLOCK& block, const %s::%s value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
-			outc.line("Courier::serialize(block, (quint16)value);");
+			outc.format("Courier::serialize(block, (%s)value);", toEnumTypeString(enumInfo.typeEnum.type));
 			outc.line("}");
 		}
 	}
@@ -967,7 +981,7 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(EnumInfo enumInfo: context.enumInfoList) {				
+			for(EnumInfo enumInfo: context.enumInfoList) {
 				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", enumInfo.namePrefix, enumInfo.name));
 				c2.add("value);");
 			}
@@ -975,10 +989,10 @@ public class Compiler {
 		}
 		
 		// Definition
-		for(EnumInfo enumInfo: context.enumInfoList) {							
+		for(EnumInfo enumInfo: context.enumInfoList) {
 			outc.line();
 			outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", enumInfo.namePrefix, enumInfo.name);
-			outc.line("quint16 t;");
+			outc.format("%s t;", toEnumTypeString(enumInfo.typeEnum.type));
 			outc.line("Courier::deserialize(block, t);");
 			outc.format("value = (%s::%s)t;", enumInfo.namePrefix, enumInfo.name);
 			outc.line("}");
@@ -1003,7 +1017,7 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(RecordInfo recordInfo: context.recordInfoList) {				
+			for(RecordInfo recordInfo: context.recordInfoList) {
 				c1.add(String.format("QString toString(const %s::%s&", recordInfo.namePrefix, recordInfo.name));
 				c2.add("value);");
 			}
@@ -1114,7 +1128,7 @@ public class Compiler {
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
-			for(ChoiceInfo choiceInfo: context.choiceInfoList) {				
+			for(ChoiceInfo choiceInfo: context.choiceInfoList) {
 				c1.add(String.format("QString toString(const %s::%s&", choiceInfo.namePrefix, choiceInfo.name));
 				c2.add("value);");
 			}
