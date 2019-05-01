@@ -33,6 +33,7 @@ import mesa.courier.program.TypeChoice;
 import mesa.courier.program.TypeChoice.Candidate;
 import mesa.courier.program.TypeEnum;
 import mesa.courier.program.TypeError;
+import mesa.courier.program.TypePredefined;
 import mesa.courier.program.TypeProcedure;
 import mesa.courier.program.TypeRecord;
 import mesa.courier.program.TypeReference;
@@ -610,15 +611,35 @@ public class Compiler {
 	}
 	
 	private void genDeclTypeEnum(LinePrinter outh, LinePrinter outc, TypeEnum type, String name, String namePrefix) {
-		List<String>  c1 = new ArrayList<>();
-		List<Integer> c2 = new ArrayList<>();
+		String typeString;
+		switch(type.type.kind) {
+		case BYTE:
+			typeString = "quint8";
+			break;
+		case UNSPECIFIED:
+			typeString = "quint16";
+			break;
+		case UNSPECIFIED2:
+			typeString = "quint32";
+			break;
+		case UNSPECIFIED3:
+			typeString = "quint64";
+			break;
+		default:
+			throw new CompilerException(String.format("Unexpected type %s", type.type.toString()));
+		}
+				
+		List<String> c1 = new ArrayList<>();
+		List<String> c2 = new ArrayList<>();
+		List<String> c3 = new ArrayList<>();
 		for(Correspondence correspondence: type.elements) {
 			c1.add(Util.sanitizeSymbol(correspondence.id));
-			c2.add((int)correspondence.numericValue);
+			c2.add("=");
+			c3.add(String.format("%s,", toNumberString(correspondence.numericValue)));
 		}
 		
-		outh.format("enum class %s : quint16 {", name);
-		ColumnLayout.layoutEnumElement(outh, c1, c2);
+		outh.format("enum class %s : %s {", name, typeString);
+		ColumnLayout.layoutStringStringRight(outh, c1, c2, c3);
 		outh.line("};");
 		
 		// build context.enumInfoList
@@ -841,7 +862,7 @@ public class Compiler {
 		// Build context.enumInfoList
 		{
 			// Build typeEnum from anon
-			TypeEnum typeEnum = new TypeEnum();
+			TypeEnum typeEnum = new TypeEnum(new TypePredefined(Type.Kind.UNSPECIFIED));
 			for(Candidate<Correspondence> candidate: anon.candidates) {
 				for(Correspondence correspondence: candidate.designators) {
 					typeEnum.addCorrespondence(correspondence);
@@ -1201,7 +1222,23 @@ public class Compiler {
 			outc.line("}"); // end of method
 		}
 	}
-	
+	private String toNumberString(long value) {
+		if (value == 0) {
+			return "0";
+		} else if (0xF0 <= value && value <= 0xFF) {
+			return String.format("0x%X", value);
+		} else if (0xFFF0 <= value && value <= 0xFFFF) {
+			return String.format("0x%X", value);
+		} else if (0xFFFF_FFF0L <= value && value <= 0xFFFF_FFFFL) {
+			return String.format("0x%XU", value);
+		} else if (0xFFFF_FFFF_FFF0L <= value && value <= 0xFFFF_FFFF_FFFFL) {
+			return String.format("0x%XU", value);
+		} else if ((value & 0xFF) == 0) {
+			return String.format((value <= 0x7FFF_FFF) ? "0x%X" : "0x%XU", value);
+		} else {
+			return String.format((value <= 0x7FFF_FFF) ? "%d" : "%dU", value);
+		}
+	}
 	private String toConstantString(Constant constant) {
 		switch(constant.kind) {
 		case BOOLEAN:
@@ -1213,22 +1250,7 @@ public class Compiler {
 		{
 			ConstantNumber constantNumber = (ConstantNumber)constant;
 			long value = constantNumber.value;
-			
-			if (value == 0) {
-				return "0";
-			} else if (0xF0 <= value && value <= 0xFF) {
-				return String.format("0x%X", value);
-			} else if (0xFFF0 <= value && value <= 0xFFFF) {
-				return String.format("0x%X", value);
-			} else if (0xFFFF_FFF0L <= value && value <= 0xFFFF_FFFFL) {
-				return String.format("0x%XU", value);
-			} else if (0xFFFF_FFFF_FFF0L <= value && value <= 0xFFFF_FFFF_FFFFL) {
-				return String.format("0x%XU", value);
-			} else if ((value & 0xFF) == 0) {
-				return String.format((value <= 0x7FFF_FFF) ? "0x%X" : "0x%XU", value);
-			} else {
-				return String.format((value <= 0x7FFF_FFF) ? "%d" : "%dU", value);
-			}
+			return toNumberString(value);
 		}
 		case STRING:
 		{

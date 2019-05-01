@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TypeEnum extends Type {
-	public List<Correspondence> elements;
+	public final Type                 type;
+	public final List<Correspondence> elements;
 
-	public TypeEnum() {
+	public TypeEnum(Type type) {
 		super(Kind.ENUM);
+		this.type = type;
 		elements = new ArrayList<>();
 	}
 
@@ -23,6 +25,6 @@ public class TypeEnum extends Type {
 			if (count++ != 0) buf.append(", ");
 			buf.append(e.toString());
 		}
-		return String.format("%s [%s]", kind, buf.toString());
+		return String.format("%s [%s [%s]]", kind, type.toString(), buf.toString());
 	}
 }

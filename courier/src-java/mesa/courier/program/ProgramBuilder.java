@@ -219,8 +219,33 @@ public class ProgramBuilder {
 
 		// Constructed
 		@Override
+		public Type visitTypeEmptyEnum(@NotNull TypeEmptyEnumContext context) {
+			TypeEnum typeEnum = new TypeEnum(new TypePredefined(Type.Kind.UNSPECIFIED));
+
+			for(CorrespondenceContext e: context.correspondenceList().elements) {
+				String id           = e.ID().getText();
+				long   numericValue = Util.parseLong(e.numericValue().getText());
+				typeEnum.addCorrespondence(new TypeEnum.Correspondence(id, numericValue));
+			}
+			return typeEnum;
+		}
+		@Override
 		public Type visitTypeEnum(@NotNull TypeEnumContext context) {
-			TypeEnum typeEnum = new TypeEnum();
+			EnumTypeContext enumType = context.enumType();
+			
+			Type type;
+			if (enumType.BYTE() != null) {
+				type = new TypePredefined(Type.Kind.BYTE);
+			} else if (enumType.UNSPECIFIED() != null) {
+				type = new TypePredefined(Type.Kind.UNSPECIFIED);
+			} else if (enumType.UNSPECIFIED2() != null) {
+				type = new TypePredefined(Type.Kind.UNSPECIFIED2);
+			} else if (enumType.UNSPECIFIED3() != null) {
+				type = new TypePredefined(Type.Kind.UNSPECIFIED3);
+			} else {
+				throw new ProgramException(String.format("unexpected enumType enumType = %s", enumType.toString()));
+			}
+			TypeEnum typeEnum = new TypeEnum(type);
 			
 			for(CorrespondenceContext e: context.correspondenceList().elements) {
 				String id           = e.ID().getText();
