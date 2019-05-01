@@ -110,7 +110,8 @@ predefinedType
     ;
 
 constructedType
-    :    '{' correspondenceList '}'                          # TypeEnum
+    :    '{' correspondenceList '}'                          # TypeEmptyEnum
+    |    '{' correspondenceList '}' OF enumType              # TypeEnum
     |    ARRAY numericValue OF type                          # TypeArray
     |    SEQUENCE maximumNumber OF type                      # TypeSequence
     |    RECORD '[' fieldList ']'                            # TypeRecord
@@ -121,6 +122,12 @@ constructedType
     |    ERROR argumentList                                  # TypeError
     ;
 
+enumType
+    :    BYTE
+    |    UNSPECIFIED
+    |    UNSPECIFIED2
+    |    UNSPECIFIED3
+    ;
 referencedType
     :    name=ID                # TypeRef
     |    program=ID '.' name=ID # TypeRefQ

@@ -306,6 +306,14 @@ public class CourierBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
+	@Override public T visitEnumType(@NotNull CourierParser.EnumTypeContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
 	@Override public T visitConstRecord(@NotNull CourierParser.ConstRecordContext ctx) { return visitChildren(ctx); }
 
 	/**
@@ -411,6 +419,14 @@ public class CourierBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
 	@Override public T visitTypeCardinal(@NotNull CourierParser.TypeCardinalContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.
+	 */
+	@Override public T visitTypeEmptyEnum(@NotNull CourierParser.TypeEmptyEnumContext ctx) { return visitChildren(ctx); }
 
 	/**
 	 * {@inheritDoc}

@@ -264,6 +264,13 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	T visitTypeUnspecified(@NotNull CourierParser.TypeUnspecifiedContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link CourierParser#enumType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEnumType(@NotNull CourierParser.EnumTypeContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link CourierParser#ConstRecord}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -360,6 +367,13 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitTypeCardinal(@NotNull CourierParser.TypeCardinalContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link CourierParser#TypeEmptyEnum}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeEmptyEnum(@NotNull CourierParser.TypeEmptyEnumContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link CourierParser#TypeBoolean}.
