@@ -7,10 +7,12 @@ BYTE         : 'BYTE';
 CARDINAL     : 'CARDINAL';
 CHOICE       : 'CHOICE';
 DEPENDS      : 'DEPENDS';
+DEPENDENT    : 'DEPENDENT';
 END          : 'END';
 ERROR        : 'ERROR';
 INTEGER      : 'INTEGER';
 LONG         : 'LONG';
+MACHINE      : 'MACHINE';
 OF           : 'OF';
 PROCEDURE    : 'PROCEDURE';
 PROGRAM      : 'PROGRAM';
@@ -120,6 +122,7 @@ constructedType
     |    CHOICE OF '{' anonCandidateList '}'                 # TypeChoiceAnon
     |    PROCEDURE argumentList resultList errorList         # TypeProcedure
     |    ERROR argumentList                                  # TypeError
+    |    MACHINE DEPENDENT '[' mdFieldList ']' OF mdType     # TypeMachine
     ;
 
 enumType
@@ -128,6 +131,12 @@ enumType
     |    UNSPECIFIED2
     |    UNSPECIFIED3
     ;
+
+mdType
+    :    BYTE
+    |    UNSPECIFIED
+    ;
+
 referencedType
     :    name=ID                # TypeRef
     |    program=ID '.' name=ID # TypeRefQ
@@ -188,6 +197,20 @@ fieldList
 
 field
     :    nameList ':' type
+    ;
+
+mdFieldList
+    :    elements+= mdField (',' elements+=mdField)*
+    ;
+
+mdFieldType
+    :    BOOLEAN
+    |    CARDINAL
+    |    UNSPECIFIED
+    ;
+
+mdField
+    :    name=ID '(' start=NUMBER '..' stop=NUMBER ')' ':' mdFieldType
     ;
 
 constant
