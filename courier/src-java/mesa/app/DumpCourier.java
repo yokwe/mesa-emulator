@@ -11,7 +11,9 @@ public class DumpCourier {
 	
 	public static void main(String[] args) throws Exception {
 		logger.debug("START");
-		ProgramBuilder.initialize("data/courier");
+		ProgramBuilder.initialize("data/courier/custom");
+		ProgramBuilder.initialize("data/courier/XNSonUX");
+		ProgramBuilder.initialize("data/courier/test");
 		
 		for(int i = 0; i < args.length; i++) {
 			String name = args[i];
