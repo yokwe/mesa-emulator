@@ -1,14 +1,14 @@
 Echo: PROGRAM 0 VERSION 0 =
 BEGIN
 
-Operation: TYPE = {
+Type: TYPE = {
     request(1),
     response(2)
 };
 
 Header: TYPE = RECORD [
-    operation: Operation
-    -- Echo data is stored after operation
+    type: Type
+    -- Echo data is stored after Header until end of packet
 ];
 
 END.

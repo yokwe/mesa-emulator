@@ -1,11 +1,16 @@
 PacketExchange: PROGRAM 0 VERSION 0 =
 BEGIN
 
-ClientType: TYPE = {unspecified(0), time(1), clearinghouse(2), teledebug(8)};
+Type: TYPE = {
+    UNSPEC     (0), -- UNSPECIFIED is key word. Use UNSPEC instead.
+    TIME       (1),
+    CHS        (2),
+    TELE_DEBUG (3)
+};
 
 Header: TYPE = RECORD [
-    id:         UNSPECIFIED2,
-    clientType: ClientType
+    id:   UNSPECIFIED2,
+    type: Type
     -- Data is stored after clientType
 ];
 

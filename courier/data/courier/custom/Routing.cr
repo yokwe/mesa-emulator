@@ -1,27 +1,24 @@
 Routing: PROGRAM 0 VERSION 0 =
 BEGIN
-    DEPENDS UPON Datagram(0) VERSION 0;
+    DEPENDS UPON IDP(0) VERSION 0;
 
-Operation: TYPE = {
+Type: TYPE = {
     request(1),
     response(2)
 };
 
-Hop: TYPE = CARDINAL;
+Hop: TYPE = {
+    MAX(16)
+};
 
 Tuple: TYPE = RECORD [
-    network: Datagram.Network,
+    network: IDP.Network,
     hop:     Hop];
 
 Header: TYPE = RECORD [
-    operation: Operation
-    -- Tupple are stored after operation until end of packet
+    type: Type
+    -- Tuple are stored after Header until end of packet
 ];
-
--- infinity: Hop = 16;
--- The word "infinity" make conflict in C source code.
--- So use word "maxHop" instead of "infinity"
-maxHop: Hop = 16;
 
 tupleLength: CARDINAL = 6; -- length of Tuple in byte
 

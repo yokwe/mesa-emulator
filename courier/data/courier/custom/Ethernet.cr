@@ -1,24 +1,28 @@
 Ethernet: PROGRAM 0 VERSION 0 =
 BEGIN
 
-HostAddress: TYPE = UNSPECIFIED3;
-FrameType:   TYPE = UNSPECIFIED;
+Host: TYPE = {
+    ALL(0FFFFFFFFFFFFX)
+} OF UNSPECIFIED3;
+
+Type: TYPE = {
+    PUP(0200X),
+    IDP(0600X),
+    IP4(0800X)
+} OF UNSPECIFIED;
 
 Header: TYPE = RECORD [
-    destination: HostAddress,
-    source:      HostAddress,
-    type:        FrameType
+    dst:  Host,
+    src:  Host,
+    type: Type
     -- data will follow after header
 ];
 
-broadcastAddress: HostAddress = 0FFFFFFFFFFFFX;
-frameTypeIDP:     FrameType   = 0600X;
-
 -- length of header
-headerLength: CARDINAL = 14; -- 14 = 6 + 6 + 2
+HEADER_LENGTH: CARDINAL = 14; -- 14 = 6 + 6 + 2
 
 -- minimum length of data (exclude Header)
-minDataLength: CARDINAL = 46;
-maxDataLength: CARDINAL = 1500;
+DATA_LENGTH_MIN: CARDINAL = 46;
+DATA_LENGTH_MAX: CARDINAL = 1500;
 
 END.

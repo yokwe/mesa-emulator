@@ -4,7 +4,24 @@ BEGIN
 ConnectionID:   TYPE = UNSPECIFIED;
 SequenceNumber: TYPE = UNSPECIFIED;
 
+Control: TYPE = MACHINE DEPENDENT [
+    system     (0..0): BOOLEAN,
+    sendAck    (1..1): BOOLEAN,
+    attention  (2..2): BOOLEAN,
+    endMessage (3..3): BOOLEAN,
+    reserve    (4..7): UNSPECIFIED
+] OF BYTE;
+
+Type: TYPE = {
+    DATA         (0),
+    BULK         (1),
+    CLOSE      (254),
+    CLOSE_REPLY(255)
+} OF BYTE;
+
 Header: TYPE = RECORD [
+    Control:     control,
+    Type:        type,
     control:     UNSPECIFIED,
     source:      ConnectionID,
     destination: ConnectionID,
