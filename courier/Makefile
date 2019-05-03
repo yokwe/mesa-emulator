@@ -94,7 +94,7 @@ stub:
 
 JARDIR		:= ../Externals/jar
 CLASSPATH	:= bin:$(JARDIR)/antlr-4.1-complete.jar:$(JARDIR)/hamcrest-core-1.3.jar:$(JARDIR)/junit-4.11.jar:$(JARDIR)/logback-classic-1.0.13.jar:$(JARDIR)/logback-core-1.0.13.jar:$(JARDIR)/slf4j-api-1.7.5.jar
-COURIER_TARGET	:= Ethernet Datagram
+COURIER_TARGET	:= Ethernet IDP
 COURIER_TARGET	+= Echo Error PacketExchange Routing Boot SequencedPacket Time
 COURIER_TARGET	+= Protocol ExpeditedCourier
 COURIER_TARGET	+= Time2 Authentication1 Authentication2 Authentication3 BulkData1 CHEntries0 Clearinghouse2 Clearinghouse3
@@ -119,5 +119,5 @@ gen-stub:
 #	cp   -p  src/stub-custom/*.cpp src/stub-custom/*.h src/stub
 
 dump-courier:
-	java -cp $(CLASSPATH) mesa.app.DumpCourier Clearinghouse2
+	java -cp $(CLASSPATH) mesa.app.DumpCourier IDP
 
