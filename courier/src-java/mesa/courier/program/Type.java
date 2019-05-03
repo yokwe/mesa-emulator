@@ -9,7 +9,7 @@ public abstract class Type {
 		BOOLEAN, BYTE, CARDINAL, LONG_CARDINAL, /* INTEGER, LONG_INTEGER,*/ STRING,
 		UNSPECIFIED, UNSPECIFIED2, UNSPECIFIED3,
 		// constructed
-		ENUM, ARRAY, SEQUENCE, RECORD, CHOICE, PROCEDURE, ERROR,
+		ENUM, ARRAY, SEQUENCE, RECORD, CHOICE, PROCEDURE, ERROR, MACHINE,
 		// reference
 		REFERENCE,
 	};
@@ -182,6 +182,22 @@ public abstract class Type {
 		}
 		public String toString() {
 			return String.format("%s: %s", name, type.toString());
+		}
+	}
+	
+	public static class MDField {
+		public final String name;
+		public final int    start;
+		public final int    stop;
+		public final Type   type;
+		public MDField(String name, int start, int stop, Type type) {
+			this.name  = name;
+			this.start = start;
+			this.stop  = stop;
+			this.type  = type;
+		}
+		public String toString() {
+			return String.format("%s: (%d..%d) %s", name, start, stop, type.toString());
 		}
 	}
 	

@@ -193,6 +193,7 @@ public final class Program {
 						Type     type     = declType.type;
 						t.append(String.format("  [%s %s]", name, (type == null) ? "null" : type.toString()));
 					}
+						break;
 					case CONST:
 					{
 						DeclConst declConst = (DeclConst)e;
@@ -201,6 +202,7 @@ public final class Program {
 						Constant  constant  = declConst.constant;
 						t.append(String.format("  [%s %s %s]", name, type.toString(), (constant == null) ? "null" : constant.toString()));
 					}
+						break;
 					default:
 						throw new ProgramException(String.format("Unknown kind.  kind = %s", e.kind));
 					}

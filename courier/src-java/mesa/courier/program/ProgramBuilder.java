@@ -52,6 +52,7 @@ public class ProgramBuilder {
 		if (courierFiles.length == 0) throw new ProgramException(String.format("no courier file. directoryPath = %s", directoryPath));
 
 		for(File courierFile: courierFiles) {
+			logger.info("process {}", courierFile.getName());
 			String fileName = courierFile.getName();
 			int length = fileName.length();
 			
@@ -243,7 +244,7 @@ public class ProgramBuilder {
 			} else if (enumType.UNSPECIFIED3() != null) {
 				type = new TypePredefined(Type.Kind.UNSPECIFIED3);
 			} else {
-				throw new ProgramException(String.format("unexpected enumType enumType = %s", enumType.toString()));
+				throw new ProgramException(String.format("Unexpected enumType enumType = %s", enumType.toString()));
 			}
 			TypeEnum typeEnum = new TypeEnum(type);
 			
@@ -375,6 +376,63 @@ public class ProgramBuilder {
 			}
 			return ret;
 		}
+		@Override
+		public Type visitTypeMachine(@NotNull TypeMachineContext context) {
+			TypeMachine ret;
+			int posMax;
+			{
+				Type type;
+				MdTypeContext mdType = context.mdType();
+				if (mdType.BYTE() != null) {
+					type = new TypePredefined(Type.Kind.BYTE);
+					posMax = 8;
+				} else if (mdType.UNSPECIFIED() != null) {
+					type = new TypePredefined(Type.Kind.UNSPECIFIED);
+					posMax = 16;
+				} else {
+					throw new ProgramException(String.format("Unexpected mdType = %s", mdType.toString()));
+				}
+				ret = new TypeMachine(type);
+			}
+			int nextStart = 0;
+			for(MdFieldContext mdField: context.mdFieldList().elements) {
+				String name  = mdField.name.getText();
+				int    start = (int)Util.parseLong(mdField.start.getText());
+				int    stop  = (int)Util.parseLong(mdField.stop.getText());
+				Type   type;
+				{
+					MdFieldTypeContext mdFieldType = mdField.mdFieldType();
+					if (mdFieldType.BOOLEAN() != null) {
+						type = new TypePredefined(Type.Kind.BOOLEAN);
+					} else if (mdFieldType.CARDINAL() != null) {
+						type = new TypePredefined(Type.Kind.CARDINAL);
+					} else if (mdFieldType.UNSPECIFIED() != null) {
+						type = new TypePredefined(Type.Kind.UNSPECIFIED);
+					} else {
+						throw new ProgramException(String.format("Unexpected mdFieldType = %s", mdFieldType.toString()));
+					}
+				}
+				
+				// Sanity check
+				if (start != nextStart) {
+					throw new ProgramException(String.format("Unexpected start = %d  nextStart = %d", start, nextStart));
+				}
+				if (stop < start) {
+					throw new ProgramException(String.format("Unexpected start = %d  stop = %d", start, stop));
+				}
+				if (posMax <= stop) {
+					throw new ProgramException(String.format("Unexpected stop = %d  posMax = %d", stop, posMax));
+				}
+				nextStart = stop + 1;
+				
+				ret.addField(new MDField(name, start, stop, type));
+			}
+			if (nextStart != posMax) {
+				throw new ProgramException(String.format("Unexpected nextStart = %d  posMax = %d", nextStart, posMax));
+			}
+			return ret;
+		}
+
 
 		// Referenced
 		public Type visitTypeRef(@NotNull TypeRefContext context) {

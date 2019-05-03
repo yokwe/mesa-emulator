@@ -61,6 +61,13 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	T visitDeclarationList(@NotNull CourierParser.DeclarationListContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link CourierParser#mdFieldList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMdFieldList(@NotNull CourierParser.MdFieldListContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link CourierParser#componentList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -103,11 +110,25 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	T visitTypeRefQ(@NotNull CourierParser.TypeRefQContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link CourierParser#mdFieldType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMdFieldType(@NotNull CourierParser.MdFieldTypeContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link CourierParser#ConstChoice}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitConstChoice(@NotNull CourierParser.ConstChoiceContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link CourierParser#mdField}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMdField(@NotNull CourierParser.MdFieldContext ctx);
 
 	/**
 	 * Visit a parse tree produced by {@link CourierParser#typedCandidateList}.
@@ -299,6 +320,13 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	T visitReferencedProgramList(@NotNull CourierParser.ReferencedProgramListContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link CourierParser#mdType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMdType(@NotNull CourierParser.MdTypeContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link CourierParser#TypeChoiceAnon}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -437,4 +465,11 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitConstString(@NotNull CourierParser.ConstStringContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link CourierParser#TypeMachine}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeMachine(@NotNull CourierParser.TypeMachineContext ctx);
 }
