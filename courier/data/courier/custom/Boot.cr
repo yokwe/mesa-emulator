@@ -1,12 +1,12 @@
 Boot: PROGRAM 0 VERSION 0 =
 BEGIN
   DEPENDS UPON
-    Datagram(0) VERSION 0,
+    IDP(0) VERSION 0,
     SequencedPacket(0) VERSION 0;
 
   EtherBootPacketType: TYPE = {simpleRequest(1), simpleData(2), sppRequest(3)};
   
-  EthernetBootFileNumber: TYPE = Datagram.Host;
+  EthernetBootFileNumber: TYPE = IDP.Host;
   
   BootFileRequest: TYPE = CHOICE EtherBootPacketType OF {
     simpleRequest => RECORD [bootFileNumber: EthernetBootFileNumber],
