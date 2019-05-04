@@ -55,6 +55,7 @@ public abstract class Type {
 		case UNSPECIFIED2:
 		case UNSPECIFIED3:
 		case ENUM:
+		case MACHINE:
 			return type;
 		case ARRAY:
 		{
