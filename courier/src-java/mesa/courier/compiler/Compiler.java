@@ -33,6 +33,7 @@ import mesa.courier.program.TypeChoice;
 import mesa.courier.program.TypeChoice.Candidate;
 import mesa.courier.program.TypeEnum;
 import mesa.courier.program.TypeError;
+import mesa.courier.program.TypeMachine;
 import mesa.courier.program.TypePredefined;
 import mesa.courier.program.TypeProcedure;
 import mesa.courier.program.TypeRecord;
@@ -134,6 +135,18 @@ public class Compiler {
 			this.namePrefix = namePrefix;
 		}
 	}
+	
+	public static class MachineInfo {
+		public final TypeMachine typeMachine;
+		public final String      name;
+		public final String      namePrefix;
+		
+		MachineInfo(TypeMachine typeMachine, String name, String namePrefix) {
+			this.typeMachine = typeMachine;
+			this.name        = name;
+			this.namePrefix  = namePrefix;
+		}
+	}
 
 	public static class Context {
 		public final Program              program;
@@ -144,6 +157,7 @@ public class Compiler {
 		public final List<ProcedureInfo>  procedureInfoList;
 		public final List<SequenceInfo>   sequenceInfoList;
 		public final List<ArrayInfo>      arrayInfoList;
+		public final List<MachineInfo>    machineInfoList;
 		
 		Context(Program program) {
 			this.program           = program;
@@ -154,6 +168,7 @@ public class Compiler {
 			this.procedureInfoList = new ArrayList<>();
 			this.sequenceInfoList  = new ArrayList<>();
 			this.arrayInfoList     = new ArrayList<>();
+			this.machineInfoList   = new ArrayList<>();
 			
 			contextMap.put(program.info.getProgramVersion(), this);
 		}
@@ -253,6 +268,9 @@ public class Compiler {
 			break;
 		case CHOICE:
 			genDeclTypeChoice(outh, outc, (TypeChoice)type, name, namePrefix);
+			break;
+		case MACHINE:
+			genDeclTypeMachine(outh, outc, (TypeMachine)type, name, namePrefix);
 			break;
 		// reference
 		case REFERENCE:
@@ -875,6 +893,31 @@ public class Compiler {
 		// Build choideInfoList
 		{
 			context.choiceInfoList.add(new ChoiceInfo(anon, name, namePrefix, choiceNameList));
+		}
+	}
+	
+	private void genDeclTypeMachine(LinePrinter outh, LinePrinter outc, TypeMachine typeMachine, String name, String namePrefix) {
+		//
+		// Output declaration of class
+		//
+		List<String> c1 = new ArrayList<>();
+		List<String> c2 = new ArrayList<>();
+		List<String> c3 = new ArrayList<>();
+		for(Type.MDField mdField: typeMachine.mdFields) {
+			String fieldType = toTypeString(mdField.type);
+			String fieldName = mdField.name;
+			c1.add(fieldType);
+			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			c3.add(String.format("// %d .. %d", mdField.start, mdField.stop));
+		}
+
+		outh.format("struct %s /* %s */ {", name, typeMachine.type);
+		ColumnLayout.layoutStringString(outh, c1, c2, c3);
+		outh.line("};");
+		
+		// Build choideInfoList
+		{
+			context.machineInfoList.add(new MachineInfo(typeMachine, name, namePrefix));
 		}
 	}
 	
@@ -1517,6 +1560,151 @@ public class Compiler {
 		}
 	}
 
+	private void genMachineToString(LinePrinter outh, LinePrinter outc) {
+		if (context.machineInfoList.isEmpty()) return;
+		outh.line();
+		outc.line();
+		
+		outh.line("//",
+				  "// Machine Function Declaration",
+				  "//");
+
+		outc.line("//",
+				  "// Machine Function Definition",
+				  "//");
+
+		// Machine toSring declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(MachineInfo machineInfo: context.machineInfoList) {
+				c1.add(String.format("QString toString(const %s::%s&", machineInfo.namePrefix, machineInfo.name));
+				c2.add("value);");
+			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
+		}
+		
+		// Record toString definition
+		for(MachineInfo machineInfo: context.machineInfoList) {
+			if (machineInfo.typeMachine.mdFields.isEmpty()) {
+				throw new CompilerException(String.format("Unexpected empty field %s::%s", machineInfo.namePrefix, machineInfo.name));
+			} else {
+				outc.format("QString %s::toString(const %s::%s& value) {", "Courier", machineInfo.namePrefix, machineInfo.name);
+				outc.line("QStringList list;");
+				
+				for(Type.MDField mdField: machineInfo.typeMachine.mdFields) {
+					logField(outc, mdField.type, mdField.name);
+					outc.format("list << QString(\"[%%1 %%2]\").arg(\"%s\").arg(Courier::toString(value.%s));", mdField.name, mdField.name);
+				}
+				
+				outc.line("return QString(\"[%1]\").arg(list.join(\" \"));");
+				outc.line("}");
+			}
+		}
+	}
+	// generate serialize for Record
+	private void genMachineSerialize(LinePrinter outh, LinePrinter outc) {
+		if (context.machineInfoList.isEmpty()) return;
+		outh.line();
+		outc.line();
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(MachineInfo machineInfo: context.machineInfoList) {
+				c1.add(String.format("void serialize(BLOCK& block, const %s::%s&", machineInfo.namePrefix, machineInfo.name));
+				c2.add("value);");
+			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
+		}
+		
+		// Definition
+		for(MachineInfo machineInfo: context.machineInfoList) {
+			if (machineInfo.typeMachine.mdFields.isEmpty()) {
+				throw new CompilerException(String.format("Unexpected empty field %s::%s", machineInfo.namePrefix, machineInfo.name));
+			} else {
+				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", machineInfo.namePrefix, machineInfo.name);
+				String typeString = toTypeString(machineInfo.typeMachine.type);
+				outc.format("%s v = 0;", typeString);
+				
+				int size;
+				switch(machineInfo.typeMachine.type.kind) {
+				case BYTE:
+					size = 8;
+					break;
+				case UNSPECIFIED:
+					size = 16;
+					break;
+				default:
+					throw new CompilerException(String.format("Unexpected type %s", machineInfo.typeMachine.type.kind));
+				}
+				outc.format("const int size = %d;", size);
+				// build value
+				for(Type.MDField mdField: machineInfo.typeMachine.mdFields) {
+//					outc.format("// %d .. %d  %s  %s", mdField.start, mdField.stop, mdField.type.kind, mdField.name);
+					outc.format("v = (%s)setBits(v, %d, %d, (%s)value.%s);", toTypeString(mdField.type), mdField.start, mdField.stop, typeString, mdField.name);
+				}
+				outc.line("Courier::serialize(block, v);");
+				outc.line("}");
+			}
+		}
+	}
+	// generate deserialize for Record
+	private void genMachineDeserialize(LinePrinter outh, LinePrinter outc) {
+		if (context.machineInfoList.isEmpty()) return;
+		outh.line();
+		outc.line();
+		
+		// Declaration
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(MachineInfo machineInfo: context.machineInfoList) {
+				c1.add(String.format("void deserialize(BLOCK& block, %s::%s&", machineInfo.namePrefix, machineInfo.name));
+				c2.add("value);");
+			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
+		}
+		
+		// FIXME
+		
+		// Definition
+		for(MachineInfo machineInfo: context.machineInfoList) {
+			if (machineInfo.typeMachine.mdFields.isEmpty()) {
+				throw new CompilerException(String.format("Unexpected empty field %s::%s", machineInfo.namePrefix, machineInfo.name));
+			} else {
+				int size;
+				switch(machineInfo.typeMachine.type.kind) {
+				case BYTE:
+					size = 8;
+					break;
+				case UNSPECIFIED:
+					size = 16;
+					break;
+				default:
+					throw new CompilerException(String.format("Unexpected type %s", machineInfo.typeMachine.type.kind));
+				}
+
+				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", machineInfo.namePrefix, machineInfo.name);
+				String typeString = toTypeString(machineInfo.typeMachine.type);
+				outc.format("%s v;", typeString);
+				outc.line("Courier::deserialize(block, v);");
+				
+				outc.format("const int size = %d;", size);
+				// build value
+				for(Type.MDField mdField: machineInfo.typeMachine.mdFields) {
+					//outc.format("// %d .. %d  %s  %s", mdField.start, mdField.stop, mdField.type.kind, mdField.name);
+					outc.format("value.%s = (%s)getBits(v, %d, %d);", mdField.name, toTypeString(mdField.type), mdField.start, mdField.stop);
+				}
+				outc.line("}");
+			}
+		}
+	}
+
 	
 	private static final boolean SHOW_BUILD_TIME;
 	private static final String BUILD_TIME;
@@ -1641,6 +1829,13 @@ public class Compiler {
 			genArraySerialize  (outh, outc);
 			// generate deserialize for Record
 			genArrayDeserialize(outh, outc);
+			
+			// generate toString for Machine using context.machineInfoList
+			genMachineToString   (outh, outc);
+			// generate serialize for Record
+			genMachineSerialize  (outh, outc);
+			// generate deserialize for Record
+			genMachineDeserialize(outh, outc);
 			
 			// Close Courier namespace
 			outh.line("}");
