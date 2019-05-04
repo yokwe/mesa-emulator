@@ -88,6 +88,33 @@ void deserialize(Block& block, quint16&  value);
 void deserialize(Block& block, quint32&  value);
 void deserialize(Block& block, quint64&  value);
 
+// support function for bits field
+template <typename T>
+T  getBits(T  value, int start, int stop) {
+	const int size  = sizeof(T) * 8;
+    const int width = stop - start + 1;
+    const int shift = size - stop  - 1;
+    const T   mask  = (T)((1 << width) - 1);
+
+    return (value >> shift) & mask;
+}
+template <typename T>
+T  setBits(T  value, int start, int stop, T  bits) {
+	const int size  = sizeof(T) * 8;
+    const int width = stop - start + 1;
+    const int shift = size - stop  - 1;
+    const T   mask  = (T)((1 << width) - 1);
+
+    if (mask < bits) {
+		logger.error("Unexpected overflow  mask = %d  bits = %d", mask, bits);
+		COURIER_FATAL_ERROR();
+    }
+    const T shiftMask = (T)(~(mask << shift));
+    const T shiftBits = (T)((bits & mask) << shift);
+
+    return (value & shiftMask) | shiftBits;
+}
+
 
 template <typename T>
 class SEQUENCE {
