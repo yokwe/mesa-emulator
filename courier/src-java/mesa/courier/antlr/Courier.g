@@ -2,6 +2,7 @@ grammar Courier;
 
 ARRAY        : 'ARRAY';
 BEGIN        : 'BEGIN';
+BLOCK        : 'BLOCK';
 BOOLEAN      : 'BOOLEAN';
 BYTE         : 'BYTE';
 CARDINAL     : 'CARDINAL';
@@ -99,7 +100,8 @@ type
     ;
 
 predefinedType
-    :    BOOLEAN        # TypeBoolean
+    :    BLOCK          # TypeBlock
+    |    BOOLEAN        # TypeBoolean
     |    BYTE           # TypeByte
     |    CARDINAL       # TypeCardinal
     |    LONG CARDINAL  # TypeLongCardinal
