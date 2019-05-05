@@ -182,6 +182,10 @@ public class ProgramBuilder {
 			return new TypePredefined(Type.Kind.BOOLEAN);
 		}
 		@Override
+		public Type visitTypeBlock(@NotNull TypeBlockContext context) {
+			return new TypePredefined(Type.Kind.BLOCK);
+		}
+		@Override
 		public Type visitTypeByte(@NotNull TypeByteContext context) {
 			return new TypePredefined(Type.Kind.BYTE);
 		}

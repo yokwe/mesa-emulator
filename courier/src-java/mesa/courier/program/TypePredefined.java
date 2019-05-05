@@ -6,6 +6,7 @@ public class TypePredefined extends Type {
 		
 		// sanity check
 		switch(kind) {
+		case BLOCK:
 		case BOOLEAN:
 		case BYTE:
 		case CARDINAL:

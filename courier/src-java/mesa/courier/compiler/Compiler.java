@@ -28,6 +28,7 @@ import mesa.courier.program.Program.DeclType;
 import mesa.courier.program.Type;
 import mesa.courier.program.Type.Correspondence;
 import mesa.courier.program.Type.Field;
+import mesa.courier.program.Type.Kind;
 import mesa.courier.program.TypeArray;
 import mesa.courier.program.TypeChoice;
 import mesa.courier.program.TypeChoice.Candidate;
@@ -192,6 +193,7 @@ public class Compiler {
 	private String toTypeString(Type type, boolean useLocalName) {
 		switch(type.kind) {
 		// predefined
+		case BLOCK:
 		case BOOLEAN:
 		case BYTE:
 		case CARDINAL:
@@ -243,6 +245,7 @@ public class Compiler {
 	private void genDeclType(LinePrinter outh, LinePrinter outc, String namePrefix, Type type, String name) {
 		switch(type.kind) {
 		// predefined
+		case BLOCK:
 		case BOOLEAN:
 		case BYTE:
 		case CARDINAL:
@@ -1114,7 +1117,12 @@ public class Compiler {
 				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
 				for(Field field: recordInfo.typeRecord.fields) {
 					logField(outc, field.type, field.name);
-					outc.format("Courier::serialize(block, value.%s);", field.name);
+					// FIXME
+					if (field.type.kind == Kind.BLOCK) {
+						outc.format("// Courier::serialize(block, value.%s);", field.name);
+					} else {
+						outc.format("Courier::serialize(block, value.%s);", field.name);
+					}
 				}
 				outc.line("}");
 			}
@@ -1626,26 +1634,12 @@ public class Compiler {
 			if (machineInfo.typeMachine.mdFields.isEmpty()) {
 				throw new CompilerException(String.format("Unexpected empty field %s::%s", machineInfo.namePrefix, machineInfo.name));
 			} else {
-				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", machineInfo.namePrefix, machineInfo.name);
 				String typeString = toTypeString(machineInfo.typeMachine.type);
+
+				outc.format("void %s::serialize(BLOCK& block, const %s::%s& value) {", "Courier", machineInfo.namePrefix, machineInfo.name);
 				outc.format("%s v = 0;", typeString);
-				
-				int size;
-				switch(machineInfo.typeMachine.type.kind) {
-				case BYTE:
-					size = 8;
-					break;
-				case UNSPECIFIED:
-					size = 16;
-					break;
-				default:
-					throw new CompilerException(String.format("Unexpected type %s", machineInfo.typeMachine.type.kind));
-				}
-				outc.format("const int size = %d;", size);
-				// build value
 				for(Type.MDField mdField: machineInfo.typeMachine.mdFields) {
-//					outc.format("// %d .. %d  %s  %s", mdField.start, mdField.stop, mdField.type.kind, mdField.name);
-					outc.format("v = (%s)setBits(v, %d, %d, (%s)value.%s);", toTypeString(mdField.type), mdField.start, mdField.stop, typeString, mdField.name);
+					outc.format("v = setBits(v, %d, %d, (%s)value.%s);", mdField.start, mdField.stop, typeString, mdField.name);
 				}
 				outc.line("Courier::serialize(block, v);");
 				outc.line("}");
@@ -1670,34 +1664,15 @@ public class Compiler {
 			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
-		// FIXME
-		
 		// Definition
 		for(MachineInfo machineInfo: context.machineInfoList) {
 			if (machineInfo.typeMachine.mdFields.isEmpty()) {
 				throw new CompilerException(String.format("Unexpected empty field %s::%s", machineInfo.namePrefix, machineInfo.name));
 			} else {
-				int size;
-				switch(machineInfo.typeMachine.type.kind) {
-				case BYTE:
-					size = 8;
-					break;
-				case UNSPECIFIED:
-					size = 16;
-					break;
-				default:
-					throw new CompilerException(String.format("Unexpected type %s", machineInfo.typeMachine.type.kind));
-				}
-
 				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", machineInfo.namePrefix, machineInfo.name);
-				String typeString = toTypeString(machineInfo.typeMachine.type);
-				outc.format("%s v;", typeString);
+				outc.format("%s v;", toTypeString(machineInfo.typeMachine.type));
 				outc.line("Courier::deserialize(block, v);");
-				
-				outc.format("const int size = %d;", size);
-				// build value
 				for(Type.MDField mdField: machineInfo.typeMachine.mdFields) {
-					//outc.format("// %d .. %d  %s  %s", mdField.start, mdField.stop, mdField.type.kind, mdField.name);
 					outc.format("value.%s = (%s)getBits(v, %d, %d);", mdField.name, toTypeString(mdField.type), mdField.start, mdField.stop);
 				}
 				outc.line("}");

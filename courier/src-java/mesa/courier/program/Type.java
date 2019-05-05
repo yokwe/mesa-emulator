@@ -6,7 +6,7 @@ import mesa.courier.program.TypeChoice.Candidate;
 public abstract class Type {
 	public static enum Kind {
 		// predefined
-		BOOLEAN, BYTE, CARDINAL, LONG_CARDINAL, /* INTEGER, LONG_INTEGER,*/ STRING,
+		BLOCK, BOOLEAN, BYTE, CARDINAL, LONG_CARDINAL, /* INTEGER, LONG_INTEGER,*/ STRING,
 		UNSPECIFIED, UNSPECIFIED2, UNSPECIFIED3,
 		// constructed
 		ENUM, ARRAY, SEQUENCE, RECORD, CHOICE, PROCEDURE, ERROR, MACHINE,
@@ -22,6 +22,7 @@ public abstract class Type {
 	
 	public boolean isPredefine() {
 		switch(kind) {
+		case BLOCK:
 		case BOOLEAN:
 		case BYTE:
 		case CARDINAL:
@@ -46,6 +47,7 @@ public abstract class Type {
 	public Type getTrueConcreteType() {
 		Type type = getConcreteType();
 		switch(type.kind) {
+		case BLOCK:
 		case BOOLEAN:
 		case BYTE:
 		case CARDINAL:

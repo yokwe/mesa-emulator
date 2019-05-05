@@ -145,6 +145,13 @@ public interface CourierVisitor<T> extends ParseTreeVisitor<T> {
 	T visitConstArray(@NotNull CourierParser.ConstArrayContext ctx);
 
 	/**
+	 * Visit a parse tree produced by {@link CourierParser#TypeBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeBlock(@NotNull CourierParser.TypeBlockContext ctx);
+
+	/**
 	 * Visit a parse tree produced by {@link CourierParser#TypeLongCardinal}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
