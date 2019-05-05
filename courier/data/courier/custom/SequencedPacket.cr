@@ -19,15 +19,16 @@ Type: TYPE = {
     CLOSE_REPLY(255)  -- SST used for reply of closing connection (handshake)
 } OF BYTE;
 
-Header: TYPE = RECORD [
+Frame: TYPE = RECORD [
     control: Control,
     type:    Type,
     src:     ConnectionID,
     dst:     ConnectionID,
     seq:     SequenceNumber,
     ack:     SequenceNumber,
-    alloc:   SequenceNumber
-    -- Data is stored after allocation
+    alloc:   SequenceNumber,
+    -- data will follow after header
+    data:    BLOCK
 ];
 
 END.

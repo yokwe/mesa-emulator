@@ -2,9 +2,11 @@ ExpeditedCourier: PROGRAM 0 VERSION 0 =
 BEGIN
     DEPENDS UPON Protocol(0) VERSION 0;
 
-Header: TYPE = RECORD [
+Frame: TYPE = RECORD [
     protocolRange: Protocol.ProtocolRange,
-    message:       Protocol.Protocol3
+    message:       Protocol.Protocol3,
+    -- data will follow after header
+    data:          BLOCK
 ];
 
 END.

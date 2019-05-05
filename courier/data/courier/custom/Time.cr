@@ -14,19 +14,19 @@ Version: TYPE = CARDINAL;
 version: Version = 2;
 
 PacketData: TYPE = CHOICE PacketType OF {
-                request  => RECORD [],
-                response => RECORD [
-                        currentTime:     LONG CARDINAL,
-                        offsetDirection: OffsetDirection,
-                        offsetHours:     CARDINAL,
-                        offsetMinutes:   CARDINAL,
-                        startOfDST:      CARDINAL,
-                        endOfDST:        CARDINAL,
-                        toleranceType:   ToleranceType,
-                        tolerance:       LONG CARDINAL]};
+    REQUEST  => RECORD [],
+    RESPONSE => RECORD [
+                    currentTime:     LONG CARDINAL,
+                    offsetDirection: OffsetDirection,
+                    offsetHours:     CARDINAL,
+                    offsetMinutes:   CARDINAL,
+                    startOfDST:      CARDINAL,
+                    endOfDST:        CARDINAL,
+                    toleranceType:   ToleranceType,
+                    tolerance:       LONG CARDINAL]};
 
 Packet: TYPE = RECORD [
-        version: Version, -- must be 2
-        data:    PacketData];
+    version: Version, -- must be 2
+    data:    PacketData];
 
 END.

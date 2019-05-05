@@ -3,23 +3,24 @@ BEGIN
 
 Type: TYPE = {
     -- An unspecified error is detected at destination
-    UNSPECIFIED_ERROR(0),
+    UNSPECIFIED_ERROR  (0),
     -- The checksum is incorrect or the packet has some other serious inconsistency detected at destination
-    BAD_CHECKSUM(1),
+    BAD_CHECKSUM       (1),
     -- The specified socket does not exist at the specified destination host.
-    NO_SOCKET(2),
+    NO_SOCKET          (2),
     -- The destination cannot accept the packet due to resource limitations.
-    RESOURCE_LIMIT(3),
-    LISTENER_REJCR(4),
+    RESOURCE_LIMIT     (3),
+    LISTENER_REJCR     (4),
     INVALID_PACKET_TYPE(5),
-    PROTOCOL_VIOLATION(6)
+    PROTOCOL_VIOLATION (6)
 };
 
 
-Header: TYPE = RECORD [
+Frame: TYPE = RECORD [
     type:      Type,
-    parameter: UNSPECIFIED
-    -- Copy of packet header and data of offending packet (minimum 42 bytes to include SPP header)
+    parameter: UNSPECIFIED,
+    -- data will follow after header
+    data:       BLOCK
 ];
 
 DATA_LENGTH_MIN: CARDINAL = 42;

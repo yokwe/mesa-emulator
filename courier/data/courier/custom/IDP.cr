@@ -56,13 +56,15 @@ Type: TYPE = {
     BOOT (9)  -- BOOT Server
 } OF BYTE;
 
-Header: TYPE = RECORD [
+Frame: TYPE = RECORD [
     checksum: Checksum,
     length:   CARDINAL,
     control:  Control,
     type:     Type,
     dst:      NetworkAddress,
-    src:      NetworkAddress
+    src:      NetworkAddress,
+    -- data will follow after header
+    data:     BLOCK
 ];
 
 -- length of header
@@ -71,6 +73,8 @@ HEADER_LENGTH: CARDINAL = 30; -- 30 = 6 + 12 + 12
 DATA_LENGTH_MIN: CARDINAL =   0;
 DATA_LENGTH_MAX: CARDINAL = 546;
 
-MAX_PACKET_LIFETIME: CARDINAL = 60; -- 60 seconds
+HOP_MAX: CARDINAL = 16;
+
+PACKET_LIFETIME_MAX: CARDINAL = 60; -- 60 seconds
 
 END.

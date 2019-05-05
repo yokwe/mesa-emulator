@@ -11,11 +11,12 @@ Type: TYPE = {
     IP4(0800X)
 } OF UNSPECIFIED;
 
-Header: TYPE = RECORD [
+Frame: TYPE = RECORD [
     dst:  Host,
     src:  Host,
-    type: Type
+    type: Type,
     -- data will follow after header
+    data: BLOCK
 ];
 
 -- length of header

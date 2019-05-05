@@ -8,10 +8,11 @@ Type: TYPE = {
     TELE_DEBUG (3)
 };
 
-Header: TYPE = RECORD [
+Frame: TYPE = RECORD [
     id:   UNSPECIFIED2,
-    type: Type
-    -- Data is stored after clientType
+    type: Type,
+    -- data will follow after header
+    data: BLOCK
 ];
 
 END.

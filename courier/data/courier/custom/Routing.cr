@@ -3,8 +3,8 @@ BEGIN
     DEPENDS UPON IDP(0) VERSION 0;
 
 Type: TYPE = {
-    request(1),
-    response(2)
+    REQUEST (1),
+    RESPONSE(2)
 };
 
 Hop: TYPE = {
@@ -13,11 +13,13 @@ Hop: TYPE = {
 
 Tuple: TYPE = RECORD [
     network: IDP.Network,
-    hop:     Hop];
+    hop:     Hop
+];
 
-Header: TYPE = RECORD [
-    type: Type
-    -- Tuple are stored after Header until end of packet
+Frame: TYPE = RECORD [
+    type: Type,
+    -- data will follow after header
+    data: BLOCK
 ];
 
 tupleLength: CARDINAL = 6; -- length of Tuple in byte
