@@ -618,7 +618,13 @@ public class Compiler {
 			String fieldType = toTypeString(field.type);
 			String fieldName = field.name;
 			c1.add(fieldType);
-			c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			
+			// FIXME Should create default constructor of BLOCK?
+			if (field.type.kind == Type.Kind.BLOCK) {
+				c2.add(String.format("%s{nullptr, 0};", Util.sanitizeSymbol(fieldName)));
+			} else {
+				c2.add(String.format("%s;", Util.sanitizeSymbol(fieldName)));
+			}
 		}
 
 		outh.format("struct %s {", name);
