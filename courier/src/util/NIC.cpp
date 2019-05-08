@@ -71,7 +71,7 @@ void NIC::attach(const char* name_, const quint16 type_) {
     logger.info("protocol = 0x%04X", type);
 
 	// open socket
-	fd = socket(AF_PACKET, SOCK_RAW, htons(type));
+	fd = ::socket(AF_PACKET, SOCK_RAW, htons(type));
 	if (fd == -1) {
 		int myErrno = errno;
 		logger.fatal("socket returns -1.  errno = %d", myErrno);
@@ -86,7 +86,7 @@ void NIC::attach(const char* name_, const quint16 type_) {
 
 			memset(&ifr, 0, sizeof(ifr));
 			strncpy(ifr.ifr_ifrn.ifrn_name, name, IFNAMSIZ);
-		    int ret = ioctl(fd, SIOCGIFHWADDR, &ifr);
+		    int ret = ::ioctl(fd, SIOCGIFHWADDR, &ifr);
 		    if (ret) {
 				int myErrno = errno;
 				logger.fatal("%s  %d  ioctl returns not 0.  errno = %d", __FUNCTION__, __LINE__, myErrno);
@@ -108,7 +108,7 @@ void NIC::attach(const char* name_, const quint16 type_) {
 
 			memset(&ifr, 0, sizeof(ifr));
 			strncpy(ifr.ifr_ifrn.ifrn_name, name, IFNAMSIZ);
-		    int ret = ioctl(fd, SIOCGIFINDEX, &ifr);
+		    int ret = ::ioctl(fd, SIOCGIFINDEX, &ifr);
 		    if (ret) {
 				int myErrno = errno;
 				logger.fatal("%s  %d  ioctl returns not 0.  errno = %d", __FUNCTION__, __LINE__, myErrno);
@@ -147,7 +147,7 @@ void NIC::detach() {
 	name = 0;
 }
 
-int NIC::select(quint32 timeout, int& opErrno) const {
+int NIC::select(quint32 timeout) const {
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
@@ -158,19 +158,19 @@ int NIC::select(quint32 timeout, int& opErrno) const {
 	t.tv_usec = 0;
 
 	int ret = ::select(FD_SETSIZE, &fds, NULL, NULL, &t);
-	opErrno = errno;
+	int opErrno = errno;
+
+	if (ret == -1) {
+		logger.fatal("%s  %d  select returns -1.  errno = %d", __FUNCTION__, __LINE__, opErrno);
+		RUNTIME_ERROR();
+	}
 	return ret;
 }
 
 void NIC::discardRecievedPacket() const {
 	int count = 0;
 	for(;;) {
-		int opErrno = 0;
-		int ret = select(0, opErrno);
-		if (ret == -1) {
-			logger.fatal("%s  %d  select returns -1.  errno = %d", __FUNCTION__, __LINE__, opErrno);
-			RUNTIME_ERROR();
-		}
+		int ret = select(0);
 		if (ret == 0) break;
 		if (0 < ret) {
 			discardOnePacket();
@@ -179,13 +179,8 @@ void NIC::discardRecievedPacket() const {
 	}
 	if (DEBUG_NIC_SHOW) logger.debug("discards %d packet", count);
 }
-void NIC::discardOnePacket() const {
-	Data data;
-	int opErrno = 0;
-	receive(data.data, sizeof(data.data), opErrno);
-}
 
-int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) const {
+int NIC::transmit(quint8* data, quint32 dataLen) const {
 	if (DEBUG_NIC_TRACE) {
 		logger.debug("TRANS    dataLen = %d", dataLen);
 		char buf[dataLen * 2 + 1];
@@ -201,16 +196,25 @@ int NIC::transmit(quint8* data, quint32 dataLen, int& opErrno) const {
 		logger.debug("TRANS    %s", buf);
 	}
 
-	int ret = send(fd, data, dataLen, 0);
-	opErrno = errno;
+	int ret = ::send(fd, data, dataLen, 0);
+	int opErrno = errno;
+	if (ret == -1) {
+		logger.fatal("%s  %d  send returns -1.  errno = %d", __FUNCTION__, __LINE__, opErrno);
+		RUNTIME_ERROR();
+	}
 	if (DEBUG_NIC_SHOW) logger.debug("%-8s data = %p  dataLen = %4d  opErrno = %3d  ret = %4d", __FUNCTION__, data, dataLen, opErrno, ret);
 	return ret;
 }
 
-int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) const {
-	if (DEBUG_NIC_SHOW) logger.debug("%-8s fd = %d  data = %p  dataLen = %4d  opErrno = %3d", __FUNCTION__, fd, data, dataLen, opErrno);
-	int ret = recv(fd, data, dataLen, 0);
-	opErrno = errno;
+int NIC::receive(quint8* data, quint32 dataLen) const {
+	if (DEBUG_NIC_SHOW) logger.debug("%-8s fd = %d  data = %p  dataLen = %4d", __FUNCTION__, fd, data, dataLen);
+	int ret = ::recv(fd, data, dataLen, 0);
+	int opErrno = errno;
+	if (ret == -1) {
+		logger.fatal("%s  %d  recv returns -1.  errno = %d", __FUNCTION__, __LINE__, opErrno);
+		RUNTIME_ERROR();
+	}
+
 	if (DEBUG_NIC_SHOW) logger.debug("%-8s ret = %4d  opErrno = %3d", __FUNCTION__, ret, opErrno);
 
 	if (0 < ret) {
@@ -231,106 +235,3 @@ int NIC::receive(quint8* data, quint32 dataLen, int& opErrno) const {
 	}
 	return ret;
 }
-
-void NIC::transmit(NetData& netData) const {
-	int opErrno = 0;
-	quint8* data = netData.getData();
-	quint32 dataLen = netData.getLimit();
-
-	int ret = transmit(data, dataLen, opErrno);
-	if (ret == -1) {
-		logger.fatal("transmit ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
-		RUNTIME_ERROR();
-	}
-	if ((quint32)ret != dataLen) {
-		logger.fatal("transmit ret = %d  dataLen = %d", ret, dataLen);
-		RUNTIME_ERROR();
-	}
-}
-
-void NIC::receive(NetData& netData) const {
-	netData.clear();
-	netData.zero();
-
-	quint8* data = netData.getData();
-	quint32 dataLen = netData.getCapacity();
-	int opErrno = 0;
-
-	int ret = receive(data, dataLen, opErrno);
-	if (ret == -1) {
-		logger.fatal("receive ret = %d  opErrno = %d %s", ret, opErrno, strerror(opErrno));
-		RUNTIME_ERROR();
-	}
-	netData.setLimit((quint32)ret);
-}
-
-void NIC::receive(NIC::Ethernet& ethernet) const {
-	Data data;
-
-	receive(data.netData);
-	ethernet.deserialize(data.netData);
-}
-
-void NIC::transmit(NIC::Ethernet& ethernet) const {
-	Data data;
-
-	ethernet.serialize(data.netData);
-	transmit(data.netData);
-}
-
-QString toString(const NIC::Address value) {
-	static QMap<NIC::Address, QString>map = {
-		    {NIC::Address::BROADCAST, "BROADCAST"},
-	};
-
-	if (map.contains(value)) {
-		return map[value];
-	} else {
-		return QString("%1").arg((quint64)value, 0, 16).toUpper();
-	}
-}
-
-QString toString(const NIC::Type value) {
-	static QMap<NIC::Type, QString>map = {
-		    {NIC::Type::IDP, "IDP"},
-	};
-
-	if (map.contains(value)) {
-		return map[value];
-	} else {
-		return QString("%1").arg((quint64)value, 4, 16);
-	}
-}
-
-QString toString(const NIC::Ethernet& ethernet) {
-	QString ret = QString("[%1 %2 %3] %4")
-			.arg(toString(ethernet.dst))
-			.arg(toString(ethernet.src))
-			.arg(toString(ethernet.type))
-			.arg(toString(ethernet.netData));
-	return ret;
-}
-
-void NIC::Ethernet::deserialize(NetData& netData_) {
-	netData_.reset();
-
-	dst  = (Address)netData_.get48();
-	src  = (Address)netData_.get48();
-	type = (Type)netData_.get16();
-
-	netData.clear();
-	netData.put(netData_, netData_.getPos());
-	netData.rewind();
-}
-void NIC::Ethernet::serialize  (NetData& netData_) {
-	netData_.clear();
-
-	netData_.put48((quint64)dst);
-	netData_.put48((quint64)src);
-	netData_.put16((quint16)type);
-
-	netData_.put(netData, 0);
-
-	netData_.rewind();
-}
-

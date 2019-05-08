@@ -29,94 +29,38 @@ OF SUCH DAMAGE.
 // NIC.h
 //
 
-#ifndef IDP_NIC_H__
-#define IDP_NIC_H__
+#ifndef UTIL_NIC_H__
+#define UTIL_NIC_H__
 
-#include "../util/NetData.h"
+#include <QtCore>
 
 class NIC {
 public:
-	// packet type of Xerox IDP
-	enum class Type : quint16 {
-		IDP = 0x0600,
-	};
-
-    enum class Address : quint64 {
-        BROADCAST = 0xFFFFFFFFFFFFLL,
-    };
-
-	class Ethernet {
-	public:
-		static const quint32 MAX_FRAME_SIZE = 1514;
-    	static const quint32 MIN_FRAME_SIZE =   60;
-		static const quint32 HEADER_SIZE    =   14;
-
-		static const quint32 MAX_DATA_SIZE  = MAX_FRAME_SIZE - HEADER_SIZE;
-		static const quint32 MIN_DATA_SIZE  = MIN_FRAME_SIZE - HEADER_SIZE;
-
-	    void serialize  (NetData& netData);
-	    void deserialize(NetData& netData);
-
-	    Address dst;  // 6 - 48 bit mac address
-	    Address src;  // 6 - 48 bit mac address
-	    Type    type; // 2 - 0600 for IDP
-
-	    quint8  data[MAX_DATA_SIZE];
-	    NetData netData; // access data through netData
-
-	    Ethernet() : dst((Address)0), src((Address)0), type((Type)0), netData(data, sizeof(data)) {
-	    	::bzero(data, sizeof(data));
-	    }
-	};
-
-	class Data {
-	public:
-    	quint8  data[Ethernet::MAX_FRAME_SIZE];
-		NetData netData;
-
-		Data() : netData(data, sizeof(data)) {}
-	};
-
-
 	NIC() : name(0), type(0), fd(0), address(0) {}
 
 	const char* getName() const {
 		return name;
 	}
-	Type getType() const {
-		return (Type)type;
+	quint16 getType() const {
+		return type;
 	}
-	Address getAddress() const {
-		return (Address)address;
+	quint64 getAddress() const {
+		return address;
 	}
 
 	void attach(const char* name, const quint16 type);
-	void attach(const char* name, const Type type) {
-		attach(name, (quint16)type);
-	}
 	void detach();
 
 	// discard already received packet
 	void discardRecievedPacket() const;
 	void discardOnePacket() const;
-	int  select(quint32 timeout, int& opErrno) const;
+
+	// timemout in second
+	int  select(quint32 timeout) const;
 
 	// returns return code of send and recv. no error checking
-	int receive (quint8* data, quint32 dataLen, int& opErrno) const;
-	int transmit(quint8* data, quint32 dataLen, int& opErrno) const;
-
-	void receive (NetData& netData) const;
-	void transmit(NetData& netData) const;
-
-	void receive (Data& data) const {
-		receive(data.netData);
-	}
-	void transmit(Data& data) const {
-		transmit(data.netData);
-	}
-
-	void receive (Ethernet& ethernet) const;
-	void transmit(Ethernet& ethernet) const;
+	int receive (quint8* data, quint32 dataLen) const;
+	int transmit(quint8* data, quint32 dataLen) const;
 
 private:
 	const char* name;
@@ -124,8 +68,5 @@ private:
 	int         fd;
 	quint64     address;
 };
-
-QString toString(const NIC::Address value);
-QString toString(const NIC::Ethernet& ethernet);
 
 #endif
