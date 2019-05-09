@@ -126,7 +126,6 @@ public class GenStub {
 				outh.format("#ifndef STUB_%s_H__", serviceName);
 				outh.format("#define STUB_%s_H__", serviceName);
 				outh.line();
-				outh.line("#include \"../courier/Protocol.h\"");
 				outh.line("#include \"../courier/Service.h\"");
 				// include corresponding stub header
 				outh.format("#include \"../stub/%s.h\"", program.info.getProgramVersion());
@@ -150,7 +149,7 @@ public class GenStub {
 					List<String> c2 = new ArrayList<>();
 					
 					c1.add("using CallMessage =");
-					c2.add("Protocol::Protocol3::CallMessage;");
+					c2.add("Protocol::Protocol3::Protocol3_CALL;");
 					for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 						c1.add(String.format("using %s =", procedureInfo.name));
 						c2.add(String.format("%s::%s;", programName, procedureInfo.name));
@@ -242,7 +241,7 @@ public class GenStub {
 						  "}",
 						  "}");
 
-				outc.format("void %s::%s::service(const Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
+				outc.format("void %s::%s::service(const CallMessage& callMessage, Block& request, Block& response) {", "Courier::Stub", serviceName);
 				outc.line("switch(callMessage.procedure) {");
 				for(ProcedureInfo procedureInfo: context.procedureInfoList) {
 					outc.format("case %s::CODE:", procedureInfo.name);
@@ -266,17 +265,17 @@ public class GenStub {
 					outc.line("Courier::deserialize(request, param);");
 					outc.format("%s(callMessage.transaction, param, result);", procedureName);
 					outc.line("",
-							  "Protocol::Protocol3 protocol3 = Protocol::Protocol3::return__(callMessage);",
+							  "Protocol::Protocol3 protocol3 = Courier::Service::getProtocolReturn(callMessage);",
 							  "Courier::serialize(response, protocol3);",
 							  "Courier::serialize(response, result);");
 
 					for(String errorName: procedureInfo.typeProcedure.errroList) {
 						outc.format("} catch(const %s::%s& e) {", programName, errorName);
-						outc.line("Protocol::Protocol3 protocol3 = Protocol::Protocol3::abort__(callMessage, e.abortCode);");
+						outc.line("Protocol::Protocol3 protocol3 = Courier::Service::getProtocolAbort(callMessage, e.abortCode);");
 						outc.line("Courier::serialize(response, protocol3);",
 								  "Courier::serialize(response, e);");
 					}
-					outc.line("} catch(const Protocol::Abort& e) {",
+					outc.line("} catch(const Courier::Service::Abort& e) {",
 							  "logger.error(\"Uncaught Protocol::Abort  %s%d  %s\", e.programName, e.versionCode, e.abortName);",
 							  "COURIER_FATAL_ERROR();");
 					outc.line("} catch(const std::runtime_error& e) {",

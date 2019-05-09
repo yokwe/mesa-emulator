@@ -35,6 +35,7 @@ static log4cpp::Category& logger = Logger::getLogger("cr/service");
 
 #include "../courier/Service.h"
 
+#include "../stub/Protocol.h"
 #include "../stub/Programs.h"
 
 void Courier::Service::ServiceBase::callInit() {
@@ -56,7 +57,7 @@ void Courier::Service::ServiceBase::callDestroy() {
         initialized = false;
     }
 }
-void Courier::Service::ServiceBase::callService(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
+void Courier::Service::ServiceBase::callService(Courier::Stub::Protocol::Protocol3::Protocol3_CALL& callMessage, Block& request, Block& response) const {
     if (!initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
@@ -113,7 +114,7 @@ void Courier::Service::Manager::destroy() {
 }
 
 
-void Courier::Service::Manager::service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const {
+void Courier::Service::Manager::service(Courier::Stub::Protocol::Protocol2::Protocol2_CALL& callMessage, Block& request, Block& response) const {
 	if (!initialized) {
 		logger.error("Unexpected state initialized");
 		COURIER_FATAL_ERROR();
@@ -125,26 +126,26 @@ void Courier::Service::Manager::service(Protocol::Protocol2::CallMessage& callMe
 	const quint16 procedureCode = callMessage.procedure;
 
 	if (!serviceMap.contains(programCode)) {
-		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchProgramNumber);
+		Courier::Stub::Protocol::Protocol2 protocol2 = getProtocolReject(callMessage, Courier::Stub::Protocol::RejectCode::NO_SUCH_PROGRAM_NUMBER);
 		Courier::serialize(response, protocol2);
 		return;
 	}
 
 	const QMap<quint16, ServiceBase*>& versionMap = serviceMap[programCode];
 	if (!versionMap.contains(versionCode)) {
-		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchVersionNumber);
+		Courier::Stub::Protocol::Protocol2 protocol2 = getProtocolReject(callMessage, Courier::Stub::Protocol::RejectCode::NO_SUCH_VERSION_NUMBER);
 		Courier::serialize(response, protocol2);
 		return;
 	}
 
 	ServiceBase* serviceBase = versionMap[versionCode];
 	if (!serviceBase->isProcedureValid(procedureCode)) {
-		Protocol::Protocol2 protocol2 = Protocol::Protocol2::reject(callMessage, Protocol::RejectCode::noSuchProcedureValue);
+		Courier::Stub::Protocol::Protocol2 protocol2 = getProtocolReject(callMessage, Courier::Stub::Protocol::RejectCode::NO_SUCH_PROCEDURE_NUMBER);
 		Courier::serialize(response, protocol2);
 		return;
 	}
 
-	Protocol::Protocol3::CallMessage callMessage3;
+	Courier::Stub::Protocol::Protocol3::Protocol3_CALL callMessage3;
 	callMessage3.transaction = transaction;
 	callMessage3.program     = programCode;
 	callMessage3.version     = versionCode;
@@ -152,7 +153,7 @@ void Courier::Service::Manager::service(Protocol::Protocol2::CallMessage& callMe
 
 	serviceBase->callService(callMessage3, request, response);
 }
-void Courier::Service::Manager::service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const {
+void Courier::Service::Manager::service(Courier::Stub::Protocol::Protocol3::Protocol3_CALL& callMessage, Block& request, Block& response) const {
 	if (!initialized) {
 		logger.error("Unexpected state initialized");
 		COURIER_FATAL_ERROR();
@@ -163,7 +164,7 @@ void Courier::Service::Manager::service(Protocol::Protocol3::CallMessage& callMe
 	const quint16 procedureCode = callMessage.procedure;
 
 	if (!serviceMap.contains(programCode)) {
-		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchProgramNumber);
+		Courier::Stub::Protocol::Protocol3 protocol3 = getProtocolReject(callMessage, Courier::Stub::Protocol::RejectCode::NO_SUCH_PROGRAM_NUMBER);
 		Courier::serialize(response, protocol3);
 		return;
 	}
@@ -174,9 +175,9 @@ void Courier::Service::Manager::service(Protocol::Protocol3::CallMessage& callMe
 		quint16 low  = *std::min_element(versionList.begin(), versionList.end());
 		quint16 high = *std::max_element(versionList.begin(), versionList.end());
 
-		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchVersionNumber);
-		protocol3.reject().reject.noSuchVersionNumber().low  = low;
-		protocol3.reject().reject.noSuchVersionNumber().high = high;
+		Courier::Stub::Protocol::Protocol3 protocol3 = getProtocolReject(callMessage, Courier::Stub::Protocol::RejectCode::NO_SUCH_VERSION_NUMBER);
+		protocol3.REJECT().reject.NO_SUCH_VERSION_NUMBER().range.low  = low;
+		protocol3.REJECT().reject.NO_SUCH_VERSION_NUMBER().range.high = high;
 
 		Courier::serialize(response, protocol3);
 		return;
@@ -184,10 +185,46 @@ void Courier::Service::Manager::service(Protocol::Protocol3::CallMessage& callMe
 
 	ServiceBase* serviceBase = versionMap[versionCode];
 	if (!serviceBase->isProcedureValid(procedureCode)) {
-		Protocol::Protocol3 protocol3 = Protocol::Protocol3::reject(callMessage, Protocol::RejectCode::noSuchProcedureValue);
+		Courier::Stub::Protocol::Protocol3 protocol3 = getProtocolReject(callMessage, Courier::Stub::Protocol::RejectCode::NO_SUCH_PROCEDURE_NUMBER);
 		Courier::serialize(response, protocol3);
 		return;
 	}
 
 	serviceBase->callService(callMessage, request, response);
+}
+
+Courier::Stub::Protocol::Protocol2 Courier::Service::getProtocolReject(const Protocol2Call& callMessage, RejectCode rejectCode) {
+	Courier::Stub::Protocol::Protocol2 ret;
+	ret.choiceTag = Courier::Stub::Protocol::MessageType::REJECT;
+
+	Courier::Stub::Protocol::Protocol2::Protocol2_REJECT& reject = ret.REJECT();
+	reject.transaction = callMessage.transaction;
+	reject.rejectCode  = rejectCode;
+	return ret;
+}
+Courier::Stub::Protocol::Protocol3 Courier::Service::getProtocolReject(const Protocol3Call& callMessage, RejectCode rejectCode) {
+	Courier::Stub::Protocol::Protocol3 ret;
+	ret.choiceTag = Courier::Stub::Protocol::MessageType::REJECT;
+
+	Courier::Stub::Protocol::Protocol3::Protocol3_REJECT& choice = ret.REJECT();
+	choice.transaction = callMessage.transaction;
+	choice.reject.choiceTag = rejectCode;
+	return ret;
+}
+Courier::Stub::Protocol::Protocol3 Courier::Service::getProtocolReturn(const Protocol3Call& callMessage) {
+	Protocol3 ret;
+	ret.choiceTag = Courier::Stub::Protocol::MessageType::RETURN;
+
+	Protocol3::Protocol3_RETURN& choice = ret.RETURN();
+	choice.transaction = callMessage.transaction;
+	return ret;
+}
+Courier::Stub::Protocol::Protocol3 Courier::Service::getProtocolAbort(const Protocol3Call& callMessage, quint16 abortCode) {
+	Protocol3 ret;
+	ret.choiceTag = Courier::Stub::Protocol::MessageType::ABORT;
+
+	Protocol3::Protocol3_ABORT& choice = ret.ABORT();
+	choice.transaction = callMessage.transaction;
+	choice.abortCode   = abortCode;
+	return ret;
 }

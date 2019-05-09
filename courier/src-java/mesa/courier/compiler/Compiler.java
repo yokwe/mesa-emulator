@@ -299,13 +299,13 @@ public class Compiler {
 			}
 		}
 		
-		outh.format("struct %s : public Protocol::Abort {", name);
+		outh.format("struct %s : public Service::Abort {", name);
 		{
 			StringBuffer initList = new StringBuffer();
 			for(Field field: typeError.paramList) {
 				initList.append(String.format(", %s()", field.name));
 			}
-			outh.format("%s() : Protocol::Abort(programName, programCode, versionCode, \"%s\", %d)%s {}", name, name, code, initList.toString());
+			outh.format("%s() : Service::Abort(programName, programCode, versionCode, \"%s\", %d)%s {}", name, name, code, initList.toString());
 		}
 		
 		if (typeError.paramList.isEmpty()) {
@@ -721,30 +721,44 @@ public class Compiler {
 	
 	// FIXME If CHOICE contains CHOICE directly, nest struct CHOICE_01 contains declaration of struct CHOICE_01.
 	//       To fix this problem, prepend struct name to choice type name.
-	private String getChoiceTypeName(int no, String name) {
-		return String.format("%s_CHOICE_%02d", name, no);
-//		return String.format("CHOICE_%02d", no);
+	private String getCandidateName(String name, int structNo) {
+		return String.format("%s_CHOICE_%02d", name, structNo);
 	}
 	private void genDeclTypeChoiceTyped(LinePrinter outh, LinePrinter outc, TypeChoice.Typed typed, String name, String namePrefix) {
 		outh.format("struct %s {", name);
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
-		int                  maxChoiceNumber = 0;
-		for(Candidate<String> candidate: typed.candidates) {
-			maxChoiceNumber++;
-			Type candidateType = candidate.type;
-			
-			// build choiceMap
-			for(String id: candidate.designators) {
-				String choiceName = id;
-				choiceNameList.add(choiceName);
-				choiceMap.put(choiceName, maxChoiceNumber);
+		
+		{
+			int structNumber = 0;
+			for(Candidate<String> candidate: typed.candidates) {
+				structNumber++;
+				Type candidateType = candidate.type;
+				
+				// build choiceMape
+				String candidateName = getCandidateName(name, structNumber);
+				for(String id: candidate.designators) {
+					String choiceName = id;
+					choiceNameList.add(choiceName);
+					choiceMap.put(choiceName, structNumber);
+				}
+				// generate choice type declaration
+				genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
 			}
 			
-			// generate choice type declaration
-			String candidateName = getChoiceTypeName(maxChoiceNumber, name);
-			genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
+			// Provide alias of type for code readability
+			{
+				List<String> c1 = new ArrayList<>();
+				List<String> c2 = new ArrayList<>();
+				for(String choiceName: choiceNameList) {
+					int n = choiceMap.get(choiceName);
+					c1.add(String.format("using %s_%s",  name, choiceName));
+					c2.add(String.format("= %s;",  getCandidateName(name, n)));
+				}
+				outh.line("// Provide alias for code readability");
+				ColumnLayout.layoutStringString(outh, c1, c2);
+			}
 		}
 		
 		outh.line();
@@ -755,28 +769,35 @@ public class Compiler {
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
+			List<String> c3 = new ArrayList<>();
 			
 			for(String choiceName: choiceNameList) {
-				int structNumber = choiceMap.get(choiceName);
-				c1.add(String.format("%s& %s()", getChoiceTypeName(structNumber, name), Util.sanitizeSymbol(choiceName)));
-				c2.add("const;");
+				c1.add(String.format("%s_%s&",  name, choiceName));
+				c2.add(String.format("%s()", Util.sanitizeSymbol(choiceName)));
+				c3.add("const;");
 			}
-			ColumnLayout.layoutStringString(outh, c1, c2);
+			ColumnLayout.layoutStringString(outh, c1, c2, c3);
 		}
 
 		outh.line("private:");
-		for(int i = 1; i <= maxChoiceNumber; i++) {
-			outh.format("mutable %s  choice_%02d;", getChoiceTypeName(i, name), i);
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			
+			for(String choiceName: choiceNameList) {
+				c1.add(String.format("mutable %s_%s", name, choiceName));
+				c2.add(String.format("choice_%s;", choiceName));
+			}
+			ColumnLayout.layoutStringString(outh, c1, c2);
 		}
 		
 		outh.line("};");
 		
 		for(String choiceName: choiceNameList) {
-			int structNumber = choiceMap.get(choiceName);
 			outc.line();
-			outc.format("%s::%s::%s& %s::%s::%s() const {", namePrefix, name, getChoiceTypeName(structNumber, name), namePrefix, name, Util.sanitizeSymbol(choiceName));
+			outc.format("%s::%s::%s_%s& %s::%s::%s() const {", namePrefix, name, name, choiceName, namePrefix, name, Util.sanitizeSymbol(choiceName));
 			outc.format("if (choiceTag == CHOICE_TAG::%s) {", Util.sanitizeSymbol(choiceName));
-			outc.format("return choice_%02d;", structNumber);
+			outc.format("return choice_%s;", choiceName);
 			outc.line("} else {");
 			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
 			outc.line("COURIER_FATAL_ERROR();");
@@ -817,7 +838,6 @@ public class Compiler {
 		
 		List<String>         choiceNameList  = new ArrayList<>(); // choice name list in appearance order
 		Map<String, Integer> choiceMap       = new TreeMap<>();   // choice name => struct number
-		int                  maxChoiceNumber = 0;
 
 		{
 			List<String>  c1 = new ArrayList<>();
@@ -834,51 +854,73 @@ public class Compiler {
 			outh.line("};");
 		}
 		
-		for(Candidate<Correspondence> candidate: anon.candidates) {
-			maxChoiceNumber++;
-			Type candidateType = candidate.type;
-			
-			// build choiceMap
-			for(Correspondence correspondence: candidate.designators) {
-				String choiceName = correspondence.id;
-				choiceNameList.add(choiceName);
-				choiceMap.put(choiceName, maxChoiceNumber);
+		{
+			int structNumber = 0;
+			for(Candidate<Correspondence> candidate: anon.candidates) {
+				structNumber++;
+				Type candidateType = candidate.type;
+				
+				// build choiceMape
+				String candidateName = getCandidateName(name, structNumber);
+				for(Correspondence correspondence: candidate.designators) {
+					String choiceName = correspondence.id;
+					choiceNameList.add(choiceName);
+					choiceMap.put(choiceName, structNumber);
+				}
+				// generate choice type declaration
+				genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
 			}
 			
-			// generate choice type declaration
-			String candidateName = getChoiceTypeName(maxChoiceNumber, name);
-			genDeclType(outh, outc, String.format("%s::%s", namePrefix, name), candidateType, candidateName);
+			// Provide alias of type for code readability
+			{
+				List<String> c1 = new ArrayList<>();
+				List<String> c2 = new ArrayList<>();
+				for(String choiceName: choiceNameList) {
+					int n = choiceMap.get(choiceName);
+					c1.add(String.format("using %s_%s",  name, choiceName));
+					c2.add(String.format("= %s;",  getCandidateName(name, n)));
+				}
+				outh.line("// Provide alias for code readability");
+				ColumnLayout.layoutStringString(outh, c1, c2);
+			}
 		}
 		
 		outh.line();
 		outh.line("CHOICE_TAG choiceTag;");
-		outh.line();
+		outh.line("");
 		
+		{
+			List<String> c1 = new ArrayList<>();
+			List<String> c2 = new ArrayList<>();
+			List<String> c3 = new ArrayList<>();
+			
+			for(String choiceName: choiceNameList) {
+				c1.add(String.format("%s_%s&",  name, choiceName));
+				c2.add(String.format("%s()", Util.sanitizeSymbol(choiceName)));
+				c3.add("const;");
+			}
+			ColumnLayout.layoutStringString(outh, c1, c2, c3);
+		}
+
+		outh.line("private:");
 		{
 			List<String> c1 = new ArrayList<>();
 			List<String> c2 = new ArrayList<>();
 			
 			for(String choiceName: choiceNameList) {
-				int structNumber = choiceMap.get(choiceName);
-				c1.add(String.format("%s& %s()", getChoiceTypeName(structNumber, name), Util.sanitizeSymbol(choiceName)));
-				c2.add("const;");
+				c1.add(String.format("mutable %s_%s", name, choiceName));
+				c2.add(String.format("choice_%s;", choiceName));
 			}
 			ColumnLayout.layoutStringString(outh, c1, c2);
-		}
-
-		outh.line("private:");
-		for(int i = 1; i <= maxChoiceNumber; i++) {
-			outh.format("mutable %s  choice_%02d;", getChoiceTypeName(i, name), i);
 		}
 		
 		outh.line("};");
 		
 		for(String choiceName: choiceNameList) {
-			int structNumber = choiceMap.get(choiceName);
 			outc.line();
-			outc.format("%s::%s::%s& %s::%s::%s() const {", namePrefix, name, getChoiceTypeName(structNumber, name), namePrefix, name, Util.sanitizeSymbol(choiceName));
+			outc.format("%s::%s::%s_%s& %s::%s::%s() const {", namePrefix, name, name, choiceName, namePrefix, name, Util.sanitizeSymbol(choiceName));
 			outc.format("if (choiceTag == CHOICE_TAG::%s) {", Util.sanitizeSymbol(choiceName));
-			outc.format("return choice_%02d;", structNumber);
+			outc.format("return choice_%s;", choiceName);
 			outc.line("} else {");
 			outc.format("logger.error(\"choiceTag  expect %s  actual %%s\", Courier::toString(choiceTag));", choiceName);
 			outc.line("COURIER_FATAL_ERROR();");
@@ -1721,11 +1763,23 @@ public class Compiler {
 			outh.format("#ifndef STUB_%s_H__", program.info.getProgramVersion());
 			outh.format("#define STUB_%s_H__", program.info.getProgramVersion());
 			outh.line();
-
+			
+			boolean hasError = false;
+			for(Decl decl: program.declList) {
+				if (decl instanceof DeclConst) {
+					DeclConst declConst = (DeclConst)decl;
+					Type concreteType = declConst.type.getConcreteType();
+					if (concreteType.kind == Type.Kind.ERROR) {
+						hasError = true;
+						break;
+					}
+				}
+			}
+			
 			// include courier header
 			outh.line("#include \"../courier/Courier.h\"");
-			outh.line("#include \"../courier/Protocol.h\""); // for Protocol::Abort
 			outh.line("#include \"../courier/StreamOf.h\""); // for StreaOf<T>
+			if (hasError) outh.line("#include \"../courier/Service.h\"");  // for Service::Abort
 			
 			// include depend module
 			if (!program.depends.isEmpty()) {

@@ -6,14 +6,15 @@ BEGIN
         -- Thurs., 12:00:00AM, 1 Jan. 1968 --
         earliestTime: Time = 2114294400;
 
-PacketType:      TYPE = {request(1), response(2)};
-OffsetDirection: TYPE = {west(0), east(1)};
-ToleranceType:   TYPE = {unknown(0), inMilliSeconds(1)};
+Type:            TYPE = {REQUEST(1), RESPONSE(2)};
+OffsetDirection: TYPE = {WEST(0), EAST(1)};
+ToleranceType:   TYPE = {UNKNOWN (0), IN_MILLI_SECONDS(1)};
+
 
 Version: TYPE = CARDINAL;
 version: Version = 2;
 
-PacketData: TYPE = CHOICE PacketType OF {
+PacketData: TYPE = CHOICE Type OF {
     REQUEST  => RECORD [],
     RESPONSE => RECORD [
                     currentTime:     LONG CARDINAL,

@@ -33,15 +33,16 @@ OF SUCH DAMAGE.
 #include "../util/Util.h"
 static log4cpp::Category& logger = Logger::getLogger("cr/socket");
 
-#include "../courier/Error.h"
 #include "../courier/Socket.h"
 
-#include "../stub/Programs.h"
+#include "../stub/Ethernet.h"
+#include "../stub/IDP.h"
+#include "../stub/Error.h"
 
 //
 // Socket::SocketBase
 //
-void Courier::Socket::SocketBase::callInit() {
+void Courier::Socket::Listener::callInit() {
     if (initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
@@ -50,7 +51,7 @@ void Courier::Socket::SocketBase::callInit() {
     initialized = true;
 }
 
-void Courier::Socket::SocketBase::callDestroy() {
+void Courier::Socket::Listener::callDestroy() {
     if (!initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
@@ -58,7 +59,7 @@ void Courier::Socket::SocketBase::callDestroy() {
     destroy();
     initialized = false;
 }
-void Courier::Socket::SocketBase::callService(Frame& request, Frame& response, bool& sendResponse) const {
+void Courier::Socket::Listener::callService(Frame& request, Frame& response, bool& sendResponse) const {
     if (!initialized) {
         logger.error("Unexpected state initialized");
         COURIER_FATAL_ERROR();
@@ -70,7 +71,20 @@ void Courier::Socket::SocketBase::callService(Frame& request, Frame& response, b
 //
 // Socket::Manager
 //
-void Courier::Socket::Manager::addSocket(SocketBase* socketBase) {
+void Courier::Socket::Manager::addNetwork(Network network, quint16 hop) {
+	if (started) {
+		logger.error("Unexpected state started");
+		COURIER_FATAL_ERROR();
+	}
+
+	if (networkMap.contains(network)) {
+        logger.error("Unexpected duplicate network = %d", network);
+        COURIER_FATAL_ERROR();
+	}
+	networkMap[network] = hop;
+}
+
+void Courier::Socket::Manager::addListener(Listener* socketBase) {
 	if (started) {
 		logger.error("Unexpected state started");
 		COURIER_FATAL_ERROR();
@@ -78,11 +92,11 @@ void Courier::Socket::Manager::addSocket(SocketBase* socketBase) {
 
 	Socket socket = socketBase->socket;
 	logger.info("addSocket  %s  %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
-	if (socketMap.contains(socket)) {
-        logger.error("Unexpected duplicate socket");
+	if (listenerMap.contains(socket)) {
+        logger.error("Unexpected duplicate socket = %s", Courier::toString(socket));
         COURIER_FATAL_ERROR();
 	}
-	socketMap[socket] = socketBase;
+	listenerMap[socket] = socketBase;
 }
 void Courier::Socket::Manager::startService() {
 	if (started) {
@@ -91,17 +105,17 @@ void Courier::Socket::Manager::startService() {
 	}
 	// init SocketBase
 	logger.info("init    sockeMap");
-	for(SocketBase* socketBase: socketMap.values()) {
+	for(Listener* socketBase: listenerMap.values()) {
 		logger.info("init %s %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
 		socketBase->callInit();
 	}
 	logger.info("try start service thread");
-	serviceThread = new ServiceThread(nic, socketMap);
+	thread  = new Thread(context);
+	started = true;
 	// reserve one thread
 	QThreadPool::globalInstance()->reserveThread();
-	QThreadPool::globalInstance()->start(serviceThread);
+	QThreadPool::globalInstance()->start(thread);
 	logger.info("service thread started");
-	started = true;
 }
 void Courier::Socket::Manager::stopService() {
 	if (!started) {
@@ -109,7 +123,7 @@ void Courier::Socket::Manager::stopService() {
 		COURIER_FATAL_ERROR();
 	}
 	logger.info("try stop  service thread");
-	serviceThread->stop();
+	thread->stop();
 	for(int i = 0; i < 100; i++) {
 		if (QThreadPool::globalInstance()->waitForDone(1000)) break;
 		logger.info("try stop  service thread %2d", i + 1);
@@ -117,10 +131,10 @@ void Courier::Socket::Manager::stopService() {
 	logger.info("service thread stopped");
 	// release one thread
 	QThreadPool::globalInstance()->releaseThread();
-	serviceThread = nullptr;
-	started       = false;
+	thread  = nullptr;
+	started = false;
 	logger.info("destroy sockeMap");
-	for(SocketBase* socketBase: socketMap.values()) {
+	for(Listener* socketBase: listenerMap.values()) {
 		logger.info("destroy %s %s", socketBase->name, Courier::toString(socketBase->socket).toLocal8Bit().constData());
 		socketBase->callDestroy();
 	}
@@ -130,99 +144,130 @@ void Courier::Socket::Manager::stopService() {
 //
 // Socket::ServiceThread
 //
-void Courier::Socket::ServiceThread::run() {
-	quint16   timeoutInSec = 1;
-	NIC::Host myAddress    = (NIC::Host)nic.getAddress();
+void Courier::Socket::Thread::run() {
+	namespace Error = Stub::Error;
+	namespace Ether = Stub::Ethernet;
+	namespace IDP   = Stub::IDP;
 
-	Courier::NIC::Data  dataRequest;
-	Courier::NIC::Frame etherRequest;
-	Courier::IDP::Frame idpRequest;
+	quint16 timeoutInSec = 1;
+	Host    myAddress    = (Host)context.nic.getAddress();
 
-	Courier::NIC::Data  dataResponse;
-	Courier::NIC::Frame etherResponse;
-	Courier::IDP::Frame idpResponse;
+	NIC&    nic       = context.nic;
+	Network myNetwork = context.myNetwork;
+
+//	FIXME QMap<Network, quint16>&  networkMap  = context.networkMap;
+	QMap<Socket, Listener*>& listenerMap = context.listenerMap;
+
+	BlockData<Ether::FRAME_LENGTH_MAX> reqData;
+	BlockData<Ether::FRAME_LENGTH_MAX> resData;
+
+	Ether::Frame reqEther;
+	IDP::Frame   reqIDP;
+
+	Ether::Frame resEther;
+	IDP::Frame   resIDP;
 
 	for(;;) {
 		if (needStop) break;
-		int ret = nic.select(timeoutInSec);
-		if (ret == 0) continue;
-		nic.receive(dataRequest.block);
 
-		Courier::deserialize(dataRequest.block, etherRequest);
-		Courier::deserialize(etherRequest.data, idpRequest);
+		{
+			int ret = nic.select(timeoutInSec);
+			if (ret == 0) continue;
+		}
 
-		if (!socketMap.contains(idpRequest.dst.socket)) {
+		reqData.block.zero();
+		reqData.block.clear();
+
+		{
+			int ret = nic.receive(reqData.block.getData(), reqData.block.getCapacity());
+			reqData.block.setLimit(ret);
+		}
+
+		Courier::deserialize(reqData.block, reqEther);
+		Courier::deserialize(reqEther.data, reqIDP);
+
+		if (!listenerMap.contains(reqIDP.dst.socket)) {
 			logger.warn("No socket service  %s -> %s",
-					Courier::toString(idpRequest.src).toLocal8Bit().constData(),
-					Courier::toString(idpRequest.dst).toLocal8Bit().constData());
+					Courier::toString(reqIDP.src).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.dst).toLocal8Bit().constData());
 			continue;
 		}
-		SocketBase* socketBase = socketMap[idpRequest.dst.socket];
+		Listener* socketBase = listenerMap[reqIDP.dst.socket];
 
-		dataResponse.block.zero();
-		dataResponse.block.clear();
-
-		// supply default values
-		etherResponse.dst  = etherRequest.src;
-		etherResponse.src  = myAddress;
-		etherResponse.type = etherRequest.type;
-		Courier::serialize(dataResponse.block, etherResponse);
-		etherResponse.data = dataResponse.block.remainder();
+		resData.block.zero();
+		resData.block.clear();
 
 		// supply default values
-		idpResponse.checksum    = idpRequest.checksum;
-		idpResponse.length      = 0;
-		idpResponse.hopCount    = IDP::HopCount::ZERO;
-		idpResponse.packetType  = idpRequest.packetType;
+		resEther.dst  = reqEther.src;
+		resEther.src  = myAddress;
+		resEther.type = reqEther.type;
 
-		idpResponse.dst.network = idpRequest.src.network;
-		idpResponse.dst.host    = idpRequest.src.host;
-		idpResponse.dst.socket  = idpRequest.src.socket;
+		Courier::serialize(resData.block, resEther);
+		resEther.data = resData.block.remainder();
 
-		idpResponse.src.network = idpRequest.dst.network;
-		idpResponse.src.host    = myAddress;
-		idpResponse.src.socket  = idpRequest.dst.socket;
+		// supply default values
+		resIDP.checksum       = reqIDP.checksum;
+		resIDP.length         = 0;
+		resIDP.control.trace  = false;
+		resIDP.control.filler = 0;
+		resIDP.control.hop    = 0;
+		resIDP.type           = reqIDP.type;
 
-		Courier::serialize(etherResponse.data, idpResponse);
-		idpResponse.data       = etherResponse.data.remainder();
+		resIDP.dst.network = reqIDP.src.network;
+		resIDP.dst.host    = reqIDP.src.host;
+		resIDP.dst.socket  = reqIDP.src.socket;
+
+		resIDP.src.network = myNetwork;
+		resIDP.src.host    = myAddress;
+		resIDP.src.socket  = reqIDP.dst.socket;
+
+		Courier::serialize(resEther.data, resIDP);
+		resIDP.data = resEther.data.remainder();
 
 		// call service method of socketBase
 		bool sendResponse = false;
 		try {
-			socketBase->callService(idpRequest, idpResponse, sendResponse);
-		} catch (Error::ErrorNumber& e) {
+			socketBase->callService(reqIDP, resIDP, sendResponse);
+		} catch (Error::Type& e) {
 			// Change packet type to ERROR
-			idpResponse.packetType = IDP::PacketType::ERROR;
+			resIDP.type = IDP::Type::ERR;
 			// Clear block in case of middle of writing
-			idpResponse.data.clear();
+			resIDP.data.clear();
 			// Need to send response
 			sendResponse = true;
 
 			Error::Frame frame;
-			frame.number    = e;
+			frame.type      = e;
 			frame.parameter = 0;
-			Courier::serialize(idpResponse.data, frame);
+			Courier::serialize(resIDP.data, frame);
 		}
 		if (!sendResponse) continue;
 		// Don't send error packet for broadcast request
-		if (idpResponse.packetType == IDP::PacketType::ERROR) {
-			if (idpRequest.dst.host == IDP::Host::ALL) continue;
+		if (resIDP.type == IDP::Type::ERR && reqIDP.dst.host == IDP::Host::ALL)
+			continue;
+		// If packet size is less than Ether::DATA_LENGTH_MIN, add padding
+		{
+			quint16 minimum = Ether::DATA_LENGTH_MIN - IDP::HEADER_LENGTH;
+			quint16 size = resIDP.data.getLimit();
+			if (size < minimum) {
+				quint16 paddingSize = minimum - size;
+				logger.info("addPadding %d", paddingSize);
+				resIDP.data.addPadding(paddingSize);
+			}
 		}
-		// If packet size is less than IDP::minDataSize, add padding
-		for(;;) {
-			quint16 size = idpResponse.data.getLimit();
-			if (IDP::minDataSize <= size) break;
-			idpResponse.data.serialize16((quint16)0);
-		}
-		// Calculate checksum of idpResponse and set
-		if (idpResponse.checksum != IDP::Checksum::NONE) {
-			idpResponse.checksum = (IDP::Checksum)etherResponse.data.computeChecksum();
+		// Calculate checksum of resIDP and set
+		if (resIDP.checksum != IDP::Checksum::NONE) {
+			resIDP.checksum = (IDP::Checksum)resEther.data.computeChecksum();
+			// update resEther.data
+			Courier::serialize(resEther.data, resIDP);
 		}
 
-		dataResponse.block.clear();
-		Courier::serialize(etherResponse.data, idpResponse);
-		dataResponse.block.clear();
-		Courier::serialize(dataResponse.block, etherResponse);
-		nic.transmit(dataResponse.block);
+		// FIXME
+
+		resData.block.clear();
+		Courier::serialize(resEther.data, resIDP);
+		resData.block.clear();
+		Courier::serialize(resData.block, resEther);
+		nic.transmit(resData.block.getData(), resData.block.getLimit());
 	}
 }

@@ -32,23 +32,26 @@ OF SUCH DAMAGE.
 #ifndef COURIER_SOCKET_H__
 #define COURIER_SOCKET_H__
 
-#include "../courier/NIC.h"
-#include "../courier/IDP.h"
+#include "../util/NIC.h"
 #include "../courier/Block.h"
+#include "../stub/IDP.h"
+
 
 namespace Courier {
 namespace Socket {
 
-using Socket = IDP::Socket;
-using Frame  = IDP::Frame;
+using Frame   = Stub::IDP::Frame;
+using Host    = Stub::IDP::Host;
+using Network = Stub::IDP::Network;
+using Socket  = Stub::IDP::Socket;
 
-class SocketBase {
+class Listener {
 public:
 	const char*  name;
 	const Socket socket;
 
-	SocketBase(const char* name_, Socket socket_) : name(name_), socket(socket_) {}
-	virtual ~SocketBase() {}
+	Listener(const char* name_, Socket socket_) : name(name_), socket(socket_) {}
+	virtual ~Listener() {}
 
     void callInit();
     void callDestroy();
@@ -63,26 +66,39 @@ private:
 	virtual void service(Frame& request, Frame& response, bool& sendResponse) const = 0;
 };
 
-class ServiceThread : public QRunnable {
+class ThreadContext {
 public:
-	ServiceThread(const NIC& nic_, const QMap<Socket, SocketBase*>& socketMap_) : nic(nic_), socketMap(socketMap_) {}
+	NIC&    nic;
+	Network myNetwork;
+
+	QMap<Network, quint16>&  networkMap;
+	QMap<Socket, Listener*>& listenerMap;
+
+	ThreadContext(NIC& nic_, Network myNetwork_, QMap<Network, quint16>& networkMap_, QMap<Socket, Listener*>& listenerMap_) :
+		nic(nic_), myNetwork(myNetwork_), networkMap(networkMap_), listenerMap(listenerMap_) {}
+};
+
+class Thread : public QRunnable {
+public:
+	Thread(ThreadContext& context_) : context(context_) {}
 
 	void run();
 	void stop() {
 		needStop = true;
 	}
 private:
-	const NIC&                       nic;
-	const QMap<Socket, SocketBase*>& socketMap;
+	ThreadContext& context;
 
 	bool needStop = false;
 };
 
 class Manager {
 public:
-	Manager(NIC& nic_) : nic(nic_) {}
+	Manager(NIC& nic_, Network myNetwork_) :
+		nic(nic_), myNetwork(myNetwork_), context(nic, myNetwork, networkMap, listenerMap), started(false), thread(nullptr) {}
 
-	void addSocket(SocketBase* socketBase);
+	void addListener(Listener* listener);
+	void addNetwork(Network network, quint16 hop);
 
 	// start service thread
 	void startService();
@@ -90,12 +106,16 @@ public:
 	void stopService();
 
 private:
-	NIC& nic;
+	NIC&    nic;
+	Network myNetwork;
 
-	QMap<Socket, SocketBase*> socketMap;
+	QMap<Network, quint16>  networkMap;
+	QMap<Socket, Listener*> listenerMap;
 
-    bool           started       = false;
-	ServiceThread* serviceThread = nullptr;
+	ThreadContext context;
+
+    bool    started;
+	Thread* thread;
 };
 
 

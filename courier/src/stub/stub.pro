@@ -8,8 +8,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 
 # Input
-HEADERS += Ethernet.h   Datagram.h
-SOURCES += Ethernet.cpp Datagram.cpp
+HEADERS += Ethernet.h   IDP.h
+SOURCES += Ethernet.cpp IDP.cpp
 
 HEADERS += Echo.h   Error.h   PacketExchange.h   Routing.h   Boot.h   SequencedPacket.h   Time.h
 SOURCES += Echo.cpp Error.cpp PacketExchange.cpp Routing.cpp Boot.cpp SequencedPacket.cpp Time.cpp

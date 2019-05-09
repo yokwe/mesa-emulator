@@ -13,20 +13,12 @@ export LOG4CPP_CONFIG
 all:
 	(cd src/util;    make all)
 	(cd src/courier; make all)
-	(cd src/itp;     make all)
-	(cd src/service; make all)
-	(cd src/pex;     make all)
-	(cd src/app;     make all)
 	(cd src/test;    make all)
 	(cd src/courier-app; make all)
 	
 qmake:
 	(cd src/util;    qmake)
 	(cd src/courier; qmake)
-	(cd src/itp;     qmake)
-	(cd src/service; qmake)
-	(cd src/pex;     qmake)
-	(cd src/app;     qmake)
 	(cd src/test;    qmake)
 	(cd src/stub;    qmake)
 	(cd src/courier-app; qmake)
@@ -42,10 +34,6 @@ clean:
 	mkdir  -p tmp/build
 	mkdir  tmp/build/util
 	mkdir  tmp/build/courier
-	mkdir  tmp/build/itp
-	mkdir  tmp/build/service
-	mkdir  tmp/build/pex
-	mkdir  tmp/build/app
 	mkdir  tmp/build/test
 	mkdir  tmp/build/stub
 	mkdir  tmp/build/courier-app
@@ -57,15 +45,6 @@ distclean: clean
 	rm -f  src/*/object_script.*.Debug
 	rm -f  src/*/object_script.*.Release
 	rm -f  src/*/.qmake.stash
-
-run-app:
-	(cd src/util;    make all)
-	(cd src/courier; make all)
-	(cd src/itp;     make all)
-	(cd src/service; make all)
-	(cd src/pex;     make all)
-	echo -n >tmp/debug.log
-	tmp/build/app/app
 
 run-courier-app:
 	(cd src/util;    make all)

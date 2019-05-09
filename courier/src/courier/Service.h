@@ -34,10 +34,39 @@ OF SUCH DAMAGE.
 
 #include "../courier/Courier.h"
 #include "../courier/Block.h"
-#include "../courier/Protocol.h"
+#include "../stub/Protocol.h"
 
 namespace Courier {
 namespace Service {
+
+//using Protocol2Call = Courier::Stub::Protocol::Protocol2::Protocol2_CALL;
+//using Protocol3Call = Courier::Stub::Protocol::Protocol3::Protocol3_CALL;
+
+using RejectCode    = Courier::Stub::Protocol::RejectCode;
+
+using Protocol2 = Courier::Stub::Protocol::Protocol2;
+using Protocol3 = Courier::Stub::Protocol::Protocol3;
+
+using Protocol2Call = Protocol2::Protocol2_CALL;
+using Protocol3Call = Protocol3::Protocol3_CALL;
+
+Protocol2 getProtocolReject(const Protocol2Call& callMessage, RejectCode rejectCode);
+Protocol3 getProtocolReject(const Protocol3Call& callMessage, RejectCode rejectCode);
+Protocol3 getProtocolReturn(const Protocol3Call& callMessage);
+Protocol3 getProtocolAbort (const Protocol3Call& callMessage, quint16    abortCode);
+
+class Abort {
+public:
+	const char*   programName;
+	const quint32 programCode;
+	const quint16 versionCode;
+	const char*   abortName;
+	const quint16 abortCode;
+
+	Abort(const char* programName_, quint32 programCode_, quint16 versionCode_, const char* abortName_, quint16 abortCode_) :
+		programName(programName_), programCode(programCode_), versionCode(versionCode_), abortName(abortName_), abortCode(abortCode_) {}
+};
+
 
 class ServiceBase {
 public:
@@ -54,13 +83,13 @@ public:
 
     void callInit();
     void callDestroy();
-    void callService(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const;
+    void callService(Courier::Stub::Protocol::Protocol3::Protocol3_CHOICE_01& callMessage, Block& request, Block& response) const;
 private:
     bool initialized = false;
 
     virtual void        init   ();
     virtual void        destroy();
-    virtual void        service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const = 0;
+    virtual void        service(Courier::Stub::Protocol::Protocol3::Protocol3_CALL& callMessage, Block& request, Block& response) const = 0;
 };
 
 class Manager {
@@ -69,8 +98,8 @@ public:
 
 	void init   ();
 	void destroy();
-    void service(Protocol::Protocol2::CallMessage& callMessage, Block& request, Block& response) const;
-    void service(Protocol::Protocol3::CallMessage& callMessage, Block& request, Block& response) const;
+    void service(Courier::Stub::Protocol::Protocol2::Protocol2_CALL& callMessage, Block& request, Block& response) const;
+    void service(Courier::Stub::Protocol::Protocol3::Protocol3_CALL& callMessage, Block& request, Block& response) const;
 
 private:
     bool initialized = false;

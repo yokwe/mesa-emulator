@@ -111,7 +111,15 @@ void Courier::Block::setLimit(quint16 newValue) {
 	}
 	limit = offset + newValue;
 }
-
+void Courier::Block::addPadding(quint16 increment) {
+	if (capacity < (limit + increment)) {
+		logger.error("Unexpected overflow  capacity = %d  limit = %d  increment = %d", capacity, limit, increment);
+		COURIER_FATAL_ERROR();
+	}
+	for(quint16 i = 0; i < increment; i++) {
+		data[limit++] = 0;
+	}
+}
 
 
 bool Courier::Block::equals(const Block& that) const {

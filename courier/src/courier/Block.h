@@ -81,6 +81,7 @@ public:
 
 	quint8* getData();
 	void    setLimit(quint16 newValue);
+	void    addPadding(quint16 increment);
 
 	Block remainder() {
 		Block ret(*this);
