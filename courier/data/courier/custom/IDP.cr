@@ -48,11 +48,11 @@ Control: TYPE = MACHINE DEPENDENT [
 ] OF BYTE;
 
 Type: TYPE = {
-    RI   (1), -- Routing Information
+    RIP  (1), -- Routing Information
     ECHO (2), -- Echo
     ERR  (3), -- ERROR is keyword. Use ERR instead
-    PE   (4), -- Packet Exchange
-    SP   (5), -- Sequenced Packet
+    PEP  (4), -- Packet Exchange
+    SPP  (5), -- Sequenced Packet
     BOOT (9)  -- BOOT Server
 } OF BYTE;
 
