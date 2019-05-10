@@ -37,6 +37,7 @@ static log4cpp::Category& logger = Logger::getLogger("nic");
 #include <sys/ioctl.h>
 
 #include <linux/if.h>
+#include <linux/if_ether.h>
 #include <linux/if_packet.h>
 #include <net/if_arp.h>
 #include <arpa/inet.h>
@@ -179,6 +180,11 @@ void NIC::discardRecievedPacket() const {
 	}
 	if (DEBUG_NIC_SHOW) logger.debug("discards %d packet", count);
 }
+void NIC::discardOnePacket() const {
+	quint8 data[ETH_FRAME_LEN];
+	receive(data, sizeof(data));
+}
+
 
 int NIC::transmit(quint8* data, quint32 dataLen) const {
 	if (DEBUG_NIC_TRACE) {
