@@ -189,7 +189,7 @@ void Courier::Socket::Thread::run() {
 		Courier::deserialize(reqEther.data, reqIDP);
 
 		if (!listenerMap.contains(reqIDP.dst.socket)) {
-			logger.warn("No listener %s --  %s %s %s -> %s %s %s",
+			logger.warn("No listener %s -- %s %s %s -> %s %s %s",
 					Courier::toString(reqIDP.type).toLocal8Bit().constData(),
 					Courier::toString(reqIDP.src.network).toLocal8Bit().constData(),
 					Courier::toString(reqIDP.src.host).toLocal8Bit().constData(),
