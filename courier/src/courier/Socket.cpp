@@ -183,8 +183,8 @@ void Courier::Socket::Thread::run() {
 			reqData.block.setLimit(ret);
 			reqData.block.rewind();
 		}
-		logger.info("reqEther  %s", Courier::toString(reqEther).toLocal8Bit().constData());
-		logger.info("reqData.block  %s", Courier::toString(reqData.block).toLocal8Bit().constData());
+//		logger.info("reqEther  %s", Courier::toString(reqEther).toLocal8Bit().constData());
+//		logger.info("reqData.block  %s", Courier::toString(reqData.block).toLocal8Bit().constData());
 		Courier::deserialize(reqData.block, reqEther);
 		Courier::deserialize(reqEther.data, reqIDP);
 
