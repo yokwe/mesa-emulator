@@ -1200,9 +1200,22 @@ public class Compiler {
 				outc.line("}");
 			} else {
 				outc.format("void %s::deserialize(BLOCK& block, %s::%s& value) {", "Courier", recordInfo.namePrefix, recordInfo.name);
+				int count = 0;
+				int size = recordInfo.typeRecord.fields.size();
 				for(Field field: recordInfo.typeRecord.fields) {
+					count++;
 					logField(outc, field.type, field.name);
-					outc.format("Courier::deserialize(block, value.%s);", field.name);
+					if (field.type.kind == Type.Kind.BLOCK) {
+						// assume this is the last field
+						if (count == size) {
+							// special for BLOCK
+							outc.format("value.%s = block.remainder();", field.name);
+						} else {
+							throw new CompilerException(String.format("Unexpected count = %d  size = %d", count, size));
+						}
+					} else {
+						outc.format("Courier::deserialize(block, value.%s);", field.name);
+					}
 				}
 				outc.line("}");
 			}
