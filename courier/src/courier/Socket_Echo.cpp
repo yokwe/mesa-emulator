@@ -25,45 +25,33 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// Socket_Echo.cpp
+//
 
 #include "../util/Debug.h"
 #include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courier-app");
-
-#include "../util/NIC.h"
-#include "../courier/Socket.h"
-#include "../stub/Ethernet.h"
+static log4cpp::Category& logger = Logger::getLogger("so/echo");
 
 #include "../courier/Socket_Echo.h"
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+#include "../stub/IDP.h"
+#include "../stub/Error.h"
+#include "../stub/Echo.h"
 
-	setSignalHandler();
+namespace Echo = Courier::Stub::Echo;
 
-	const char* nicName = "ens192";
-	Courier::Socket::Network myNetwork = (Courier::Socket::Network)10;
+void Courier::Socket::Listener_Echo::init() {
+	logger.info(__FUNCTION__);
+}
 
-	logger.info("nicName = %s", nicName);
-	logger.info("myNetwork = %s", Courier::toString(myNetwork).toLocal8Bit().constData());
+void Courier::Socket::Listener_Echo::destroy() {
+	logger.info(__FUNCTION__);
+}
+void Courier::Socket::Listener_Echo::service(Frame& request, Frame& response, bool& sendResponse) const {
+	logger.info(__FUNCTION__);
 
-	NIC nic;
-	nic.attach(nicName, (quint16)Courier::Stub::Ethernet::Type::IDP);
-	logger.info("host = %s", Courier::Socket::toStarStyleAddress(nic.getAddress()).toLocal8Bit().constData());
-
-	Courier::Socket::Manager manager(nic, myNetwork);
-
-	Courier::Socket::Listener_Echo echo;
-
-	manager.addListener(&echo);
-
-	manager.startService();
-	QThread::sleep(30);
-	manager.stopService();
-
-	nic.detach();
-
-	logger.info("STOP");
-	return 0;
+	logger.info("request   %s", Courier::toString(request) .toLocal8Bit().constData());
+	logger.info("response  %s", Courier::toString(response).toLocal8Bit().constData());
+	logger.info("sendResponse %s", Courier::toString(sendResponse) .toLocal8Bit().constData());
 }

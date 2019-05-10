@@ -25,45 +25,31 @@ OF SUCH DAMAGE.
 */
 
 
-#include <stdio.h>
+//
+// Socket_Echo.h
+//
 
-#include "../util/Debug.h"
-#include "../util/Util.h"
-static log4cpp::Category& logger = Logger::getLogger("courier-app");
+#ifndef COURIER_SOCKET_ECHO_H__
+#define COURIER_SOCKET_ECHO_H__
 
-#include "../util/NIC.h"
+#include "../courier/Courier.h"
 #include "../courier/Socket.h"
-#include "../stub/Ethernet.h"
 
-#include "../courier/Socket_Echo.h"
+namespace Courier {
+namespace Socket {
 
-int main(int /*argc*/, char** /*argv*/) {
-	logger.info("START");
+class Listener_Echo : public Listener {
+public:
+	Listener_Echo() : Listener("Echo", Socket::RIP) {}
 
-	setSignalHandler();
+private:
+	// init, destroy and service is life cycle event
+	void init();
+	void destroy();
+	void service(Frame& request, Frame& response, bool& sendResponse) const;
+};
 
-	const char* nicName = "ens192";
-	Courier::Socket::Network myNetwork = (Courier::Socket::Network)10;
-
-	logger.info("nicName = %s", nicName);
-	logger.info("myNetwork = %s", Courier::toString(myNetwork).toLocal8Bit().constData());
-
-	NIC nic;
-	nic.attach(nicName, (quint16)Courier::Stub::Ethernet::Type::IDP);
-	logger.info("host = %s", Courier::Socket::toStarStyleAddress(nic.getAddress()).toLocal8Bit().constData());
-
-	Courier::Socket::Manager manager(nic, myNetwork);
-
-	Courier::Socket::Listener_Echo echo;
-
-	manager.addListener(&echo);
-
-	manager.startService();
-	QThread::sleep(30);
-	manager.stopService();
-
-	nic.detach();
-
-	logger.info("STOP");
-	return 0;
 }
+}
+
+#endif

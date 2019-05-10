@@ -14,6 +14,9 @@ SOURCES += Courier.cpp Block.cpp StreamOf.cpp
 HEADERS += Programs.h   Service.h   Socket.h
 SOURCES += Programs.cpp Service.cpp Socket.cpp
 
+HEADERS += Socket_Echo.h
+SOURCES += Socket_Echo.cpp
+
 ###############################################
 
 INCLUDEPATH += .
