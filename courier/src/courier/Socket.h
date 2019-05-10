@@ -40,6 +40,8 @@ OF SUCH DAMAGE.
 namespace Courier {
 namespace Socket {
 
+QString toStarStyleAddress(quint64 value);
+
 using Frame   = Stub::IDP::Frame;
 using Host    = Stub::IDP::Host;
 using Network = Stub::IDP::Network;

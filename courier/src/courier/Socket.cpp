@@ -181,15 +181,22 @@ void Courier::Socket::Thread::run() {
 		{
 			int ret = nic.receive(reqData.block.getData(), reqData.block.getCapacity());
 			reqData.block.setLimit(ret);
+			reqData.block.rewind();
 		}
-
+		logger.info("reqEther  %s", Courier::toString(reqEther).toLocal8Bit().constData());
+		logger.info("reqData.block  %s", Courier::toString(reqData.block).toLocal8Bit().constData());
 		Courier::deserialize(reqData.block, reqEther);
 		Courier::deserialize(reqEther.data, reqIDP);
 
 		if (!listenerMap.contains(reqIDP.dst.socket)) {
-			logger.warn("No socket service  %s -> %s",
-					Courier::toString(reqIDP.src).toLocal8Bit().constData(),
-					Courier::toString(reqIDP.dst).toLocal8Bit().constData());
+			logger.warn("No listener %s --  %s %s %s -> %s %s %s",
+					Courier::toString(reqIDP.type).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.src.network).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.src.host).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.src.socket).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.dst.network).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.dst.host).toLocal8Bit().constData(),
+					Courier::toString(reqIDP.dst.socket).toLocal8Bit().constData());
 			continue;
 		}
 		Listener* socketBase = listenerMap[reqIDP.dst.socket];
@@ -270,4 +277,31 @@ void Courier::Socket::Thread::run() {
 		Courier::serialize(resData.block, resEther);
 		nic.transmit(resData.block.getData(), resData.block.getLimit());
 	}
+}
+
+QString Courier::Socket::toStarStyleAddress(quint64 value) {
+	const QChar ZERO = QLatin1Char('0');
+
+	// special case for less than 1000
+	if (value < 1000) {
+		return QString("0-%1").arg(QString("%1").arg(value, 3, 10, ZERO));
+	}
+
+	QString ret(QString("%1").arg(value % 1000, 3, 10, ZERO));
+	value = value / 1000;
+
+	for(;;) {
+		quint64 nnn = value % 1000;
+
+		if (value < 1000) {
+			ret.prepend(QString("%1-").arg(nnn, 0, 10, ZERO));
+			break;
+		} else {
+			ret.prepend(QString("%1-").arg(nnn, 3, 10, ZERO));
+		}
+
+		value = value / 1000;
+	}
+
+	return ret;
 }
