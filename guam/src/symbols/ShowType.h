@@ -129,6 +129,12 @@ public:
 	ValFormat() : tag(Tag::OTHER), tagValue(0) {}
 	ValFormat(const ValFormat& that) : tag(that.tag), tagValue(that.tagValue) {}
 
+	ValFormat& operator=(const ValFormat& that) {
+		this->tag      = that.tag;
+		this->tagValue = that.tagValue;
+		return *this;
+	}
+
 	Tag   tag;
 	void* tagValue;
 
