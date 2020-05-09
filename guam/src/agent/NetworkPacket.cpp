@@ -50,10 +50,13 @@ static log4cpp::Category& logger = Logger::getLogger("packet");
 void NetworkPacket::attach(const QString& name_) {
 	name = name_;
     logger.info("name     = %s", name.toLatin1().constData());
-    logger.info("protocol = 0x%04X", ETH_P_IDP);
+
+    quint16 proto   = (quint16)ETH_P_IDP;
+    quint16 protoBE = qToBigEndian(proto);
+    logger.info("protocol = 0x%04X", proto);
 
 	// open socket
-	fd = socket(AF_PACKET, SOCK_RAW, qToBigEndian((CARD16)ETH_P_IDP));
+	fd = socket(AF_PACKET, SOCK_RAW, protoBE);
 	if (fd == -1) {
 		int myErrno = errno;
 		logger.fatal("socket returns -1.  errno = %d", myErrno);
@@ -67,7 +70,7 @@ void NetworkPacket::attach(const QString& name_) {
 			struct ifreq ifr;
 
 			memset(&ifr, 0, sizeof(ifr));
-			strncpy(ifr.ifr_ifrn.ifrn_name, name.toLatin1().constData(), IFNAMSIZ);
+			strncpy(ifr.ifr_ifrn.ifrn_name, name.toLatin1().constData(), IFNAMSIZ - 1);
 		    int ret = ioctl(fd, SIOCGIFHWADDR, &ifr);
 		    if (ret) {
 				int myErrno = errno;
@@ -88,7 +91,7 @@ void NetworkPacket::attach(const QString& name_) {
 			struct ifreq ifr;
 
 			memset(&ifr, 0, sizeof(ifr));
-			strncpy(ifr.ifr_ifrn.ifrn_name, name.toLatin1().constData(), IFNAMSIZ);
+			strncpy(ifr.ifr_ifrn.ifrn_name, name.toLatin1().constData(), IFNAMSIZ - 1);
 		    int ret = ioctl(fd, SIOCGIFINDEX, &ifr);
 		    if (ret) {
 				int myErrno = errno;
@@ -105,7 +108,7 @@ void NetworkPacket::attach(const QString& name_) {
 
 			memset(&sll, 0xff, sizeof(sll));
 			sll.sll_family   = AF_PACKET;
-			sll.sll_protocol = qToBigEndian(ETH_P_IDP);
+			sll.sll_protocol = protoBE;
 			sll.sll_ifindex  = ifindex;
 			int ret = ::bind(fd, (struct sockaddr *)&sll, sizeof sll);
 		    if (ret) {

@@ -50,6 +50,15 @@ public:
 		Rect(int x_, int y_, int width_, int height_) : x(x_), y(y_), width(width_), height(height_) {}
 		Rect(const Rect& that) : x(that.x), y(that.y), width(that.width), height(that.height) {}
 
+		Rect& operator=(const Rect& that) {
+			this->x      = that.x;
+			this->y      = that.y;
+			this->width  = that.width;
+			this->height = that.height;
+
+			return *this;
+		}
+
 		int x, y, width, height;
 	};
 
