@@ -216,7 +216,14 @@ void AgentNetwork::Initialize() {
 	fcb->receiveStopped            = 1;
 	fcb->transmitStopped           = 1;
 	fcb->hearSelf                  = 0;
-	networkPacket->getAddress(fcb->processorID[0], fcb->processorID[1], fcb->processorID[2]);
+
+	// use local variable to avoid gcc 9 warning
+	CARD16 id0, id1, id2;
+	networkPacket->getAddress(id0, id1, id2);
+	fcb->processorID[0] = id0;
+	fcb->processorID[1] = id1;
+	fcb->processorID[2] = id2;
+
 	fcb->packetsMissed             = 0;
 	fcb->agentBlockSize            = 0;
 
