@@ -178,6 +178,19 @@ public:
 		pos += sizeof(value);
 		if (limit < pos) limit = pos;
 	}
+
+	ByteBuffer& read(CARD8& value) {
+		value = get8();
+		return *this;
+	}
+	ByteBuffer&  read(CARD16& value) {
+		value = get16();
+		return *this;
+	}
+	ByteBuffer&  read(CARD32& value) {
+		value = get32();
+		return *this;
+	}
 };
 
 class BigEndianByteBuffer final : public ByteBuffer {
