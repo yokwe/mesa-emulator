@@ -42,6 +42,7 @@ all:
 	(cd src/bcd;           make all)
 	(cd src/bcdInfo;       make all)
 	(cd src/symInfo;       make all)
+	(cd src/disk;          make all)
 
 qt4-default:
 	sudo apt-get install qt4-default
@@ -68,6 +69,7 @@ clean:
 	mkdir  tmp/build/bcd
 	mkdir  tmp/build/bcdInfo
 	mkdir  tmp/build/symInfo
+	mkdir  tmp/build/disk
 
 distclean: clean
 	rm -f  src/*/Makefile
@@ -142,6 +144,12 @@ symInfo:
 	(cd src/bcd;           make all)
 	(cd src/symInfo;       make all)
 
+disk:
+	(cd src/util;          make all)
+	(cd src/agent;         make all)
+	(cd src/disk;          make all)
+
+
 run-dumpSymbol: dumpSymbol
 	echo -n >tmp/debug.log
 	tmp/build/dumpSymbol/dumpSymbol tmp/GermOpsImpl.bcd
@@ -183,6 +191,10 @@ create-floppy-image:
 	mkdir -p tmp/floppy/image
 	rm -f tmp/floppy/image/floppy144
 	dd if=/dev/zero of=tmp/floppy/image/floppy144 bs=512 count=2880
+
+run-disk: disk
+	echo -n >tmp/debug.log
+	tmp/build/disk/disk
 
 callgrind:
 	mkdir -p tmp/callgrind
@@ -230,6 +242,7 @@ qmake:
 	(cd src/bcd;           qmake)
 	(cd src/bcdInfo;       qmake)
 	(cd src/symInfo;       qmake)
+	(cd src/disk;          qmake)
 	qmake --version
 
 
