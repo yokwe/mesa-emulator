@@ -47,17 +47,39 @@ struct My {
 	//
 	// From APilot/15.0.1/Pilot/Public/System.mesa
 	//
-	struct System {
+	class System {
+	public:
 		// UniversalID: TYPE [5];
-		struct UniversalID {
+		class UniversalID {
+		public:
 			CARD16 a, b, c, d, e;
+
+			void read(ByteBuffer& bb) {
+				bb.read(a).read(b).read(c).read(d).read(e);
+			}
+			bool isNull() {
+				return a == 0 && b == 0 && c == 0 && d == 0;
+			}
+			QString toQString() {
+				if (isNull()) {
+					return "NULL";
+				} else {
+					return QString("{%1-%2-%3-%4-%5}").
+							arg(a, 4, 16, QChar('0')).
+							arg(b, 4, 16, QChar('0')).
+							arg(c, 4, 16, QChar('0')).
+							arg(d, 4, 16, QChar('0')).
+							arg(e, 4, 16, QChar('0')).toUpper();
+				}
+			}
 		};
 	};
 
 	//
 	// From APilot/15.0.1/Pilot/Friends/PilotDisk.mesa
 	//
-	struct Disk {
+	class Disk {
+	public:
 		//FileID: TYPE = MACHINE DEPENDENT RECORD [
 		//  name(0): SELECT OVERLAID * FROM
 		//    volumeRelative => [
@@ -70,16 +92,32 @@ struct My {
 				CARD16 pad[3];
 			} __attribute__((packed));
 			System::UniversalID id;
+
+			void read(ByteBuffer& bb) {
+				id.read(bb);
+			}
+			bool inNull() {
+				return id.isNull();
+			}
+			QString toQString() {
+				if (pad[0] == 0 && pad[1] == 0 && pad[2] == 0 && fileID != 0) {
+					return QString("%1").arg(fileID, 8, 16, QChar('0')).toUpper();
+				} else {
+					return id.toQString();
+				}
+			}
 		};
 	};
 
 	//
 	// From APilot/15.3/Faces/Friends/PilotDiskFace.mesa
 	//
-	struct PilotDiskFace {
+	class PilotDiskFace {
+	public:
 		//DiskAddress: TYPE = MACHINE DEPENDENT RECORD [
 		//  cylinder(0): CARDINAL, head(1:0..7): [0..256), sector(1:8..15): [0..256)];
-		struct DiskAddress {
+		class DiskAddress {
+		public:
 			CARD16 cylinder;
 			union {
 				struct {
@@ -88,21 +126,56 @@ struct My {
 				};
 				CARD16 u1;
 			};
+
+			void read(ByteBuffer& bb) {
+				bb.read(cylinder).read(u1);
+			}
+			bool inNull() {
+				return cylinder == 0 && sector == 0 && head == 0;
+			}
+			QString toQString() {
+				return QString("{%1-%2-%3}").
+						arg(cylinder, 4, 16, QChar('0')).
+						arg(head,     2, 16, QChar('0')).
+						arg(sector,   2, 16, QChar('0')).toUpper();
+			}
+
 		};
 	};
 
 	//
 	// From APilot/15.0.1/Pilot/Friends/Boot.mesa
 	//
-	struct Boot {
+	class Boot {
+	public:
 		//DiskFileID: TYPE = MACHINE DEPENDENT RECORD [
 		//  fID (0): PilotDisk.FileID,
 		//  firstPage (5): PilotDisk.FilePageNumber,
 		//  da (7): PilotDiskFace.DiskAddress];
-		struct DiskFileID {
+		class DiskFileID {
+		public:
 			Disk::FileID               fID;
 			CARD32                     firstPage;
 			PilotDiskFace::DiskAddress da;
+
+			void read(ByteBuffer& bb) {
+				fID.read(bb);
+				bb.read(firstPage);
+				da.read(bb);
+			}
+			bool isNull() {
+				return fID.inNull() && firstPage == 0 && da.inNull();
+			}
+			QString toQString() {
+				if (isNull()) {
+					return QString("NULL");
+				} else {
+					return QString("{%1 %2 %3}").
+							arg(fID.toQString()).
+							arg(QString::number(firstPage, 16)).
+							arg(da.toQString()).toUpper();
+				}
+			}
 		};
 
 		//-- Types of boot files pointed to from root pages of physical and logical
@@ -121,15 +194,34 @@ struct My {
 		static const CARD16 BFT_initialMicrocode = 6;
 
 		//PVBootFiles: TYPE = ARRAY BootFileType [hardMicrocode..pilot] OF DiskFileID;
-		struct PVBootFiles {
-			DiskFileID bootFile[4];  // 0..3 -- hardMicrocode..pilot
+		class PVBootFiles {
+		public:
+			DiskFileID hardMicrocode;
+			DiskFileID softMicrocode;
+			DiskFileID germ;
+			DiskFileID pilot;
+
+			void read(ByteBuffer& bb) {
+				hardMicrocode.read(bb);
+				softMicrocode.read(bb);
+				germ.read(bb);
+				pilot.read(bb);
+			}
+			QString toQString() {
+				return QString("{hard %1, soft %2, germ %3, pilot %4}").
+						arg(hardMicrocode.toQString()).
+						arg(softMicrocode.toQString()).
+						arg(germ.toQString()).
+						arg(pilot.toQString()).toUpper();
+			}
 		};
 	};
 
 	//
 	// APilot/15.0.1/Pilot/Private/PhysicalVolumeFormat.mesa
 	//
-	struct PhysicalVolume {
+	class PhysicalVolume {
+	public:
 		//  seal, Seal: CARDINAL = 121212B;
 		static const CARD16 seal = 0121212;
 
@@ -147,12 +239,26 @@ struct My {
 		//    lvPage(7): PageNumber,
 		//    pvPage(11B): PageNumber,
 		//    nPages(13B): PageCount];
-		struct SubVolumeDesc {
+		class SubVolumeDesc {
+		public:
 			System::UniversalID lvID;
 			CARD32 lvSize;
 			CARD32 lvPage;
 			CARD32 pvPage;
 			CARD32 nPages;
+
+			void read(ByteBuffer& bb) {
+				lvID.read(bb);
+				bb.read(lvSize).read(lvPage).read(pvPage).read(nPages);
+			}
+			QString toQString() {
+				return QString("{%1 %2 %3 %4 %5}").
+						arg(lvID.toQString()).
+						arg(lvSize, 6).
+						arg(lvPage, 6).
+						arg(pvPage, 6).
+						arg(nPages, 6).toUpper();
+			}
 		};
 
 		//  physicalVolumeLabelLength: CARDINAL = 40;
@@ -185,7 +291,8 @@ struct My {
 		//    -- followed, on immediately following pages, by a BadPageList with maxBadPages entries
 		//
 		//    badPageList(400B): BadPageListArray];
-		struct Descriptor {
+		class Descriptor {
+		public:
 			CARD16              seal;
 			CARD16              version;
 			CARD16              labelLength;
@@ -204,195 +311,88 @@ struct My {
 			CARD16              localTimeParametersValid;
 			CARD32              localTimeParameters;
 			CARD16              checksum;
+
+			void read(ByteBuffer& bb) {
+				bb.read(seal).read(version).read(labelLength);
+				pvID.read(bb);
+				bootingInfo.read(bb);
+				for(CARD32 i = 0; i < ELEMENTSOF(label); i++) {
+					bb.read(label[i]);
+				}
+				bb.read(subVolumeCount);
+				subVolumeMarkerID.read(bb);
+				bb.read(badPageCount).read(maxBadPages).read(dataLostPageCount).read(maxDataLostPages).read(onLineCount);
+
+				for(CARD32 i = 0; i < ELEMENTSOF(subVolumes); i++) {
+					subVolumes[i].read(bb);
+				}
+				for(CARD32 i = 0; i < ELEMENTSOF(fill); i++) {
+					bb.read(fill[i]);
+				}
+				bb.read(localTimeParametersValid).read(localTimeParameters).read(checksum);
+
+				// Sanity check
+				if (bb.getPos() != 512) {
+					logger.fatal("pos expect %6o  actual %6o", 512, bb.getPos());
+					ERROR();
+				}
+				if (seal != My::PhysicalVolume::seal) {
+					logger.fatal("seal expect %6o  actual %6o", My::PhysicalVolume::seal, seal);
+					ERROR();
+				}
+				if (version != My::PhysicalVolume::currentVersion) {
+					logger.fatal("version expect %6o  actual %6o", My::PhysicalVolume::currentVersion, version);
+					ERROR();
+				}
+			}
+
+			void dump() {
+				logger.info("seal                     %o", seal);
+				logger.info("version                  %d", version);
+				logger.info("pvID                     %s", pvID.toQString().toLocal8Bit().constData());
+
+				logger.info("bootinInfo");
+				if (!bootingInfo.hardMicrocode.isNull()) {
+					logger.info("  hardMicrocode          %s", bootingInfo.hardMicrocode.toQString().toLocal8Bit().data());
+				}
+				if (!bootingInfo.softMicrocode.isNull()) {
+					logger.info("  softMicrocode          %s", bootingInfo.softMicrocode.toQString().toLocal8Bit().data());
+				}
+				if (!bootingInfo.germ.isNull()) {
+					logger.info("  germ                   %s", bootingInfo.germ.toQString().toLocal8Bit().data());
+				}
+				if (!bootingInfo.pilot.isNull()) {
+					logger.info("  pilot                  %s", bootingInfo.pilot.toQString().toLocal8Bit().data());
+				}
+
+				QString label;
+				{
+					for(CARD16 i = 0; i < labelLength; i++) {
+						label.append(label[i]);
+					}
+				}
+				logger.info("label                    %s", label.toLocal8Bit().data());
+
+				logger.info("subVolumeCount           %d", subVolumeCount);
+				logger.info("subVolumeMarkerID        %s", subVolumeMarkerID.toQString().toLocal8Bit().constData());
+				logger.info("badPageCount             %d", badPageCount);
+				logger.info("maxBadPages              %d", maxBadPages);
+				logger.info("dataLostPageCount        %d", dataLostPageCount);
+				logger.info("maxDataLostPages         %d", maxDataLostPages);
+				logger.info("onLineCount              %d", onLineCount);
+
+				logger.info("subVolume");
+				for(CARD16 i = 0; i < subVolumeCount; i++) {
+					logger.info("                         %s", subVolumes[i].toQString().toLocal8Bit().data());
+				}
+
+				logger.info("localTimeParametersValid %d", localTimeParametersValid);
+				logger.info("localTimeParameters      %d", localTimeParameters);
+				logger.info("checksum                 %d", checksum);
+			}
 		};
 	};
 };
-
-static void read(ByteBuffer& bb, CARD8& value) {
-	value = bb.get8();
-}
-static void read(ByteBuffer& bb, CARD16& value) {
-	value = bb.get16();
-}
-static void read(ByteBuffer& bb, CARD32& value) {
-	value = bb.get32();
-}
-
-static void read(ByteBuffer& bb, My::System::UniversalID& value) {
-	read(bb, value.a);
-	read(bb, value.b);
-	read(bb, value.c);
-	read(bb, value.d);
-	read(bb, value.e);
-}
-
-static void read(ByteBuffer& bb, My::Disk::FileID& value) {
-	read(bb, value.id);
-}
-static void read(ByteBuffer& bb, My::PilotDiskFace::DiskAddress& value) {
-	read(bb, value.cylinder);
-	read(bb, value.u1);
-}
-
-static void read(ByteBuffer& bb, My::Boot::DiskFileID& value) {
-	read(bb, value.fID);
-	read(bb, value.firstPage);
-	read(bb, value.da);
-}
-
-static void read(ByteBuffer& bb, My::Boot::PVBootFiles& value) {
-	for(CARD32 i = 0; i < ELEMENTSOF(value.bootFile); i++) {
-		read(bb, value.bootFile[i]);
-	}
-}
-
-static void read(ByteBuffer& bb, My::PhysicalVolume::SubVolumeDesc& value) {
-	read(bb, value.lvID);
-	read(bb, value.lvSize);
-	read(bb, value.lvPage);
-	read(bb, value.pvPage);
-	read(bb, value.nPages);
-}
-
-static void read(ByteBuffer& bb, My::PhysicalVolume::Descriptor& value) {
-	read(bb, value.seal);
-	read(bb, value.version);
-	read(bb, value.labelLength);
-	read(bb, value.pvID);
-	read(bb, value.bootingInfo);
-	for(CARD32 i = 0; i < ELEMENTSOF(value.label); i++) {
-		read(bb, value.label[i]);
-	}
-	read(bb, value.subVolumeCount);
-	read(bb, value.subVolumeMarkerID);
-	read(bb, value.badPageCount);
-	read(bb, value.maxBadPages);
-	read(bb, value.dataLostPageCount);
-	read(bb, value.maxDataLostPages);
-	read(bb, value.onLineCount);
-	for(CARD32 i = 0; i < ELEMENTSOF(value.subVolumes); i++) {
-		read(bb, value.subVolumes[i]);
-	}
-	for(CARD32 i = 0; i < ELEMENTSOF(value.fill); i++) {
-		read(bb, value.fill[i]);
-	}
-	read(bb, value.localTimeParametersValid);
-	read(bb, value.localTimeParameters);
-	read(bb, value.checksum);
-
-	// Sanity check
-	if (bb.getPos() != 512) {
-		logger.fatal("pos expect %6o  actual %6o", 512, bb.getPos());
-		ERROR();
-	}
-
-	if (value.seal != My::PhysicalVolume::seal) {
-		logger.fatal("seal expect %6o  actual %6o", My::PhysicalVolume::seal, value.seal);
-		ERROR();
-	}
-	if (value.version != My::PhysicalVolume::currentVersion) {
-		logger.fatal("version expect %6o  actual %6o", My::PhysicalVolume::currentVersion, value.version);
-		ERROR();
-	}
-}
-
-static QString toQString(My::System::UniversalID& value) {
-	return QString("%1-%2-%3-%4-%5").
-			arg(value.a, 4, 16, QChar('0')).
-			arg(value.b, 4, 16, QChar('0')).
-			arg(value.c, 4, 16, QChar('0')).
-			arg(value.d, 4, 16, QChar('0')).
-			arg(value.e, 4, 16, QChar('0')).toUpper();
-}
-static QString toQString(My::Disk::FileID& value) {
-	if (value.pad[0] == 0 && value.pad[1] == 0 && value.pad[2] == 0 && value.fileID != 0) {
-		return QString("%1").arg(value.fileID, 8, 16, QChar('0')).toUpper();
-	} else {
-		return toQString(value.id);
-	}
-}
-static QString toQString(My::PilotDiskFace::DiskAddress& value) {
-	return QString("%1-%2-%3").
-			arg(value.cylinder, 4, 16, QChar('0')).
-			arg(value.head,     2, 16, QChar('0')).
-			arg(value.sector,   2, 16, QChar('0')).toUpper();
-}
-static bool isNull(My::System::UniversalID& value) {
-	return value.a == 0 && value.b == 0 && value.c == 0 && value.d == 0 && value.e == 0;
-}
-static bool isNull(My::Disk::FileID& value) {
-	return isNull(value.id);
-}
-static bool isNull(My::PilotDiskFace::DiskAddress& value) {
-	return value.cylinder == 0 && value.head == 0 && value.sector == 0;
-}
-static bool isNull(My::Boot::DiskFileID& value) {
-	return isNull(value.fID) && value.firstPage == 0 && isNull(value.da);
-}
-QString toQString(My::Boot::DiskFileID& value) {
-	if (isNull(value)) {
-		return QString("NULL");
-	} else {
-		QString fID       = toQString(value.fID);
-		QString firstPage = QString::number(value.firstPage, 16);
-		QString da        = toQString(value.da);
-
-		return QString("{%1 %2 %3}").arg(fID, firstPage, da);
-	}
-}
-QString toQString(My::PhysicalVolume::SubVolumeDesc& value) {
-	return QString("{%1 %2 %3 %4 %5}").
-			arg(toQString(value.lvID)).
-			arg(value.lvSize, 6).
-			arg(value.lvPage, 6).
-			arg(value.pvPage, 6).
-			arg(value.nPages, 6).toUpper();
-}
-
-static void dump(My::PhysicalVolume::Descriptor& value) {
-	logger.info("seal                     %o", value.seal);
-	logger.info("version                  %d", value.version);
-	logger.info("pvID                     %s", toQString(value.pvID).toLocal8Bit().constData());
-
-	logger.info("bootinInfo");
-	if (!isNull(value.bootingInfo.bootFile[My::Boot::BFT_hardMicrocode])) {
-		logger.info("  hardMicrocode          %s", toQString(value.bootingInfo.bootFile[My::Boot::BFT_hardMicrocode]).toLocal8Bit().data());
-	}
-	if (!isNull(value.bootingInfo.bootFile[My::Boot::BFT_softMicrocode])) {
-		logger.info("  softMicrocode          %s", toQString(value.bootingInfo.bootFile[My::Boot::BFT_softMicrocode]).toLocal8Bit().data());
-	}
-	if (!isNull(value.bootingInfo.bootFile[My::Boot::BFT_germ])) {
-		logger.info("  germ                   %s", toQString(value.bootingInfo.bootFile[My::Boot::BFT_germ]).toLocal8Bit().data());
-	}
-	if (!isNull(value.bootingInfo.bootFile[My::Boot::BFT_pilot])) {
-		logger.info("  pilot                  %s", toQString(value.bootingInfo.bootFile[My::Boot::BFT_pilot]).toLocal8Bit().data());
-	}
-
-	QString label;
-	{
-		for(CARD16 i = 0; i < value.labelLength; i++) {
-			label.append(value.label[i]);
-		}
-	}
-	logger.info("label                    %s", label.toLocal8Bit().data());
-
-	logger.info("subVolumeCount           %d", value.subVolumeCount);
-	logger.info("subVolumeMarkerID        %s", toQString(value.subVolumeMarkerID).toLocal8Bit().constData());
-	logger.info("badPageCount             %d", value.badPageCount);
-	logger.info("maxBadPages              %d", value.maxBadPages);
-	logger.info("dataLostPageCount        %d", value.dataLostPageCount);
-	logger.info("maxDataLostPages         %d", value.maxDataLostPages);
-	logger.info("onLineCount              %d", value.onLineCount);
-
-	logger.info("subVolume");
-	for(CARD16 i = 0; i < value.subVolumeCount; i++) {
-		logger.info("                         %s", toQString(value.subVolumes[i]).toLocal8Bit().data());
-	}
-
-	logger.info("localTimeParametersValid %d", value.localTimeParametersValid);
-	logger.info("localTimeParameters      %d", value.localTimeParameters);
-	logger.info("checksum                 %d", value.checksum);
-}
 
 int main(int /*argc*/, char** /*argv*/) {
 	const char* pilotDiskImagePath   = "data/GVWin/GVWIN001.DSK";
@@ -405,14 +405,10 @@ int main(int /*argc*/, char** /*argv*/) {
 	{
 		LittleEndianByteBuffer bb(512);
 		disk.readSector(0, bb);
-		read(bb, descriptor);
+		descriptor.read(bb);
 	}
 
-	dump(descriptor);
-
-	logger.info("checksum %04X", descriptor.checksum);
-
-
+	descriptor.dump();
 
 	return 0;
 }
