@@ -45,31 +45,68 @@ private:
 //
 struct My {
 	//
-	// From APilot/15.0.1/Pilot/Public/System.mesa
+	// From APilot/15.3/Faces/Friends/HostNumbers.mesa
 	//
-	class System {
+	// HostNumber: TYPE = MACHINE DEPENDENT RECORD [
+	//   a, b, c, d, e, f: [0..256)];
+	// nullHostNumber: HostNumber = [0, 0, 0, 0, 0, 0];
+	// ProcessorID: TYPE = RECORD [HostNumber];
+	class HostNumbers {
 	public:
-		// UniversalID: TYPE [5];
-		class UniversalID {
+		class ProcessorID {
 		public:
-			CARD16 a, b, c, d, e;
+			CARD8 a, b, c, d, e, f;
 
 			void read(ByteBuffer& bb) {
-				bb.read(a).read(b).read(c).read(d).read(e);
+				bb.read(a).read(b).read(c).read(d).read(e).read(f);
 			}
 			bool isNull() {
-				return a == 0 && b == 0 && c == 0 && d == 0;
+				return a == 0 && b == 0 && c == 0 && d == 0&& e == 0 && f == 0;
 			}
 			QString toQString() {
 				if (isNull()) {
 					return "NULL";
 				} else {
-					return QString("{%1-%2-%3-%4-%5}").
-							arg(a, 4, 16, QChar('0')).
-							arg(b, 4, 16, QChar('0')).
-							arg(c, 4, 16, QChar('0')).
-							arg(d, 4, 16, QChar('0')).
-							arg(e, 4, 16, QChar('0')).toUpper();
+					return QString("%1%2%3%4%5%6").
+							arg(a, 2, 16, QChar('0')).
+							arg(b, 2, 16, QChar('0')).
+							arg(c, 2, 16, QChar('0')).
+							arg(d, 2, 16, QChar('0')).
+							arg(e, 2, 16, QChar('0')).
+							arg(f, 2, 16, QChar('0')).toUpper();
+				}
+			}
+		};
+	};
+
+	//
+	// From APilot/15.0.1/Pilot/Public/System.mesa
+	// From APilot/15.0.1/Pilot/Public/SystemInternal.mesa
+	//
+	class System {
+	public:
+		// UniversalID: TYPE [5];
+		// UniversalID: TYPE = MACHINE DEPENDENT RECORD [
+		//   processor(0): SpecialSystem.ProcessorID, sequence(3): LONG CARDINAL];
+
+		class UniversalID {
+		public:
+			HostNumbers::ProcessorID processor;
+			CARD32                   sequence;
+			void read(ByteBuffer& bb) {
+				processor.read(bb);
+				bb.read(sequence);
+			}
+			bool isNull() {
+				return processor.isNull() && sequence == 0;
+			}
+			QString toQString() {
+				if (isNull()) {
+					return "NULL";
+				} else {
+					return QString("{%1-%2}").
+							arg(processor.toQString()).
+							arg(sequence, 8, 16, QChar('0')).toUpper();
 				}
 			}
 		};
@@ -86,24 +123,37 @@ struct My {
 		//      fileID(0): File.ID, pad(2): ARRAY [0..3) OF WORD � ALL[0]],
 		//    unique => [id(0): System.UniversalID]
 		//    ENDCASE];
-		union FileID {
-			struct {
-				CARD32 fileID;
-				CARD16 pad[3];
-			} __attribute__((packed));
+		class FileID {
+		public:
+			CARD32 fileID;
+			CARD16 pad0, pad1, pad2;
+			//
 			System::UniversalID id;
 
 			void read(ByteBuffer& bb) {
+				quint32 pos = bb.getPos();
+				// volumeRelative
+				bb.read(fileID).read(pad0).read(pad1).read(pad2);
+				quint32 pos1 = bb.getPos();
+				// unique
+				bb.setPos(pos);
 				id.read(bb);
+				quint32 pos2 = bb.getPos();
+				if (pos1 != pos2) {
+					logger.fatal("pos2 expect %6o  actual %6o", pos1, pos2);
+					ERROR();
+				}
 			}
-			bool inNull() {
-				return id.isNull();
+			bool isNull() {
+				return fileID == 0 && pad0 == 0 && pad1 == 0 && pad2 == 0;
 			}
 			QString toQString() {
-				if (pad[0] == 0 && pad[1] == 0 && pad[2] == 0 && fileID != 0) {
-					return QString("%1").arg(fileID, 8, 16, QChar('0')).toUpper();
+				if (isNull()) {
+					return "NULL";
+				} else if (pad0 == 0 && pad1 == 0 && pad2 == 0 && fileID != 0) {
+					return QString("{FILEID %1}").arg(fileID, 8, 16, QChar('0')).toUpper();
 				} else {
-					return id.toQString();
+					return QString("{ID %1}").arg(id.toQString()).toUpper();
 				}
 			}
 		};
@@ -164,7 +214,7 @@ struct My {
 				da.read(bb);
 			}
 			bool isNull() {
-				return fID.inNull() && firstPage == 0 && da.inNull();
+				return fID.isNull() && firstPage == 0 && da.inNull();
 			}
 			QString toQString() {
 				if (isNull()) {
