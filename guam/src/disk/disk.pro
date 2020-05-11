@@ -6,7 +6,9 @@ TARGET   = disk
 TEMPLATE = app
 
 # Input
-#HEADERS += 
+HEADERS += disk.h
+SOURCES += disk.cpp
+
 SOURCES += main.cpp
 
 #HEADERS += 
