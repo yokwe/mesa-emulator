@@ -129,7 +129,7 @@ public class BcdDefs {
 	}
 	
 	public static void main(String[] args) {
-		new BCD("../Source/APilot/15.0.1/Mesa/Friends/BcdDefsExtras.bcd");
+		new BCD("/home/hasegawa/workspace/Wildflower/Source/APilot/15.0.1/Mesa/Friends/BcdDefsExtras.bcd");
 		// For ../Source/APilot/15.0.1/Mesa/Friends/BcdDefsExtras.bcd
 		// version = [net 00  host AA  time 1986-06-14T08:08:42]
 		// creator = [net 00  host 00  time 1986-01-15T04:13:35]
