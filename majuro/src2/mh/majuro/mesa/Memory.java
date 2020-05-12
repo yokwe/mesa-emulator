@@ -17,16 +17,16 @@ public final class Memory {
 	}
 
 	private static class Cache {
-		int     vp;
-		boolean flagStore;
-		short[] page;
+		int      vp;
+		MapFlags mf;
+		short[]  page;
 		
 		Cache() {
 			init();
 		}
 		void init() {
 			vp        = 0;
-			flagStore = false;
+			mf        = null;
 			page      = null;
 		}
 	};
@@ -55,9 +55,9 @@ public final class Memory {
 	private int vmPage = 0;
 	private int rmPage = 0;
 	
-	private MapFlags[] mapFlags;
 	private short[][]  rmPages;
 	private Cache[]    cache;
+	private MapFlags[] mapFlags;
 	
 	public void stats() {
 		int used = 0;
@@ -83,21 +83,36 @@ public final class Memory {
 		rmPage = rmSize / PAGE_SIZE;
 		if (MAX_RM_PAGE < rmPage) rmPage = MAX_RM_PAGE;
 
+		rmPages  = new short[rmPage][PAGE_SIZE];
+		cache    = new Cache[HASH_SIZE];
 		mapFlags = new MapFlags[vmPage];
+
+		// initialize element of cache
+		for(int i = 0; i < cache.length; i++) {
+			cache[i] = new Cache();
+		}
+
+		// initialize element of mapFlags
 		for(int i = 0; i < mapFlags.length; i++) {
 			mapFlags[i] = new MapFlags();
 		}
 		
-		rmPages  = new short[rmPage][PAGE_SIZE];
-		
-		// initialize mapFlags
+		// See APilot/15.3/Pilot/Private/GermOpsImpl.mesa
+		// The BOOTING ACTION defined by the Principles of Operation should include:
+		// 	   1. Put real memory behind any special processor pages (I/O pages); then put all remaining usable real memory behind other virtual memory pages beginning at virtual page 0, and working upward sequentially (skipping any already-mapped special processor pages).
+		// 	   2. Read consecutive pages of the Germ into virtual memory beginning at page Boot.pageGerm + Boot.mdsiGerm*Environment.MaxPagesInMDS (i.e page 1).  At present, the way the initial microcode figures out the device and device address of the Germ, and the number of pages which comprise the Germ, is processor-dependent.
+		// 	   3. Set Boot.pRequest� to e.g. [Boot.currentRequestBasicVersion, Boot.bootPhysicalVolume, locationOfPhysicalVolume].
+		// 	   4. Set WDC>0, NWW=0, MDS=Boot.mdsiGerm, STKP=0.
+		// 	   5. Xfer[dest: Boot.pInitialLink].
+
+		// set default value for mapFlags
 		// map all real page to virtual page
 		int rp = 0;
 		// map real page page [ioRegionPage..256)
 		for (int i = IO_REGION_PAGE; i < 256; i++) {
 			mapFlags[i].set(rp++, MapFlags.CLEAR);
 		}
-		// then map real page page [0..ioRegionPage)
+		// then map real page [0..ioRegionPage)
 		for (int i = 0; i < IO_REGION_PAGE; i++) {
 			mapFlags[i].set(rp++, MapFlags.CLEAR);
 		}
@@ -108,13 +123,6 @@ public final class Memory {
 		// then set remaining virtual page with vacant [rmPage..vmPage)
 		for (int i = rmSize; i < vmPage; i++) {
 			mapFlags[i].set(0, MapFlags.VACANT);
-		}
-		
-		// init cache related fields
-		cache             = new Cache[HASH_SIZE];
-		
-		for(int i = 0; i < cache.length; i++) {
-			cache[i] = new Cache();
 		}
 	}
 	
@@ -141,9 +149,9 @@ public final class Memory {
 			mf.checkFetch(va);
 			mf.updateFlagFetch();
 			
-			p.vp        = vp;
-			p.flagStore = mf.isReferencedDirty();
-			p.page      = rmPages[mf.rmPage];
+			p.vp   = vp;
+			p.mf   = mf;
+			p.page = rmPages[mf.rmPage];
 		} else {
 			if (Perf.PERF_ENABLE) Perf.cacheHit++;
 		}
@@ -165,14 +173,13 @@ public final class Memory {
 			mf.checkStore(va);
 			mf.updateFlagStore();
 
-			p.vp        = vp;
-			p.flagStore = true;
-			p.page      = rmPages[mf.rmPage];
+			p.vp   = vp;
+			p.mf   = mf;
+			p.page = rmPages[mf.rmPage];
 		} else {
 			if (Perf.PERF_ENABLE) Perf.cacheHit++;
-			if (!p.flagStore) {
-				p.flagStore = true;
-				mapFlags[vp].updateFlagStore();
+			if (!p.mf.isReferencedDirty()) {
+				p.mf.updateFlagStore();
 			}
 		}
 		return p.page;
