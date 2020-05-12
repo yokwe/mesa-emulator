@@ -3,6 +3,8 @@ package mh.majuro.mesa;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mh.majuro.UnexpectedException;
+
 public final class Memory {
 	private static final Logger logger = LoggerFactory.getLogger(Memory.class);
 	
