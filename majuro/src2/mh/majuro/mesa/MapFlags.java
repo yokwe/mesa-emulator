@@ -27,20 +27,19 @@ public final class MapFlags {
 		this.flag   = flag;
 	}
 	
-	public boolean isReferencedDirty() {
-		return (flag & REFERENCED_AND_DIRTY) == REFERENCED_AND_DIRTY;
-	}
 	public void checkFetch(int va) {
 		// check vacant
 		if (flag == VACANT) {
 			// FIXME PageFault
 		}
 	}
-	public void updateFlagFetch() {
-		if ((flag & REFERENCED) != REFERENCED) {
-			flag = (~REFERENCED & flag) | REFERENCED;
-		}
+	public boolean isReferenced() {
+		return (flag & REFERENCED) == REFERENCED;
 	}
+	public void updateFlagFetch() {
+		flag = (~REFERENCED & flag) | REFERENCED;
+	}
+	
 	public void checkStore(int va) {
 		// check vacant
 		if (flag == VACANT) {
@@ -51,10 +50,10 @@ public final class MapFlags {
 			// FIXME WriteProtectFault
 		}
 	}
+	public boolean isReferencedDirty() {
+		return (flag & REFERENCED_AND_DIRTY) == REFERENCED_AND_DIRTY;
+	}
 	public void updateFlagStore() {
-		// maintenance flags
-		if ((flag & REFERENCED_AND_DIRTY) != REFERENCED_AND_DIRTY) {
-			flag = (~REFERENCED_AND_DIRTY & flag) | REFERENCED_AND_DIRTY;
-		}
+		flag = (~REFERENCED_AND_DIRTY & flag) | REFERENCED_AND_DIRTY;
 	}
 }
