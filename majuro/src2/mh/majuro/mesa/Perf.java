@@ -8,9 +8,9 @@ public class Perf {
 	
 	public static final boolean PERF_ENABLE = true;
 
-	public static long cacheHit = 0;
+	public static long cacheHit          = 0;
 	public static long cacheMissConflict = 0;
-	public static long cacheMissEmpty = 0;
+	public static long cacheMissEmpty    = 0;
 
 	public static void stats() {
 		long cacheMiss = Perf.cacheMissEmpty + Perf.cacheMissConflict;
