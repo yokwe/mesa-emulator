@@ -52,10 +52,10 @@ public class TestBase {
 		{
 			int p = cb;
 			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.sepcialWrite(p++, (short)(0x1100 + i));
+				Memory.rawWrite(p++, (short)(0x1100 + i));
 			}
 			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.sepcialWrite(p++, (short)(0x2200 + i));
+				Memory.rawWrite(p++, (short)(0x2200 + i));
 			}
 		}
 
@@ -83,10 +83,10 @@ public class TestBase {
 		{
 			int p = cb;
 			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.sepcialWrite(p++, (short)(0x1100 + i));
+				Memory.rawWrite(p++, (short)(0x1100 + i));
 			}
 			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.sepcialWrite(p++, (short)(0x2200 + i));
+				Memory.rawWrite(p++, (short)(0x2200 + i));
 			}
 		}
 
