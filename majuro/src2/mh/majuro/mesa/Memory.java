@@ -128,24 +128,37 @@ public final class Memory {
 	
 	public static void invalidate(int vp) {
 		Cache p = cache[hash(vp)];
-		if (p.vp == vp) {
-			// if cache entry contains vp data, initialize cache entry.
-			p.init();
-		}
+		// if cache entry contains vp data, initialize cache entry.
+		if (p.vp == vp) p.init();
 	}
 	
-	public static short[] specialGetPage(int va) {
-		int vp = va >>> PAGE_SIZE_BITS;
-		MapFlags mf  = mapFlags[vp];
-		return rmPages[mf.rmPage];
+	//
+	// raw level access to memory for unit test
+	//
+	public static short[] rawPage(int va) {
+		return rmPages[mapFlags[va >>> PAGE_SIZE_BITS].rmPage];
 	}
-	public static short sepcialRead(int va) {
-		short[] page = specialGetPage(va);
-		return page[va & PAGE_OFFSET_MASK];
+	public static short rawRead(int va) {
+		return rawPage(va)[va & PAGE_OFFSET_MASK];
 	}
-	public static void sepcialWrite(int va, short newValue) {
-		short[] page = specialGetPage(va);
-		page[va & PAGE_OFFSET_MASK] = newValue;
+	public static void rawWrite(int va, short newValue) {
+		rawPage(va)[va & PAGE_OFFSET_MASK] = newValue;
+	}
+	
+	//
+	// map operation
+	//
+	MapFlags readMap(int vp) {
+		MapFlags mf = mapFlags[vp];
+		if (mf.isVacant()) mf.rmPage = 0;
+		return mf;
+	}
+	void writeMap(int vp, MapFlags mf) {
+		if (Perf.ENABLE) Perf.writeMap++;
+		if (mf.isVacant()) mf.rmPage = 0;
+		mapFlags[vp] = mf;
+		
+		invalidate(vp);
 	}
 	
 
@@ -195,9 +208,7 @@ public final class Memory {
 			p.page = rmPages[mf.rmPage];
 		} else {
 			if (Perf.ENABLE) Perf.cacheHit++;
-			if (!p.mf.isReferencedDirty()) {
-				p.mf.updateFlagStore();
-			}
+			if (!p.mf.isReferencedDirty()) p.mf.updateFlagStore();
 		}
 		return p.page;
 	}
