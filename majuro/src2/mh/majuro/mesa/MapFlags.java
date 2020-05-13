@@ -39,6 +39,9 @@ public final class MapFlags {
 	public void updateFlagFetch() {
 		flag = (~REFERENCED & flag) | REFERENCED;
 	}
+	public boolean isVacant() {
+		return flag == VACANT;
+	}
 	
 	public void checkStore(int va) {
 		// check vacant
