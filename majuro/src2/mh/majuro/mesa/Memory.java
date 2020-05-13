@@ -133,6 +133,21 @@ public final class Memory {
 			p.init();
 		}
 	}
+	
+	public static short[] specialGetPage(int va) {
+		int vp = va >>> PAGE_SIZE_BITS;
+		MapFlags mf  = mapFlags[vp];
+		return rmPages[mf.rmPage];
+	}
+	public static short sepcialRead(int va) {
+		short[] page = specialGetPage(va);
+		return page[va & PAGE_OFFSET_MASK];
+	}
+	public static void sepcialWrite(int va, short newValue) {
+		short[] page = specialGetPage(va);
+		page[va & PAGE_OFFSET_MASK] = newValue;
+	}
+	
 
 	// page level memory access
 	public static short[] fetchPage(int va) {
