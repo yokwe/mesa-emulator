@@ -39,6 +39,7 @@ public final class CodeCache {
 		
 	
 	public static int getCodeByte() {		
+		if (Perf.ENABLE) Perf.codeCacheCodeByte++;
 		if (lastWordPC != wordPC) {
 			// unit of pc is byte
 			if (pc < startPC || endPC < pc) {
@@ -52,9 +53,7 @@ public final class CodeCache {
 		
 		// RETURN[IF even THEN word.left ELSE word.right];
 		int ret = lastWord;
-		if (even) {
-			ret = ret >>> 8;
-		}
+		if (even) ret = ret >>> 8;
 		ret = ret & 0xFF;
 		
 		// increment pc
