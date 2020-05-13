@@ -381,7 +381,9 @@ void PageCache::fetchSetup(Entry *p, CARD32 vp) {
 void PageCache::fetchMaintainFlag(Entry *p, CARD32 vp) {
 	Memory::setReferencedFlag(vp);
 	p->flagFetch = 1;
-	p->flagStore = 0;
+	// FIXME Should p->flagStore set to 0?
+	//   There can be a chance that fetch after store in same page.
+	// p->flagStore = 0;
 }
 void PageCache::storeSetup(Entry *p, CARD32 vp) {
 	if (PERF_ENABLE) {
