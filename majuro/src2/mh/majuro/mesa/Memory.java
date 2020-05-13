@@ -50,16 +50,16 @@ public final class Memory {
 	public static final int IO_REGION_PAGE = 0x80;
 
 	
-	private int vmBits = 0;
-	private int rmBits = 0;
-	private int vmPage = 0;
-	private int rmPage = 0;
+	private static int vmBits = 0;
+	private static int rmBits = 0;
+	private static int vmPage = 0;
+	private static int rmPage = 0;
 	
-	private short[][]  rmPages;
-	private Cache[]    cache;
-	private MapFlags[] mapFlags;
+	private static short[][]  rmPages;
+	private static Cache[]    cache;
+	private static MapFlags[] mapFlags;
 	
-	public void stats() {
+	public static void stats() {
 		int used = 0;
 		for(int i = 0; i < cache.length; i++) {
 			if (cache[i].vp != 0) used++;
@@ -69,7 +69,7 @@ public final class Memory {
 	}
 
 	
-	public Memory(int vmBits_, int rmBits_) {
+	public static void initialize(int vmBits_, int rmBits_) {
 		vmBits = vmBits_;
 		rmBits = rmBits_;
 		
@@ -126,7 +126,7 @@ public final class Memory {
 		}
 	}
 	
-	public void invalidate(int vp) {
+	public static void invalidate(int vp) {
 		Cache p = cache[hash(vp)];
 		if (p.vp == vp) {
 			// if cache entry contains vp data, initialize cache entry.
@@ -135,12 +135,14 @@ public final class Memory {
 	}
 
 	// page level memory access
-	public short[] fetchPage(int va) {
+	public static short[] fetchPage(int va) {
+		if (Perf.ENABLE) Perf.fetchPage++;
+		
 		int vp = va >>> PAGE_SIZE_BITS;
 
 		Cache p = cache[hash(vp)];
 		if (p.vp != vp) {
-			if (Perf.PERF_ENABLE) {
+			if (Perf.ENABLE) {
 				if (p.vp != 0) Perf.cacheMissConflict++;
 				else Perf.cacheMissEmpty++;
 			}
@@ -153,18 +155,18 @@ public final class Memory {
 			p.mf   = mf;
 			p.page = rmPages[mf.rmPage];
 		} else {
-			if (Perf.PERF_ENABLE) Perf.cacheHit++;
+			if (Perf.ENABLE) Perf.cacheHit++;
 		}
 		return p.page;
 	}
-	public short[] storePage(int va) {
-		if (Perf.PERF_ENABLE) Perf.cacheHit++;
+	public static short[] storePage(int va) {
+		if (Perf.ENABLE) Perf.storePage++;
 
 		int vp = va >>> PAGE_SIZE_BITS;
 
 		Cache p = cache[hash(vp)];
 		if (p.vp != vp) {
-			if (Perf.PERF_ENABLE) {
+			if (Perf.ENABLE) {
 				if (p.vp != 0) Perf.cacheMissConflict++;
 				else Perf.cacheMissEmpty++;
 			}
@@ -177,7 +179,7 @@ public final class Memory {
 			p.mf   = mf;
 			p.page = rmPages[mf.rmPage];
 		} else {
-			if (Perf.PERF_ENABLE) Perf.cacheHit++;
+			if (Perf.ENABLE) Perf.cacheHit++;
 			if (!p.mf.isReferencedDirty()) {
 				p.mf.updateFlagStore();
 			}
@@ -186,17 +188,34 @@ public final class Memory {
 	}
 
 	// low level memory access
-	public short fetch(int va) {
+	public static short fetch(int va) {
+		if (Perf.ENABLE) Perf.fetch++;
 		return fetchPage(va)[va & PAGE_OFFSET_MASK];
 	}
-	public void store(int va, short newValue) {
+	public static void store(int va, short newValue) {
+		if (Perf.ENABLE) Perf.store++;
 		fetchPage(va)[va & PAGE_OFFSET_MASK] = newValue;
+	}
+	public static int readDbl(int va) {
+		if (Perf.ENABLE) Perf.readDbl++;
+		short[] page = fetchPage(va);
+		int vo = va & PAGE_OFFSET_MASK;
+		int t0 = page[vo++];
+		int t1;
+		if (vo == PAGE_SIZE) {
+			page = fetchPage(va + 1);
+			t1 = Short.toUnsignedInt(page[0]);
+		} else {
+			t1 = Short.toUnsignedInt(page[vo]);
+		}
+		
+		return (t1 << WORD_SIZE) | t0;
 	}
 
 	
 	// displayPage
-	private int displayPage = 0;
-	public void reserveDisplayPage(int displayPage_) {
+	private static int displayPage = 0;
+	public static void reserveDisplayPage(int displayPage_) {
 		if (displayPage_ <= 0) throw new UnexpectedException();
 		if (displayPage != 0) throw new UnexpectedException();
 		
@@ -208,15 +227,52 @@ public final class Memory {
 	}
 	
 	// mds
-	private int mds;
-	public int getMDS() {
+	private static int mds;
+	public static int getMDS() {
 		return mds;
 	}
-	public void setMDS(int newValue) {
+	public static void setMDS(int newValue) {
 		mds = newValue;
 	}
 
-	public int lengthenPointer(short pointer) {
-		return mds | (pointer & 0xFFFF);
+	public static int lengthenPointer(short pointer) {
+		return mds | Short.toUnsignedInt(pointer);
 	}
+	public static short fetchMDS(short pointer) {
+		if (Perf.ENABLE) Perf.fetchMDS++;
+		int va = lengthenPointer(pointer);
+		return fetchPage(va)[va & PAGE_OFFSET_MASK];
+	}
+	public static void storeMDS(short pointer, short newValue) {
+		if (Perf.ENABLE) Perf.storeMDS++;
+		int va = lengthenPointer(pointer);
+		fetchPage(va)[va & PAGE_OFFSET_MASK] = newValue;
+	}
+	public static int readDblMDS(short pointer) {
+		if (Perf.ENABLE) Perf.readDblMDS++;
+		int va = lengthenPointer(pointer);
+
+		short[] page = fetchPage(va);
+		int vo = va & PAGE_OFFSET_MASK;
+		int t0 = page[vo++];
+		int t1;
+		if (vo == PAGE_SIZE) {
+			page = fetchPage(va + 1);
+			t1 = Short.toUnsignedInt(page[0]);
+		} else {
+			t1 = Short.toUnsignedInt(page[vo]);
+		}
+		
+		return (t1 << WORD_SIZE) | t0;
+	}
+
+	// code
+	public static short readCode(int offset) {
+		if (Perf.ENABLE) Perf.readCode++;
+		int va = CodeCache.getCB() + offset;
+		return fetchPage(va)[va & PAGE_OFFSET_MASK];
+	}
+
+
+
 }
