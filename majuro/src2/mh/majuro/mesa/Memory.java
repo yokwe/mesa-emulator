@@ -215,13 +215,13 @@ public final class Memory {
 	}
 
 	// low level memory access
-	public static short fetch(int va) {
+	public static int fetch(int va) {
 		if (Perf.ENABLE) Perf.fetch++;
-		return fetchPage(va)[va & PAGE_OFFSET_MASK];
+		return fetchPage(va)[va & PAGE_OFFSET_MASK] & 0xFFFF;
 	}
-	public static void store(int va, short newValue) {
+	public static void store(int va, int newValue) {
 		if (Perf.ENABLE) Perf.store++;
-		fetchPage(va)[va & PAGE_OFFSET_MASK] = newValue;
+		fetchPage(va)[va & PAGE_OFFSET_MASK] = (short)newValue;
 	}
 	public static int readDbl(int va) {
 		if (Perf.ENABLE) Perf.readDbl++;
@@ -261,15 +261,15 @@ public final class Memory {
 	public static int lengthenPointer(int pointer) {
 		return mds | (pointer & 0xFFFF);
 	}
-	public static short fetchMDS(int pointer) {
+	public static int fetchMDS(int pointer) {
 		if (Perf.ENABLE) Perf.fetchMDS++;
 		int va = lengthenPointer(pointer);
-		return fetchPage(va)[va & PAGE_OFFSET_MASK];
+		return fetchPage(va)[va & PAGE_OFFSET_MASK] & 0xFFFF;
 	}
-	public static void storeMDS(int pointer, short newValue) {
+	public static void storeMDS(int pointer, int newValue) {
 		if (Perf.ENABLE) Perf.storeMDS++;
 		int va = lengthenPointer(pointer);
-		fetchPage(va)[va & PAGE_OFFSET_MASK] = newValue;
+		fetchPage(va)[va & PAGE_OFFSET_MASK] = (short)newValue;
 	}
 	public static int readDblMDS(int pointer) {
 		if (Perf.ENABLE) Perf.readDblMDS++;
@@ -285,9 +285,9 @@ public final class Memory {
 	}
 
 	// code
-	public static short readCode(int offset) {
+	public static int readCode(int offset) {
 		if (Perf.ENABLE) Perf.readCode++;
-		int va = CodeCache.getCB() + offset;
-		return fetchPage(va)[va & PAGE_OFFSET_MASK];
+		int va = CodeCache.getCB() + (offset & 0xFFFF);
+		return fetchPage(va)[va & PAGE_OFFSET_MASK] & 0xFFFF;
 	}
 }

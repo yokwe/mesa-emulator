@@ -1,26 +1,27 @@
 package mh.majuro.mesa;
 
 public class LFCache {
-	private static short   lf;
+	private static int   lf;
 	private static int     pageEnd;
 	private static short[] page;
-	public static void setLF(short newValue) {
-		lf = newValue;
+	
+	public static void setLF(int newValue) {
+		lf = newValue & 0xFFFF;
 		pageEnd = Memory.PAGE_SIZE - (lf % Memory.PAGE_SIZE) - 1;
 		page = Memory.storePage(Memory.lengthenPointer(lf));
 		
 	}
-	public static short getLF() {
+	public static int getLF() {
 		return lf;
 	}
-	public static short fetchLF(short ptr) {
-		int index = Short.toUnsignedInt(ptr);
+	public static int fetchLF(int pointer) {
+		int index = pointer & 0xFFFF;
 		if (index <= pageEnd) {
 			if (Perf.ENABLE) Perf.lfCacheHit++;
-			return page[index];
+			return page[index] & 0xFFFF;
 		} else {
 			if (Perf.ENABLE) Perf.lfCacheMiss++;
-			return Memory.fetchMDS((short)(lf + ptr));
+			return Memory.fetchMDS(lf + pointer);
 		}
 	}
 
