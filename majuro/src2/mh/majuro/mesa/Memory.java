@@ -40,6 +40,7 @@ public final class Memory {
 	public static final int PAGE_SIZE_BITS   = 8;
 	public static final int PAGE_SIZE        = 1 << PAGE_SIZE_BITS;
 	public static final int PAGE_OFFSET_MASK = PAGE_SIZE - 1;
+	public static final int PAGE_END         = PAGE_SIZE - 1;
 	
 	// MAX_RM_PAGE is maximum number of PAGE for real memory
 	public static final int MAX_VM_BITS = 30;
@@ -224,18 +225,14 @@ public final class Memory {
 	}
 	public static int readDbl(int va) {
 		if (Perf.ENABLE) Perf.readDbl++;
-		short[] page = fetchPage(va);
-		int vo = va & PAGE_OFFSET_MASK;
-		int t0 = page[vo++];
-		int t1;
-		if (vo == PAGE_SIZE) {
-			page = fetchPage(va + 1);
-			t1 = Short.toUnsignedInt(page[0]);
-		} else {
-			t1 = Short.toUnsignedInt(page[vo]);
-		}
 		
-		return (t1 << WORD_SIZE) | t0;
+		short[] page = fetchPage(va);
+		int     vo   = va & PAGE_OFFSET_MASK;
+		if (vo != PAGE_END) {
+			return (page[vo + 1] << WORD_SIZE) | (page[vo] & 0xFFFF);
+		} else {
+			return (fetchPage(va + 1)[0] << WORD_SIZE) | (page[vo] & 0xFFFF);
+		}
 	}
 
 	
@@ -261,35 +258,30 @@ public final class Memory {
 		mds = newValue;
 	}
 
-	public static int lengthenPointer(short pointer) {
-		return mds | Short.toUnsignedInt(pointer);
+	public static int lengthenPointer(int pointer) {
+		return mds | (pointer & 0xFFFF);
 	}
-	public static short fetchMDS(short pointer) {
+	public static short fetchMDS(int pointer) {
 		if (Perf.ENABLE) Perf.fetchMDS++;
 		int va = lengthenPointer(pointer);
 		return fetchPage(va)[va & PAGE_OFFSET_MASK];
 	}
-	public static void storeMDS(short pointer, short newValue) {
+	public static void storeMDS(int pointer, short newValue) {
 		if (Perf.ENABLE) Perf.storeMDS++;
 		int va = lengthenPointer(pointer);
 		fetchPage(va)[va & PAGE_OFFSET_MASK] = newValue;
 	}
-	public static int readDblMDS(short pointer) {
+	public static int readDblMDS(int pointer) {
 		if (Perf.ENABLE) Perf.readDblMDS++;
 		int va = lengthenPointer(pointer);
 
 		short[] page = fetchPage(va);
-		int vo = va & PAGE_OFFSET_MASK;
-		int t0 = page[vo++];
-		int t1;
-		if (vo == PAGE_SIZE) {
-			page = fetchPage(va + 1);
-			t1 = Short.toUnsignedInt(page[0]);
+		int     vo   = va & PAGE_OFFSET_MASK;
+		if (vo != PAGE_END) {
+			return (page[vo + 1] << WORD_SIZE) | (page[vo] & 0xFFFF);
 		} else {
-			t1 = Short.toUnsignedInt(page[vo]);
-		}
-		
-		return (t1 << WORD_SIZE) | t0;
+			return (fetchPage(va + 1)[0] << WORD_SIZE) | (page[vo] & 0xFFFF);
+		}		
 	}
 
 	// code
@@ -298,7 +290,4 @@ public final class Memory {
 		int va = CodeCache.getCB() + offset;
 		return fetchPage(va)[va & PAGE_OFFSET_MASK];
 	}
-
-
-
 }
