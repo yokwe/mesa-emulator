@@ -31,6 +31,9 @@ public class Perf {
 	
 	public static long writeMap          = 0;
 	
+	public static long lfCacheHit        = 0;
+	public static long lfCacheMiss       = 0;
+
 	public static void initialize() {
 		fetchPage         = 0;
 		storePage         = 0;
@@ -54,6 +57,9 @@ public class Perf {
 		codeCacheCodeByte = 0;
 		
 		writeMap          = 0;
+		
+		lfCacheHit        = 0;
+		lfCacheMiss       = 0;
 	}
 
 
@@ -86,5 +92,8 @@ public class Perf {
 		logger.info("{}", String.format("coddCacheRatio     %10.2f%%", (double)(codeCacheHit / codeCacheTotal)));
 
 		logger.info("{}", String.format("writeMap           %10d", writeMap));
+
+		logger.info("{}", String.format("lfCacheHit         %10d", lfCacheHit));
+		logger.info("{}", String.format("lfCacheMiss        %10d", lfCacheMiss));
 	}
 }
