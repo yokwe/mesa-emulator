@@ -285,8 +285,8 @@ public final class Memory {
 	// byte
 	public static @CARD8 int fetchByte(@LONG_POINTER int ptr, @CARD32 int offset) {
 		if (Perf.ENABLE) Perf.fetchByte++;
-		int word = fetch(ptr + (offset / 2));
-		if ((offset % 2) == 0) {
+		int word = fetch(ptr + (offset >>> 1));
+		if ((offset & 1) == 0) {
 			return Type.bytePairLeft(word);
 		} else {
 			return Type.bytePairRight(word);
@@ -294,11 +294,11 @@ public final class Memory {
 	}
 	public static @CARD16 int fetchWord(@LONG_POINTER int ptr, @CARD32 int offset) {
 		if (Perf.ENABLE) Perf.fetchWord++;
-		int     va   = ptr + (offset / 2);
+		int     va   = ptr + (offset >>> 1);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		short[] page = fetchPage(va);
 		
-		if (((vo % 2) == 0)) {
+		if ((offset & 1) == 0) {
 			return page[vo] & 0xFFFF;
 		} else {
 			if (vo != PAGE_END) {
@@ -310,12 +310,12 @@ public final class Memory {
 	}
 	public static void storeByte(@LONG_POINTER int ptr, @CARD32 int offset, @CARD8 int data) {
 		if (Perf.ENABLE) Perf.storeByte++;
-		int     va   = ptr + (offset / 2);
+		int     va   = ptr + (offset >>> 1);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		short[] page = storePage(va);
 
 		int word = page[vo];
-		if ((offset % 2) == 0) {
+		if ((offset & 1) == 0) {
 			page[vo] = (short)(((data << 8) & 0xFF00) | (word & 0x00FF));
 		} else {
 			page[vo] = (short)((word        & 0xFF00) | (data & 0x00FF));
