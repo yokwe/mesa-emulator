@@ -6,36 +6,24 @@ import org.slf4j.LoggerFactory;
 import mh.majuro.UnexpectedException;
 import mh.majuro.mesa.Type.CARD16;
 import mh.majuro.mesa.Type.CARD32;
+import mh.majuro.mesa.Type.CARD8;
+import mh.majuro.mesa.Type.FIELD_SPEC;
 import mh.majuro.mesa.Type.LONG_POINTER;
 import mh.majuro.mesa.Type.PAGE_NUMBER;
+import mh.majuro.mesa.Type.PDA_POINTER;
 import mh.majuro.mesa.Type.POINTER;
 
 public final class Memory {
 	private static final Logger logger = LoggerFactory.getLogger(Memory.class);
 	
-	private static final int HASH_BIT = 14;
-	private static final int HASH_SIZE = 1 << HASH_BIT;
-	private static final int HASH_MASK = (1 << HASH_BIT) - 1;
-	private static int hash(@PAGE_NUMBER int vp_) {
-		return ((vp_ >> HASH_BIT) ^ vp_) & HASH_MASK;
-		// NOTE above expression calculate better hash value than "vp_ & MASK"
-	}
-
-	private static class Cache {
-		@PAGE_NUMBER
-		int      vp;
-		MapFlags mf;
-		short[]  page;
-		
-		Cache() {
-			init();
-		}
-		void init() {
-			vp        = 0;
-			mf        = null;
-			page      = null;
-		}
-	};
+	// special memory location
+	public static final @PAGE_NUMBER  int IO_REGION_PAGE = 0x80;
+	
+	public static final @LONG_POINTER int GFT = Constant.mGFT;
+	public static final @POINTER      int AV  = Constant.mAV;  // POINTER TO AllocationVector
+	public static final @POINTER      int SD  = Constant.mSD;
+	public static final @POINTER      int ETT = Constant.mETT;
+	public static final @LONG_POINTER int PDA = Constant.mPDA;
 
 
 	// WORD_SIZE is number of bits in one WORD
@@ -53,9 +41,6 @@ public final class Memory {
 	public static final int MAX_RM_BITS = 24;
 	public static final int MAX_RM_PAGE = 4086 * WORD_SIZE;
 	
-	// special memory location
-	public static final @PAGE_NUMBER int IO_REGION_PAGE = 0x80;
-
 	
 	private static int vmBits = 0;
 	private static int rmBits = 0;
@@ -227,7 +212,7 @@ public final class Memory {
 	}
 	public static void store(@LONG_POINTER int va, @CARD16 int newValue) {
 		if (Perf.ENABLE) Perf.store++;
-		fetchPage(va)[va & PAGE_OFFSET_MASK] = (short)newValue;
+		storePage(va)[va & PAGE_OFFSET_MASK] = (short)newValue;
 	}
 	public static @CARD32 int readDbl(@LONG_POINTER int va) {
 		if (Perf.ENABLE) Perf.readDbl++;
@@ -235,7 +220,7 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return (page[vo + 1] << WORD_SIZE) | (page[vo] & 0xFFFF);
+			return (page[vo + 1]         << WORD_SIZE) | (page[vo] & 0xFFFF);
 		} else {
 			return (fetchPage(va + 1)[0] << WORD_SIZE) | (page[vo] & 0xFFFF);
 		}
@@ -284,7 +269,7 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return (page[vo + 1] << WORD_SIZE) | (page[vo] & 0xFFFF);
+			return (page[vo + 1]         << WORD_SIZE) | (page[vo] & 0xFFFF);
 		} else {
 			return (fetchPage(va + 1)[0] << WORD_SIZE) | (page[vo] & 0xFFFF);
 		}		
@@ -296,4 +281,120 @@ public final class Memory {
 		int va = CodeCache.getCB() + (offset & 0xFFFF);
 		return fetchPage(va)[va & PAGE_OFFSET_MASK] & 0xFFFF;
 	}
+	
+	// byte
+	public static @CARD8 int fetchByte(@LONG_POINTER int ptr, @CARD32 int offset) {
+		if (Perf.ENABLE) Perf.fetchByte++;
+		int word = fetch(ptr + (offset / 2));
+		if ((offset % 2) == 0) {
+			return Type.bytePairLeft(word);
+		} else {
+			return Type.bytePairRight(word);
+		}
+	}
+	public static @CARD16 int fetchWord(@LONG_POINTER int ptr, @CARD32 int offset) {
+		if (Perf.ENABLE) Perf.fetchWord++;
+		int     va   = ptr + (offset / 2);
+		int     vo   = va & PAGE_OFFSET_MASK;
+		short[] page = fetchPage(va);
+		
+		if (((vo % 2) == 0)) {
+			return page[vo] & 0xFFFF;
+		} else {
+			if (vo != PAGE_END) {
+				return ((page[vo + 0] << 8) & 0xFF00) | ((page[vo + 1] >> 8) & 0x00FF);
+			} else {
+				return ((page[vo + 0] << 8) & 0xFF00) | ((fetchPage(va + 1)[0] >> 8) & 0x00FF);
+			}
+		}
+	}
+	public static void storeByte(@LONG_POINTER int ptr, @CARD32 int offset, @CARD8 int data) {
+		if (Perf.ENABLE) Perf.storeByte++;
+		int     va   = ptr + (offset / 2);
+		int     vo   = va & PAGE_OFFSET_MASK;
+		short[] page = storePage(va);
+
+		int word = page[vo];
+		if ((offset % 2) == 0) {
+			page[vo] = (short)(((data << 8) & 0xFF00) | (word & 0x00FF));
+		} else {
+			page[vo] = (short)((word        & 0xFF00) | (data & 0x00FF));
+		}
+	}
+
+	// field
+	// 7.5 Field Instruction
+	//const UNSPEC Field_MaskTable[WordSize] = {
+    //			0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
+    //			0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
+	//};
+	public static @CARD16 int fieldMask(int n) {
+		return ((1 << (n + 1)) - 1) & 0xFFFF;
+	}
+	public static @CARD16 int readField(@CARD16 int source, @FIELD_SPEC int spec8) {
+		if (Perf.ENABLE) Perf.readField++;
+		int pos   = (spec8 >> 4) & 0x0F;
+		int size  = spec8        & 0x0F;
+		int shift = Memory.WORD_SIZE - (pos + size + 1);
+		
+		return (source >>> shift) & fieldMask(size);
+	}
+	
+	public static @CARD16 int writeField(@CARD16 int dest, @CARD8 int spec8, @CARD16 int data) {
+		if (Perf.ENABLE) Perf.writeField++;
+		int pos   = (spec8 >> 4) & 0x0F;
+		int size  = spec8        & 0x0F;
+		int shift = Memory.WORD_SIZE - (pos + size + 1);
+		int mask  = fieldMask(size) << shift;
+		
+		return (dest & ~mask) | ((data << shift) & mask);
+	}
+	
+	// PDA
+	public static @LONG_POINTER int lengthenPDA(@PDA_POINTER int ptr) {
+		return PDA | (ptr & 0xFFFF);
+	}
+	public static @PDA_POINTER int offsetPDA(@LONG_POINTER int ptr) {
+		if ((ptr & 0xFFFF0000) != PDA) throw new UnexpectedException();
+		return ptr & 0xFFFF;
+	}
+	public static @CARD16 int fetchPDA(@PDA_POINTER int ptr) {
+		if (Perf.ENABLE) Perf.fetchPDA++;
+		return fetch(lengthenPDA(ptr));
+	}
+	public static void storePDA(@PDA_POINTER int ptr, @CARD16 int newValue) {
+		if (Perf.ENABLE) Perf.storePDA++;
+		store(lengthenPDA(ptr), newValue);
+	}
+
+
+	
+	//
+	// Cache
+	//
+	private static final int HASH_BIT = 14;
+	private static final int HASH_SIZE = 1 << HASH_BIT;
+	private static final int HASH_MASK = (1 << HASH_BIT) - 1;
+	private static int hash(@PAGE_NUMBER int vp_) {
+		return ((vp_ >> HASH_BIT) ^ vp_) & HASH_MASK;
+		// NOTE above expression calculate better hash value than "vp_ & MASK"
+	}
+
+	private static class Cache {
+		@PAGE_NUMBER
+		int      vp;
+		MapFlags mf;
+		short[]  page;
+		
+		Cache() {
+			init();
+		}
+		void init() {
+			vp        = 0;
+			mf        = null;
+			page      = null;
+		}
+	};
+
+
 }
