@@ -1,10 +1,9 @@
 package mh.majuro.test;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,107 +12,52 @@ import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Perf;
 
 public class TestBase {
-	private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
+	protected static final Logger logger = LoggerFactory.getLogger(TestBase.class);
+	
+	protected static final Random random = new Random(System.currentTimeMillis());
+	
+	protected static void fill(short[] page) {
+		for(int i = 0; i < page.length; i++) page[i] = (short)random.nextInt();
+	}
+	protected static void fill(short[] page, int value) {
+		for(int i = 0; i < page.length; i++) page[i] = (short)value;
+	}
+	protected static void fill(short[] page, int start, int increment) {
+		int value = start;
+		for(int i = 0; i < page.length; i++) {
+			page[i] = (short)value;
+			value += increment;
+		}
+	}
+	
+	protected static final int DEFAULT_MDS = 0x0004_0000;
+	protected static final int DEFAULT_CB  = 0x0003_0080;
+	protected static final int DEFAULT_PC  = 0x0020;
 	
 	@Before
 	public void setUp() throws Exception {
-		logger.info("setUp");
 		int vmBIts = 23;
 		int rmBits = 20;
 		
-		int mds = 0x00030080;
-		int cb  = 0x00030080;
-		int pc  = 0x20;
-		
+		Perf.initialize();
+
 		Memory.initialize(vmBIts, rmBits);
 		
-		Memory.setMDS(mds);
+		Memory.setMDS(DEFAULT_MDS);
 
-		CodeCache.setCB(cb);
-		CodeCache.setPC(pc);
+		CodeCache.setCB(DEFAULT_CB);
+		CodeCache.setPC(DEFAULT_PC);
 		
-		Perf.initialize();
+		fill(Memory.rawPage(0x0003_0000), 0x3000, 1);
+		fill(Memory.rawPage(0x0003_0000), 0x3000, 1);
+		fill(Memory.rawPage(0x0003_0100), 0x3100, 1);
+		fill(Memory.rawPage(0x0004_0000), 0x4000, 1);
+		fill(Memory.rawPage(0x0004_0100), 0x4100, 1);
+		fill(Memory.rawPage(0x0005_0000), 0x5000, 1);
 	}
 	
 	@After
 	public void tearDown() throws Exception {
-		logger.info("tearDown");
-	}
-	
-	@Test
-	public void myTest1() {
-		logger.info("myTest1");
-		int cb  = 0x00030000;
-		int pc  = 0x20;
-		
-		CodeCache.setCB(cb);
-		CodeCache.setPC(pc);
-		
-		{
-			int p = cb;
-			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.rawWrite(p++, (short)(0x1100 + i));
-			}
-			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.rawWrite(p++, (short)(0x2200 + i));
-			}
-		}
-
-		int t0 = CodeCache.getCodeByte();
-		int t1 = CodeCache.getCodeByte();
-		int t2 = CodeCache.getCodeByte();
-		int t3 = CodeCache.getCodeByte();
-		
-		int t = (cb + pc) & 0xFF;
-		
-		assertEquals(0x11, t0);
-		assertEquals(t + 0, t1);
-		assertEquals(0x11, t2);
-		assertEquals(t + 1, t3);
-	}
-	@Test
-	public void myTest2() {
-		logger.info("myTest2");
-		int cb  = 0x000300E0;
-		int pc  = 0x3E;
-		
-		CodeCache.setCB(cb);
-		CodeCache.setPC(pc);
-		
-		{
-			int p = cb;
-			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.rawWrite(p++, (short)(0x1100 + i));
-			}
-			for(int i = 0; i < Memory.PAGE_SIZE; i++) {
-				Memory.rawWrite(p++, (short)(0x2200 + i));
-			}
-		}
-
-		{
-			int p = CodeCache.getPC();
-			int b = CodeCache.getCodeByte();
-			logger.info("{}", String.format("%04X  %04X", p, b));
-		}
-		{
-			int p = CodeCache.getPC();
-			int b = CodeCache.getCodeByte();
-			logger.info("{}", String.format("%04X  %04X", p, b));
-		}
-		{
-			int p = CodeCache.getPC();
-			int b = CodeCache.getCodeByte();
-			logger.info("{}", String.format("%04X  %04X", p, b));
-		}
-		{
-			int p = CodeCache.getPC();
-			int b = CodeCache.getCodeByte();
-			logger.info("{}", String.format("%04X  %04X", p, b));
-		}
-		
-		logger.info("AAA");
-		Perf.stats();
-		logger.info("BBB");
 	}
 
 }
