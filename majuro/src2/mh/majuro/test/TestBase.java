@@ -16,18 +16,18 @@ public class TestBase {
 	
 	protected static final Random random = new Random(System.currentTimeMillis());
 	
-	protected static void fill(short[] page) {
-		for(int i = 0; i < page.length; i++) page[i] = (short)random.nextInt();
-	}
-	protected static void fill(short[] page, int value) {
-		for(int i = 0; i < page.length; i++) page[i] = (short)value;
-	}
-	protected static void fill(short[] page, int start, int increment) {
-		int value = start;
+	protected static void fillPage(int va, int value, int inc) {
+		short[] page = Memory.rawPage(va);
 		for(int i = 0; i < page.length; i++) {
 			page[i] = (short)value;
-			value += increment;
+			value += inc;
 		}
+	}
+	protected static void fillPage(int va, int value) {
+		fillPage(va, value, 0);
+	}
+	protected static void fillPageZero(int va) {
+		fillPage(va, 0);
 	}
 	
 	protected static final int DEFAULT_MDS = 0x0004_0000;
@@ -48,12 +48,12 @@ public class TestBase {
 		CodeCache.setCB(DEFAULT_CB);
 		CodeCache.setPC(DEFAULT_PC);
 		
-		fill(Memory.rawPage(0x0003_0000), 0x3000, 1);
-		fill(Memory.rawPage(0x0003_0000), 0x3000, 1);
-		fill(Memory.rawPage(0x0003_0100), 0x3100, 1);
-		fill(Memory.rawPage(0x0004_0000), 0x4000, 1);
-		fill(Memory.rawPage(0x0004_0100), 0x4100, 1);
-		fill(Memory.rawPage(0x0005_0000), 0x5000, 1);
+		fillPage(0x0003_0000, 0x3000, 1);
+		fillPage(0x0003_0000, 0x3000, 1);
+		fillPage(0x0003_0100, 0x3100, 1);
+		fillPage(0x0004_0000, 0x4000, 1);
+		fillPage(0x0004_0100, 0x4100, 1);
+		fillPage(0x0005_0000, 0x5000, 1);
 	}
 	
 	@After
