@@ -1,5 +1,9 @@
 package mh.majuro.mesa;
 
+import mh.majuro.mesa.Type.CARD16;
+import mh.majuro.mesa.Type.CARD8;
+import mh.majuro.mesa.Type.LONG_POINTER;
+
 public final class CodeCache {
 	private static final int PAGE_SIZE_IN_BYTE = Memory.PAGE_SIZE * 2;
 	private static final int PAGE_MASK_IN_BYTE = PAGE_SIZE_IN_BYTE - 1;
@@ -17,15 +21,15 @@ public final class CodeCache {
 	private static int     startPC;
 	private static int     endPC;
 
-	public static void setCB(int newValue) {
+	public static void setCB(@LONG_POINTER int newValue) {
 		cb = newValue;
 		invalidate();
 	}
-	public static int getCB() {
+	public static @LONG_POINTER int getCB() {
 		return cb;
 	}
 	
-	public static void setPC(int newValue) {
+	public static void setPC(@CARD16 int newValue) {
 		// size of pc is 16 bit
 		pc     = newValue & 0xFFFF;
 		wordPC = pc / 2;
@@ -33,12 +37,12 @@ public final class CodeCache {
 		
 		lastWordPC = -1;
 	}
-	public static int getPC() {
+	public static @CARD16 int getPC() {
 		return pc;
 	}
 		
 	
-	public static int getCodeByte() {		
+	public static @CARD8 int getCodeByte() {		
 		if (Perf.ENABLE) Perf.codeCacheCodeByte++;
 		if (lastWordPC != wordPC) {
 			// unit of pc is byte
@@ -64,7 +68,7 @@ public final class CodeCache {
 		
 		return ret;
 	}
-	public static int getCodeWord() {
+	public static @CARD16 int getCodeWord() {
 		int left  = getCodeByte();
 		int right = getCodeByte();
 		
