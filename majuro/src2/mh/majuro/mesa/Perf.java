@@ -34,6 +34,16 @@ public class Perf {
 	public static long lfCacheHit        = 0;
 	public static long lfCacheMiss       = 0;
 
+	public static long fetchByte         = 0;
+	public static long fetchWord         = 0;
+	public static long storeByte         = 0;
+	
+	public static long readField         = 0;
+	public static long writeField        = 0;
+
+	public static long fetchPDA          = 0;
+	public static long storePDA          = 0;
+
 	public static void initialize() {
 		fetchPage         = 0;
 		storePage         = 0;
@@ -60,6 +70,17 @@ public class Perf {
 		
 		lfCacheHit        = 0;
 		lfCacheMiss       = 0;
+		
+		fetchByte         = 0;
+		fetchWord         = 0;
+		storeByte         = 0;
+		
+		readField         = 0;
+		writeField        = 0;
+		
+		fetchPDA          = 0;
+		storePDA          = 0;
+
 	}
 
 
@@ -95,5 +116,16 @@ public class Perf {
 
 		logger.info("{}", String.format("lfCacheHit         %10d", lfCacheHit));
 		logger.info("{}", String.format("lfCacheMiss        %10d", lfCacheMiss));
+		
+		logger.info("{}", String.format("fetchByte          %10d", fetchByte));
+		logger.info("{}", String.format("fetchWord          %10d", fetchWord));
+		logger.info("{}", String.format("storeByte          %10d", storeByte));
+
+		logger.info("{}", String.format("readField          %10d", readField));
+		logger.info("{}", String.format("writeField         %10d", writeField));
+		
+		logger.info("{}", String.format("fetchPDA           %10d", fetchPDA));
+		logger.info("{}", String.format("storePDA           %10d", storePDA));
+
 	}
 }
