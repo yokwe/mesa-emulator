@@ -130,8 +130,8 @@ public final class Memory {
 	public static short[] rawPage(@LONG_POINTER int va) {
 		return rmPages[mapFlags[va >>> PAGE_SIZE_BITS].rmPage];
 	}
-	public static @CARD16 short rawRead(@LONG_POINTER int va) {
-		return rawPage(va)[va & PAGE_OFFSET_MASK];
+	public static @CARD16 int rawRead(@LONG_POINTER int va) {
+		return (rawPage(va)[va & PAGE_OFFSET_MASK]) & 0xFFFF;
 	}
 	public static void rawWrite(@LONG_POINTER int va, @CARD16 int newValue) {
 		rawPage(va)[va & PAGE_OFFSET_MASK] = (short)newValue;
