@@ -1,5 +1,7 @@
 package mh.majuro.mesa;
 
+import mh.majuro.mesa.Type.LONG_POINTER;
+
 // MapFlag
 // 
 public final class MapFlags {
@@ -27,7 +29,7 @@ public final class MapFlags {
 		this.flag   = flag;
 	}
 	
-	public void checkFetch(int va) {
+	public void checkFetch(@LONG_POINTER int va) {
 		// check vacant
 		if (flag == VACANT) {
 			// FIXME PageFault
@@ -43,7 +45,7 @@ public final class MapFlags {
 		return flag == VACANT;
 	}
 	
-	public void checkStore(int va) {
+	public void checkStore(@LONG_POINTER int va) {
 		// check vacant
 		if (flag == VACANT) {
 			// FIXME PageFault
