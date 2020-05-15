@@ -17,28 +17,16 @@ public class TestMemory extends TestBase {
 		int longPointer = 0x123456;
 		int value       = 65432;
 		
-		short[] page       = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		fillPageZero(longPointer);
 		
 		// Before
-		{
-			int actual = Memory.fetch(longPointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetch(longPointer));
 		
-		Memory.store(longPointer, value);
+		Memory.rawWrite(longPointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.fetch(longPointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.rawRead(longPointer));
+		assertEquals(value, Memory.fetch(longPointer));
 	}
 	
 	@Test
@@ -46,28 +34,16 @@ public class TestMemory extends TestBase {
 		int longPointer = 0x123456;
 		int value       = 65432;
 		
-		short[] page       = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		fillPageZero(longPointer);
 		
 		// Before
-		{
-			int actual = Memory.fetch(longPointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetch(longPointer));
 
 		Memory.store(longPointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.fetch(longPointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.rawRead(longPointer));
+		assertEquals(value, Memory.fetch(longPointer));
 	}
 	
 	@Test
@@ -75,29 +51,17 @@ public class TestMemory extends TestBase {
 		int longPointer = 0x5678;
 		int value       = (int)9876543210L;
 		
-		short[] page = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		fillPageZero(longPointer + 0);
+		fillPageZero(longPointer + 1);
 		
 		// Before
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.readDbl(longPointer));
 		
-		Memory.store(longPointer + 0, value);
-		Memory.store(longPointer + 1, value >> 16);
+		Memory.rawWrite(longPointer + 0, value);
+		Memory.rawWrite(longPointer + 1, value >> 16);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			assertEquals(value          & 0xFFFF, page[pageOffset + 0] & 0xFFFF); // low
-			assertEquals((value >>> 16) & 0xFFFF, page[pageOffset + 1] & 0xFFFF); // high
-		}
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.readDbl(longPointer));
 	}
 
 	@Test
@@ -105,39 +69,19 @@ public class TestMemory extends TestBase {
 		int longPointer = 0x11FF;
 		int value       = (int)9876543210L;
 		
-		{
-			short[] page = Memory.rawPage(longPointer);
-			fill(page, 0);
-		}
-		{
-			short[] page = Memory.rawPage(longPointer + 1);
-			fill(page, 0);
-		}
+		fillPageZero(longPointer + 0);
+		fillPageZero(longPointer + 1);
 		
 		// Before
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertNotEquals(value, actual);
-		}
-		
-		Memory.store(longPointer + 0, value);
-		Memory.store(longPointer + 1, value >> 16);
+		assertNotEquals(value, Memory.readDbl(longPointer));
+
+		Memory.rawWrite(longPointer + 0, value);
+		Memory.rawWrite(longPointer + 1, value >> 16);
 		
 		// After
-		{
-			int     pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			short[] page       = Memory.rawPage(longPointer);
-			assertEquals(value          & 0xFFFF, page[pageOffset] & 0xFFFF); // low
-		}
-		{
-			int     pageOffset = (longPointer + 1) & Memory.PAGE_OFFSET_MASK;
-			short[] page       = Memory.rawPage(longPointer + 1);
-			assertEquals((value >>> 16) & 0xFFFF, page[pageOffset] & 0xFFFF); // high
-		}
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value,       Memory.readDbl(longPointer));
+		assertEquals(value & 0xFFFF , Memory.rawRead(longPointer + 0));
+		assertEquals(value >> 16,     Memory.rawRead(longPointer + 1));
 	}
 
 	@Test
@@ -145,30 +89,19 @@ public class TestMemory extends TestBase {
 		int value       = 0x8_0000;
 
 		// Before
-		{
-			int actual = Memory.getMDS();
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.getMDS());
 		
 		Memory.setMDS(value);
 		
 		// After
-		{
-			int actual = Memory.getMDS();
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.getMDS());
 	}
 
 	@Test
 	public void testLengthenPointer() {
 		int value       = 0x1234;
 
-		{
-			int actual = Memory.lengthenPointer(value);
-			int expect = Memory.getMDS() + value;
-			
-			assertEquals(expect, actual);
-		}
+		assertEquals(Memory.getMDS() + value, Memory.lengthenPointer(value));
 	}
 	
 	@Test
@@ -176,29 +109,17 @@ public class TestMemory extends TestBase {
 		int pointer = 0x5678;
 		int value   = 65432;
 		
-		int     longPointer = Memory.lengthenPointer(pointer);
-		short[] page        = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
-		
+		int longPointer = Memory.lengthenPointer(pointer);
+		fillPageZero(longPointer);
+
 		// Before
-		{
-			int actual = Memory.fetchMDS(pointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchMDS(pointer));
 		
-		Memory.storeMDS(pointer, value);
+		Memory.rawWrite(longPointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.fetchMDS(pointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchMDS(pointer));
+		assertEquals(value, Memory.rawRead(longPointer));
 	}
 	
 	@Test
@@ -206,29 +127,17 @@ public class TestMemory extends TestBase {
 		int pointer = 0x5678;
 		int value   = 65432;
 		
-		int     longPointer = Memory.lengthenPointer(pointer);
-		short[] page        = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		int longPointer = Memory.lengthenPointer(pointer);
+		fillPageZero(longPointer);
 		
 		// Before
-		{
-			int actual = Memory.fetchMDS(pointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchMDS(pointer));
 
 		Memory.storeMDS(pointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.fetchMDS(pointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchMDS(pointer));
+		assertEquals(value, Memory.rawRead(longPointer));
 	}
 	
 	@Test
@@ -236,70 +145,36 @@ public class TestMemory extends TestBase {
 		int pointer = 0x5678;
 		int value   = (int)9876543210L;
 		
-		int     longPointer = Memory.lengthenPointer(pointer);
-		short[] page        = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		int longPointer = Memory.lengthenPointer(pointer);
+		fillPageZero(longPointer + 0);
+		fillPageZero(longPointer + 1);
 		
 		// Before
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.readDblMDS(pointer));
 		
-		Memory.store(longPointer + 0, value);
-		Memory.store(longPointer + 1, value >> 16);
+		Memory.rawWrite(longPointer + 0, value);
+		Memory.rawWrite(longPointer + 1, value >> 16);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			assertEquals(value          & 0xFFFF, page[pageOffset + 0] & 0xFFFF); // low
-			assertEquals((value >>> 16) & 0xFFFF, page[pageOffset + 1] & 0xFFFF); // high
-		}
-		{
-			int actual = Memory.readDblMDS(pointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.readDbl(longPointer));
 	}
 	@Test
 	public void testReadDblMDS2() {
 		int pointer = 0x11FF;
 		int value   = (int)9876543210L;
 		
-		int     longPointer = Memory.lengthenPointer(pointer);
-		{
-			short[] page = Memory.rawPage(longPointer);
-			fill(page, 0);
-		}
-		{
-			short[] page = Memory.rawPage(longPointer + 1);
-			fill(page, 0);
-		}
+		int longPointer = Memory.lengthenPointer(pointer);
+		fillPageZero(longPointer + 0);
+		fillPageZero(longPointer + 1);
 		
 		// Before
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.readDblMDS(pointer));
 		
-		Memory.store(longPointer + 0, value);
-		Memory.store(longPointer + 1, value >> 16);
+		Memory.rawWrite(longPointer + 0, value);
+		Memory.rawWrite(longPointer + 1, value >> 16);
 		
 		// After
-		{
-			int     pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			short[] page       = Memory.rawPage(longPointer);
-			assertEquals(value          & 0xFFFF, page[pageOffset] & 0xFFFF); // low
-		}
-		{
-			int     pageOffset = (longPointer + 1) & Memory.PAGE_OFFSET_MASK;
-			short[] page       = Memory.rawPage(longPointer + 1);
-			assertEquals((value >>> 16) & 0xFFFF, page[pageOffset] & 0xFFFF); // high
-		}
-		{
-			int actual = Memory.readDbl(longPointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.readDbl(longPointer));
 	}
 
 	@Test
@@ -307,28 +182,17 @@ public class TestMemory extends TestBase {
 		int offset = 0x8765;
 		int value  = 65432;
 		
-		int     longPointer = CodeCache.getCB() + offset;
-		short[] page        = Memory.rawPage(longPointer);
-		fill(page, 0);
+		int longPointer = CodeCache.getCB() + offset;
+		fillPageZero(longPointer);
 		
 		// Before
-		{
-			int actual = Memory.fetch(longPointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.rawRead(longPointer));
 		
-		Memory.store(longPointer, value);
+		Memory.rawWrite(longPointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.readCode(offset);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.readCode(offset));
+		assertEquals(value, Memory.rawRead(longPointer));
 	}
 
 	@Test
@@ -337,22 +201,16 @@ public class TestMemory extends TestBase {
 		int value       = 0xFF;
 		int offset      = 10;
 		
-		short[] page = Memory.rawPage(longPointer + (offset >>> 1));
-		fill(page, 0);
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va);
 		
 		// Before
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchByte(longPointer, offset));
 		
-		Memory.store(longPointer + (offset >>> 1), value << 8);
+		Memory.rawWrite(va, value << 8);
 		
 		// After
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchByte(longPointer, offset));
 	}
 
 	@Test
@@ -361,22 +219,16 @@ public class TestMemory extends TestBase {
 		int value       = 0xFF;
 		int offset      = 11;
 		
-		short[] page = Memory.rawPage(longPointer + (offset >>> 1));
-		fill(page, 0);
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va);
 		
 		// Before
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchByte(longPointer, offset));
 		
-		Memory.store(longPointer + (offset >>> 1), value);
+		Memory.rawWrite(va, value);
 		
 		// After
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchByte(longPointer, offset));
 	}
 
 	@Test
@@ -385,24 +237,17 @@ public class TestMemory extends TestBase {
 		int value       = 0xFEDC;
 		int offset      = 8;
 		
-		short[] page       = Memory.rawPage(longPointer);
-		fill(page, 0);
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va + 0);
+		fillPageZero(va + 1);
 		
 		// Before
-		{
-			int actual = Memory.fetchWord(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchWord(longPointer, offset));
 		
-		int va = longPointer + (offset >>> 1);
-		int vo = va & Memory.PAGE_OFFSET_MASK;
-		page[vo + 0] = (short)(value);
+		Memory.rawWrite(va + 0, value);
 
 		// After
-		{
-			int actual = Memory.fetchWord(longPointer, offset);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchWord(longPointer, offset));
 	}
 
 	@Test
@@ -411,25 +256,18 @@ public class TestMemory extends TestBase {
 		int value       = 0xFEDC;
 		int offset      = 9;
 		
-		short[] page       = Memory.rawPage(longPointer);
-		fill(page, 0);
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va + 0);
+		fillPageZero(va + 1);
 		
 		// Before
-		{
-			int actual = Memory.fetchWord(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchWord(longPointer, offset));
 		
-		int va = longPointer + (offset >>> 1);
-		int vo = va & Memory.PAGE_OFFSET_MASK;
-		page[vo + 0] = (short)((value >> 8) & 0x00FF);
-		page[vo + 1] = (short)((value << 8) & 0xFF00);
-		
+		Memory.rawWrite(va + 0, (value >> 8) & 0x00FF);
+		Memory.rawWrite(va + 1, (value << 8) & 0xFF00);
+
 		// After
-		{
-			int actual = Memory.fetchWord(longPointer, offset);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchWord(longPointer, offset));
 	}
 
 	@Test
@@ -438,39 +276,18 @@ public class TestMemory extends TestBase {
 		int value       = 0xFEDC;
 		int offset      = 1;
 		
-		{
-			short[] page       = Memory.rawPage(longPointer);
-			fill(page, 0);
-		}
-		{
-			short[] page       = Memory.rawPage(longPointer + 1);
-			fill(page, 0);
-		}
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va + 0);
+		fillPageZero(va + 1);
 		
 		// Before
-		{
-			int actual = Memory.fetchWord(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchWord(longPointer, offset));
 		
-		{
-			int va = longPointer + (offset >>> 1);
-			int vo = va & Memory.PAGE_OFFSET_MASK;
-			short[] page = Memory.rawPage(va);
-			page[vo] = (short)((value >> 8) & 0x00FF);
-		}
-		{
-			int va = longPointer + (offset >>> 1) + 1;
-			int vo = va & Memory.PAGE_OFFSET_MASK;
-			short[] page = Memory.rawPage(va);
-			page[vo] = (short)((value << 8) & 0xFF00);	
-		}
-		
+		Memory.rawWrite(va + 0, (value >> 8) & 0x00FF);
+		Memory.rawWrite(va + 1, (value << 8) & 0xFF00);
+
 		// After
-		{
-			int actual = Memory.fetchWord(longPointer, offset);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchWord(longPointer, offset));
 	}
 
 	@Test
@@ -479,28 +296,17 @@ public class TestMemory extends TestBase {
 		int value       = 0xFF;
 		int offset      = 10;
 		
-		{
-			short[] page = Memory.rawPage(longPointer + (offset >>> 1));
-			fill(page, 0);
-		}
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va);
 		
 		// Before
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchByte(longPointer, offset));
 		
 		Memory.storeByte(longPointer, offset, value);
 		
 		// After
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertEquals(value, actual);
-		}
-		{
-			int word = Memory.fetch(longPointer + (offset >>> 1));
-			assertEquals(value, (word >> 8) & 0x00FF);
-		}
+		assertEquals(value, Memory.fetchByte(longPointer, offset));
+		assertEquals(value, (Memory.rawRead(va) >> 8) & 0x00FF);
 	}
 
 	@Test
@@ -509,28 +315,17 @@ public class TestMemory extends TestBase {
 		int value       = 0xFF;
 		int offset      = 11;
 		
-		{
-			short[] page = Memory.rawPage(longPointer + (offset >>> 1));
-			fill(page, 0);
-		}
+		int va = longPointer + (offset >>> 1);
+		fillPageZero(va);
 		
 		// Before
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchByte(longPointer, offset));
 		
 		Memory.storeByte(longPointer, offset, value);
 		
 		// After
-		{
-			int actual = Memory.fetchByte(longPointer, offset);
-			assertEquals(value, actual);
-		}
-		{
-			int word = Memory.fetch(longPointer + (offset >>> 1));
-			assertEquals(value, word & 0x00FF);
-		}
+		assertEquals(value, Memory.fetchByte(longPointer, offset));
+		assertEquals(value, Memory.rawRead(va) & 0x00FF);
 	}
 	
 	@Test
@@ -600,24 +395,14 @@ public class TestMemory extends TestBase {
 	public void testLengthenPDA() {
 		int value       = 0x1234;
 
-		{
-			int actual = Memory.lengthenPDA(value);
-			int expect = Memory.PDA + value;
-			
-			assertEquals(expect, actual);
-		}
+		assertEquals(Memory.PDA + value, Memory.lengthenPDA(value));
 	}
 
 	@Test
 	public void testOffsetPDA() {
-		int value       = Memory.PDA + 0x1234;
+		int value = Memory.PDA + 0x1234;
 
-		{
-			int actual = Memory.offsetPDA(value);
-			int expect = value - Memory.PDA;
-			
-			assertEquals(expect, actual);
-		}
+		assertEquals(value - Memory.PDA, Memory.offsetPDA(value));
 	}
 	
 	@Test
@@ -625,29 +410,17 @@ public class TestMemory extends TestBase {
 		int pointer = 0x5678;
 		int value   = 65432;
 		
-		int     longPointer = Memory.lengthenPDA(pointer);
-		short[] page        = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		int longPointer = Memory.lengthenPDA(pointer);
+		fillPageZero(longPointer);
 		
 		// Before
-		{
-			int actual = Memory.fetchPDA(pointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchPDA(pointer));
 		
-		Memory.storePDA(pointer, value);
+		Memory.rawWrite(longPointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.fetchPDA(pointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchPDA(pointer));
+		assertEquals(value, Memory.rawRead(longPointer));
 	}
 	
 	@Test
@@ -655,29 +428,17 @@ public class TestMemory extends TestBase {
 		int pointer = 0x5678;
 		int value   = 65432;
 		
-		int     longPointer = Memory.lengthenPDA(pointer);
-		short[] page        = Memory.rawPage(longPointer);
-		
-		fill(page, 0);
+		int longPointer = Memory.lengthenPDA(pointer);
+		fillPageZero(longPointer);
 		
 		// Before
-		{
-			int actual = Memory.fetchPDA(pointer);
-			assertNotEquals(value, actual);
-		}
+		assertNotEquals(value, Memory.fetchPDA(pointer));
 		
 		Memory.storePDA(pointer, value);
 		
 		// After
-		{
-			int pageOffset = longPointer & Memory.PAGE_OFFSET_MASK;
-			int actual= page[pageOffset] & 0xFFFF;
-			assertEquals(value, actual);
-		}
-		{
-			int actual = Memory.fetchPDA(pointer);
-			assertEquals(value, actual);
-		}
+		assertEquals(value, Memory.fetchPDA(pointer));
+		assertEquals(value, Memory.rawRead(longPointer));
 	}
 
 }
