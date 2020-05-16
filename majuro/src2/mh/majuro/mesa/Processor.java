@@ -14,8 +14,8 @@ public final class Processor {
 	public static final int StackDepth = Constant.cSS;
 	
 	// 3.3.2 Evaluation Stack
-	private static final @CARD16 int[] stack = new int[StackDepth];
-	private static               int   SP; // [0..StackDepth)
+	public static final @CARD16 int[] stack = new int[StackDepth];
+	public static       @CARD16 int   SP; // [0..StackDepth)
 	
 	// 3.3.2 Evaluation Stack
 	public static void stackError() {
