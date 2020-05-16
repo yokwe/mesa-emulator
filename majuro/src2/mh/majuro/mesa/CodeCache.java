@@ -40,25 +40,22 @@ public final class CodeCache {
 	public static @CARD16 int getPC() {
 		return pc;
 	}
-		
 	
 	public static @CARD8 int getCodeByte() {		
 		if (Perf.ENABLE) Perf.codeCacheCodeByte++;
 		if (lastWordPC != wordPC) {
 			// unit of pc is byte
-			if (pc < startPC || endPC < pc) {
+			if (startPC <= pc && pc <= endPC) {
+				if (Perf.ENABLE) Perf.codeCacheHit++;
+			} else {
 				if (Perf.ENABLE) Perf.codeCacheMiss++;
 				setup();
-			} else {
-				if (Perf.ENABLE) Perf.codeCacheHit++;
 			}
-			lastWord = page[wordPC + wordOffset];
+			lastWord = page[wordOffset + wordPC];
 		}
 		
 		// RETURN[IF even THEN word.left ELSE word.right];
-		int ret = lastWord;
-		if (even) ret = ret >>> 8;
-		ret = ret & 0xFF;
+		int ret = even ? Type.bytePairLeft(lastWord) : Type.bytePairRight(lastWord);
 		
 		// increment pc
 		// size of pc is 16 bit
@@ -76,7 +73,7 @@ public final class CodeCache {
 	}
 	
 	private static void invalidate() {
-		startPC    = 0;
+		startPC    = 0x10000;
 		endPC      = 0;
 		lastWordPC = -1;
 	}
