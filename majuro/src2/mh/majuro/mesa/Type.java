@@ -82,4 +82,19 @@ public final class Type {
 	public static @CARD8 int bytePairRight(@CARD16 int value) {
 		return value & 0xFF;
 	}
+	public static @CARD16 int bytePair(@CARD8 int left, @CARD8 int right) {
+		return ((left << 8) & 0xFF00) | (right & 0x00FF);
+	}
+	
+	// Long: TYPE = MACHINE DEPENDENT RECORD[low(0), high(1): UNSPECIFIED];
+	// Above record is illustrate memory layout of CARD32
+	public static @CARD32 int wordPair(@CARD16 int high, @CARD16 int low) {
+		return ((high << 16) & 0xFFFF0000) | (low & 0x0000FFFF);
+	}
+	public static @CARD16 int lowHalf(@CARD32 int value) {
+		return value & 0x0000FFFF;
+	}
+	public static @CARD16 int highHalf(@CARD32 int value) {
+		return (value >>> 16) & 0x0000FFFF;
+	}
 }
