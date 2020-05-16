@@ -220,9 +220,9 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return (page[vo + 1]         << WORD_SIZE) | (page[vo] & 0xFFFF);
+			return Type.wordPair(page[vo + 1], page[vo]);
 		} else {
-			return (fetchPage(va + 1)[0] << WORD_SIZE) | (page[vo] & 0xFFFF);
+			return Type.wordPair(fetchPage(va + 1)[0], page[vo]);
 		}
 	}
 
@@ -269,9 +269,9 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return (page[vo + 1]         << WORD_SIZE) | (page[vo] & 0xFFFF);
+			return Type.wordPair(page[vo + 1], page[vo]);
 		} else {
-			return (fetchPage(va + 1)[0] << WORD_SIZE) | (page[vo] & 0xFFFF);
+			return Type.wordPair(fetchPage(va + 1)[0], page[vo]);
 		}		
 	}
 
@@ -302,9 +302,9 @@ public final class Memory {
 			return page[vo] & 0xFFFF;
 		} else {
 			if (vo != PAGE_END) {
-				return ((page[vo + 0] << 8) & 0xFF00) | ((page[vo + 1] >> 8) & 0x00FF);
+				return Type.bytePair(page[vo + 0], page[vo + 1] >> 8);
 			} else {
-				return ((page[vo + 0] << 8) & 0xFF00) | ((fetchPage(va + 1)[0] >> 8) & 0x00FF);
+				return Type.bytePair(page[vo + 0], fetchPage(va + 1)[0] >> 8);
 			}
 		}
 	}
@@ -316,9 +316,9 @@ public final class Memory {
 
 		int word = page[vo];
 		if ((offset & 1) == 0) {
-			page[vo] = (short)(((data << 8) & 0xFF00) | (word & 0x00FF));
+			page[vo] = (short)Type.bytePair(data, word);
 		} else {
-			page[vo] = (short)((word        & 0xFF00) | (data & 0x00FF));
+			page[vo] = (short)((word & 0xFF00) | (data & 0x00FF));
 		}
 	}
 
@@ -367,7 +367,6 @@ public final class Memory {
 		store(lengthenPDA(ptr), newValue);
 	}
 
-
 	
 	//
 	// Cache
@@ -395,6 +394,4 @@ public final class Memory {
 			page      = null;
 		}
 	};
-
-
 }
