@@ -43,6 +43,8 @@ public final class Perf {
 
 	public static long fetchPDA          = 0;
 	public static long storePDA          = 0;
+	
+	public static long dispatch          = 0;
 
 	public static void initialize() {
 		fetchPage         = 0;
@@ -81,6 +83,7 @@ public final class Perf {
 		fetchPDA          = 0;
 		storePDA          = 0;
 
+		dispatch          = 0;
 	}
 
 
@@ -127,5 +130,6 @@ public final class Perf {
 		logger.info("{}", String.format("fetchPDA           %10d", fetchPDA));
 		logger.info("{}", String.format("storePDA           %10d", storePDA));
 
+		logger.info("{}", String.format("dispatch           %10d", dispatch));
 	}
 }
