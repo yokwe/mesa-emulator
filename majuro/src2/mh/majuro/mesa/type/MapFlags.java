@@ -1,4 +1,4 @@
-package mh.majuro.mesa;
+package mh.majuro.mesa.type;
 
 import mh.majuro.mesa.Type.LONG_POINTER;
 
