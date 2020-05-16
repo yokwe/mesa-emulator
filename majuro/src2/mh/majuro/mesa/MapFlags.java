@@ -2,8 +2,6 @@ package mh.majuro.mesa;
 
 import mh.majuro.mesa.Type.LONG_POINTER;
 
-// MapFlag
-// 
 public final class MapFlags {
 	//MapFlags: TYPE = MACHINE DEPENDENT RECORD (
 	//  reserved (0:0..12) : UNSPEClFIED[0..17777B],
