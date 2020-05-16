@@ -1,6 +1,11 @@
 package mh.majuro.mesa.opcode;
 
-public enum Info {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+public enum Opcode {
 	NOOP(Type.MOP, 00, "NOOP"),
 	LL0 (Type.MOP, 01, "LL0"),
 	LL1 (Type.MOP, 02, "LL1"),
@@ -415,9 +420,15 @@ public enum Info {
 	public final int    code;
 	public       String name;
 	
-	Info(Type type, int code, String name) {
+	Opcode(Type type, int code, String name) {
 		this.type = type;
 		this.code = code;
 		this.name = name;
+	}
+	
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ElementType.TYPE, ElementType.FIELD})
+	public @interface Register {
+		Opcode value();
 	}
 }
