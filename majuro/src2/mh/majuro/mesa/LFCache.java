@@ -3,7 +3,7 @@ package mh.majuro.mesa;
 import mh.majuro.mesa.Type.CARD16;
 import mh.majuro.mesa.Type.POINTER;
 
-public class LFCache {
+public final class LFCache {
 	private static int     lf;
 	private static int     offset;
 	private static int     pageEnd;

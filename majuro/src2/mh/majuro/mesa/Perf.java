@@ -3,7 +3,7 @@ package mh.majuro.mesa;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Perf {
+public final class Perf {
 	private static final Logger logger = LoggerFactory.getLogger(Perf.class);
 	
 	public static final boolean ENABLE = true;
