@@ -67,34 +67,40 @@ public final class Type {
 	}
 
 	
-//	// NibblePair: TYPE = MACHINE DEPENDENT RECORD[left (0:0..3) NIBBLE, right(0:4..7) NIBBLE];
-//	public static @CARD16 int nibblePairLeft(@CARD16 int value) {
-//		return (value >>> 4) & 0x0F;
-//	}
-//	public static @CARD16 int nibblePiarRight(@CARD16 int value) {
-//		return value & 0x0F;
-//	}
-	
-	// BytePair: TYPE =  MACHINE DEPENDENT RECORD [left (0: 0..7), right (0: 8..15): BYTE];
-	public static @CARD8 int bytePairLeft(@CARD16 int value) {
-		return (value >>> 8) & 0xFF;
+	// 2.1.3.1 Basic Logical Operators
+	public static @CARD16 int shift(@CARD16 int data, int count) {
+		if (0 < count) {
+			return (data << count) & 0xFFFF;
+		} else if (count < 0) {
+			return (data >>> (-count)) & 0xFFFF;
+		} else {
+			return data;
+		}
 	}
-	public static @CARD8 int bytePairRight(@CARD16 int value) {
-		return value & 0xFF;
+	public static @CARD16 int Rotate(@CARD16 int data, int count) {
+		if (0 < count) {
+			if (16 <= count) count = count % 16;
+			int t = (data & 0xFFFF) << count;
+			return (t & (0xFFFF)) | ((t >> 16) & 0xFFFF);
+		} else if (count < 0) {
+			if (count <= -16) count = -(-count % 16);
+			int t = (data & 0xFFFF) << (16 + count);
+			return (t & (0xFFFF)) | ((t >> 16) & 0xFFFF);
+		} else {
+			return data;
+		}
 	}
-	public static @CARD16 int bytePair(@CARD8 int left, @CARD8 int right) {
-		return ((left << 8) & 0xFF00) | (right & 0x00FF);
+
+	// 2.1.3.2 Basic Arithmetic Operator
+	public static @INT16 int ArithShift(@INT16 int data, int count) {
+		// FIXME is this correct?
+		if (0 < count) {
+			return data << count;
+		} else if (count < 0) {
+			return data >> (-count);
+		} else {
+			return data;
+		}
 	}
-	
-	// Long: TYPE = MACHINE DEPENDENT RECORD[low(0), high(1): UNSPECIFIED];
-	// Above record is illustrate memory layout of CARD32
-	public static @CARD32 int wordPair(@CARD16 int high, @CARD16 int low) {
-		return ((high << 16) & 0xFFFF0000) | (low & 0x0000FFFF);
-	}
-	public static @CARD16 int lowHalf(@CARD32 int value) {
-		return value & 0x0000FFFF;
-	}
-	public static @CARD16 int highHalf(@CARD32 int value) {
-		return (value >>> 16) & 0x0000FFFF;
-	}
+
 }

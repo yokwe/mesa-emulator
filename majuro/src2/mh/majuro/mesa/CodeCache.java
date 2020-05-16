@@ -3,6 +3,7 @@ package mh.majuro.mesa;
 import mh.majuro.mesa.Type.CARD16;
 import mh.majuro.mesa.Type.CARD8;
 import mh.majuro.mesa.Type.LONG_POINTER;
+import mh.majuro.mesa.type.BytePair;
 
 public final class CodeCache {
 	private static final int PAGE_SIZE_IN_BYTE = Memory.PAGE_SIZE * 2;
@@ -55,7 +56,7 @@ public final class CodeCache {
 		}
 		
 		// RETURN[IF even THEN word.left ELSE word.right];
-		int ret = even ? Type.bytePairLeft(lastWord) : Type.bytePairRight(lastWord);
+		int ret = even ? BytePair.left(lastWord) : BytePair.right(lastWord);
 		
 		// increment pc
 		// size of pc is 16 bit

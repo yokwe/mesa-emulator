@@ -12,6 +12,8 @@ import mh.majuro.mesa.Type.LONG_POINTER;
 import mh.majuro.mesa.Type.PAGE_NUMBER;
 import mh.majuro.mesa.Type.PDA_POINTER;
 import mh.majuro.mesa.Type.POINTER;
+import mh.majuro.mesa.type.BytePair;
+import mh.majuro.mesa.type.Long;
 
 public final class Memory {
 	private static final Logger logger = LoggerFactory.getLogger(Memory.class);
@@ -220,9 +222,9 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return Type.wordPair(page[vo + 1], page[vo]);
+			return Long.make(page[vo + 1], page[vo]);
 		} else {
-			return Type.wordPair(fetchPage(va + 1)[0], page[vo]);
+			return Long.make(fetchPage(va + 1)[0], page[vo]);
 		}
 	}
 
@@ -269,9 +271,9 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return Type.wordPair(page[vo + 1], page[vo]);
+			return Long.make(page[vo + 1], page[vo]);
 		} else {
-			return Type.wordPair(fetchPage(va + 1)[0], page[vo]);
+			return Long.make(fetchPage(va + 1)[0], page[vo]);
 		}		
 	}
 
@@ -287,9 +289,9 @@ public final class Memory {
 		if (Perf.ENABLE) Perf.fetchByte++;
 		int word = fetch(ptr + (offset >>> 1));
 		if ((offset & 1) == 0) {
-			return Type.bytePairLeft(word);
+			return BytePair.left(word);
 		} else {
-			return Type.bytePairRight(word);
+			return BytePair.right(word);
 		}
 	}
 	public static @CARD16 int fetchWord(@LONG_POINTER int ptr, @CARD32 int offset) {
@@ -302,9 +304,9 @@ public final class Memory {
 			return page[vo] & 0xFFFF;
 		} else {
 			if (vo != PAGE_END) {
-				return Type.bytePair(page[vo + 0], page[vo + 1] >> 8);
+				return BytePair.make(page[vo + 0], page[vo + 1] >> 8);
 			} else {
-				return Type.bytePair(page[vo + 0], fetchPage(va + 1)[0] >> 8);
+				return BytePair.make(page[vo + 0], fetchPage(va + 1)[0] >> 8);
 			}
 		}
 	}
@@ -316,7 +318,7 @@ public final class Memory {
 
 		int word = page[vo];
 		if ((offset & 1) == 0) {
-			page[vo] = (short)Type.bytePair(data, word);
+			page[vo] = (short)BytePair.make(data, word);
 		} else {
 			page[vo] = (short)((word & 0xFF00) | (data & 0x00FF));
 		}
