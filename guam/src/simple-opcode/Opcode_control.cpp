@@ -70,7 +70,7 @@ static inline void TrapOne(POINTER ptr, UNSPEC parameter) {
 }
 
 // TrapTwo: PROC[ptr POINTER TO ControlLink, parameter: LONG UNSPEC]
-static inline void TrapTwo(POINTER ptr, UNSPEC parameter) {
+static inline void TrapTwo(POINTER ptr, LONG_UNSPEC parameter) {
 	Trap(ptr);
 	*StoreLF(0) = LowHalf(parameter);
 	*StoreLF(1) = HighHalf(parameter);
