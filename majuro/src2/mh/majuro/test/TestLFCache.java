@@ -33,15 +33,15 @@ public class TestLFCache extends TestBase {
 		int va = Memory.lengthenPointer(lf + index);
 		
 		// Before
-		assertNotEquals(0x1234, LFCache.fetchLF(index + 0));
-		assertNotEquals(0x5678, LFCache.fetchLF(index + 1));
+		assertNotEquals(0x1234, LFCache.fetch(index + 0));
+		assertNotEquals(0x5678, LFCache.fetch(index + 1));
 		
 		Memory.rawWrite(va + 0, 0x1234);
 		Memory.rawWrite(va + 1, 0x5678);
 
 		// After
-		assertEquals(0x1234, LFCache.fetchLF(index + 0));
-		assertEquals(0x5678, LFCache.fetchLF(index + 1));
+		assertEquals(0x1234, LFCache.fetch(index + 0));
+		assertEquals(0x5678, LFCache.fetch(index + 1));
 	}
 
 	@Test
@@ -59,15 +59,15 @@ public class TestLFCache extends TestBase {
 		fillPageZero(va + 1);
 
 		// Before
-		assertNotEquals(0x1234, LFCache.fetchLF(index + 0));
-		assertNotEquals(0x5678, LFCache.fetchLF(index + 1));
+		assertNotEquals(0x1234, LFCache.fetch(index + 0));
+		assertNotEquals(0x5678, LFCache.fetch(index + 1));
 		
 		Memory.rawWrite(va + 0, 0x1234);
 		Memory.rawWrite(va + 1, 0x5678);
 
 		// After
-		assertEquals(0x1234, LFCache.fetchLF(index + 0));
-		assertEquals(0x5678, LFCache.fetchLF(index + 1));
+		assertEquals(0x1234, LFCache.fetch(index + 0));
+		assertEquals(0x5678, LFCache.fetch(index + 1));
 	}
 
 	@Test
@@ -81,11 +81,11 @@ public class TestLFCache extends TestBase {
 		int va = Memory.lengthenPointer(lf + index);
 		
 		// Before
-		assertNotEquals(0x1234, LFCache.fetchLF(index + 0));
-		assertNotEquals(0x5678, LFCache.fetchLF(index + 1));
+		assertNotEquals(0x1234, LFCache.fetch(index + 0));
+		assertNotEquals(0x5678, LFCache.fetch(index + 1));
 		
-		LFCache.storeLF(index + 0, 0x1234);
-		LFCache.storeLF(index + 1, 0x5678);
+		LFCache.store(index + 0, 0x1234);
+		LFCache.store(index + 1, 0x5678);
 
 		// After
 		assertEquals(0x1234, Memory.rawRead(va + 0));
@@ -103,11 +103,11 @@ public class TestLFCache extends TestBase {
 		int va = Memory.lengthenPointer(lf + index);
 		
 		// Before
-		assertNotEquals(0x1234, LFCache.fetchLF(index + 0));
-		assertNotEquals(0x5678, LFCache.fetchLF(index + 1));
+		assertNotEquals(0x1234, LFCache.fetch(index + 0));
+		assertNotEquals(0x5678, LFCache.fetch(index + 1));
 		
-		LFCache.storeLF(index + 0, 0x1234);
-		LFCache.storeLF(index + 1, 0x5678);
+		LFCache.store(index + 0, 0x1234);
+		LFCache.store(index + 1, 0x5678);
 
 		// After
 		assertEquals(0x1234, Memory.rawRead(va + 0));
