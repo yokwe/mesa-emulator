@@ -103,4 +103,14 @@ public final class Type {
 		}
 	}
 
+	// 2.3.1 Long Types
+	public static @CARD16 int lowHalf(@CARD32 int value) {
+		return value & 0xFFFF;
+	}
+	public static @CARD16 int highHalf(@CARD32 int value) {
+		return (value >>> 16) & 0xFFFF;
+	}
+	public static @CARD32 int makeLong(@CARD16 int high, @CARD16 int low) {
+		return ((high << 16) & 0xFFFF0000) | (low & 0x0000FFFF);
+	}
 }
