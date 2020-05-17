@@ -59,8 +59,7 @@ public class Interpreter {
 			this.code = code;
 		}
 		public void run() {
-			// FIXME
-			// OpcodeTrap(code)
+			Processor.opcodeTrap(code);
 		}
 	}
 	private static class EscOpcodeTrap implements Runnable {
@@ -69,8 +68,7 @@ public class Interpreter {
 			this.code = code;
 		}
 		public void run() {
-			// FIXME
-			// EscOpcodeTrap(code)
+			Processor.escOpcodeTrap(code);
 		}
 	}
 	
