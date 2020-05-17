@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Processor;
 import mh.majuro.mesa.Type.LONG_POINTER;
 
 public final class MapFlags {
@@ -30,7 +31,7 @@ public final class MapFlags {
 	public void checkFetch(@LONG_POINTER int va) {
 		// check vacant
 		if (flag == VACANT) {
-			// FIXME PageFault
+			Processor.pageFault(va);
 		}
 	}
 	public boolean isReferenced() {
@@ -46,11 +47,11 @@ public final class MapFlags {
 	public void checkStore(@LONG_POINTER int va) {
 		// check vacant
 		if (flag == VACANT) {
-			// FIXME PageFault
+			Processor.pageFault(va);
 		}
 		// check protect
 		if ((flag & PROTECT) != 0) {
-			// FIXME WriteProtectFault
+			Processor.writeProtectFault(va);
 		}
 	}
 	public boolean isReferencedDirty() {

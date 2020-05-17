@@ -18,10 +18,6 @@ public final class Processor {
 	public static       @CARD16 int   SP; // [0..StackDepth)
 	
 	// 3.3.2 Evaluation Stack
-	public static void stackError() {
-		logger.error("StackError");
-		throw new UnexpectedException();
-	}
 	public static int stackCount() {
 		return SP;
 	}
@@ -91,4 +87,84 @@ public final class Processor {
 	public static @CARD8  int breakByte;
 	public static @CARD16 int savedPC;
 	public static @CARD16 int savedSP;
+	
+	
+	//
+	//
+	//
+	@SuppressWarnings("serial")
+	public static final class AbortRuntimeException extends RuntimeException {
+		AbortRuntimeException() {
+			//    message
+			//          cause
+			//                enableSuppression
+			//                       writableStackTrace
+			super(null, null, true, Debug.ENABLE_ABORT_STACK_TRACE);
+		}
+	};
+	
+	public static void abort() {
+		throw new AbortRuntimeException();
+	}
+	
+	// 9.5.1 Trap Routines
+	public static void boundsTrap() {
+		// FIXME
+	}
+	public static void breakTrap() {
+		// FIXME
+	}
+	public static void codeTrap(@POINTER int gfi) {
+		// FIXME
+	}
+	public static void controlTrap(@CARD16 int src) {
+		// FIXME
+	}
+	public static void divCheckTrap() {
+		// FIXME
+	}
+	public static void divZeroTrap() {
+		// FIXME
+	}
+	public static void escOpcodeTrap(@CARD8 int opcode) {
+		// FIXME
+	}
+	public static void interruptError() {
+		// FIXME
+	}
+	public static void opcodeTrap(@CARD8 int opcode) {
+		// FIXME
+	}
+	public static void pointerTrap() {
+		// FIXME
+	}
+	public static void processTrap() {
+		// FIXME
+	}
+	public static void rescheduleError() {
+		// FIXME
+	}
+	public static void stackError() {
+		logger.error("stackError");
+		throw new UnexpectedException();
+	}
+	public static void unboundTrap(@CARD32 int dst) {
+		// FIXME
+	}
+	public static void hardwareError() {
+		logger.error("hardwareError");
+		throw new UnexpectedException();
+	}
+
+	// 10.4.3 Faults
+	public static void frameFault(@CARD8 int fsi) {
+		// FIXME
+	}
+	public static void pageFault(@LONG_POINTER int ptr) {
+		// FIXME
+	}
+	public static void writeProtectFault(@LONG_POINTER int ptr) {
+		// FIXME
+	}
+
 }
