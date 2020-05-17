@@ -1,8 +1,9 @@
 package mh.majuro.mesa;
 
 import mh.majuro.mesa.Type.CARD16;
-import mh.majuro.mesa.Type.CARD32;
 import mh.majuro.mesa.Type.CARD8;
+import mh.majuro.mesa.Type.LONG_POINTER;
+import mh.majuro.mesa.Type.POINTER;
 
 public final class Constant {
 	public static final @CARD16 int cSS = 14;
@@ -13,16 +14,15 @@ public final class Constant {
 	public static final @CARD16 int cWDC = 7;
 	//public static final @CARD16 int cTickMin = 15;
 	//public static final @CARD16 int cTickMax = 60;
-
 	// 1 tick = 40 milliseconds
 	public static final @CARD16 int cTick = 40;
 
-	public static final @CARD32 int mPDA = 0x00010000; // 0200000
-	public static final @CARD32 int mGFT = 0x00020000; // 0400000
+	public static final @LONG_POINTER int mPDA = 0x00010000; // 0200000
+	public static final @LONG_POINTER int mGFT = 0x00020000; // 0400000
 
-	public static final @CARD16 int mAV  = 0x0100; //  0400
-	public static final @CARD16 int mSD  = 0x0200; // 01000
-	public static final @CARD16 int mETT = 0x0400; // 02000
+	public static final @POINTER int mAV  = 0x0100; //  0400
+	public static final @POINTER int mSD  = 0x0200; // 01000
+	public static final @POINTER int mETT = 0x0400; // 02000
 
 	public static final @CARD16 int qFrameFault        = 0;
 	public static final @CARD16 int qPageFault         = 1;
