@@ -10,8 +10,8 @@ import mh.majuro.mesa.Type.CARD8;
 import mh.majuro.mesa.Type.LONG_POINTER;
 import mh.majuro.mesa.Type.POINTER;
 
-public final class ControlTransfer {
-	private static final Logger logger = LoggerFactory.getLogger(ControlTransfer.class);
+public final class ControlTransfers {
+	private static final Logger logger = LoggerFactory.getLogger(ControlTransfers.class);
 
 	// 9.5.3 Trap Handlers
 	public static void SaveStack(@LONG_POINTER int state) {

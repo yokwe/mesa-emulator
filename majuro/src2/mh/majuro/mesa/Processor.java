@@ -18,11 +18,11 @@ public final class Processor {
 		return SP;
 	}
 	public static void push(@CARD16 int data) {
-		if (SP == StackDepth) ControlTransfer.stackError();
+		if (SP == StackDepth) ControlTransfers.stackError();
 		stack[SP++] = data;
 	}
 	public static @CARD16 int pop() {
-		if (SP == 0) ControlTransfer.stackError();
+		if (SP == 0) ControlTransfers.stackError();
 		return stack[--SP];
 	}
 	// Note that double-word quantities are placed on the stack so that
@@ -44,15 +44,15 @@ public final class Processor {
 		return Long.make(t0, t1);
 	}
 	public static void minimalStack() {
-		if (SP != 0) ControlTransfer.stackError();
+		if (SP != 0) ControlTransfers.stackError();
 	}
 
 	public static void recover() {
-		if (SP == StackDepth) ControlTransfer.stackError();
+		if (SP == StackDepth) ControlTransfers.stackError();
 		SP++;
 	}
 	public static void discard() {
-		if (SP == 0) ControlTransfer.stackError();
+		if (SP == 0) ControlTransfers.stackError();
 		SP--;
 	}
 
