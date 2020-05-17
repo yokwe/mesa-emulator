@@ -13,7 +13,6 @@ import mh.majuro.mesa.Type.PAGE_NUMBER;
 import mh.majuro.mesa.Type.PDA_POINTER;
 import mh.majuro.mesa.Type.POINTER;
 import mh.majuro.mesa.type.BytePair;
-import mh.majuro.mesa.type.Long;
 import mh.majuro.mesa.type.MapFlags;
 
 public final class Memory {
@@ -27,6 +26,23 @@ public final class Memory {
 	public static final @POINTER      int SD  = Constant.mSD;
 	public static final @POINTER      int ETT = Constant.mETT;
 	public static final @LONG_POINTER int PDA = Constant.mPDA;
+	
+	
+	// SD: POINTER TO SystemData = LOOPHOLE[mSD];
+	// SystemData: TYPE = ARRAY SDIndex OF ControlLink;
+	// SDIndex: TYPE = [0..256);
+	public static final int SIZE_ControlLink = 2;
+	public static final int offsetSD(int index) {
+		return SD + (index & 0xFF) * SIZE_ControlLink;
+	}
+	
+	// EscTrapTable: TYPE = ARRAY BYTE OF ControlLink;
+	public static final int offsetETT(int index) {
+		return ETT + (index & 0xFF) * SIZE_ControlLink;
+	}
+
+	
+	
 
 
 	// WORD_SIZE is number of bits in one WORD
@@ -223,9 +239,9 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return Long.make(page[vo + 1], page[vo]);
+			return Type.makeLong(page[vo + 1], page[vo]);
 		} else {
-			return Long.make(fetchPage(va + 1)[0], page[vo]);
+			return Type.makeLong(fetchPage(va + 1)[0], page[vo]);
 		}
 	}
 
@@ -272,9 +288,9 @@ public final class Memory {
 		short[] page = fetchPage(va);
 		int     vo   = va & PAGE_OFFSET_MASK;
 		if (vo != PAGE_END) {
-			return Long.make(page[vo + 1], page[vo]);
+			return Type.makeLong(page[vo + 1], page[vo]);
 		} else {
-			return Long.make(fetchPage(va + 1)[0], page[vo]);
+			return Type.makeLong(fetchPage(va + 1)[0], page[vo]);
 		}		
 	}
 
