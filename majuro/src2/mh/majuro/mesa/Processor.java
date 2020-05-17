@@ -1,16 +1,12 @@
 package mh.majuro.mesa;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import mh.majuro.UnexpectedException;
-import mh.majuro.mesa.Type.*;
+import mh.majuro.mesa.Type.CARD16;
+import mh.majuro.mesa.Type.CARD32;
+import mh.majuro.mesa.Type.CARD8;
 import mh.majuro.mesa.Type.LONG_POINTER;
 import mh.majuro.mesa.type.Long;
 
 public final class Processor {
-	private static final Logger logger = LoggerFactory.getLogger(Processor.class);
-
 	public static final int StackDepth = Constant.cSS;
 	
 	// 3.3.2 Evaluation Stack
@@ -22,11 +18,11 @@ public final class Processor {
 		return SP;
 	}
 	public static void push(@CARD16 int data) {
-		if (SP == StackDepth) stackError();
+		if (SP == StackDepth) ControlTransfer.stackError();
 		stack[SP++] = data;
 	}
 	public static @CARD16 int pop() {
-		if (SP == 0) stackError();
+		if (SP == 0) ControlTransfer.stackError();
 		return stack[--SP];
 	}
 	// Note that double-word quantities are placed on the stack so that
@@ -48,24 +44,16 @@ public final class Processor {
 		return Long.make(t0, t1);
 	}
 	public static void minimalStack() {
-		if (SP != 0) stackError();
+		if (SP != 0) ControlTransfer.stackError();
 	}
 
 	public static void recover() {
-		if (SP == StackDepth) stackError();
+		if (SP == StackDepth) ControlTransfer.stackError();
 		SP++;
 	}
 	public static void discard() {
-		if (SP == 0) stackError();
+		if (SP == 0) ControlTransfer.stackError();
 		SP--;
-	}
-
-	// 9.5.3 Trap Handlers
-	public static void SaveStack(@LONG_POINTER int state) {
-		// FIXME
-	}
-	public static void LoadStack(@LONG_POINTER int state) {
-		// FIXME
 	}
 
 	
@@ -107,64 +95,5 @@ public final class Processor {
 		throw new AbortRuntimeException();
 	}
 	
-	// 9.5.1 Trap Routines
-	public static void boundsTrap() {
-		// FIXME
-	}
-	public static void breakTrap() {
-		// FIXME
-	}
-	public static void codeTrap(@POINTER int gfi) {
-		// FIXME
-	}
-	public static void controlTrap(@CARD16 int src) {
-		// FIXME
-	}
-	public static void divCheckTrap() {
-		// FIXME
-	}
-	public static void divZeroTrap() {
-		// FIXME
-	}
-	public static void escOpcodeTrap(@CARD8 int opcode) {
-		// FIXME
-	}
-	public static void interruptError() {
-		// FIXME
-	}
-	public static void opcodeTrap(@CARD8 int opcode) {
-		// FIXME
-	}
-	public static void pointerTrap() {
-		// FIXME
-	}
-	public static void processTrap() {
-		// FIXME
-	}
-	public static void rescheduleError() {
-		// FIXME
-	}
-	public static void stackError() {
-		logger.error("stackError");
-		throw new UnexpectedException();
-	}
-	public static void unboundTrap(@CARD32 int dst) {
-		// FIXME
-	}
-	public static void hardwareError() {
-		logger.error("hardwareError");
-		throw new UnexpectedException();
-	}
-
-	// 10.4.3 Faults
-	public static void frameFault(@CARD8 int fsi) {
-		// FIXME
-	}
-	public static void pageFault(@LONG_POINTER int ptr) {
-		// FIXME
-	}
-	public static void writeProtectFault(@LONG_POINTER int ptr) {
-		// FIXME
-	}
-
+	
 }

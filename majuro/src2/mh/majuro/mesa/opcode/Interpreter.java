@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import mh.majuro.UnexpectedException;
 import mh.majuro.mesa.CodeCache;
+import mh.majuro.mesa.ControlTransfer;
 import mh.majuro.mesa.Perf;
 import mh.majuro.mesa.Processor;
 import mh.majuro.mesa.Type.CARD8;
@@ -59,7 +60,7 @@ public class Interpreter {
 			this.code = code;
 		}
 		public void run() {
-			Processor.opcodeTrap(code);
+			ControlTransfer.opcodeTrap(code);
 		}
 	}
 	private static class EscOpcodeTrap implements Runnable {
@@ -68,7 +69,7 @@ public class Interpreter {
 			this.code = code;
 		}
 		public void run() {
-			Processor.escOpcodeTrap(code);
+			ControlTransfer.escOpcodeTrap(code);
 		}
 	}
 	
