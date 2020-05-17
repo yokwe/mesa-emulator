@@ -45,6 +45,11 @@ public final class Perf {
 	public static long storePDA          = 0;
 	
 	public static long dispatch          = 0;
+	
+	public static long codeTrap          = 0;
+	public static long escOpcodeTrap     = 0;
+	public static long opcodeTrap        = 0;
+	public static long unboundTrap       = 0;
 
 	public static void initialize() {
 		fetchPage         = 0;
@@ -84,6 +89,12 @@ public final class Perf {
 		storePDA          = 0;
 
 		dispatch          = 0;
+		
+		codeTrap          = 0;
+		escOpcodeTrap     = 0;
+		opcodeTrap        = 0;
+		unboundTrap       = 0;
+
 	}
 
 
@@ -131,5 +142,11 @@ public final class Perf {
 		logger.info("{}", String.format("storePDA           %10d", storePDA));
 
 		logger.info("{}", String.format("dispatch           %10d", dispatch));
+		
+		logger.info("{}", String.format("codeTrap           %10d", codeTrap));
+		logger.info("{}", String.format("escOpcodeTrap      %10d", escOpcodeTrap));
+		logger.info("{}", String.format("opcodeTrap         %10d", opcodeTrap));
+		logger.info("{}", String.format("unboundTrap        %10d", unboundTrap));
+
 	}
 }
