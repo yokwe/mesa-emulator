@@ -1,10 +1,10 @@
 package mh.majuro.mesa;
 
+import mh.majuro.UnexpectedException;
 import mh.majuro.mesa.Type.CARD16;
 import mh.majuro.mesa.Type.CARD32;
 import mh.majuro.mesa.Type.CARD8;
 import mh.majuro.mesa.Type.LONG_POINTER;
-import mh.majuro.mesa.type.Long;
 
 public final class Processor {
 	public static final int StackDepth = Constant.cSS;
@@ -31,8 +31,8 @@ public final class Processor {
 //		Long t = {data};
 //		Push(t.low);
 //		Push(t.high);
-		push(Long.low(data));
-		push(Long.high(data));
+		push(Type.lowHalf(data));
+		push(Type.highHalf(data));
 	}
 	public static @CARD32 int popLong() {
 //		Long t;
@@ -41,7 +41,7 @@ public final class Processor {
 //		return t.u;
 		int t0 = pop();
 		int t1 = pop();
-		return Long.make(t0, t1);
+		return Type.makeLong(t0, t1);
 	}
 	public static void minimalStack() {
 		if (SP != 0) ControlTransfers.stackError();
@@ -95,5 +95,7 @@ public final class Processor {
 		throw new AbortRuntimeException();
 	}
 	
-	
+	public static void error() {
+		throw new UnexpectedException("ERROR");
+	}
 }
