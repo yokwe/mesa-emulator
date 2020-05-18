@@ -1,7 +1,13 @@
 package mh.majuro.mesa.opcode;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
@@ -97,8 +103,14 @@ public class Interpreter {
 		
 		logger.info("Start initialize opcode  package = {}", PACKAGE_NAME_FOR_SCAN);
 		List<Class<?>> classes = Util.findClass(PACKAGE_NAME_FOR_SCAN);
+		
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodType type = MethodType.methodType(Void.TYPE);
+		MethodType invokeType = MethodType.methodType(Runnable.class);
+
 		for(Class<?> clazz : classes) {
 			if (clazz.isAnnotationPresent(Register.class)) {
+				// find annotated class that implements Runnable and register instance of the class.
 				Register registerOpcode = clazz.getAnnotation(Register.class);
 				try {
 					// Object o = clazz.newInstance();
@@ -115,6 +127,7 @@ public class Interpreter {
 					throw new UnexpectedException();
 				}
 			} else {
+				// scan field - find annotated static field of runnable and register field
 				for(Field field: clazz.getDeclaredFields()) {
 					if (field.isAnnotationPresent(Register.class)) {
 						if (Modifier.isStatic(field.getModifiers())) {
@@ -137,6 +150,34 @@ public class Interpreter {
 							logger.error("field {} is not static field", field.getName());
 							throw new UnexpectedException();
 						}
+					}
+				}
+				
+				// scan method - find annotated static method match Runnable and register method reference of the method
+				for(Method method: clazz.getDeclaredMethods()) {
+					if (method.isAnnotationPresent(Register.class)) {
+						if (Modifier.isStatic(method.getModifiers())) {
+							Register registerOpcode = method.getAnnotation(Register.class);
+							try {
+								MethodHandle methodHandle = lookup.unreflect(method);
+								if (methodHandle.type().equals(type)) {
+									CallSite callSite = LambdaMetafactory.metafactory(lookup, "run", invokeType, type, methodHandle, type);
+									MethodHandle target = callSite.getTarget();
+									Runnable runnable = (Runnable)target.invokeExact();
+									register(registerOpcode.value(), runnable);
+								} else {
+									logger.error("method {} is not instance of Runnable", method.getName());
+									throw new UnexpectedException();
+								}
+							} catch (Throwable e) {
+								logger.error("Exception during field.get()", e);
+								throw new UnexpectedException();
+							}
+						} else {
+							logger.error("method {} is not static field", method.getName());
+							throw new UnexpectedException();
+						}
+
 					}
 				}
 			}
@@ -164,6 +205,7 @@ public class Interpreter {
 	public static void main(String[] args) {
     	logger.info("START");
     	initialize();
+    	tableMop[0].run();
     	logger.info("STOP");
     }
 }
