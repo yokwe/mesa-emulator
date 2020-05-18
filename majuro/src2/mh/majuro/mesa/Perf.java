@@ -18,10 +18,16 @@ public final class Perf {
 	public static long fetch             = 0;
 	public static long store             = 0;
 	public static long readDbl           = 0;
+	public static long writeDbl          = 0;
+	public static long modify            = 0;
+	public static long modifyDbl         = 0;
 	
 	public static long fetchMDS          = 0;
 	public static long storeMDS          = 0;
 	public static long readDblMDS        = 0;
+	public static long writeDblMDS       = 0;
+	public static long modifyMDS         = 0;
+	public static long modifyDblMDS      = 0;
 
 	public static long readCode          = 0;
 	
@@ -62,10 +68,16 @@ public final class Perf {
 		fetch             = 0;
 		store             = 0;
 		readDbl           = 0;
+		writeDbl          = 0;
+		modify            = 0;
+		modifyDbl         = 0;
 		
 		fetchMDS          = 0;
 		storeMDS          = 0;
 		readDblMDS        = 0;
+		writeDblMDS       = 0;
+		modifyMDS         = 0;
+		modifyDblMDS      = 0;
 
 		readCode          = 0;
 		
@@ -113,10 +125,16 @@ public final class Perf {
 		logger.info("{}", String.format("fetch              %10d", fetch));
 		logger.info("{}", String.format("store              %10d", store));
 		logger.info("{}", String.format("readDbl            %10d", readDbl));
+		logger.info("{}", String.format("writeDbl           %10d", writeDbl));
+		logger.info("{}", String.format("modify             %10d", modify));
+		logger.info("{}", String.format("modifyDbl          %10d", modifyDbl));
 
 		logger.info("{}", String.format("fetchMDS           %10d", fetchMDS));
 		logger.info("{}", String.format("storeMDS           %10d", storeMDS));
 		logger.info("{}", String.format("readDblMDS         %10d", readDblMDS));
+		logger.info("{}", String.format("writeDblMDS        %10d", writeDblMDS));
+		logger.info("{}", String.format("modifyMDS          %10d", modifyMDS));
+		logger.info("{}", String.format("modifyDblMDS       %10d", modifyDblMDS));
 		
 		logger.info("{}", String.format("readCode           %10d", readCode));
 		

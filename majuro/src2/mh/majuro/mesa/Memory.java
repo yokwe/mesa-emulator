@@ -241,7 +241,46 @@ public final class Memory {
 		if (vo != PAGE_END) {
 			return Type.makeLong(page[vo + 1], page[vo]);
 		} else {
-			return Type.makeLong(fetchPage(va + 1)[0], page[vo]);
+			return Type.makeLong(fetchPage(va + 1)[0], page[PAGE_END]);
+		}
+	}
+	public static void writeDbl(@LONG_POINTER int va, @CARD32 int newValue) {
+		if (Perf.ENABLE) Perf.writeDbl++;
+		
+		short[] page = storePage(va);
+		int     vo   = va & PAGE_OFFSET_MASK;
+		if (vo != PAGE_END) {
+			page[vo + 0] = (short)Type.lowHalf(newValue);
+			page[vo + 1] = (short)Type.highHalf(newValue);
+		} else {
+			short[] page1 = storePage(va + 1);
+			page [PAGE_END] = (short)Type.lowHalf(newValue);
+			page1[0]        = (short)Type.highHalf(newValue);
+		}
+	}
+	
+	public interface ToIntBiIntFunction {
+		int apply(int value, int newValue);
+	}
+	public static void modify(@LONG_POINTER int va, ToIntBiIntFunction valueFunc, @CARD16 int newValue) {
+		if (Perf.ENABLE) Perf.modify++;
+		short[] page = storePage(va);
+		int vo = va & PAGE_OFFSET_MASK;
+		page[vo] = (short)valueFunc.apply(page[vo] & 0xFFFF, newValue & 0xFFFF);
+	}
+	public static void modifyDbl(@LONG_POINTER int va, ToIntBiIntFunction valueFunc, @CARD32 int newValue) {
+		if (Perf.ENABLE) Perf.modifyDbl++;
+		short[] page = storePage(va);
+		int     vo   = va & PAGE_OFFSET_MASK;
+		if (vo != PAGE_END) {
+			int value = valueFunc.apply(Type.makeLong(page[vo + 1], page[vo]), newValue);
+			page[vo + 0] = (short)Type.lowHalf(value);
+			page[vo + 1] = (short)Type.highHalf(value);
+		} else {
+			short[] page1 = storePage(va + 1);
+			int value = valueFunc.apply(Type.makeLong(page1[0], page[PAGE_END]), newValue);
+			page [PAGE_END] = (short)Type.lowHalf(value);
+			page1[0]        = (short)Type.highHalf(value);
 		}
 	}
 
@@ -283,15 +322,19 @@ public final class Memory {
 	}
 	public static @CARD32 int readDblMDS(@POINTER int pointer) {
 		if (Perf.ENABLE) Perf.readDblMDS++;
-		int va = lengthenPointer(pointer);
-
-		short[] page = fetchPage(va);
-		int     vo   = va & PAGE_OFFSET_MASK;
-		if (vo != PAGE_END) {
-			return Type.makeLong(page[vo + 1], page[vo]);
-		} else {
-			return Type.makeLong(fetchPage(va + 1)[0], page[vo]);
-		}		
+		return readDbl(lengthenPointer(pointer));
+	}
+	public static void writeDblMDS(@POINTER int pointer, @CARD32 int newValue) {
+		if (Perf.ENABLE) Perf.writeDblMDS++;
+		writeDbl(lengthenPointer(pointer), newValue);
+	}
+	public static void modifyMDS(@POINTER int pointer, ToIntBiIntFunction valueFunc, @CARD16 int newValue) {
+		if (Perf.ENABLE) Perf.modifyMDS++;
+		modify(lengthenPointer(pointer), valueFunc, newValue);
+	}
+	public static void modifyDblMDS(@POINTER int pointer, ToIntBiIntFunction valueFunc, @CARD32 int newValue) {
+		if (Perf.ENABLE) Perf.modifyDblMDS++;
+		modifyDbl(lengthenPointer(pointer), valueFunc, newValue);
 	}
 
 	// code
