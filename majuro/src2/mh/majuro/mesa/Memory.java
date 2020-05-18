@@ -13,7 +13,6 @@ import mh.majuro.mesa.Type.PAGE_NUMBER;
 import mh.majuro.mesa.Type.PDA_POINTER;
 import mh.majuro.mesa.Type.POINTER;
 import mh.majuro.mesa.type.BytePair;
-import mh.majuro.mesa.type.MapFlags;
 
 public final class Memory {
 	private static final Logger logger = LoggerFactory.getLogger(Memory.class);

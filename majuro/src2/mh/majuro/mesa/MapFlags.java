@@ -1,6 +1,5 @@
-package mh.majuro.mesa.type;
+package mh.majuro.mesa;
 
-import mh.majuro.mesa.Processes;
 import mh.majuro.mesa.Type.LONG_POINTER;
 
 public final class MapFlags {
