@@ -12,7 +12,7 @@ public class Opcode0xx {
 	
 	// 00 NOOP
 	@Register(Opcode.NOOP)
-	public static final Runnable OP_NOOP = () -> {
+	public static final void OP_NOOP() {
 		logger.error(String.format("TRACE %6o  NOOP", Processor.savedPC));
 		throw new UnexpectedException();
 	};

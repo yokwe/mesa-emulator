@@ -427,7 +427,7 @@ public enum Opcode {
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)
-	@Target({ElementType.TYPE, ElementType.FIELD})
+	@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 	public @interface Register {
 		Opcode value();
 	}
