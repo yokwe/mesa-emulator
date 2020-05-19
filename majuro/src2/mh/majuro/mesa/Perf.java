@@ -120,7 +120,10 @@ public final class Perf {
 		logger.info("{}", String.format("cacheMissEmpty     %10d", cacheMissEmpty));
 		logger.info("{}", String.format("cacheMissConflict  %10d", cacheMissConflict));
 		logger.info("{}", String.format("cacheMiss          %10d", cacheMiss));
-		logger.info("{}", String.format("cacheRatio         %10.2f%%", (double)cacheHit / (double)cacheTotal));
+		
+		if (0 < cacheTotal) {
+			logger.info("{}", String.format("cacheRatio         %10.2f%%", ((double)cacheHit / (double)cacheTotal) * 100));
+		}
 
 		logger.info("{}", String.format("fetch              %10d", fetch));
 		logger.info("{}", String.format("store              %10d", store));
@@ -142,7 +145,10 @@ public final class Perf {
 		logger.info("{}", String.format("codeCacheHit       %10d", codeCacheHit));
 		logger.info("{}", String.format("codeCacheMiss      %10d", codeCacheMiss));
 		logger.info("{}", String.format("codeCacheCodeByte  %10d", codeCacheCodeByte));
-		logger.info("{}", String.format("coddCacheRatio     %10.2f%%", (double)(codeCacheHit / codeCacheTotal)));
+		
+		if (0 < codeCacheTotal) {
+			logger.info("{}", String.format("coddCacheRatio     %10.2f%%", ((double)(codeCacheHit / codeCacheTotal)) * 100));
+		}
 
 		logger.info("{}", String.format("writeMap           %10d", writeMap));
 
