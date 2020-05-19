@@ -1,0 +1,51 @@
+<project>
+        <property name="dir.ext.jar" location="data/jar" />
+	<property name="dir.src"     location="src2" />
+
+	<property name="dir.build"     location="tmp/build" />
+	<property name="dir.build.bin" location="${dir.build}/bin" />
+	<property name="dir.build.jar" location="${dir.build}/jar" />
+
+	<property name="jar.majuro" location="${dir.build.jar}/majuro.jar" />
+	
+       <path id="ext.jar">
+                <fileset dir="${dir.ext.jar}">
+                        <include name="*.jar" />
+                </fileset>
+        </path>
+
+
+	<target name="clean">
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="${dir.build}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="build">
+		<!-- clean destination directories -->
+		<delete dir="${dir.build.bin}" quiet="true" />
+		<mkdir dir="${dir.build.bin}" />
+		<delete dir="${dir.build.jar}" quiet="true" />
+		<mkdir dir="${dir.build.jar}" />
+		<!-- compile -->
+		<javac srcdir="${dir.src}" destdir="${dir.build.bin}"
+			classpathref="ext.jar" 
+			includeAntRuntime="false" 
+			debug="true" debuglevel="lines,vars,source" />
+		<!-- make jar -->
+		<jar destfile="${jar.majuro}" basedir="${dir.build.bin}" />
+	</target>
+	
+	
+	<!-- app -->
+        <target name="run-T102">
+                <java classname="mh.majuro.study.T102" fork="true">
+                        <classpath location="${jar.majuro}" />
+                        <classpath refid="ext.jar" />
+                        <sysproperty key="logback.configurationFile" value="${dir.src}/logback.xml"/>
+                	<jvmarg value="-XX:+UnlockDiagnosticVMOptions"/>
+                        <jvmarg value="-XX:+PrintCompilation"/>
+                        <jvmarg value="-XX:+PrintInlining"/>
+                 </java>
+        </target>
+</project>
