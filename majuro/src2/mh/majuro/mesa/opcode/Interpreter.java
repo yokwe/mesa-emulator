@@ -1,14 +1,6 @@
 package mh.majuro.mesa.opcode;
 
-import java.lang.invoke.CallSite;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,9 +12,9 @@ import mh.majuro.mesa.ControlTransfers;
 import mh.majuro.mesa.Perf;
 import mh.majuro.mesa.Processor;
 import mh.majuro.mesa.Type.CARD8;
-import mh.majuro.mesa.Util;
 import mh.majuro.mesa.opcode.Opcode.Register;
 import mh.majuro.mesa.opcode.Opcode.Type;
+import mh.majuro.util.ClassUtil;
 
 public class Interpreter {
 	private static final Logger logger = LoggerFactory.getLogger(Interpreter.class);
@@ -80,14 +72,24 @@ public class Interpreter {
 	}
 	
 	private static void register(Opcode info, Runnable runnable) {
-		logger.info("register {} {} {}", info.type, String.format("%03o", info.code), info.name);
+		logger.info("register {}", info);
 		switch(info.type) {
 		case MOP:
-			tableMop[info.code] = runnable;
+			if (tableMop[info.code] == null) {
+				tableMop[info.code] = runnable;
+			} else {
+				logger.error("already assigned ");
+				logger.error("  opcode   {}", info);
+			}
 			break;
 		case ESC:
 		case ESCL:
-			tableEsc[info.code] = runnable;
+			if (tableEsc[info.code] == null) {
+				tableEsc[info.code] = runnable;
+			} else {
+				logger.error("already assigned ");
+				logger.error("  opcode   {}", info);
+			}
 			break;
 		default:
 			throw new UnexpectedException();
@@ -102,82 +104,22 @@ public class Interpreter {
 		for(int i = 0; i < tableEsc.length; i++) tableEsc[i] = null;
 		
 		logger.info("Start initialize opcode  package = {}", PACKAGE_NAME_FOR_SCAN);
-		List<Class<?>> classes = Util.findClass(PACKAGE_NAME_FOR_SCAN);
+		List<Class<?>> classes = ClassUtil.findClass(PACKAGE_NAME_FOR_SCAN);
 		
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-		MethodType type = MethodType.methodType(Void.TYPE);
-		MethodType invokeType = MethodType.methodType(Runnable.class);
-
 		for(Class<?> clazz : classes) {
-			if (clazz.isAnnotationPresent(Register.class)) {
-				// find annotated class that implements Runnable and register instance of the class.
-				Register registerOpcode = clazz.getAnnotation(Register.class);
-				try {
-					// Object o = clazz.newInstance();
-					Object o = clazz.getDeclaredConstructor().newInstance();
-					if (o instanceof Runnable) {
-						register(registerOpcode.value(), (Runnable)o);
+			// scan method - find annotated static method match Runnable and register method reference of the method
+			for(Method method: clazz.getDeclaredMethods()) {
+				if (method.isAnnotationPresent(Register.class)) {
+					Runnable runnable = ClassUtil.toRunnable(method);
+					if (runnable != null) {
+						Register registerOpcode = method.getAnnotation(Register.class);
+						register(registerOpcode.value(), runnable);
 						count++;
 					} else {
-						logger.error("class {} is not instance of Runnable", clazz.getName());
+						logger.error("Cannot get runnable");
+						logger.error("  clazz  {}", clazz.getName());
+						logger.error("  method {}", method.toString());
 						throw new UnexpectedException();
-					}
-				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-					logger.error("Exception during clazz.newInstance()", e);
-					throw new UnexpectedException();
-				}
-			} else {
-				// scan field - find annotated static field of runnable and register field
-				for(Field field: clazz.getDeclaredFields()) {
-					if (field.isAnnotationPresent(Register.class)) {
-						if (Modifier.isStatic(field.getModifiers())) {
-							Register registerOpcode = field.getAnnotation(Register.class);
-							try {
-								// Expect static field
-								Object o = field.get(null);
-								if (o instanceof Runnable) {
-									register(registerOpcode.value(), (Runnable)o);
-									count++;
-								} else {
-									logger.error("field {} is not instance of Runnable", field.getName());
-									throw new UnexpectedException();
-								}
-							} catch (IllegalArgumentException | IllegalAccessException e) {
-								logger.error("Exception during field.get()", e);
-								throw new UnexpectedException();
-							}
-						} else {
-							logger.error("field {} is not static field", field.getName());
-							throw new UnexpectedException();
-						}
-					}
-				}
-				
-				// scan method - find annotated static method match Runnable and register method reference of the method
-				for(Method method: clazz.getDeclaredMethods()) {
-					if (method.isAnnotationPresent(Register.class)) {
-						if (Modifier.isStatic(method.getModifiers())) {
-							Register registerOpcode = method.getAnnotation(Register.class);
-							try {
-								MethodHandle methodHandle = lookup.unreflect(method);
-								if (methodHandle.type().equals(type)) {
-									CallSite callSite = LambdaMetafactory.metafactory(lookup, "run", invokeType, type, methodHandle, type);
-									MethodHandle target = callSite.getTarget();
-									Runnable runnable = (Runnable)target.invokeExact();
-									register(registerOpcode.value(), runnable);
-								} else {
-									logger.error("method {} is not instance of Runnable", method.getName());
-									throw new UnexpectedException();
-								}
-							} catch (Throwable e) {
-								logger.error("Exception during field.get()", e);
-								throw new UnexpectedException();
-							}
-						} else {
-							logger.error("method {} is not static field", method.getName());
-							throw new UnexpectedException();
-						}
-
 					}
 				}
 			}
