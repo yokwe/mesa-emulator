@@ -27,7 +27,8 @@ public class RecordBase {
 	}
 	public static final void setBitField(ToIntIntFunction addressFunc, ToIntBiIntFunction setValueFunc, @LONG_POINTER int base, @CARD16 int newValue) {
 		final int address = addressFunc.apply(base);
-		Memory.store(address, setValueFunc.apply(Memory.fetch(address), newValue));
+//		Memory.store(address, setValueFunc.apply(Memory.fetch(address), newValue));	
+		Memory.modify(address, setValueFunc, newValue);
 	}
 	
 	// array
