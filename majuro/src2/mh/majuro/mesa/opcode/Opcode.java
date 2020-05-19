@@ -426,6 +426,11 @@ public enum Opcode {
 		this.name = name;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("{%-4s %04o %s}", type, code, name);
+	}
+	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 	public @interface Register {
