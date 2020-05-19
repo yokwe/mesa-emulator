@@ -73,7 +73,7 @@ public final class LocalOverhead extends RecordBase {
 	}
 	
 	// bit field - get
-	public static int getFse(@LONG_POINTER int base) {
+	public static int getFsi(@LONG_POINTER int base) {
 		return getBitField(LocalOverhead::word, LocalWord::getFsi, base);
 	}
 	// bit field - set
