@@ -27,29 +27,31 @@ public final class MapFlags {
 		this.flag   = flag;
 	}
 	
+	public boolean isVacant() {
+		return flag == VACANT;
+	}
+	private boolean isProtect() {
+		return (flag & PROTECT) != 0;
+	}
+
 	public void checkFetch(@LONG_POINTER int va) {
 		// check vacant
-		if (flag == VACANT) {
+		if (isVacant()) {
 			Processes.pageFault(va);
 		}
 	}
-	public boolean isReferenced() {
-		return (flag & REFERENCED) == REFERENCED;
-	}
 	public void updateFlagFetch() {
+		// set referenced flag
 		flag = (~REFERENCED & flag) | REFERENCED;
-	}
-	public boolean isVacant() {
-		return flag == VACANT;
 	}
 	
 	public void checkStore(@LONG_POINTER int va) {
 		// check vacant
-		if (flag == VACANT) {
+		if (isVacant()) {
 			Processes.pageFault(va);
 		}
 		// check protect
-		if ((flag & PROTECT) != 0) {
+		if (isProtect()) {
 			Processes.writeProtectFault(va);
 		}
 	}
@@ -57,6 +59,7 @@ public final class MapFlags {
 		return (flag & REFERENCED_AND_DIRTY) == REFERENCED_AND_DIRTY;
 	}
 	public void updateFlagStore() {
+		// set referenced and dirty flag
 		flag = (~REFERENCED_AND_DIRTY & flag) | REFERENCED_AND_DIRTY;
 	}
 }
