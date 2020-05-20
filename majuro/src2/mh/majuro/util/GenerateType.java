@@ -353,7 +353,7 @@ public class GenerateType {
 			
 			for(FieldInfo fieldInfo: recordInfo.fieldList) {
 				// 	public static int WORD_OFFSET       = 0;
-				out.println("public static final int %s_OFFSET = %d;", fieldInfo.name.toUpperCase(), fieldInfo.offset);
+				out.println("public static final int OFFSET_%s = %d;", fieldInfo.name.toUpperCase(), fieldInfo.offset);
 			}
 			out.println();
 
@@ -366,7 +366,7 @@ public class GenerateType {
 //					return base + WORD_OFFSET;
 //				}
 				out.println("public static @LONG_POINTER int %s(@LONG_POINTER int base) {", buildPrefixName("offset", fieldInfo.name));
-				out.println("return base + %s_OFFSET;", fieldInfo.name.toUpperCase());
+				out.println("return base + OFFSET_%s;", fieldInfo.name.toUpperCase());
 				out.println("}");
 			}
 			out.println();
@@ -387,12 +387,12 @@ public class GenerateType {
 							out.println("// %2d %2d %s", bitFieldInfo.startBit, bitFieldInfo.stopBit, bitFieldInfo.name.toUpperCase());
 							switch(bitFieldInfo.size) {
 							case 1:
-								out.println("public static final @CARD16 int %s_MASK  = %s;", fieldInfo.name.toUpperCase(), bitMask(bitFieldInfo));
-								out.println("public static final         int %s_SHIFT = %d;", fieldInfo.name.toUpperCase(), 15 - bitFieldInfo.stopBit);
+								out.println("public static final @CARD16 int MASK_%s  = %s;", fieldInfo.name.toUpperCase(), bitMask(bitFieldInfo));
+								out.println("public static final         int SHIFT_%s = %d;", fieldInfo.name.toUpperCase(), 15 - bitFieldInfo.stopBit);
 								break;
 							case 2:
-								out.println("public static final @CARD32 int %s_MASK  = %s;", fieldInfo.name.toUpperCase(), bitMask(bitFieldInfo));
-								out.println("public static final         int %s_SHIFT = %d;", fieldInfo.name.toUpperCase(), 31 - bitFieldInfo.stopBit);
+								out.println("public static final @CARD32 int MASK_%s  = %s;", fieldInfo.name.toUpperCase(), bitMask(bitFieldInfo));
+								out.println("public static final         int SHIFT_%s = %d;", fieldInfo.name.toUpperCase(), 31 - bitFieldInfo.stopBit);
 								break;
 							default:
 								logger.error("size {}", bitFieldInfo.size);
@@ -409,20 +409,20 @@ public class GenerateType {
 							case 1:
 							{
 								out.println("public static @CARD16 int %s(@CARD16 int value) {", buildPrefixName("getBit", fieldInfo.name));
-								out.println("return (value & %s_MASK) >>> %s_SHIFT;", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
+								out.println("return (value & MASK_%s) >>> SHIFT_%s;", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
 								out.println("}");
 								out.println("public static @CARD16 int %s(@CARD16 int value, @CARD16 int newValue) {", buildPrefixName("setBit", fieldInfo.name));
-								out.println("return ((newValue << %s_SHIFT) & %s_MASK) | (value & ~%s_MASK);", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
+								out.println("return ((newValue << SHIFT_%s) & MASK_%s) | (value & ~MASK_%s);", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
 								out.println("}");
 							}
 								break;
 							case 2:
 							{
 								out.println("public static @CARD32 int %s(@CARD32 int value) {", buildPrefixName("getBit", fieldInfo.name));
-								out.println("return (value & %s_MASK) >>> %s_SHIFT;", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
+								out.println("return (value & MASK_%s) >>> SHIFT_%s;", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
 								out.println("}");
 								out.println("public static @CARD32 int %s(@CARD32 int value, @CARD32 int newValue) {", buildPrefixName("setBit", fieldInfo.name));
-								out.println("return ((newValue << %s_SHIFT) & %s_MASK) | (value & ~%s_MASK);", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
+								out.println("return ((newValue << SHIFT_%s) & MASK_%s) | (value & ~MASK_%s);", fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase(), fieldInfo.name.toUpperCase());
 								out.println("}");
 							}
 								break;
