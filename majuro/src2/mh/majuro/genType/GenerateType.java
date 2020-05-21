@@ -237,10 +237,13 @@ public class GenerateType {
 					ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
 					ArrayInfo arrayInfo = arrayFieldInfo.arrayInfo;;
 					out.println("//   array  index %-16s  size %4d  length %3d  element %s", arrayInfo.indexType, arrayInfo.size, arrayInfo.length, arrayInfo.type);
-					if (arrayFieldInfo.isEmpty()) continue;
-				} else {
-					if (fieldInfo.isEmpty()) continue;
 				}
+				if (fieldInfo.fieldType == FieldType.BIT) {
+					BitFieldInfo bitFieldInfo = (BitFieldInfo)fieldInfo;
+					BitInfo bitInfo = bitFieldInfo.bitInfo;
+					out.println("//   bit startBit %2d  stopBit %2d", bitInfo.startBit, bitInfo.stopBit);
+				}
+				if (fieldInfo.isEmpty()) continue;
 
 				// 	public static int WORD_OFFSET       = 0;
 				out.println("public static final class %s {", toTitleCase(fieldInfo.name));
