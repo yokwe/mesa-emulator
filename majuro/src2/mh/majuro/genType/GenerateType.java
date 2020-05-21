@@ -179,10 +179,6 @@ public class GenerateType {
 
 	static final String PATH_DIR = "src2/mh/majuro/mesa/type";
 	
-	private static String toTitleCase(String name) {
-		return String.format("%s%s", name.substring(0, 1).toUpperCase(), name.substring(1));
-	}
-	
 	private static String getType(Map<String, RecordInfo> recordInfoMap, Map<String, TypeInfo> typeInfoMap, String type) {
 		switch(type) {
 		case "boolean":
@@ -232,7 +228,7 @@ public class GenerateType {
 			out.println();
 			
 			for(FieldInfo fieldInfo: recordInfo.fieldList) {
-				out.println("// offset %4d  size %4d  type %-8s  name %s", fieldInfo.offset, fieldInfo.size, fieldInfo.type, toTitleCase(fieldInfo.name));
+				out.println("// offset %4d  size %4d  type %-8s  name %s", fieldInfo.offset, fieldInfo.size, fieldInfo.type, fieldInfo.name);
 				if (fieldInfo.fieldType == FieldType.ARRAY) {
 					ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
 					ArrayInfo arrayInfo = arrayFieldInfo.arrayInfo;;
@@ -246,7 +242,7 @@ public class GenerateType {
 				if (fieldInfo.isEmpty()) continue;
 
 				// 	public static int WORD_OFFSET       = 0;
-				out.println("public static final class %s {", toTitleCase(fieldInfo.name));
+				out.println("public static final class %s {", fieldInfo.name);
 				out.println("public static final         int SIZE   = %2d;", fieldInfo.size);
 				out.println("public static final         int OFFSET = %2d;", fieldInfo.offset);
 
@@ -308,7 +304,7 @@ public class GenerateType {
 				
 				// get set methods
 				{
-					String qClassName = String.format("%s.%s", recordInfo.name, toTitleCase(fieldInfo.name));
+					String qClassName = String.format("%s.%s", recordInfo.name, fieldInfo.name);
 					switch(fieldInfo.fieldType) {
 					case NORMAL:
 					{
