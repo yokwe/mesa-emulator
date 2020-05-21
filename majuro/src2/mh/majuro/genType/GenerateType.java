@@ -179,33 +179,44 @@ public class GenerateType {
 
 	static final String PATH_DIR = "src2/mh/majuro/mesa/type";
 	
-	static String bitMask(BitFieldInfo bitFieldInfo) {
-		int width = bitFieldInfo.stopBit - bitFieldInfo.startBit;
-		switch(bitFieldInfo.size) {
-		case 1:
-		{
-			int shift = 15 - bitFieldInfo.stopBit;
-			int bit   = ((1 << (width + 1)) - 1) & 0xFFFF;
-			return String.format("0x%04X", (bit << shift) & 0xFFFF);
-		}
-		case 2:
-		{
-			int shift = 31 - bitFieldInfo.stopBit;
-			int bit   = (1 << (width + 1)) - 1;
-			return String.format("0x%08X", (bit << shift));
-		}
-		default:
-			logger.error("size {}", bitFieldInfo.size);
-			throw new UnexpectedException();
-		}
-	}
-	
-	private static String buildPrefixName(String prefix, String name) {
-		return String.format("%s%s%s", prefix, name.substring(0, 1).toUpperCase(), name.substring(1));
-	}
-	
 	private static String toTitleCase(String name) {
 		return String.format("%s%s", name.substring(0, 1).toUpperCase(), name.substring(1));
+	}
+	
+	private static String getType(Map<String, RecordInfo> recordInfoMap, Map<String, TypeInfo> typeInfoMap, String type) {
+		switch(type) {
+		case "boolean":
+		case "CARD8":
+		case "CARD16":
+		case "CARD32":
+			break;
+		default:
+			if (typeInfoMap.containsKey(type)) {
+				type = typeInfoMap.get(type).type;
+				switch(type) {
+				case "boolean":
+				case "CARD8":
+				case "CARD16":
+				case "CARD32":
+					break;
+				default:
+					logger.error("type {}", type);
+					throw new UnexpectedException();
+				}
+			} else if (recordInfoMap.containsKey(type)) {
+				RecordInfo refRecordInfo = recordInfoMap.get(type);
+				if (refRecordInfo.size == 1) {
+					type = "CARD16";
+				} else {
+					logger.error("size {}", refRecordInfo.size);
+					throw new UnexpectedException();
+				}
+			} else {
+				logger.error("type {}", type);
+				throw new UnexpectedException();
+			}
+		}
+		return type;
 	}
 	
 	static void generateRecordClass(Map<String, RecordInfo> recordInfoMap, Map<String, TypeInfo> typeInfoMap, RecordInfo recordInfo) {
@@ -216,11 +227,14 @@ public class GenerateType {
 			out.println();
 			out.println("import mh.majuro.mesa.Type.*;");
 			out.println();
-			out.println("public final class %s extends RecordBase {", recordInfo.name);
+			out.println("public final class %s {", recordInfo.name);
 			out.println("public static final int SIZE = %d;", recordInfo.size);
 			out.println();
 			
 			for(FieldInfo fieldInfo: recordInfo.fieldList) {
+				out.println("// offset %4d  size %4d  type %-8s  name %s", fieldInfo.offset, fieldInfo.size, fieldInfo.type, toTitleCase(fieldInfo.name));
+				if (fieldInfo.type.isEmpty()) continue;
+
 				// 	public static int WORD_OFFSET       = 0;
 				out.println("public static final class %s {", toTitleCase(fieldInfo.name));
 				out.println("public static final         int SIZE   = %2d;", fieldInfo.size);
@@ -240,8 +254,8 @@ public class GenerateType {
 					BitFieldInfo bitFieldInfo = (BitFieldInfo)fieldInfo;
 					switch(bitFieldInfo.size) {
 					case 1:
-						out.println("public static final @CARD16 int MASK    = %s;", bitMask(bitFieldInfo));
-						out.println("public static final         int SHIFT   = %d;", 15 - bitFieldInfo.stopBit);
+						out.println("public static final @CARD16 int MASK    = %s;", bitFieldInfo.bitInfo.mask);
+						out.println("public static final         int SHIFT   = %d;", bitFieldInfo.bitInfo.shift);
 						out.println();
 						
 						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
@@ -255,8 +269,8 @@ public class GenerateType {
 						out.println("}");
 						break;
 					case 2:
-						out.println("public static final @CARD32 int MASK    = %s;", bitMask(bitFieldInfo));
-						out.println("public static final         int SHIFT   = %d;", 31 - bitFieldInfo.stopBit);
+						out.println("public static final @CARD32 int MASK    = %s;", bitFieldInfo.bitInfo.mask);
+						out.println("public static final         int SHIFT   = %d;", bitFieldInfo.bitInfo.shift);
 						out.println();
 						
 						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
@@ -276,164 +290,98 @@ public class GenerateType {
 				}
 					break;
 				case ARRAY:
+					out.println("// FIXME ARRAY %s", fieldInfo);
 					break;
 				default:
 					throw new UnexpectedException();
 				}
-					
-				out.println("}");
-			}
-			out.println();
-
-			
-//			// field get
-			out.println("// field get");
-			for(FieldInfo fieldInfo: recordInfo.fieldList) {
-				if (fieldInfo.isEmpty()) continue;
 				
-				switch(fieldInfo.fieldType) {
-				case NORMAL:
+				// get set methods
 				{
-					switch(fieldInfo.type) {
-					case "boolean":
-						out.println("public static boolean %s(@LONG_POINTER int base) {", buildPrefixName("get", fieldInfo.name));
-						out.println("return get(%s.%s::offset, base) != 0;", recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						out.println("public static void %s(@LONG_POINTER int base, boolean newValue) {", buildPrefixName("set", fieldInfo.name));
-						out.println("set(%s.%s::offset, base, (newValue ? 1 : 0));", recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						break;
-					case "CARD8":
-					case "CARD16":
-						out.println("public static @%s int %s(@LONG_POINTER int base) {", fieldInfo.type, buildPrefixName("get", fieldInfo.name));
-						out.println("return get(%s.%s::offset, base);", recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), fieldInfo.type);
-						out.println("set(%s.%s::offset, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						break;
-					case "CARD32":
-						out.println("public static @%s int %s(@LONG_POINTER int base) {", fieldInfo.type, buildPrefixName("get", fieldInfo.name));
-						out.println("return getDbl(%s.%s::offset, base);", recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), fieldInfo.type);
-						out.println("setDbl(%s.%s::offset, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						break;
-					default:
+					String type = getType(recordInfoMap, typeInfoMap, fieldInfo.type);
+					String qClassName = String.format("%s.%s", recordInfo.name, toTitleCase(fieldInfo.name));
+					switch(fieldInfo.fieldType) {
+					case NORMAL:
 					{
-						String type = fieldInfo.type;
-						if (typeInfoMap.containsKey(type)) {
-							String realType = typeInfoMap.get(type).type;
-							out.println("public static @%s int %s(@LONG_POINTER int base) {", realType, buildPrefixName("get", fieldInfo.name));
-							out.println("return get(%s.%s::offset, base);", recordInfo.name, toTitleCase(fieldInfo.name));
+						switch(type) {
+						case "boolean":
+							out.println("public static boolean get(@LONG_POINTER int base) {");
+							out.println("return RecordBase.get(%s::offset, base) != 0;", qClassName);
 							out.println("}");
-							out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), realType);
-							out.println("set(%s.%s::offset, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name));
+							out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
+							out.println("RecordBase.set(%s::offset, base, (newValue ? 1 : 0));", qClassName);
 							out.println("}");
-						} else if (recordInfoMap.containsKey(type)) {
-							RecordInfo refRecordInfo = recordInfoMap.get(type);
-							if (refRecordInfo.size == 1) {
-								out.println("public static @CARD16 int %s(@LONG_POINTER int base) {", buildPrefixName("get", fieldInfo.name));
-								out.println("return get(%s.%s::offset, base);", recordInfo.name, toTitleCase(fieldInfo.name));
-								out.println("}");
-								out.println("public static void get%s(@LONG_POINTER int base, @CARD16 int newValue) {", buildPrefixName("set", fieldInfo.name));
-								out.println("set(%s.%s::offset, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name));
-								out.println("}");
-							} else {
-								logger.error("refRecordInfo {}", refRecordInfo);
-								throw new UnexpectedException();
-							}
-						} else {
+							break;
+						case "CARD8":
+						case "CARD16":
+							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
+							out.println("return RecordBase.get(%s::offset, base);", qClassName);
+							out.println("}");
+							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
+							out.println("RecordBase.set(%s::offset, base, newValue);", qClassName);
+							out.println("}");
+							break;
+						case "CARD32":
+							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
+							out.println("return RecordBase.getDbl(%s::offset, base);", qClassName);
+							out.println("}");
+							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
+							out.println("RecordBase.setDbl(%s::offset, base, newValue);", qClassName);
+							out.println("}");
+							break;
+						default:
 							logger.error("type {}", type);
 							throw new UnexpectedException();
 						}
 					}
 						break;
-					}
-				}
-					break;
-				case BIT:
-				{
-					switch(fieldInfo.type) {
-					case "boolean":
-						// public static final int getBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base)
-						out.println("public static boolean %s(@LONG_POINTER int base) {", buildPrefixName("get", fieldInfo.name));
-						out.println("return getBitField(%s.%s::offset, %s.%s::getBit, base) != 0;", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						out.println("public static void %s(@LONG_POINTER int base, boolean newValue) {", buildPrefixName("set", fieldInfo.name));
-						out.println("setBitField(%s.%s::offset, %s.%s::setBit, base, (newValue ? 1 : 0));", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						break;
-					case "CARD8":
-					case "CARD16":
-						out.println("public static @%s int %s(@LONG_POINTER int base) {", fieldInfo.type, buildPrefixName("get", fieldInfo.name));
-						out.println("return getBitField(%s.%s::offset, %s.%s::getBit, base);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), fieldInfo.type);
-						out.println("setBitField(%s.%s::offset, %s.%s::setBit, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						break;
-					case "CARD32":
-						out.println("public static @%s int %s(@LONG_POINTER int base) {", fieldInfo.type, buildPrefixName("get", fieldInfo.name));
-						out.println("return getBitFieldDbl(%s.%s::offset, %s.%s::getBit, base);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), fieldInfo.type);
-						out.println("setBitFieldDbl(%s.%s::offset, %s.%s::setBit, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-						out.println("}");
-						break;
-					default:
+					case BIT:
 					{
-						String type = fieldInfo.type;
-						if (typeInfoMap.containsKey(type)) {
-							String realType = typeInfoMap.get(type).type;
-							switch(realType) {
-							case "CARD8":
-							case "CARD16":
-								out.println("public static @%s int %s(@LONG_POINTER int base) {", realType, buildPrefixName("get", fieldInfo.name));
-								out.println("return getBitField(%s.%s::offset, %s.%s::getBit, base);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-								out.println("}");
-								out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), realType);
-								out.println("setBitField(%s.%s::offset, %s.%s::setBit, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-								out.println("}");
-								break;
-							case "CARD32":
-								out.println("public static @%s int %s(@LONG_POINTER int base) {", realType, buildPrefixName("get", fieldInfo.name));
-								out.println("return getBitFieldDbl(%s.%s::offset, %s.%s::getBit, base);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-								out.println("}");
-								out.println("public static void %s(@LONG_POINTER int base, @%s int newValue) {", buildPrefixName("set", fieldInfo.name), realType);
-								out.println("setBitFieldDbl(%s.%s::offset, %s.%s::setBit, base, newValue);", recordInfo.name, toTitleCase(fieldInfo.name), recordInfo.name, toTitleCase(fieldInfo.name));
-								out.println("}");
-								break;
-							default:
-								// FIXME
-								out.println("// FIXME %s", fieldInfo.toString());
-							}
-						} else if (recordInfoMap.containsKey(type)) {
-							// FIXME
-							out.println("// FIXME %s", fieldInfo.toString());
-						} else {
-							// FIXME
-							out.println("// FIXME %s", fieldInfo.toString());
+						switch(type) {
+						case "boolean":
+							// public static final int getBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base)
+							out.println("public static boolean get(@LONG_POINTER int base) {");
+							out.println("return RecordBase.getBitField(%1$s::offset, %1$s::getBit, base) != 0;", qClassName);
+							out.println("}");
+							out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
+							out.println("RecordBase.setBitField(%1$s::offset, %1$s::setBit, base, (newValue ? 1 : 0));", qClassName);
+							out.println("}");
+							break;
+						case "CARD8":
+						case "CARD16":
+							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
+							out.println("return RecordBase.getBitField(%1$s::offset, %1$s::getBit, base);", qClassName);
+							out.println("}");
+							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
+							out.println("RecordBase.setBitField(%1$s::offset, %1$s::setBit, base, newValue);", qClassName);
+							out.println("}");
+							break;
+						case "CARD32":
+							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
+							out.println("return RecordBase.getBitFieldDbl(%1$s::offset, %1$s::getBit, base);", qClassName);
+							out.println("}");
+							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
+							out.println("RecordBase.setBitFieldDbl(%1$s::offset, %1$s::setBit, base, newValue);", qClassName);
+							out.println("}");
+							break;
+						default:
+							logger.error("type {}", type);
+							throw new UnexpectedException();
 						}
 					}
 						break;
+					case ARRAY:
+						// FIXME
+						out.println("// FIXME ARRAY %s", fieldInfo);
+						break;
+					default:
+						throw new UnexpectedException();
 					}
 				}
-					break;
-				case ARRAY:
-					// FIXME
-					out.println("// FIXME %s", fieldInfo.toString());
-					break;
-				default:
-					throw new UnexpectedException();
-				}
+				out.println("}");
 			}
 			out.println();
-
-
-
-			
+		
 			out.println("}");
 		} catch (FileNotFoundException e) {
 			String exceptionName = e.getClass().getSimpleName();
