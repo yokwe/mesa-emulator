@@ -2,16 +2,18 @@ package mh.majuro.mesa.type;
 
 import mh.majuro.mesa.Type.*;
 
-public final class GlobalWord {
+public final class PsbFlags {
     public static final int SIZE = 1;
 
-    // offset    0  size    1  type CARD16    name gfi
-    //   bit startBit  0  stopBit 13
-    public static final class gfi {
+    // offset    0  size    1  type           name available
+    //   bit startBit  0  stopBit  2
+    // offset    0  size    1  type PsbIndex  name cleanup
+    //   bit startBit  3  stopBit 12
+    public static final class cleanup {
         public static final         int SIZE   =  1;
         public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b1111_1111_1111_1100;
-        public static final         int SHIFT   = 2;
+        public static final @CARD16 int MASK    = 0b0001_1111_1111_1000;
+        public static final         int SHIFT   = 3;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -23,15 +25,17 @@ public final class GlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD16 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(GlobalWord.gfi::offset, GlobalWord.gfi::getBit, base);
+            return RecordBase.getBitField(PsbFlags.cleanup::offset, PsbFlags.cleanup::getBit, base);
         }
         public static void set(@LONG_POINTER int base, @CARD16 int newValue) {
-            RecordBase.setBitField(GlobalWord.gfi::offset, GlobalWord.gfi::setBit, base, newValue);
+            RecordBase.setBitField(PsbFlags.cleanup::offset, PsbFlags.cleanup::setBit, base, newValue);
         }
     }
-    // offset    0  size    1  type boolean   name trapxfers
+    // offset    0  size    1  type           name reserved
+    //   bit startBit 13  stopBit 13
+    // offset    0  size    1  type boolean   name waiting
     //   bit startBit 14  stopBit 14
-    public static final class trapxfers {
+    public static final class waiting {
         public static final         int SIZE   =  1;
         public static final         int OFFSET =  0;
         public static final @CARD16 int MASK    = 0b0000_0000_0000_0010;
@@ -47,15 +51,15 @@ public final class GlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(GlobalWord.trapxfers::offset, GlobalWord.trapxfers::getBit, base) != 0;
+            return RecordBase.getBitField(PsbFlags.waiting::offset, PsbFlags.waiting::getBit, base) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(GlobalWord.trapxfers::offset, GlobalWord.trapxfers::setBit, base, (newValue ? 1 : 0));
+            RecordBase.setBitField(PsbFlags.waiting::offset, PsbFlags.waiting::setBit, base, (newValue ? 1 : 0));
         }
     }
-    // offset    0  size    1  type boolean   name codelinks
+    // offset    0  size    1  type boolean   name abort
     //   bit startBit 15  stopBit 15
-    public static final class codelinks {
+    public static final class abort {
         public static final         int SIZE   =  1;
         public static final         int OFFSET =  0;
         public static final @CARD16 int MASK    = 0b0000_0000_0000_0001;
@@ -71,10 +75,10 @@ public final class GlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(GlobalWord.codelinks::offset, GlobalWord.codelinks::getBit, base) != 0;
+            return RecordBase.getBitField(PsbFlags.abort::offset, PsbFlags.abort::getBit, base) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(GlobalWord.codelinks::offset, GlobalWord.codelinks::setBit, base, (newValue ? 1 : 0));
+            RecordBase.setBitField(PsbFlags.abort::offset, PsbFlags.abort::setBit, base, (newValue ? 1 : 0));
         }
     }
 }
