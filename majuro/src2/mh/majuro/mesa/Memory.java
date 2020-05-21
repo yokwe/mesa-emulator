@@ -154,7 +154,20 @@ public final class Memory {
 	public static void rawWrite(@LONG_POINTER int va, @CARD16 int newValue) {
 		rawPage(va)[va & PAGE_OFFSET_MASK] = (short)newValue;
 	}
-	
+	public static @CARD32 int rawReadDbl(@LONG_POINTER int va) {
+		int t0 = rawRead(va + 0);
+		int t1 = rawRead(va + 1);
+		
+		return Type.makeLong(t1, t0);
+	}
+	public static void rawWriteDbl(@LONG_POINTER int va, @CARD32 int newValue) {
+		int t0 = Type.lowHalf(newValue);
+		int t1 = Type.highHalf(newValue);
+		
+		rawWrite(va + 0, t0);
+		rawWrite(va + 1, t1);
+	}
+
 	//
 	// map operation
 	//
