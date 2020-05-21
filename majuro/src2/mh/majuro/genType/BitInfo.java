@@ -18,15 +18,15 @@ public class BitInfo {
 		this.stopBit  = stopBit;
 		
 		int width = stopBit - startBit;
-		int bits  = (1 << (width + 1)) - 1;
+		long bits  = (1 << (width + 1)) - 1;
 		switch(size) {
 		case 1:
 			this.shift = 15 - stopBit;
-			this.mask  = String.format("0x%04X", (bits << shift) & 0xFFFF);
+			this.mask  = String.format("%16s", Long.toBinaryString((bits << shift))).replace(" ", "0").replaceAll("(.{4})(.{4})(.{4})(.{4})", "0b$1_$2_$3_$4");
 			break;
 		case 2:
 			this.shift = 31 - stopBit;
-			this.mask  = String.format("0x%08X", (bits << shift));
+			this.mask  = String.format("%32s", Long.toBinaryString(bits << shift)).replace(" ", "0").replaceAll("(.{4})(.{4})(.{4})(.{4})(.{4})(.{4})(.{4})(.{4})", "0b$1_$2_$3_$4_$5_$6_$7_$8");
 			break;
 		default:
 			logger.error("size {}", size);
