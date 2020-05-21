@@ -25,28 +25,28 @@ public class TestType extends TestBase {
 		{
 			fillPageZero(va);
 			
-			assertNotEquals(0xAB, LocalWord.Available.get(va));
-			assertNotEquals(0xCD, LocalWord.Fsi.get(va));
+			assertNotEquals(0xAB, LocalWord.available.get(va));
+			assertNotEquals(0xCD, LocalWord.fsi.get(va));
 
 			Memory.rawWrite(va, 0xABCD);
 			
-			assertEquals(0xAB, LocalWord.Available.get(va));
-			assertEquals(0xCD, LocalWord.Fsi.get(va));
+			assertEquals(0xAB, LocalWord.available.get(va));
+			assertEquals(0xCD, LocalWord.fsi.get(va));
 		}
 		
 		{
 			fillPageZero(va);
 			
-			assertNotEquals(0xAB, LocalWord.Available.get(va));
-			assertNotEquals(0xCD, LocalWord.Fsi.get(va));
+			assertNotEquals(0xAB, LocalWord.available.get(va));
+			assertNotEquals(0xCD, LocalWord.fsi.get(va));
 
-			LocalWord.Available.set(va, 0xAB);
-			assertEquals(0xAB, LocalWord.Available.get(va));
-			assertNotEquals(0xCD, LocalWord.Fsi.get(va));
+			LocalWord.available.set(va, 0xAB);
+			assertEquals(0xAB, LocalWord.available.get(va));
+			assertNotEquals(0xCD, LocalWord.fsi.get(va));
 			
-			LocalWord.Fsi.set(va, 0xCD);
-			assertEquals(0xAB, LocalWord.Available.get(va));
-			assertEquals(0xCD, LocalWord.Fsi.get(va));
+			LocalWord.fsi.set(va, 0xCD);
+			assertEquals(0xAB, LocalWord.available.get(va));
+			assertEquals(0xCD, LocalWord.fsi.get(va));
 		}
 	}
 	
@@ -66,20 +66,20 @@ public class TestType extends TestBase {
 		{
 			fillPageZero(va);
 			
-			assertNotEquals(0x1234, LocalOverhead.Word.get(va));
-			assertNotEquals(0x2345, LocalOverhead.Returnlink.get(va));
-			assertNotEquals(0x3456, LocalOverhead.Globallink.get(va));
-			assertNotEquals(0x4567, LocalOverhead.Pc.get(va));
+			assertNotEquals(0x1234, LocalOverhead.word.get(va));
+			assertNotEquals(0x2345, LocalOverhead.returnlink.get(va));
+			assertNotEquals(0x3456, LocalOverhead.globallink.get(va));
+			assertNotEquals(0x4567, LocalOverhead.pc.get(va));
 
 			Memory.rawWrite(va + 0, 0x1234);
 			Memory.rawWrite(va + 1, 0x2345);
 			Memory.rawWrite(va + 2, 0x3456);
 			Memory.rawWrite(va + 3, 0x4567);
 			
-			assertEquals(0x1234, LocalOverhead.Word.get(va));
-			assertEquals(0x2345, LocalOverhead.Returnlink.get(va));
-			assertEquals(0x3456, LocalOverhead.Globallink.get(va));
-			assertEquals(0x4567, LocalOverhead.Pc.get(va));
+			assertEquals(0x1234, LocalOverhead.word.get(va));
+			assertEquals(0x2345, LocalOverhead.returnlink.get(va));
+			assertEquals(0x3456, LocalOverhead.globallink.get(va));
+			assertEquals(0x4567, LocalOverhead.pc.get(va));
 		}
 	}
 	
@@ -97,15 +97,15 @@ public class TestType extends TestBase {
 		{
 			fillPageZero(va);
 			
-			assertNotEquals(0x1234, TaggedControlLink.Data.get(va));
-			assertNotEquals(0x0001, TaggedControlLink.Tag.get(va));
-			assertNotEquals(0x3456, TaggedControlLink.Fill.get(va));
+			assertNotEquals(0x1234, TaggedControlLink.data.get(va));
+			assertNotEquals(0x0001, TaggedControlLink.tag.get(va));
+			assertNotEquals(0x3456, TaggedControlLink.fill.get(va));
 
 			Memory.rawWriteDbl(va, 0x456789AB);
 			
-			assertEquals(0x4567 >> 2, TaggedControlLink.Data.get(va));
-			assertEquals(0x0003, TaggedControlLink.Tag.get(va));
-			assertEquals(0x89AB, TaggedControlLink.Fill.get(va));
+			assertEquals(0x4567 >> 2, TaggedControlLink.data.get(va));
+			assertEquals(0x0003, TaggedControlLink.tag.get(va));
+			assertEquals(0x89AB, TaggedControlLink.fill.get(va));
 		}
 	}
 
@@ -123,21 +123,21 @@ public class TestType extends TestBase {
 		{
 			fillPageZero(va);
 			
-			assertNotEquals(0xABCD >> 2, GlobalWord.Gfi.get(va));
-//			assertNotEquals(false, GlobalWord.Trapxfers.get(va));
-			assertNotEquals(true, GlobalWord.Codelinks.get(va));
+			assertNotEquals(0xABCD >> 2, GlobalWord.gfi.get(va));
+//			assertNotEquals(false, GlobalWord.trapxfers.get(va));
+			assertNotEquals(true, GlobalWord.codelinks.get(va));
 
 			Memory.rawWrite(va, 0xABCD);
 			
-			assertEquals(0xABCD >> 2, GlobalWord.Gfi.get(va));
-			assertEquals(false, GlobalWord.Trapxfers.get(va));
-			assertEquals(true, GlobalWord.Codelinks.get(va));
+			assertEquals(0xABCD >> 2, GlobalWord.gfi.get(va));
+			assertEquals(false, GlobalWord.trapxfers.get(va));
+			assertEquals(true, GlobalWord.codelinks.get(va));
 		}
 		
 		{
 			fillPageZero(va);
 
-			GlobalWord.Gfi.set(va, 0xFFFF);			
+			GlobalWord.gfi.set(va, 0xFFFF);			
 			
 			assertEquals(0xFFFC, Memory.rawRead(va));
 		}
@@ -145,7 +145,7 @@ public class TestType extends TestBase {
 		{
 			fillPageZero(va);
 
-			GlobalWord.Trapxfers.set(va, true);			
+			GlobalWord.trapxfers.set(va, true);			
 			
 			assertEquals(0x0002, Memory.rawRead(va));
 		}
@@ -153,7 +153,7 @@ public class TestType extends TestBase {
 		{
 			fillPageZero(va);
 
-			GlobalWord.Codelinks.set(va, true);			
+			GlobalWord.codelinks.set(va, true);			
 			
 			assertEquals(0x0001, Memory.rawRead(va));
 		}
