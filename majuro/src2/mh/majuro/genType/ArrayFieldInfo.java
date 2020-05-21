@@ -10,6 +10,6 @@ public class ArrayFieldInfo extends FieldInfo {
 	}
 	
 	public boolean isEmpty() {
-		return arrayInfo.isEmpty() && arrayInfo.isEmpty();
+		return arrayInfo.indexType.isEmpty() && arrayInfo.type.isEmpty();
 	}
 }

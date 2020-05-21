@@ -2,18 +2,14 @@ package mh.majuro.genType;
 
 public class ArrayInfo {
 	final String indexType;
-	final String elementType;
-	final int    elementSize;
-	final int    elementLength;
+	final String type;
+	final int    size;
+	final int    length;
 	
 	public ArrayInfo(String indexType, String elementType, int elementSize, int elementLength) {
-		this.indexType     = indexType;
-		this.elementType   = elementType;
-		this.elementSize   = elementSize;
-		this.elementLength = elementLength;
-	}
-	
-	public boolean isEmpty() {
-		return indexType.isEmpty() && elementType.isEmpty();
+		this.indexType = indexType;
+		this.type      = elementType;
+		this.size      = elementSize;
+		this.length    = elementLength;
 	}
 }
