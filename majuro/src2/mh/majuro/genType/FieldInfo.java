@@ -19,7 +19,12 @@ public class FieldInfo {
 	}
 	
 	public boolean isEmpty() {
-		return type.isEmpty();
+		if (fieldType == FieldType.ARRAY) {
+			ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)this;
+			return arrayFieldInfo.isEmpty();
+		} else {
+			return type.isEmpty();
+		}
 	}
 	
 	@Override
