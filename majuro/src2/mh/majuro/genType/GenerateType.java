@@ -233,7 +233,14 @@ public class GenerateType {
 			
 			for(FieldInfo fieldInfo: recordInfo.fieldList) {
 				out.println("// offset %4d  size %4d  type %-8s  name %s", fieldInfo.offset, fieldInfo.size, fieldInfo.type, toTitleCase(fieldInfo.name));
-				if (fieldInfo.type.isEmpty()) continue;
+				if (fieldInfo.fieldType == FieldType.ARRAY) {
+					ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
+					ArrayInfo arrayInfo = arrayFieldInfo.arrayInfo;;
+					out.println("//   array  index %-16s  size %4d  length %3d  element %s", arrayInfo.indexType, arrayInfo.size, arrayInfo.length, arrayInfo.type);
+					if (arrayFieldInfo.isEmpty()) continue;
+				} else {
+					if (fieldInfo.isEmpty()) continue;
+				}
 
 				// 	public static int WORD_OFFSET       = 0;
 				out.println("public static final class %s {", toTitleCase(fieldInfo.name));
@@ -298,12 +305,11 @@ public class GenerateType {
 				
 				// get set methods
 				{
-					String type = getType(recordInfoMap, typeInfoMap, fieldInfo.type);
 					String qClassName = String.format("%s.%s", recordInfo.name, toTitleCase(fieldInfo.name));
 					switch(fieldInfo.fieldType) {
 					case NORMAL:
 					{
-						switch(type) {
+						String type = getType(recordInfoMap, typeInfoMap, fieldInfo.type);						switch(type) {
 						case "boolean":
 							out.println("public static boolean get(@LONG_POINTER int base) {");
 							out.println("return RecordBase.get(%s::offset, base) != 0;", qClassName);
@@ -337,6 +343,7 @@ public class GenerateType {
 						break;
 					case BIT:
 					{
+						String type = getType(recordInfoMap, typeInfoMap, fieldInfo.type);
 						switch(type) {
 						case "boolean":
 							// public static final int getBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base)
@@ -380,8 +387,6 @@ public class GenerateType {
 				}
 				out.println("}");
 			}
-			out.println();
-		
 			out.println("}");
 		} catch (FileNotFoundException e) {
 			String exceptionName = e.getClass().getSimpleName();
