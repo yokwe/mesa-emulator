@@ -48,27 +48,4 @@ public class RecordBase {
 		final int address = addressFunc.apply(base);
 		Memory.modifyDbl(address, setValueFunc, newValue);
 	}
-	
-	// array
-	public static final int arrayAddress(int base, int elementSize, int elementIndex) {
-		return base + (elementSize * elementIndex);
-	}
-	
-	public static final int getArray(ToIntIntFunction addressFunc, @LONG_POINTER int base, int elementSize, int elementIndex) {
-		final int address = arrayAddress(addressFunc.apply(base), elementSize, elementIndex);
-		return Memory.fetch(address);
-	}
-	public static final void setArray(ToIntIntFunction addressFunc, @LONG_POINTER int base, int elementSize, int elementIndex, @CARD16 int newValue) {
-		final int address = arrayAddress(addressFunc.apply(base), elementSize, elementIndex);
-		Memory.store(address, newValue);
-	}
-
-	public static int getArrayBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base, int elementSize, int elementIndex) {
-		final int address = arrayAddress(addressFunc.apply(base), elementSize, elementIndex);
-		return getValueFunc.apply(Memory.fetch(address));
-	}
-	public static void setArrayBitField(ToIntIntFunction addressFunc, ToIntBiIntFunction setValueFunc, @LONG_POINTER int base, int elementSize, int elementIndex, @CARD16 int newValue) {
-		final int address = arrayAddress(addressFunc.apply(base), elementSize, elementIndex);
-		Memory.modify(address, setValueFunc, newValue);
-	}
 }
