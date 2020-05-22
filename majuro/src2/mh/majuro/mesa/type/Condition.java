@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class Condition {
@@ -15,9 +16,6 @@ public final class Condition {
         public static final @CARD16 int MASK        = 0b0001_1111_1111_1000;
         public static final         int SHIFT       = 3;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -25,10 +23,10 @@ public final class Condition {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD16 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(Condition.tail::offset, Condition.tail::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD16 int newValue) {
-            RecordBase.setBitField(Condition.tail::offset, Condition.tail::setBit, base, newValue);
+            Memory.modify(base + OFFSET, Condition.tail::setBit, newValue);
         }
     }
     // offset    0  size    1  type           name available
@@ -41,9 +39,6 @@ public final class Condition {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0010;
         public static final         int SHIFT       = 1;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -51,10 +46,10 @@ public final class Condition {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(Condition.abortable::offset, Condition.abortable::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(Condition.abortable::offset, Condition.abortable::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, Condition.abortable::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name wakeup
@@ -65,9 +60,6 @@ public final class Condition {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0001;
         public static final         int SHIFT       = 0;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -75,10 +67,10 @@ public final class Condition {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(Condition.wakeup::offset, Condition.wakeup::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(Condition.wakeup::offset, Condition.wakeup::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, Condition.wakeup::setBit, (newValue ? 1 : 0));
         }
     }
 }

@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class PsbLink {
@@ -13,9 +14,6 @@ public final class PsbLink {
         public static final @CARD16 int MASK        = 0b1110_0000_0000_0000;
         public static final         int SHIFT       = 13;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -23,10 +21,10 @@ public final class PsbLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD16 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(PsbLink.priority::offset, PsbLink.priority::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD16 int newValue) {
-            RecordBase.setBitField(PsbLink.priority::offset, PsbLink.priority::setBit, base, newValue);
+            Memory.modify(base + OFFSET, PsbLink.priority::setBit, newValue);
         }
     }
     // offset    0  size    1  type PsbIndex  name next
@@ -37,9 +35,6 @@ public final class PsbLink {
         public static final @CARD16 int MASK        = 0b0001_1111_1111_1000;
         public static final         int SHIFT       = 3;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -47,10 +42,10 @@ public final class PsbLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD16 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(PsbLink.next::offset, PsbLink.next::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD16 int newValue) {
-            RecordBase.setBitField(PsbLink.next::offset, PsbLink.next::setBit, base, newValue);
+            Memory.modify(base + OFFSET, PsbLink.next::setBit, newValue);
         }
     }
     // offset    0  size    1  type boolean   name failed
@@ -61,9 +56,6 @@ public final class PsbLink {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0100;
         public static final         int SHIFT       = 2;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -71,10 +63,10 @@ public final class PsbLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(PsbLink.failed::offset, PsbLink.failed::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(PsbLink.failed::offset, PsbLink.failed::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, PsbLink.failed::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name permanent
@@ -85,9 +77,6 @@ public final class PsbLink {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0010;
         public static final         int SHIFT       = 1;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -95,10 +84,10 @@ public final class PsbLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(PsbLink.permanent::offset, PsbLink.permanent::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(PsbLink.permanent::offset, PsbLink.permanent::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, PsbLink.permanent::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name preempted
@@ -109,9 +98,6 @@ public final class PsbLink {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0001;
         public static final         int SHIFT       = 0;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -119,10 +105,10 @@ public final class PsbLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(PsbLink.preempted::offset, PsbLink.preempted::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(PsbLink.preempted::offset, PsbLink.preempted::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, PsbLink.preempted::setBit, (newValue ? 1 : 0));
         }
     }
 }

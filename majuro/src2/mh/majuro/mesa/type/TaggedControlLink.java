@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class TaggedControlLink {
@@ -13,9 +14,6 @@ public final class TaggedControlLink {
         public static final @CARD32 int MASK        = 0b1111_1111_1111_1100_0000_0000_0000_0000;
         public static final         int SHIFT       = 18;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD32 int getBit(@CARD32 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -23,10 +21,10 @@ public final class TaggedControlLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD32 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitFieldDbl(TaggedControlLink.data::offset, TaggedControlLink.data::getBit, base);
+            return getBit(Memory.readDbl(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD32 int newValue) {
-            RecordBase.setBitFieldDbl(TaggedControlLink.data::offset, TaggedControlLink.data::setBit, base, newValue);
+            Memory.modifyDbl(base + OFFSET, TaggedControlLink.data::setBit, newValue);
         }
     }
     // offset    0  size    2  type CARD32    name tag
@@ -37,9 +35,6 @@ public final class TaggedControlLink {
         public static final @CARD32 int MASK        = 0b0000_0000_0000_0011_0000_0000_0000_0000;
         public static final         int SHIFT       = 16;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD32 int getBit(@CARD32 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -47,10 +42,10 @@ public final class TaggedControlLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD32 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitFieldDbl(TaggedControlLink.tag::offset, TaggedControlLink.tag::getBit, base);
+            return getBit(Memory.readDbl(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD32 int newValue) {
-            RecordBase.setBitFieldDbl(TaggedControlLink.tag::offset, TaggedControlLink.tag::setBit, base, newValue);
+            Memory.modifyDbl(base + OFFSET, TaggedControlLink.tag::setBit, newValue);
         }
     }
     // offset    0  size    2  type CARD32    name fill
@@ -61,9 +56,6 @@ public final class TaggedControlLink {
         public static final @CARD32 int MASK        = 0b0000_0000_0000_0000_1111_1111_1111_1111;
         public static final         int SHIFT       = 0;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD32 int getBit(@CARD32 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -71,10 +63,10 @@ public final class TaggedControlLink {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD32 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitFieldDbl(TaggedControlLink.fill::offset, TaggedControlLink.fill::getBit, base);
+            return getBit(Memory.readDbl(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD32 int newValue) {
-            RecordBase.setBitFieldDbl(TaggedControlLink.fill::offset, TaggedControlLink.fill::setBit, base, newValue);
+            Memory.modifyDbl(base + OFFSET, TaggedControlLink.fill::setBit, newValue);
         }
     }
 }

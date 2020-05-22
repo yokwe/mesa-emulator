@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class GlobalWord {
@@ -13,9 +14,6 @@ public final class GlobalWord {
         public static final @CARD16 int MASK        = 0b1111_1111_1111_1100;
         public static final         int SHIFT       = 2;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -23,10 +21,10 @@ public final class GlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD16 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(GlobalWord.gfi::offset, GlobalWord.gfi::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD16 int newValue) {
-            RecordBase.setBitField(GlobalWord.gfi::offset, GlobalWord.gfi::setBit, base, newValue);
+            Memory.modify(base + OFFSET, GlobalWord.gfi::setBit, newValue);
         }
     }
     // offset    0  size    1  type boolean   name trapxfers
@@ -37,9 +35,6 @@ public final class GlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0010;
         public static final         int SHIFT       = 1;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -47,10 +42,10 @@ public final class GlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(GlobalWord.trapxfers::offset, GlobalWord.trapxfers::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(GlobalWord.trapxfers::offset, GlobalWord.trapxfers::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, GlobalWord.trapxfers::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name codelinks
@@ -61,9 +56,6 @@ public final class GlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0001;
         public static final         int SHIFT       = 0;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -71,10 +63,10 @@ public final class GlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(GlobalWord.codelinks::offset, GlobalWord.codelinks::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(GlobalWord.codelinks::offset, GlobalWord.codelinks::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, GlobalWord.codelinks::setBit, (newValue ? 1 : 0));
         }
     }
 }

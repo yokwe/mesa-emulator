@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class ExtraGlobalWord {
@@ -15,9 +16,6 @@ public final class ExtraGlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0001_0000;
         public static final         int SHIFT       = 4;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -25,10 +23,10 @@ public final class ExtraGlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(ExtraGlobalWord.started::offset, ExtraGlobalWord.started::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(ExtraGlobalWord.started::offset, ExtraGlobalWord.started::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, ExtraGlobalWord.started::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name copy
@@ -39,9 +37,6 @@ public final class ExtraGlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_1000;
         public static final         int SHIFT       = 3;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -49,10 +44,10 @@ public final class ExtraGlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(ExtraGlobalWord.copy::offset, ExtraGlobalWord.copy::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(ExtraGlobalWord.copy::offset, ExtraGlobalWord.copy::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, ExtraGlobalWord.copy::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name copied
@@ -63,9 +58,6 @@ public final class ExtraGlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0100;
         public static final         int SHIFT       = 2;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -73,10 +65,10 @@ public final class ExtraGlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(ExtraGlobalWord.copied::offset, ExtraGlobalWord.copied::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(ExtraGlobalWord.copied::offset, ExtraGlobalWord.copied::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, ExtraGlobalWord.copied::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name alloced
@@ -87,9 +79,6 @@ public final class ExtraGlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0010;
         public static final         int SHIFT       = 1;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -97,10 +86,10 @@ public final class ExtraGlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(ExtraGlobalWord.alloced::offset, ExtraGlobalWord.alloced::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(ExtraGlobalWord.alloced::offset, ExtraGlobalWord.alloced::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, ExtraGlobalWord.alloced::setBit, (newValue ? 1 : 0));
         }
     }
     // offset    0  size    1  type boolean   name shared
@@ -111,9 +100,6 @@ public final class ExtraGlobalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_0000_0001;
         public static final         int SHIFT       = 0;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -121,10 +107,10 @@ public final class ExtraGlobalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static boolean get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(ExtraGlobalWord.shared::offset, ExtraGlobalWord.shared::getBit, base) != 0;
+            return getBit(Memory.fetch(base + OFFSET)) != 0;
         }
         public static void set(@LONG_POINTER int base, boolean newValue) {
-            RecordBase.setBitField(ExtraGlobalWord.shared::offset, ExtraGlobalWord.shared::setBit, base, (newValue ? 1 : 0));
+            Memory.modify(base + OFFSET, ExtraGlobalWord.shared::setBit, (newValue ? 1 : 0));
         }
     }
 }

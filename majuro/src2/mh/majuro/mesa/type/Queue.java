@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class Queue {
@@ -15,9 +16,6 @@ public final class Queue {
         public static final @CARD16 int MASK        = 0b0001_1111_1111_1000;
         public static final         int SHIFT       = 3;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -25,10 +23,10 @@ public final class Queue {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD16 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(Queue.tail::offset, Queue.tail::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD16 int newValue) {
-            RecordBase.setBitField(Queue.tail::offset, Queue.tail::setBit, base, newValue);
+            Memory.modify(base + OFFSET, Queue.tail::setBit, newValue);
         }
     }
     // offset    0  size    1  type           name reserved2

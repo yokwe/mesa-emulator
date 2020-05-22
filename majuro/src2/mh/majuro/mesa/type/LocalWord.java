@@ -1,5 +1,6 @@
 package mh.majuro.mesa.type;
 
+import mh.majuro.mesa.Memory;
 import mh.majuro.mesa.Type.*;
 
 public final class LocalWord {
@@ -13,9 +14,6 @@ public final class LocalWord {
         public static final @CARD16 int MASK        = 0b1111_1111_0000_0000;
         public static final         int SHIFT       = 8;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -23,10 +21,10 @@ public final class LocalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD8 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(LocalWord.available::offset, LocalWord.available::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD8 int newValue) {
-            RecordBase.setBitField(LocalWord.available::offset, LocalWord.available::setBit, base, newValue);
+            Memory.modify(base + OFFSET, LocalWord.available::setBit, newValue);
         }
     }
     // offset    0  size    1  type CARD8     name fsi
@@ -37,9 +35,6 @@ public final class LocalWord {
         public static final @CARD16 int MASK        = 0b0000_0000_1111_1111;
         public static final         int SHIFT       = 0;
 
-        public static @LONG_POINTER int offset(@LONG_POINTER int base) {
-            return base + OFFSET;
-        }
         public static @CARD16 int getBit(@CARD16 int value) {
             return (value & MASK) >>> SHIFT;
         }
@@ -47,10 +42,10 @@ public final class LocalWord {
             return ((newValue << SHIFT) & MASK) | (value & ~MASK);
         }
         public static @CARD8 int get(@LONG_POINTER int base) {
-            return RecordBase.getBitField(LocalWord.fsi::offset, LocalWord.fsi::getBit, base);
+            return getBit(Memory.fetch(base + OFFSET));
         }
         public static void set(@LONG_POINTER int base, @CARD8 int newValue) {
-            RecordBase.setBitField(LocalWord.fsi::offset, LocalWord.fsi::setBit, base, newValue);
+            Memory.modify(base + OFFSET, LocalWord.fsi::setBit, newValue);
         }
     }
 }
