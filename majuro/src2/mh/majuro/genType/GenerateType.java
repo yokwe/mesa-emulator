@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import org.slf4j.LoggerFactory;
 
 import mh.majuro.UnexpectedException;
+import mh.majuro.mesa.Memory;
 import mh.majuro.util.AutoIndentPrintWriter;
 import mh.majuro.util.CSVUtil;
 
@@ -261,7 +262,7 @@ public class GenerateType {
 
 	static final String PATH_DIR = "src2/mh/majuro/mesa/type";
 	
-	static void generateInnerFieldGetSet(AutoIndentPrintWriter out, Context context, String type) {
+	static void generateInnerFieldGetSet(AutoIndentPrintWriter out, Context context, String type, String prefix) {
 		RecordInfo recordInfo = context.getRecordInfo(type);
 		for(FieldInfo fieldInfo: recordInfo.fieldList) {
 			if (fieldInfo.isEmpty()) continue;
@@ -269,28 +270,31 @@ public class GenerateType {
 			out.println("//   %s  %s", type, fieldInfo.name);
 			
 			out.println("public static final class %s {", fieldInfo.name);
+			out.println("public static final int OFFSET = %s.OFFSET + %2d;", prefix, fieldInfo.offset);
+			out.println();
+
 			switch(fieldType) {
 			case "boolean":
 				out.println("public static boolean get(@LONG_POINTER int base) {");
-				out.println("return %s.%s.get(offset(base));", recordInfo.name, fieldInfo.name);
+				out.println("return %s.%s.get(base + OFFSET);", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
-				out.println("%s.%s.set(offset(base), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.%s.set(base + OFFSET, newValue);", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				break;
 			case "CARD8":
 			case "CARD16":
 			case "CARD32":
 				out.println("public static @%s int get(@LONG_POINTER int base) {", fieldType);
-				out.println("return %s.%s.get(offset(base));", recordInfo.name, fieldInfo.name);
+				out.println("return %s.%s.get(base + OFFSET);", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", fieldType);
-				out.println("%s.%s.set(offset(base), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.%s.set(base + OFFSET, newValue);", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				break;
 			default:
 				if (context.isRecord(fieldType)) {
-					generateInnerFieldGetSet(out, context, fieldType);
+					generateInnerFieldGetSet(out, context, fieldType, String.format("%s.%s", prefix, fieldInfo.name));
 				} else {
 					logger.error("nestedType {}", fieldType);
 					throw new UnexpectedException();
@@ -300,7 +304,7 @@ public class GenerateType {
 		}
 	}
 	
-	static void generateInnerArrayFieldGetSet(AutoIndentPrintWriter out, Context context, String type) {
+	static void generateInnerArrayFieldGetSet(AutoIndentPrintWriter out, Context context, String type, String prefix) {
 		RecordInfo recordInfo = context.getRecordInfo(type);
 		for(FieldInfo fieldInfo: recordInfo.fieldList) {
 			if (fieldInfo.isEmpty()) continue;
@@ -308,28 +312,31 @@ public class GenerateType {
 			out.println("// %s  %s  %s", type, fieldInfo.name, fieldType);
 			
 			out.println("public static final class %s {", fieldInfo.name);
+			out.println("public static final int OFFSET = %s.OFFSET + %2d;", prefix, fieldInfo.offset);
+			out.println();
+			
 			switch(fieldType) {
 			case "boolean":
 				out.println("public static boolean get(@LONG_POINTER int base, int index) {");
-				out.println("return %s.%s.get(offset(base, index));", recordInfo.name, fieldInfo.name);
+				out.println("return %s.%s.get(base + OFFSET + (ARRAY_SIZE * index));", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, int index, boolean newValue) {");
-				out.println("%s.%s.set(offset(base, index), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.%s.set(base + OFFSET + (ARRAY_SIZE * index), newValue);", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				break;
 			case "CARD8":
 			case "CARD16":
 			case "CARD32":
 				out.println("public static @%s int get(@LONG_POINTER int base, int index) {", fieldType);
-				out.println("return %s.%s.get(offset(base, index));", recordInfo.name, fieldInfo.name);
+				out.println("return %s.%s.get(base + OFFSET + (ARRAY_SIZE * index));", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, int index, @%s int newValue) {", fieldType);
-				out.println("%s.%s.set(offset(base, index), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.%s.set(base + OFFSET + (ARRAY_SIZE * index), newValue);", recordInfo.name, fieldInfo.name);
 				out.println("}");
 				break;
 			default:
 				if (context.isRecord(fieldType)) {
-					generateInnerArrayFieldGetSet(out, context, fieldType);
+					generateInnerArrayFieldGetSet(out, context, fieldType, String.format("%s.%s", prefix, fieldInfo.name));
 				} else {
 					logger.error("nestedType {}", fieldType);
 					throw new UnexpectedException();
@@ -345,6 +352,7 @@ public class GenerateType {
 		try (AutoIndentPrintWriter out = new AutoIndentPrintWriter(new PrintWriter(path))) {
 			out.println("package mh.majuro.mesa.type;");
 			out.println();
+			out.println("import mh.majuro.mesa.Memory;");
 			out.println("import mh.majuro.mesa.Type.*;");
 			out.println();
 			out.println("public final class %s {", recordInfo.name);
@@ -373,12 +381,6 @@ public class GenerateType {
 				{
 					switch (fieldInfo.fieldType) {
 					case NORMAL:
-					{
-						out.println();
-						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
-						out.println("return base + OFFSET;");
-						out.println("}");
-					}
 						break;
 					case BIT:
 					{
@@ -389,9 +391,6 @@ public class GenerateType {
 							out.println("public static final         int SHIFT       = %d;", bitFieldInfo.bitInfo.shift);
 							out.println();
 							
-							out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
-							out.println("return base + OFFSET;");
-							out.println("}");
 							out.println("public static @CARD16 int getBit(@CARD16 int value) {");
 							out.println("return (value & MASK) >>> SHIFT;");
 							out.println("}");
@@ -404,9 +403,6 @@ public class GenerateType {
 							out.println("public static final         int SHIFT       = %d;", bitFieldInfo.bitInfo.shift);
 							out.println();
 							
-							out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
-							out.println("return base + OFFSET;");
-							out.println("}");
 							out.println("public static @CARD32 int getBit(@CARD32 int value) {");
 							out.println("return (value & MASK) >>> SHIFT;");
 							out.println("}");
@@ -424,12 +420,9 @@ public class GenerateType {
 					{
 						ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
 
-						out.println("public static final         int ARRAY_SIZE = %d;", arrayFieldInfo.arrayInfo.size);
-						out.println("public static final         int ARRAY_LEN  = %d;", arrayFieldInfo.arrayInfo.length);
+						out.println("public static final         int ARRAY_SIZE = %2d;", arrayFieldInfo.arrayInfo.size);
+						out.println("public static final         int ARRAY_LEN  = %2d;", arrayFieldInfo.arrayInfo.length);
 						out.println();
-						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base, int index) {");
-						out.println("return base + OFFSET + (ARRAY_SIZE * index);");
-						out.println("}");
 					}
 						break;
 					default:
@@ -450,32 +443,32 @@ public class GenerateType {
 						switch(type) {
 						case "boolean":
 							out.println("public static boolean get(@LONG_POINTER int base) {");
-							out.println("return RecordBase.get(%s::offset, base) != 0;", qClassName);
+							out.println("return Memory.fetch(base + OFFSET) != 0;");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
-							out.println("RecordBase.set(%s::offset, base, (newValue ? 1 : 0));", qClassName);
+							out.println("Memory.store(base + OFFSET, (newValue ? 1 : 0));");
 							out.println("}");
 							break;
 						case "CARD8":
 						case "CARD16":
 							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
-							out.println("return RecordBase.get(%s::offset, base);", qClassName);
+							out.println("return Memory.fetch(base + OFFSET);");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
-							out.println("RecordBase.set(%s::offset, base, newValue);", qClassName);
+							out.println("Memory.store(base + OFFSET, newValue);");
 							out.println("}");
 							break;
 						case "CARD32":
 							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
-							out.println("return RecordBase.getDbl(%s::offset, base);", qClassName);
+							out.println("return Memory.readDbl(base + OFFSET);");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
-							out.println("RecordBase.setDbl(%s::offset, base, newValue);", qClassName);
+							out.println("Memory.writeDbl(base + OFFSET, newValue);", qClassName);
 							out.println("}");
 							break;
 						default:
 							if (context.isRecord(type)) {
-								generateInnerFieldGetSet(out, context, type);
+								generateInnerFieldGetSet(out, context, type, fieldInfo.name);
 							} else {
 								logger.error("type {}", type);
 								throw new UnexpectedException();
@@ -490,27 +483,27 @@ public class GenerateType {
 						case "boolean":
 							// public static final int getBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base)
 							out.println("public static boolean get(@LONG_POINTER int base) {");
-							out.println("return RecordBase.getBitField(%1$s::offset, %1$s::getBit, base) != 0;", qClassName);
+							out.println("return getBit(Memory.fetch(base + OFFSET)) != 0;");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
-							out.println("RecordBase.setBitField(%1$s::offset, %1$s::setBit, base, (newValue ? 1 : 0));", qClassName);
+							out.println("Memory.modify(base + OFFSET, %1$s::setBit, (newValue ? 1 : 0));", qClassName);
 							out.println("}");
 							break;
 						case "CARD8":
 						case "CARD16":
 							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
-							out.println("return RecordBase.getBitField(%1$s::offset, %1$s::getBit, base);", qClassName);
+							out.println("return getBit(Memory.fetch(base + OFFSET));");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
-							out.println("RecordBase.setBitField(%1$s::offset, %1$s::setBit, base, newValue);", qClassName);
+							out.println("Memory.modify(base + OFFSET, %1$s::setBit, newValue);", qClassName);
 							out.println("}");
 							break;
 						case "CARD32":
 							out.println("public static @%s int get(@LONG_POINTER int base) {", type);
-							out.println("return RecordBase.getBitFieldDbl(%1$s::offset, %1$s::getBit, base);", qClassName);
+							out.println("return getBit(Memory.readDbl(base + OFFSET));");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
-							out.println("RecordBase.setBitFieldDbl(%1$s::offset, %1$s::setBit, base, newValue);", qClassName);
+							out.println("Memory.modifyDbl(base + OFFSET, %1$s::setBit, newValue);", qClassName);
 							out.println("}");
 							break;
 						default:
@@ -528,15 +521,15 @@ public class GenerateType {
 						switch(type) {
 						case "CARD16":
 							out.println("public static @%s int get(@LONG_POINTER int base, int index) {", type);
-							out.println("return RecordBase.get(%s::offset, base);", qClassName);
+							out.println("return Memory.fetch(base + OFFSET + (ARRAY_SIZE * index));");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, int index, @%s int newValue) {", type);
-							out.println("RecordBase.set(%s::offset, base, newValue);", qClassName);
+							out.println("Memory.store(base + OFFSET + (ARRAY_SIZE * index), newValue);");
 							out.println("}");
 							break;
 						default:
 							if (context.isRecord(type)) {
-								generateInnerArrayFieldGetSet(out, context, type);
+								generateInnerArrayFieldGetSet(out, context, type, fieldInfo.name);
 							} else {
 								logger.error("type {}", type);
 								throw new UnexpectedException();
