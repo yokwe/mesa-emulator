@@ -8,10 +8,10 @@ public final class TaggedControlLink {
     // offset    0  size    2  type CARD32    name data
     //   bit startBit  0  stopBit 13
     public static final class data {
-        public static final         int SIZE   =  2;
-        public static final         int OFFSET =  0;
-        public static final @CARD32 int MASK    = 0b1111_1111_1111_1100_0000_0000_0000_0000;
-        public static final         int SHIFT   = 18;
+        public static final         int SIZE       =  2;
+        public static final         int OFFSET     =  0;
+        public static final @CARD32 int MASK        = 0b1111_1111_1111_1100_0000_0000_0000_0000;
+        public static final         int SHIFT       = 18;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -32,10 +32,10 @@ public final class TaggedControlLink {
     // offset    0  size    2  type CARD32    name tag
     //   bit startBit 14  stopBit 15
     public static final class tag {
-        public static final         int SIZE   =  2;
-        public static final         int OFFSET =  0;
-        public static final @CARD32 int MASK    = 0b0000_0000_0000_0011_0000_0000_0000_0000;
-        public static final         int SHIFT   = 16;
+        public static final         int SIZE       =  2;
+        public static final         int OFFSET     =  0;
+        public static final @CARD32 int MASK        = 0b0000_0000_0000_0011_0000_0000_0000_0000;
+        public static final         int SHIFT       = 16;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -56,10 +56,10 @@ public final class TaggedControlLink {
     // offset    0  size    2  type CARD32    name fill
     //   bit startBit 16  stopBit 31
     public static final class fill {
-        public static final         int SIZE   =  2;
-        public static final         int OFFSET =  0;
-        public static final @CARD32 int MASK    = 0b0000_0000_0000_0000_1111_1111_1111_1111;
-        public static final         int SHIFT   = 0;
+        public static final         int SIZE       =  2;
+        public static final         int OFFSET     =  0;
+        public static final @CARD32 int MASK        = 0b0000_0000_0000_0000_1111_1111_1111_1111;
+        public static final         int SHIFT       = 0;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;

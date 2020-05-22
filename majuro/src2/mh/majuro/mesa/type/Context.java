@@ -7,8 +7,8 @@ public final class Context {
 
     // offset    0  size    1  type CARD16    name frame
     public static final class frame {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -22,8 +22,8 @@ public final class Context {
     }
     // offset    0  size    1  type CARD16    name state
     public static final class state {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;

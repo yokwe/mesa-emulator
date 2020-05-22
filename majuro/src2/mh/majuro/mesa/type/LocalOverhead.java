@@ -7,8 +7,8 @@ public final class LocalOverhead {
 
     // offset    0  size    1  type CARD16    name word
     public static final class word {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -22,8 +22,8 @@ public final class LocalOverhead {
     }
     // offset    1  size    1  type CARD16    name returnlink
     public static final class returnlink {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  1;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  1;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -37,8 +37,8 @@ public final class LocalOverhead {
     }
     // offset    2  size    1  type CARD16    name globallink
     public static final class globallink {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  2;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  2;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -52,8 +52,8 @@ public final class LocalOverhead {
     }
     // offset    3  size    1  type CARD16    name pc
     public static final class pc {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  3;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  3;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;

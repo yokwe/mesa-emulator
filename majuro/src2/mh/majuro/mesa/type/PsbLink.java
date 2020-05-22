@@ -8,10 +8,10 @@ public final class PsbLink {
     // offset    0  size    1  type Priority  name priority
     //   bit startBit  0  stopBit  2
     public static final class priority {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b1110_0000_0000_0000;
-        public static final         int SHIFT   = 13;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b1110_0000_0000_0000;
+        public static final         int SHIFT       = 13;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -32,10 +32,10 @@ public final class PsbLink {
     // offset    0  size    1  type PsbIndex  name next
     //   bit startBit  3  stopBit 12
     public static final class next {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0001_1111_1111_1000;
-        public static final         int SHIFT   = 3;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0001_1111_1111_1000;
+        public static final         int SHIFT       = 3;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -56,10 +56,10 @@ public final class PsbLink {
     // offset    0  size    1  type boolean   name failed
     //   bit startBit 13  stopBit 13
     public static final class failed {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0000_0000_0000_0100;
-        public static final         int SHIFT   = 2;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0000_0000_0000_0100;
+        public static final         int SHIFT       = 2;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -80,10 +80,10 @@ public final class PsbLink {
     // offset    0  size    1  type boolean   name permanent
     //   bit startBit 14  stopBit 14
     public static final class permanent {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0000_0000_0000_0010;
-        public static final         int SHIFT   = 1;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0000_0000_0000_0010;
+        public static final         int SHIFT       = 1;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -104,10 +104,10 @@ public final class PsbLink {
     // offset    0  size    1  type boolean   name preempted
     //   bit startBit 15  stopBit 15
     public static final class preempted {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0000_0000_0000_0001;
-        public static final         int SHIFT   = 0;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0000_0000_0000_0001;
+        public static final         int SHIFT       = 0;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;

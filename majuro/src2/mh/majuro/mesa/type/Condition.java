@@ -10,10 +10,10 @@ public final class Condition {
     // offset    0  size    1  type PsbIndex  name tail
     //   bit startBit  3  stopBit 12
     public static final class tail {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0001_1111_1111_1000;
-        public static final         int SHIFT   = 3;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0001_1111_1111_1000;
+        public static final         int SHIFT       = 3;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -36,10 +36,10 @@ public final class Condition {
     // offset    0  size    1  type boolean   name abortable
     //   bit startBit 14  stopBit 14
     public static final class abortable {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0000_0000_0000_0010;
-        public static final         int SHIFT   = 1;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0000_0000_0000_0010;
+        public static final         int SHIFT       = 1;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
@@ -60,10 +60,10 @@ public final class Condition {
     // offset    0  size    1  type boolean   name wakeup
     //   bit startBit 15  stopBit 15
     public static final class wakeup {
-        public static final         int SIZE   =  1;
-        public static final         int OFFSET =  0;
-        public static final @CARD16 int MASK    = 0b0000_0000_0000_0001;
-        public static final         int SHIFT   = 0;
+        public static final         int SIZE       =  1;
+        public static final         int OFFSET     =  0;
+        public static final @CARD16 int MASK        = 0b0000_0000_0000_0001;
+        public static final         int SHIFT       = 0;
 
         public static @LONG_POINTER int offset(@LONG_POINTER int base) {
             return base + OFFSET;
