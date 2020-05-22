@@ -18,7 +18,89 @@ import mh.majuro.util.CSVUtil;
 public class GenerateType {
 	static final org.slf4j.Logger logger = LoggerFactory.getLogger(GenerateType.class);
 
-	static Map<String, RecordInfo> buildRecordInfoMap(List<Record> recordList) {
+	static class Context {
+		final Map<String, RecordInfo> recordMap;
+		final Map<String, TypeInfo>   typeMap;
+		
+		Context(Map<String, RecordInfo> recordMap, Map<String, TypeInfo> typeMap) {
+			this.recordMap = recordMap;
+			this.typeMap   = typeMap;
+		}
+		
+		boolean isPrimitive(String name) {
+			switch(name) {
+			case "boolean":
+			case "CARD8":
+			case "CARD16":
+			case "CARD32":
+				return true;
+			default:
+				return false;
+			}
+		}
+		boolean isRecord(String name) {
+			return recordMap.containsKey(name);
+		}
+		RecordInfo getRecordInfo(String name) {
+			if (recordMap.containsKey(name)) {
+				return recordMap.get(name);
+			} else {
+				logger.error("name {}", name);
+				throw new UnexpectedException();
+			}
+		}
+		int getSize(String name) {
+			String type = name;
+			for(;;) {
+				switch(type) {
+				case "boolean":
+				case "CARD8":
+				case "CARD16":
+					return 1;
+				case "CARD32":
+					return 2;
+				default:
+					if (typeMap.containsKey(type)) {
+						type = typeMap.get(type).type;
+						continue;
+					}
+					if (recordMap.containsKey(name)) {
+						return recordMap.get(name).size;
+					} else {
+						logger.error("name {}", name);
+						throw new UnexpectedException();
+					}
+				}
+			}
+		}
+		String getBaseType(String name) {
+			String type = name;
+			for(;;) {
+				switch(type) {
+				case "boolean":
+				case "CARD8":
+				case "CARD16":
+				case "CARD32":
+					return type;
+				default:
+					if (typeMap.containsKey(type)) {
+						type = typeMap.get(type).type;
+						continue;
+					}
+					if (recordMap.containsKey(type)) {
+						return type;
+					} else {
+						logger.error("name {}", name);
+						logger.error("type {}", type);
+						logger.error("recordMap {}", recordMap.keySet());
+						throw new UnexpectedException();
+					}
+				}
+			}
+		}
+	}
+	
+	static Map<String, RecordInfo> buildRecordMap(List<Record> recordList) {
 		// Sanity check
 		{
 			for(Record record: recordList) {
@@ -67,7 +149,7 @@ public class GenerateType {
 			}
 		}
 			
-		Map<String, RecordInfo> ret = new TreeMap<>();
+		Map<String, RecordInfo> map = new TreeMap<>();
 		
 		String name = null;
 		List<Record> list = new ArrayList<>();
@@ -101,7 +183,7 @@ public class GenerateType {
 						}
 					}
 					
-					ret.put(name, new RecordInfo(name, size, fields));
+					map.put(name, new RecordInfo(name, size, fields));
 				}
 				//
 				list = new ArrayList<>();
@@ -140,13 +222,13 @@ public class GenerateType {
 				}
 			}
 			
-			ret.put(name, new RecordInfo(name, size, fields));
+			map.put(name, new RecordInfo(name, size, fields));
 		}
-		return ret;
+		return map;
 	}
 	
-	static Map<String, TypeInfo> buildTypeInfoMap(List<Type> typeList) {
-		Map<String, TypeInfo> ret = new TreeMap<>();
+	static Map<String, TypeInfo> buildTypeMap(List<Type> typeList) {
+		Map<String, TypeInfo> map = new TreeMap<>();
 
 		for(Type type: typeList) {
 			if (type.isEmpty() && type.type.isEmpty() && type.minValue.isEmpty() && type.maxValue.isEmpty()) continue;
@@ -171,51 +253,93 @@ public class GenerateType {
 				}
 			}
 			
-			ret.put(type.name, new TypeInfo(type.name, type.type, Integer.parseInt(type.minValue), Integer.parseInt(type.maxValue)));
+			map.put(type.name, new TypeInfo(type.name, type.type, Integer.parseInt(type.minValue), Integer.parseInt(type.maxValue)));
 		}
 		
-		return ret;
+		return map;
 	}
 
 	static final String PATH_DIR = "src2/mh/majuro/mesa/type";
 	
-	private static String getType(Map<String, RecordInfo> recordInfoMap, Map<String, TypeInfo> typeInfoMap, String type) {
-		switch(type) {
-		case "boolean":
-		case "CARD8":
-		case "CARD16":
-		case "CARD32":
-			break;
-		default:
-			if (typeInfoMap.containsKey(type)) {
-				type = typeInfoMap.get(type).type;
-				switch(type) {
-				case "boolean":
-				case "CARD8":
-				case "CARD16":
-				case "CARD32":
-					break;
-				default:
-					logger.error("type {}", type);
-					throw new UnexpectedException();
-				}
-			} else if (recordInfoMap.containsKey(type)) {
-				RecordInfo refRecordInfo = recordInfoMap.get(type);
-				if (refRecordInfo.size == 1) {
-					type = "CARD16";
+	static void generateInnerFieldGetSet(AutoIndentPrintWriter out, Context context, String type) {
+		RecordInfo recordInfo = context.getRecordInfo(type);
+		for(FieldInfo fieldInfo: recordInfo.fieldList) {
+			if (fieldInfo.isEmpty()) continue;
+			String fieldType = context.getBaseType(fieldInfo.type);
+			out.println("//   %s  %s", type, fieldInfo.name);
+			
+			out.println("public static final class %s {", fieldInfo.name);
+			switch(fieldType) {
+			case "boolean":
+				out.println("public static boolean get(@LONG_POINTER int base) {");
+				out.println("return %s.%s.get(offset(base));", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
+				out.println("%s.%s.set(offset(base), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				break;
+			case "CARD8":
+			case "CARD16":
+			case "CARD32":
+				out.println("public static @%s int get(@LONG_POINTER int base) {", fieldType);
+				out.println("return %s.%s.get(offset(base));", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", fieldType);
+				out.println("%s.%s.set(offset(base), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				break;
+			default:
+				if (context.isRecord(fieldType)) {
+					generateInnerFieldGetSet(out, context, fieldType);
 				} else {
-					logger.error("size {}", refRecordInfo.size);
+					logger.error("nestedType {}", fieldType);
 					throw new UnexpectedException();
 				}
-			} else {
-				logger.error("type {}", type);
-				throw new UnexpectedException();
 			}
+			out.println("}");
 		}
-		return type;
 	}
 	
-	static void generateRecordClass(Map<String, RecordInfo> recordInfoMap, Map<String, TypeInfo> typeInfoMap, RecordInfo recordInfo) {
+	static void generateInnerArrayFieldGetSet(AutoIndentPrintWriter out, Context context, String type) {
+		RecordInfo recordInfo = context.getRecordInfo(type);
+		for(FieldInfo fieldInfo: recordInfo.fieldList) {
+			if (fieldInfo.isEmpty()) continue;
+			String fieldType = context.getBaseType(fieldInfo.type);
+			out.println("// %s  %s  %s", type, fieldInfo.name, fieldType);
+			
+			out.println("public static final class %s {", fieldInfo.name);
+			switch(fieldType) {
+			case "boolean":
+				out.println("public static boolean get(@LONG_POINTER int base, int index) {");
+				out.println("return %s.%s.get(offset(base, index));", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				out.println("public static void set(@LONG_POINTER int base, int index, boolean newValue) {");
+				out.println("%s.%s.set(offset(base, index), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				break;
+			case "CARD8":
+			case "CARD16":
+			case "CARD32":
+				out.println("public static @%s int get(@LONG_POINTER int base, int index) {", fieldType);
+				out.println("return %s.%s.get(offset(base, index));", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				out.println("public static void set(@LONG_POINTER int base, int index, @%s int newValue) {", fieldType);
+				out.println("%s.%s.set(offset(base, index), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("}");
+				break;
+			default:
+				if (context.isRecord(fieldType)) {
+					generateInnerArrayFieldGetSet(out, context, fieldType);
+				} else {
+					logger.error("nestedType {}", fieldType);
+					throw new UnexpectedException();
+				}
+			}
+			out.println("}");
+		}
+	}
+
+	static void generateRecordClass(Context context, RecordInfo recordInfo) {
 		String path = String.format("%s/%s.java", PATH_DIR, recordInfo.name);
 		logger.info("path {}",path);
 		try (AutoIndentPrintWriter out = new AutoIndentPrintWriter(new PrintWriter(path))) {
@@ -243,72 +367,87 @@ public class GenerateType {
 
 				// 	public static int WORD_OFFSET       = 0;
 				out.println("public static final class %s {", fieldInfo.name);
-				out.println("public static final         int SIZE   = %2d;", fieldInfo.size);
-				out.println("public static final         int OFFSET = %2d;", fieldInfo.offset);
+				out.println("public static final         int SIZE       = %2d;", fieldInfo.size);
+				out.println("public static final         int OFFSET     = %2d;", fieldInfo.offset);
 
-				switch (fieldInfo.fieldType) {
-				case NORMAL:
 				{
-					out.println();
-					out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
-					out.println("return base + OFFSET;");
-					out.println("}");
-				}
-					break;
-				case BIT:
-				{
-					BitFieldInfo bitFieldInfo = (BitFieldInfo)fieldInfo;
-					switch(bitFieldInfo.size) {
-					case 1:
-						out.println("public static final @CARD16 int MASK    = %s;", bitFieldInfo.bitInfo.mask);
-						out.println("public static final         int SHIFT   = %d;", bitFieldInfo.bitInfo.shift);
+					switch (fieldInfo.fieldType) {
+					case NORMAL:
+					{
 						out.println();
-						
 						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
 						out.println("return base + OFFSET;");
 						out.println("}");
-						out.println("public static @CARD16 int getBit(@CARD16 int value) {");
-						out.println("return (value & MASK) >>> SHIFT;");
-						out.println("}");
-						out.println("public static @CARD16 int setBit(@CARD16 int value, @CARD16 int newValue) {");
-						out.println("return ((newValue << SHIFT) & MASK) | (value & ~MASK);");
-						out.println("}");
+					}
 						break;
-					case 2:
-						out.println("public static final @CARD32 int MASK    = %s;", bitFieldInfo.bitInfo.mask);
-						out.println("public static final         int SHIFT   = %d;", bitFieldInfo.bitInfo.shift);
+					case BIT:
+					{
+						BitFieldInfo bitFieldInfo = (BitFieldInfo)fieldInfo;
+						switch(bitFieldInfo.size) {
+						case 1:
+							out.println("public static final @CARD16 int MASK        = %s;", bitFieldInfo.bitInfo.mask);
+							out.println("public static final         int SHIFT       = %d;", bitFieldInfo.bitInfo.shift);
+							out.println();
+							
+							out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
+							out.println("return base + OFFSET;");
+							out.println("}");
+							out.println("public static @CARD16 int getBit(@CARD16 int value) {");
+							out.println("return (value & MASK) >>> SHIFT;");
+							out.println("}");
+							out.println("public static @CARD16 int setBit(@CARD16 int value, @CARD16 int newValue) {");
+							out.println("return ((newValue << SHIFT) & MASK) | (value & ~MASK);");
+							out.println("}");
+							break;
+						case 2:
+							out.println("public static final @CARD32 int MASK        = %s;", bitFieldInfo.bitInfo.mask);
+							out.println("public static final         int SHIFT       = %d;", bitFieldInfo.bitInfo.shift);
+							out.println();
+							
+							out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
+							out.println("return base + OFFSET;");
+							out.println("}");
+							out.println("public static @CARD32 int getBit(@CARD32 int value) {");
+							out.println("return (value & MASK) >>> SHIFT;");
+							out.println("}");
+							out.println("public static @CARD32 int setBit(@CARD32 int value, @CARD32 int newValue) {");
+							out.println("return ((newValue << SHIFT) & MASK) | (value & ~MASK);");
+							out.println("}");
+							break;
+						default:
+							logger.error("size {}", bitFieldInfo.size);
+							throw new UnexpectedException();
+						}
+					}
+						break;
+					case ARRAY:
+					{
+						ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
+
+						out.println("public static final         int ARRAY_SIZE = %d;", arrayFieldInfo.arrayInfo.size);
+						out.println("public static final         int ARRAY_LEN  = %d;", arrayFieldInfo.arrayInfo.length);
 						out.println();
-						
-						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base) {");
-						out.println("return base + OFFSET;");
+						out.println("public static @LONG_POINTER int offset(@LONG_POINTER int base, int index) {");
+						out.println("return base + OFFSET + (ARRAY_SIZE * index);");
 						out.println("}");
-						out.println("public static @CARD32 int getBit(@CARD32 int value) {");
-						out.println("return (value & MASK) >>> SHIFT;");
-						out.println("}");
-						out.println("public static @CARD32 int setBit(@CARD32 int value, @CARD32 int newValue) {");
-						out.println("return ((newValue << SHIFT) & MASK) | (value & ~MASK);");
-						out.println("}");
+					}
 						break;
 					default:
-						logger.error("size {}", bitFieldInfo.size);
 						throw new UnexpectedException();
 					}
-				}
-					break;
-				case ARRAY:
-					out.println("// FIXME ARRAY %s", fieldInfo);
-					break;
-				default:
-					throw new UnexpectedException();
+
 				}
 				
+				//
 				// get set methods
+				//
 				{
 					String qClassName = String.format("%s.%s", recordInfo.name, fieldInfo.name);
 					switch(fieldInfo.fieldType) {
 					case NORMAL:
 					{
-						String type = getType(recordInfoMap, typeInfoMap, fieldInfo.type);						switch(type) {
+						String type = context.getBaseType(fieldInfo.type);
+						switch(type) {
 						case "boolean":
 							out.println("public static boolean get(@LONG_POINTER int base) {");
 							out.println("return RecordBase.get(%s::offset, base) != 0;", qClassName);
@@ -335,14 +474,18 @@ public class GenerateType {
 							out.println("}");
 							break;
 						default:
-							logger.error("type {}", type);
-							throw new UnexpectedException();
+							if (context.isRecord(type)) {
+								generateInnerFieldGetSet(out, context, type);
+							} else {
+								logger.error("type {}", type);
+								throw new UnexpectedException();
+							}
 						}
 					}
 						break;
 					case BIT:
 					{
-						String type = getType(recordInfoMap, typeInfoMap, fieldInfo.type);
+						String type = context.getBaseType(fieldInfo.type);
 						switch(type) {
 						case "boolean":
 							// public static final int getBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base)
@@ -377,8 +520,30 @@ public class GenerateType {
 					}
 						break;
 					case ARRAY:
-						// FIXME
-						out.println("// FIXME ARRAY %s", fieldInfo);
+					{
+						ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
+						ArrayInfo arrayInfo = arrayFieldInfo.arrayInfo;
+						String type = context.getBaseType(arrayInfo.type);
+						
+						switch(type) {
+						case "CARD16":
+							out.println("public static @%s int get(@LONG_POINTER int base, int index) {", type);
+							out.println("return RecordBase.get(%s::offset, base);", qClassName);
+							out.println("}");
+							out.println("public static void set(@LONG_POINTER int base, int index, @%s int newValue) {", type);
+							out.println("RecordBase.set(%s::offset, base, newValue);", qClassName);
+							out.println("}");
+							break;
+						default:
+							if (context.isRecord(type)) {
+								generateInnerArrayFieldGetSet(out, context, type);
+							} else {
+								logger.error("type {}", type);
+								throw new UnexpectedException();
+							}
+						}
+
+					}
 						break;
 					default:
 						throw new UnexpectedException();
@@ -403,18 +568,11 @@ public class GenerateType {
 		logger.info("typeList   {}", typeList.size());
 		logger.info("recordList {}", recordList.size());
 		
-		Map<String, TypeInfo> typeInfoMap = buildTypeInfoMap(typeList);
-		logger.info("typeInfoMap  {} {}", typeInfoMap.size(), typeInfoMap.keySet());
+		Map<String, TypeInfo> typeMap = buildTypeMap(typeList);
+		logger.info("typeInfoMap  {} {}", typeMap.size(), typeMap.keySet());
 
-		Map<String, RecordInfo> recordInfoMap = buildRecordInfoMap(recordList);
-		logger.info("recordInfoMap {} {}", recordInfoMap.size(), recordInfoMap.keySet());
-		
-		for(TypeInfo e: typeInfoMap.values()) {
-			logger.info("typeInfo {}", e);
-		}
-		for(RecordInfo e: recordInfoMap.values()) {
-			logger.info("recordInfo {}", e);
-		}
+		Map<String, RecordInfo> recordMap = buildRecordMap(recordList);
+		logger.info("recordInfoMap {} {}", recordMap.size(), recordMap.keySet());
 		
 		// Sanity check
 		{
@@ -425,11 +583,11 @@ public class GenerateType {
 				knownTypeSet.add("CARD16");
 				knownTypeSet.add("CARD32");
 				
-				typeInfoMap.values().stream().forEach(o -> knownTypeSet.add(o.name));
-				recordInfoMap.values().stream().forEach(o -> knownTypeSet.add(o.name));
+				typeMap.values().stream().forEach(o -> knownTypeSet.add(o.name));
+				recordMap.values().stream().forEach(o -> knownTypeSet.add(o.name));
 			}
 
-			for(TypeInfo e: typeInfoMap.values()) {
+			for(TypeInfo e: typeMap.values()) {
 				if (!knownTypeSet.contains(e.type)) {
 					logger.error("unknown type");
 					logger.error("  type {}", e.type);
@@ -448,7 +606,7 @@ public class GenerateType {
 				}
 			}
 			
-			for(RecordInfo e: recordInfoMap.values()) {
+			for(RecordInfo e: recordMap.values()) {
 				if (e.size <= 0) {
 					logger.error("size <= 0");
 					logger.error("  size {}", e.size);
@@ -471,8 +629,10 @@ public class GenerateType {
 			}
 		}
 		
-		for(RecordInfo e: recordInfoMap.values()) {
-			generateRecordClass(recordInfoMap, typeInfoMap, e);
+		Context context = new Context(recordMap, typeMap);
+		
+		for(RecordInfo e: recordMap.values()) {
+			generateRecordClass(context, e);
 		}
 		
 		logger.info("STOP");
