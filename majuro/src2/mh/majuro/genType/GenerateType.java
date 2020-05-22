@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import org.slf4j.LoggerFactory;
 
 import mh.majuro.UnexpectedException;
-import mh.majuro.mesa.Memory;
 import mh.majuro.util.AutoIndentPrintWriter;
 import mh.majuro.util.CSVUtil;
 
@@ -373,7 +372,6 @@ public class GenerateType {
 				}
 				if (fieldInfo.isEmpty()) continue;
 
-				// 	public static int WORD_OFFSET       = 0;
 				out.println("public static final class %s {", fieldInfo.name);
 				out.println("public static final         int SIZE       = %2d;", fieldInfo.size);
 				out.println("public static final         int OFFSET     = %2d;", fieldInfo.offset);
@@ -463,7 +461,7 @@ public class GenerateType {
 							out.println("return Memory.readDbl(base + OFFSET);");
 							out.println("}");
 							out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", type);
-							out.println("Memory.writeDbl(base + OFFSET, newValue);", qClassName);
+							out.println("Memory.writeDbl(base + OFFSET, newValue);");
 							out.println("}");
 							break;
 						default:
@@ -481,7 +479,6 @@ public class GenerateType {
 						String type = context.getBaseType(fieldInfo.type);
 						switch(type) {
 						case "boolean":
-							// public static final int getBitField(ToIntIntFunction addressFunc, ToIntIntFunction getValueFunc, @LONG_POINTER int base)
 							out.println("public static boolean get(@LONG_POINTER int base) {");
 							out.println("return getBit(Memory.fetch(base + OFFSET)) != 0;");
 							out.println("}");
@@ -535,7 +532,6 @@ public class GenerateType {
 								throw new UnexpectedException();
 							}
 						}
-
 					}
 						break;
 					default:
