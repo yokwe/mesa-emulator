@@ -265,7 +265,9 @@ public class GenerateType {
 		RecordInfo recordInfo = context.getRecordInfo(type);
 		for(FieldInfo fieldInfo: recordInfo.fieldList) {
 			if (fieldInfo.isEmpty()) continue;
-			String fieldType = context.getBaseType(fieldInfo.type);
+			String fieldType  = context.getBaseType(fieldInfo.type);
+			String qClassName = String.format("%s.%s", recordInfo.name, fieldInfo.name);
+
 			out.println("//   %s  %s", type, fieldInfo.name);
 			
 			out.println("public static final class %s {", fieldInfo.name);
@@ -275,20 +277,20 @@ public class GenerateType {
 			switch(fieldType) {
 			case "boolean":
 				out.println("public static boolean get(@LONG_POINTER int base) {");
-				out.println("return %s.%s.get(base + OFFSET);", recordInfo.name, fieldInfo.name);
+				out.println("return %s.get(base + OFFSET);", qClassName);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, boolean newValue) {");
-				out.println("%s.%s.set(base + OFFSET, newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.set(base + OFFSET, newValue);", qClassName);
 				out.println("}");
 				break;
 			case "CARD8":
 			case "CARD16":
 			case "CARD32":
 				out.println("public static @%s int get(@LONG_POINTER int base) {", fieldType);
-				out.println("return %s.%s.get(base + OFFSET);", recordInfo.name, fieldInfo.name);
+				out.println("return %s.get(base + OFFSET);", qClassName);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, @%s int newValue) {", fieldType);
-				out.println("%s.%s.set(base + OFFSET, newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.set(base + OFFSET, newValue);", qClassName);
 				out.println("}");
 				break;
 			default:
@@ -307,7 +309,8 @@ public class GenerateType {
 		RecordInfo recordInfo = context.getRecordInfo(type);
 		for(FieldInfo fieldInfo: recordInfo.fieldList) {
 			if (fieldInfo.isEmpty()) continue;
-			String fieldType = context.getBaseType(fieldInfo.type);
+			String qClassName = String.format("%s.%s", recordInfo.name, fieldInfo.name);
+			String fieldType  = context.getBaseType(fieldInfo.type);
 			out.println("// %s  %s  %s", type, fieldInfo.name, fieldType);
 			
 			out.println("public static final class %s {", fieldInfo.name);
@@ -317,20 +320,20 @@ public class GenerateType {
 			switch(fieldType) {
 			case "boolean":
 				out.println("public static boolean get(@LONG_POINTER int base, int index) {");
-				out.println("return %s.%s.get(base + OFFSET + (ARRAY_SIZE * index));", recordInfo.name, fieldInfo.name);
+				out.println("return %s.get(base + OFFSET + (ARRAY_SIZE * index));", qClassName);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, int index, boolean newValue) {");
-				out.println("%s.%s.set(base + OFFSET + (ARRAY_SIZE * index), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.set(base + OFFSET + (ARRAY_SIZE * index), newValue);", qClassName);
 				out.println("}");
 				break;
 			case "CARD8":
 			case "CARD16":
 			case "CARD32":
 				out.println("public static @%s int get(@LONG_POINTER int base, int index) {", fieldType);
-				out.println("return %s.%s.get(base + OFFSET + (ARRAY_SIZE * index));", recordInfo.name, fieldInfo.name);
+				out.println("return %s.get(base + OFFSET + (ARRAY_SIZE * index));", qClassName);
 				out.println("}");
 				out.println("public static void set(@LONG_POINTER int base, int index, @%s int newValue) {", fieldType);
-				out.println("%s.%s.set(base + OFFSET + (ARRAY_SIZE * index), newValue);", recordInfo.name, fieldInfo.name);
+				out.println("%s.set(base + OFFSET + (ARRAY_SIZE * index), newValue);", qClassName);
 				out.println("}");
 				break;
 			default:
@@ -344,14 +347,61 @@ public class GenerateType {
 			out.println("}");
 		}
 	}
+	
+	static boolean useMemoryClass(Context context, RecordInfo recordInfo) {
+		for(FieldInfo fieldInfo: recordInfo.fieldList) {
+			if (fieldInfo.isEmpty()) continue;
+			switch(fieldInfo.fieldType) {
+			case NORMAL:
+			case BIT:
+			{
+				String type = context.getBaseType(fieldInfo.type);
+				switch(type) {
+				case "boolean":
+				case "CARD8":
+				case "CARD16":
+				case "CARD32":
+					return true;
+				default:
+					break;
+				}
+			}
+				break;
+			case ARRAY:
+			{
+				ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)fieldInfo;
+				ArrayInfo arrayInfo = arrayFieldInfo.arrayInfo;
+				String type = context.getBaseType(arrayInfo.type);
+				switch(type) {
+				case "CARD16":
+					return true;
+				case "boolean":
+				case "CARD8":
+				case "CARD32":
+					throw new UnexpectedException();
+				default:
+					break;
+				}
+			}
+				break;
+			default:
+				throw new UnexpectedException();
+			}
+		}
+		return false;
+	}
 
 	static void generateRecordClass(Context context, RecordInfo recordInfo) {
 		String path = String.format("%s/%s.java", PATH_DIR, recordInfo.name);
 		logger.info("path {}",path);
-		try (AutoIndentPrintWriter out = new AutoIndentPrintWriter(new PrintWriter(path))) {
+		try (AutoIndentPrintWriter out = new AutoIndentPrintWriter(new PrintWriter(path))) {			
 			out.println("package mh.majuro.mesa.type;");
 			out.println();
-			out.println("import mh.majuro.mesa.Memory;");
+			
+			if (useMemoryClass(context, recordInfo)) {
+				out.println("import mh.majuro.mesa.Memory;");
+			}
+			
 			out.println("import mh.majuro.mesa.Type.*;");
 			out.println();
 			out.println("public final class %s {", recordInfo.name);
