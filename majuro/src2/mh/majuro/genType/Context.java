@@ -124,15 +124,106 @@ public class Context {
 			}
 		}
 		for(RecordInfo e: recordMap.values()) {
-			if (e.size <= 0) {
-				logger.error("RECORD size is less than or equals to zero");
-				logger.error("  record {}", e);
-				hasProblem = true;
-			}
+			// check record fieldList
 			if (e.fieldList.isEmpty()) {
 				logger.error("RECORD fieldList is empty");
 				logger.error("  record {}", e);
 				hasProblem = true;
+			}
+			// check record size
+			{
+				int recordSize = 0;
+				for(FieldInfo ee: e.fieldList) {
+					recordSize = Math.max(recordSize, ee.offset + ee.size);
+				}
+				if (e.size != recordSize) {
+					logger.error("RECORD size doesn't match with last field");
+					logger.error("  record {}", e);
+					hasProblem = true;
+				}
+			}
+			
+			// check field size
+			{
+				for(FieldInfo ee: e.fieldList) {
+					if (ee.isEmpty()) continue;
+					
+					switch(ee.fieldType) {
+					case SIMPLE:
+					case BIT:
+					{
+						String type = getBaseType(ee.type);
+						int size = getSize(type);
+						if (ee.size != size) {
+							logger.error("RECORD unexpected size");
+							logger.error("  expect   {}", size);
+							logger.error("  actual   {}", ee.size);
+							logger.error("  record   {}", e);
+							logger.error("  field    {}", ee);
+							hasProblem = true;
+						}
+					}
+						break;
+					case ARRAY:
+					{
+						ArrayFieldInfo arrayFieldInfo = (ArrayFieldInfo)ee;
+						ArrayInfo arrayInfo = arrayFieldInfo.arrayInfo;
+						String type = getBaseType(arrayInfo.type);
+						int size = getSize(type);
+						if (arrayInfo.size != size) {
+							logger.error("RECORD unexpected array element size");
+							logger.error("  expect   {}", size);
+							logger.error("  actual   {}", arrayInfo.size);
+							logger.error("  record   {}", e);
+							logger.error("  field    {}", ee);
+							hasProblem = true;
+						}
+						if (arrayFieldInfo.size != (arrayInfo.size * arrayInfo.length)) {
+							logger.error("RECORD unexpected size vs array");
+							logger.error("  expect   {}", arrayInfo.size * arrayInfo.length);
+							logger.error("  actual   {}", arrayFieldInfo.size);
+							logger.error("  record   {}", e);
+							logger.error("  field    {}", ee);
+							hasProblem = true;
+						}
+					}
+						break;
+					default:
+						throw new UnexpectedException();
+					}
+				}
+			}
+			{
+				FieldInfo last = null;
+				for(FieldInfo ee: e.fieldList) {
+					if (last != null) {
+						if (ee.offset == last.offset && ee.size == last.size) {
+							if (ee.fieldType == FieldType.BIT) {
+								//
+							} else {
+								logger.warn("RECORD duplicate offset and size");								
+								logger.warn("  last       {}.{}", e.name, last.name);
+								logger.warn("  record     {}.{}", e.name, ee.name);
+							}
+							continue;
+						} else {
+							if (ee.offset != (last.offset + last.size)) {
+								if (ee.offset == 0) {
+									// start union
+									logger.warn("RECORD unexpected offset become zero");
+									logger.warn("  record     {}.{}", e.name, ee.name);
+								} else {
+									logger.error("RECORD unexpected offset or size");
+									logger.error("  last       {}", last);
+									logger.error("  record     {}", e);
+									logger.error("  field      {}", ee);
+									hasProblem = true;
+								}
+							}
+						}
+					}
+					last = ee;
+				}
 			}
 			
 			List<BitFieldInfo> bitFieldInfoList = new ArrayList<>();
