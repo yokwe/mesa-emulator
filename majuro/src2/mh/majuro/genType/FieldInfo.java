@@ -1,5 +1,7 @@
 package mh.majuro.genType;
 
+import mh.majuro.UnexpectedException;
+
 public class FieldInfo {
 	final FieldType fieldType;
 	final String    name;
@@ -15,7 +17,7 @@ public class FieldInfo {
 		this.size      = size;
 	}
 	public FieldInfo(String name, String type, int offset, int size) {
-		this(FieldType.NORMAL, name, type, offset, size);
+		this(FieldType.SIMPLE, name, type, offset, size);
 	}
 	
 	public boolean isEmpty() {
@@ -29,6 +31,21 @@ public class FieldInfo {
 	
 	@Override
 	public String toString() {
-		return String.format("{%-8s %-20s %-20s %4d %2d}", fieldType, name, type, offset, size);
+		switch(fieldType) {
+		case SIMPLE:
+			return toStringInternal();
+		case ARRAY:
+			return ((ArrayFieldInfo)this).toString();
+		case BIT:
+			return ((BitFieldInfo)this).toString();
+		default:
+			throw new UnexpectedException();
+		}
+	}
+	private String toStringInternal() {
+		return String.format("{%s %s %s %d %d}", fieldType, name, type, offset, size);
+	}
+	protected String toStringInternal(String extra) {
+		return String.format("{%s %s %s %d %d %s}", fieldType, name, type, offset, size, extra);
 	}
 }
