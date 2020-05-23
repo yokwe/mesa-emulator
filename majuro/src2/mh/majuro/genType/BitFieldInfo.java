@@ -8,4 +8,9 @@ public class BitFieldInfo extends FieldInfo {
 		
 		bitInfo = new BitInfo(size, startBit, stopBit);
 	}
+	
+	@Override
+	public String toString() {
+		return toStringInternal(bitInfo.toString());
+	}
 }

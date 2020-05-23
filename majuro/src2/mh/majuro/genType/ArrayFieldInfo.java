@@ -12,4 +12,9 @@ public class ArrayFieldInfo extends FieldInfo {
 	public boolean isEmpty() {
 		return arrayInfo.indexType.isEmpty() && arrayInfo.type.isEmpty();
 	}
+	
+	@Override
+	public String toString() {
+		return toStringInternal(arrayInfo.toString());
+	}
 }

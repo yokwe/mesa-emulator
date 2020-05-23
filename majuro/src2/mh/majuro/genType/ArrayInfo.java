@@ -12,4 +12,9 @@ public class ArrayInfo {
 		this.size      = elementSize;
 		this.length    = elementLength;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("{%s %s %d %d}", indexType, type, size, length);
+	}
 }

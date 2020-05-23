@@ -33,4 +33,9 @@ public class BitInfo {
 			throw new UnexpectedException();
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("{%d %d}", startBit, stopBit);
+	}
 }
