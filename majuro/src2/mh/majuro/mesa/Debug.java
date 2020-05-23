@@ -70,4 +70,7 @@ public final class Debug {
 
 	public static final boolean STOP_MESSAGE_UNTIL_MP = false;
 
+	// Type
+	public static final boolean ENABLE_TYPE_RANGE_CHECK = true;
+
 }
