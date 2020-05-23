@@ -5,9 +5,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.slf4j.LoggerFactory;
 
@@ -18,88 +16,6 @@ import mh.majuro.util.CSVUtil;
 public class GenerateType {
 	static final org.slf4j.Logger logger = LoggerFactory.getLogger(GenerateType.class);
 
-	static class Context {
-		final Map<String, RecordInfo> recordMap;
-		final Map<String, TypeInfo>   typeMap;
-		
-		Context(Map<String, RecordInfo> recordMap, Map<String, TypeInfo> typeMap) {
-			this.recordMap = recordMap;
-			this.typeMap   = typeMap;
-		}
-		
-		boolean isPrimitive(String name) {
-			switch(name) {
-			case "boolean":
-			case "CARD8":
-			case "CARD16":
-			case "CARD32":
-				return true;
-			default:
-				return false;
-			}
-		}
-		boolean isRecord(String name) {
-			return recordMap.containsKey(name);
-		}
-		RecordInfo getRecordInfo(String name) {
-			if (recordMap.containsKey(name)) {
-				return recordMap.get(name);
-			} else {
-				logger.error("name {}", name);
-				throw new UnexpectedException();
-			}
-		}
-		int getSize(String name) {
-			String type = name;
-			for(;;) {
-				switch(type) {
-				case "boolean":
-				case "CARD8":
-				case "CARD16":
-					return 1;
-				case "CARD32":
-					return 2;
-				default:
-					if (typeMap.containsKey(type)) {
-						type = typeMap.get(type).type;
-						continue;
-					}
-					if (recordMap.containsKey(name)) {
-						return recordMap.get(name).size;
-					} else {
-						logger.error("name {}", name);
-						throw new UnexpectedException();
-					}
-				}
-			}
-		}
-		String getBaseType(String name) {
-			String type = name;
-			for(;;) {
-				switch(type) {
-				case "boolean":
-				case "CARD8":
-				case "CARD16":
-				case "CARD32":
-					return type;
-				default:
-					if (typeMap.containsKey(type)) {
-						type = typeMap.get(type).type;
-						continue;
-					}
-					if (recordMap.containsKey(type)) {
-						return type;
-					} else {
-						logger.error("name {}", name);
-						logger.error("type {}", type);
-						logger.error("recordMap {}", recordMap.keySet());
-						throw new UnexpectedException();
-					}
-				}
-			}
-		}
-	}
-	
 	static Map<String, RecordInfo> buildRecordMap(List<Record> recordList) {
 		// Sanity check
 		{
@@ -352,7 +268,7 @@ public class GenerateType {
 		for(FieldInfo fieldInfo: recordInfo.fieldList) {
 			if (fieldInfo.isEmpty()) continue;
 			switch(fieldInfo.fieldType) {
-			case NORMAL:
+			case SIMPLE:
 			case BIT:
 			{
 				String type = context.getBaseType(fieldInfo.type);
@@ -420,6 +336,10 @@ public class GenerateType {
 					BitInfo bitInfo = bitFieldInfo.bitInfo;
 					out.println("//   bit startBit %2d  stopBit %2d", bitInfo.startBit, bitInfo.stopBit);
 				}
+			}
+			out.println();
+			
+			for(FieldInfo fieldInfo: recordInfo.fieldList) {
 				if (fieldInfo.isEmpty()) continue;
 
 				out.println("public static final class %s {", fieldInfo.name);
@@ -428,15 +348,15 @@ public class GenerateType {
 
 				{
 					switch (fieldInfo.fieldType) {
-					case NORMAL:
+					case SIMPLE:
 						break;
 					case BIT:
 					{
 						BitFieldInfo bitFieldInfo = (BitFieldInfo)fieldInfo;
 						switch(bitFieldInfo.size) {
 						case 1:
-							out.println("public static final @CARD16 int MASK        = %s;", bitFieldInfo.bitInfo.mask);
-							out.println("public static final         int SHIFT       = %d;", bitFieldInfo.bitInfo.shift);
+							out.println("public static final         int SHIFT      = %2d;", bitFieldInfo.bitInfo.shift);
+							out.println("public static final @CARD16 int MASK       = %s;", bitFieldInfo.bitInfo.mask);
 							out.println();
 							
 							out.println("public static @CARD16 int getBit(@CARD16 int value) {");
@@ -447,8 +367,8 @@ public class GenerateType {
 							out.println("}");
 							break;
 						case 2:
-							out.println("public static final @CARD32 int MASK        = %s;", bitFieldInfo.bitInfo.mask);
-							out.println("public static final         int SHIFT       = %d;", bitFieldInfo.bitInfo.shift);
+							out.println("public static final @CARD32 int MASK       = %s;", bitFieldInfo.bitInfo.mask);
+							out.println("public static final         int SHIFT      = %d;", bitFieldInfo.bitInfo.shift);
 							out.println();
 							
 							out.println("public static @CARD32 int getBit(@CARD32 int value) {");
@@ -485,7 +405,7 @@ public class GenerateType {
 				{
 					String qClassName = String.format("%s.%s", recordInfo.name, fieldInfo.name);
 					switch(fieldInfo.fieldType) {
-					case NORMAL:
+					case SIMPLE:
 					{
 						String type = context.getBaseType(fieldInfo.type);
 						switch(type) {
@@ -613,62 +533,9 @@ public class GenerateType {
 		Map<String, RecordInfo> recordMap = buildRecordMap(recordList);
 		logger.info("recordInfoMap {} {}", recordMap.size(), recordMap.keySet());
 		
-		// Sanity check
-		{
-			Set<String> knownTypeSet = new TreeSet<>();
-			{
-				knownTypeSet.add("boolean");
-				knownTypeSet.add("CARD8");
-				knownTypeSet.add("CARD16");
-				knownTypeSet.add("CARD32");
-				
-				typeMap.values().stream().forEach(o -> knownTypeSet.add(o.name));
-				recordMap.values().stream().forEach(o -> knownTypeSet.add(o.name));
-			}
-
-			for(TypeInfo e: typeMap.values()) {
-				if (!knownTypeSet.contains(e.type)) {
-					logger.error("unknown type");
-					logger.error("  type {}", e.type);
-					throw new UnexpectedException("unknown type");
-				}
-				if (e.minValue < 0) {
-					logger.error("minValue is negative");
-					logger.error("  minValue {}", e.minValue);
-					throw new UnexpectedException("minValue is negative");
-				}
-				if (e.maxValue < e.minValue) {
-					logger.error("minValue is greater than maxValue");
-					logger.error("  minValue {}", e.minValue);
-					logger.error("  maxValue {}", e.maxValue);
-					throw new UnexpectedException("minValue is greater than maxValue");
-				}
-			}
-			
-			for(RecordInfo e: recordMap.values()) {
-				if (e.size <= 0) {
-					logger.error("size <= 0");
-					logger.error("  size {}", e.size);
-					throw new UnexpectedException("size <= 0");
-				}
-				if (e.fieldList.size() == 0) {
-					logger.error("fieldList.size() == 0");
-					logger.error("  fieldList {}", e.fieldList.size());
-					throw new UnexpectedException("fieldList.size() == 0");
-				}
-				for(FieldInfo fe: e.fieldList) {
-					if (fe.type.isEmpty()) continue;
-					
-					if (!knownTypeSet.contains(fe.type)) {
-						logger.error("unknown type");
-						logger.error("  type {}", fe.type);
-						throw new UnexpectedException("unknown type");
-					}
-				}
-			}
-		}
-		
 		Context context = new Context(recordMap, typeMap);
+		// Sanity check
+		context.sanityCheck();
 		
 		for(RecordInfo e: recordMap.values()) {
 			generateRecordClass(context, e);
