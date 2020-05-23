@@ -16,6 +16,6 @@ public class RecordInfo {
 	
 	@Override
 	public String toString() {
-		return String.format("{%-20s %4d %2d}", name, size, fieldList.size());
+		return String.format("{%s %d %d}", name, size, fieldList.size());
 	}
 }
