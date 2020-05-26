@@ -468,6 +468,7 @@ noprint:;
 			for(const SEIndex* isei = t.caseCtx->firstCtxSe(); !isei->isNull(); isei = temp) {
 				out << indent();
 				out << isei->getValue().getId().hash->getValue().value;
+				out << "(" << isei->getValue().getId().idValue << ")"; // Output select tag value
 				const SEIndex* varRec = isei->find(isei->getValue().getId().idInfo)->underType();
 
 
@@ -476,6 +477,7 @@ noprint:;
 					if (temp->isNull()) break;
 					if (!isei->equals(temp->getValue().getId().idInfo)) break;
 					out << ", " << temp->getValue().getId().hash->getValue().value;
+					out << "(" << isei->getValue().getId().idValue << ")"; // Output select tag value
 				}
 				out << " => ";
 				printFieldCtx(out, varRec->getValue().getCons().getRecord().fieldCtx);
