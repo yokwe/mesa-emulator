@@ -36,7 +36,7 @@ static log4cpp::Category& logger = Logger::getLogger("Memory");
 
 // 3.3.3 Data and Status Registers
 CARD16 PID[4] = {0, 0, 0, 0}; // Processor ID
-CARD16 MP  = 0;    // Maintenance Panel
+//CARD16 MP  = 0;    // Maintenance Panel
 //CARD32 IT  = 0;    // Interval Timer
 //CARD16 WM  = 0;    // Wakeup mask register - 10.4.4
 //CARD16 WP  = 0;    // Wakeup pending register - 10.4.4.1

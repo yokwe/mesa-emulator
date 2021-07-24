@@ -41,7 +41,7 @@ extern CARD16 SP;
 
 // 3.3.3 Data and Status Registers
 extern CARD16 PID[4]; // Processor ID
-extern CARD16 MP;     // Maintenance Panel
+//extern CARD16 MP;     // Maintenance Panel
 //extern CARD32 IT;     // Interval Timer
 //extern CARD16 WM;     // Wakeup mask register - 10.4.4
 //extern CARD16 WP;     // Wakeup pending register - 10.4.4.1
