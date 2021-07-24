@@ -379,14 +379,12 @@ void E_WRXTS() {
 }
 // 0167  ASSIGN_ESC(a, WRMP)
 void E_WRMP() {
-	MP = Pop();
-	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRMP   %4d", savedPC, MP);
-	GuiOp::setMP(MP);
+	CARD16 newValue = Pop();
+	if (DEBUG_TRACE_OPCODE) logger.debug("TRACE %6o  WRMP   %4d", savedPC, newValue);
+	GuiOp::setMP(newValue);
+	ProcessorThread::setMP(newValue);
 
-	if (DEBUG_STOP_MESSAGE_UNTIL_MP == MP) {
-		Logger::popPriority();
-	}
-	switch(MP) {
+	switch(newValue) {
 	case 900:
 		//  cGerm: Code = 900;  -- Germ entered
 		logger.info("MP  900 cGerm");
@@ -410,7 +408,6 @@ void E_WRMP() {
 	case 915:
 		// cWaitingForEtherDebugger: Code = 915;  -- waiting for ethernet debugger to begin debugging me
 		logger.info("MP  915 cWaitingForEtherDebugger");
-		if (DEBUG_STOP_AT_MP_915) ERROR();
 		break;
 	case 919:
 		//  cGermFinished: Code = 919;  -- Germ transferred control back to caller (who has hung)
@@ -481,8 +478,7 @@ void E_WRMP() {
 		logger.info("MP  990 cClient");
 		break;
 	default:
-		logger.info("MP %04d", MP);
-		if (perf_stop_at_mp_8000 && MP == 8000) ProcessorThread::stop();
+		logger.info("MP %04d", newValue);
 		break;
 	}
 }

@@ -130,6 +130,11 @@ public:
 
 	static void stop();
 
+	static void   stopAtMP(CARD16 newValue);
+	static CARD16 getMP();
+	static void   setMP(CARD16 newValue);
+	static void   stopMessageUntilMP(CARD16 newValue);
+
 	static void requestRescheduleTimer();
 	static void requestRescheduleInterrupt();
 
@@ -163,6 +168,10 @@ private:
 	static const int  REQUSEST_RESCHEDULE_INTERRUPT = 0x02;
 	static QAtomicInt requestReschedule;
 	static QMutex     mutexRequestReschedule;
+
+	static QSet<CARD16> stopAtMPSet;
+	static QSet<CARD16> stopMessageUntilMPSet;
+	static CARD16       mp;
 
 	static void setRequestReschedule(int newValue) {
 #if (QT_VERSION_CHECK(5, 0, 0) <= QT_VERSION)

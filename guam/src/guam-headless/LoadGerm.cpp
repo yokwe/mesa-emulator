@@ -70,7 +70,11 @@ int main() {
 	quint32 rmBits           = preference.getAsUINT32(group, "RMBits");
 
 	// stop at MP 8000
-	perf_stop_at_mp_8000 = 1;
+	ProcessorThread::stopAtMP( 915);
+	ProcessorThread::stopAtMP(8000);
+
+//	ProcessorThread::stopAtMP( 940);
+//	ProcessorThread::stopMessageUntilMP(930);
 
 	MesaProcessor mesaProcessor;
 

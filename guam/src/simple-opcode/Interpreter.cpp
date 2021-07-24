@@ -129,7 +129,8 @@ void Interpreter::initRegisters() {
 	PID[1] = 0x0000;
 	PID[2] = 0x0000;
 	PID[3] = 0x0000;
-	MP  = 0;    // Maintenance Panel
+//	MP  = 0;    // Maintenance Panel
+	ProcessorThread::setMP(0);
 //	IT  = 0;    // Interval Timer
 //	WM  = 0;    // Wakeup mask register - 10.4.4
 //	WP  = 0;    // Wakeup pending register - 10.4.4.1
