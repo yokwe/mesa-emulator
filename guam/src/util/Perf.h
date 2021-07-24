@@ -34,8 +34,6 @@ OF SUCH DAMAGE.
 
 static const int PERF_ENABLE    = 1;
 
-extern int perf_stop_at_mp_8000;
-
 extern long long perf_Dispatch;
 extern long long perf_Fetch;
 extern long long perf_Store;

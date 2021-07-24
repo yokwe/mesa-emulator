@@ -31,8 +31,6 @@ OF SUCH DAMAGE.
 
 #include "Perf.h"
 
-int perf_stop_at_mp_8000 = 0;
-
 long long perf_Dispatch = 0;
 long long perf_Fetch = 0;
 long long perf_Store = 0;
